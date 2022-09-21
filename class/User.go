@@ -166,29 +166,6 @@ func (this *User) validateExtraOptions()  ([]error) {
 	return nil
 }
 
-func (this *User) validateDomainName()  ([]error) {
-	var errors []error 
-	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.1234567890"
-	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key),  reflect.ValueOf(*this).Kind())
-		if key_extra_options_errors != nil {
-			errors = append(errors, key_extra_options_errors...)	
-		}
-
-		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key),  reflect.ValueOf(*this).Kind())
-		if value_extra_options_errors != nil {
-			errors = append(errors, value_extra_options_errors...)	
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}
-
 func (this *User) createUser() (*User, *string, []error) {
 	var errors []error 
 	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand((*this).DATA_DEFINITION_STATEMENT_CREATE, (*this).GetExtraOptions())
@@ -333,17 +310,27 @@ func (this *User) getValidationFunctions() map[string]func() []error {
 func (this *User) validateClient()  ([]error) {
 	var errors []error 
 	if (*this).GetClient() == nil {
-		errors = append(errors, fmt.Errorf("client is nil"))
+		errors = append(errors, fmt.Errorf("Holistic.User: client is nil"))
 		return errors
 	}
 
 	return (*((*this).GetClient())).Validate()
 }
 
+func (this *User) validateDomainName()  ([]error) {
+	var errors []error 
+	if (*this).GetClient() == nil {
+		errors = append(errors, fmt.Errorf("Holistic.User: domain name is nil"))
+		return errors
+	}
+
+	return (*((*this).GetDomainName())).Validate()
+}
+
 func (this *User) validateCredentials()  ([]error) {
 	var errors []error 
 	if (*this).GetCredentials() == nil {
-		errors = append(errors, fmt.Errorf("credentials is nil"))
+		errors = append(errors, fmt.Errorf("Holistic.User: credentials is nil"))
 		return errors
 	}
 
