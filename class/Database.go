@@ -105,7 +105,7 @@ func (this *Database) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName)
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this).Kind())
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}
@@ -183,13 +183,13 @@ func (this *Database) validateExtraOptions()  ([]error) {
 	var errors []error 
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
 	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key))
+		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key),  reflect.ValueOf(*this).Kind())
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
 		}
 
 		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key))
+		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key),  reflect.ValueOf(*this).Kind())
 		if value_extra_options_errors != nil {
 			errors = append(errors, value_extra_options_errors...)	
 		}
@@ -225,7 +225,7 @@ func (this *Database) validateCredentials()  ([]error) {
 
 func (this *Database) validateDatabaseName() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name")
+	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name",  reflect.ValueOf(*this).Kind())
 }
 
 func GetFunctionName(i interface{}) string {

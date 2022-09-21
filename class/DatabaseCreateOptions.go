@@ -144,7 +144,7 @@ func (this *DatabaseCreateOptions) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName)
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this).Kind())
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}

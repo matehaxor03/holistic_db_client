@@ -22,11 +22,17 @@ func main() {
 	const CLS_CHARACTER_SET string = "character_set"
 	const CLS_COLLATE string = "collate"
 
+	// User 
+	const CLS_USER_USERNAME string = "user_username"
+	const CLS_USER_PASSWORD string = "user_password"
+	const CLS_USER_DOMAIN_NAME string = "user_domain_name"
+
 
 
 	var CREATE_COMMAND = "CREATE"
 	
 	var DATABASE_CLASS = "DATABASE"
+	var USER_CLASS = "USER"
 
 	//var IF_EXISTS string = "IF EXISTS"
 	//var IF_NOT_EXISTS string = "IF NOT EXISTS"
@@ -46,6 +52,11 @@ func main() {
 	database_name, _ := params[CLS_DATABASE_NAME]
 	character_set, _ := params[CLS_CHARACTER_SET]
 	collate, _ := params[CLS_COLLATE]
+
+	// User
+	user_username, _ := params[CLS_USER_USERNAME]
+	user_password, _ := params[CLS_USER_PASSWORD]
+	user_domain_name, _ := params[CLS_USER_DOMAIN_NAME]
 
 	command_pt, command_found := params[CLS_COMMAND] 
 	class_pt, class_found := params[CLS_CLASS]
@@ -96,6 +107,19 @@ func main() {
 			
 			if database_errors != nil {
 				for _, e := range database_errors {
+					fmt.Println(e)
+				}
+
+				if shell_output != nil {
+					fmt.Println(*shell_output)
+				}
+				os.Exit(1)
+			}
+		} else if class_value == USER_CLASS {
+			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
+			
+			if user_errors != nil {
+				for _, e := range user_errors {
 					fmt.Println(e)
 				}
 

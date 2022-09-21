@@ -4,6 +4,7 @@ package class
 import (
 	"fmt"
 	"unicode"
+	"reflect"
 )
 
 func Contains(array []string, str *string, label string) []error {
@@ -41,16 +42,16 @@ func ArrayContainsArray(array []string, second_array []string, label string) []e
 	return nil
 }
 
-func ValidateCharacters(whitelist string, str *string, label string) ([]error) {
+func ValidateCharacters(whitelist string, str *string, label string, kind reflect.Kind) ([]error) {
 	var errors []error 
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s is nil", label))
+		errors = append(errors, fmt.Errorf("%s %s is nil", kind, label))
 		return errors
 	}
 
 	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s is empty", label))
+		errors = append(errors, fmt.Errorf("%s %s is empty", kind, label))
 		return errors
 	}
 

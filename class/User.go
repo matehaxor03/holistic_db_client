@@ -8,11 +8,10 @@ import (
 	"os/exec"
 )
 
-type HostUser struct {
-	host *Host
+type User struct {
+	client *Client
 	credentials *Credentials
-	user_credentials *Credentials
-	domain *Domain
+	domain_name *DomainName
 
 	extra_options map[string][]string
 	validation_functions map[string]func() []error
@@ -25,15 +24,16 @@ type HostUser struct {
 	LOGIC_OPTION_CREATE_OPTIONS []string
 }
 
-func newHostUser(host *Host, credentials *Credentials, user_credentials *Credentials, domain *Domain, extra_options map[string][]string) (*HostUser) {
-	x := HostUser{host: host,
+func newUser(client *Client, credentials *Credentials, domain_name *DomainName, extra_options map[string][]string) (*User) {
+	x := User{client: client,
 				credentials: credentials,
-				user_credentials: user_credentials,
-				domain: domain}
+				domain_name: domain_name}
 				
 	x.DATA_DEFINITION_STATEMENT_CREATE = "CREATE"
 	x.DATA_DEFINITION_STATEMENTS = []string{x.DATA_DEFINITION_STATEMENT_CREATE}
 
+	x.LOGIC_OPTION_FIELD = "LOGIC"
+	x.LOGIC_OPTION_IF_NOT_EXISTS = []string{"IF", "NOT", "EXISTS"}
 	x.LOGIC_OPTION_CREATE_OPTIONS = append(x.LOGIC_OPTION_CREATE_OPTIONS, x.LOGIC_OPTION_IF_NOT_EXISTS...)
 	
 	x.validation_functions = make(map[string]func() []error)
@@ -41,16 +41,20 @@ func newHostUser(host *Host, credentials *Credentials, user_credentials *Credent
 	return &x
 }
 
-func (this *HostUser) CreateHostUser(client *Client, user_credentials *Credentials, domain *Domain, options map[string][]string) (*HostUser, *string, []error) {
-	return newHostUser((*client).GetHost(), (*client).GetCredentials(), user_credentials, domain, options).Create()
+func (this *User) Create() (*User, *string, []error)  {
+	this, result, errors := (*this).createUser()
+	if errors != nil {
+		return nil, result, errors
+	}
+
+	return this, result, nil
 }
 
-func (this *HostUser) InitValidationFunctions() ()  {
+func (this *User) InitValidationFunctions() ()  {
 	validation_functions := (*this).getValidationFunctions()
-	validation_functions["validateHost"] = (*this).validateHost
+	validation_functions["validateClient"] = (*this).validateClient
 	validation_functions["validateCredentials"] = (*this).validateCredentials
-	validation_functions["validateUserCredentials"] = (*this).validateUserCredentials
-	validation_functions["validateDomain"] = (*this).validateDomain
+	validation_functions["validateDomainName"] = (*this).validateDomainName
 	validation_functions["validateExtraOptions"] = (*this).validateExtraOptions
 	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
 	validation_functions["validateConstants"] = (*this).validateConstants
@@ -66,15 +70,11 @@ func (this *HostUser) InitValidationFunctions() ()  {
 	}
 }
 
-func (this *HostUser) GetHost() *Host {
-	return (*this).host
- }
-
-func (this *HostUser) GetDomain() *Domain {
-	return (*this).domain
+func (this *User) GetDomainName() *DomainName {
+	return (*this).domain_name
 }
 
-func (this *HostUser) validateConstants()  ([]error) {
+func (this *User) validateConstants()  ([]error) {
 	var errors []error 
 	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
 	reflected_value := reflect.ValueOf(this)
@@ -101,7 +101,7 @@ func (this *HostUser) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName)
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this).Kind())
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}
@@ -114,7 +114,7 @@ func (this *HostUser) validateConstants()  ([]error) {
 	return nil
 }
 
-func (this *HostUser) validateValidationFunctions() ([]error) {
+func (this *User) validateValidationFunctions() ([]error) {
 	var errors []error 
 	current := (*this).getValidationFunctions()
 	compare := make(map[string]func() []error)
@@ -143,17 +143,17 @@ func (this *HostUser) validateValidationFunctions() ([]error) {
 	return nil
 }
 
-func (this *HostUser) validateExtraOptions()  ([]error) {
+func (this *User) validateExtraOptions()  ([]error) {
 	var errors []error 
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
 	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key))
+		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("%s extra_options key %s", reflect.ValueOf(*this).Kind(), key),  reflect.ValueOf(*this).Kind())
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
 		}
 
 		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key))
+		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("%s extra_options value %s",reflect.ValueOf(*this).Kind(), key),  reflect.ValueOf(*this).Kind())
 		if value_extra_options_errors != nil {
 			errors = append(errors, value_extra_options_errors...)	
 		}
@@ -166,17 +166,17 @@ func (this *HostUser) validateExtraOptions()  ([]error) {
 	return nil
 }
 
-func (this *HostUser) validateDomain()  ([]error) {
+func (this *User) validateDomainName()  ([]error) {
 	var errors []error 
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.1234567890"
 	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key))
+		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key),  reflect.ValueOf(*this).Kind())
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
 		}
 
 		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key))
+		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key),  reflect.ValueOf(*this).Kind())
 		if value_extra_options_errors != nil {
 			errors = append(errors, value_extra_options_errors...)	
 		}
@@ -189,18 +189,9 @@ func (this *HostUser) validateDomain()  ([]error) {
 	return nil
 }
 
-func (this *HostUser) Create() (*HostUser, *string, []error)  {
-	this, result, errors := (*this).createHostUser()
-	if errors != nil {
-		return nil, result, errors
-	}
-
-	return this, result, nil
-}
-
-func (this *HostUser) createHostUser() (*HostUser, *string, []error) {
+func (this *User) createUser() (*User, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDHostUserCommand((*this).DATA_DEFINITION_STATEMENT_CREATE, (*this).GetExtraOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand((*this).DATA_DEFINITION_STATEMENT_CREATE, (*this).GetExtraOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -232,7 +223,7 @@ func (this *HostUser) createHostUser() (*HostUser, *string, []error) {
     return this, &shell_ouput, nil
 }
 
-func (this *HostUser) getCLSCRUDHostUserCommand(command string, options map[string][]string) (*string, []error) {
+func (this *User) getCLSCRUDUserCommand(command string, options map[string][]string) (*string, []error) {
 	var errors []error 
 
 	command_errs := Contains((*this).DATA_DEFINITION_STATEMENTS, &command, "command")
@@ -261,12 +252,12 @@ func (this *HostUser) getCLSCRUDHostUserCommand(command string, options map[stri
 		}
 	}
 
-	host_command, host_command_errors := (*(*this).GetHost()).GetCLSCommand()
+	host_command, host_command_errors := (*(*this).GetClient().GetHost()).GetCLSCommand()
 	if host_command_errors != nil {
 		errors = append(errors, host_command_errors...)	
 	}
 
-	credentials_command, credentials_command_errors := (*(*this).GetCredentials()).GetCLSCommand()
+	credentials_command, credentials_command_errors := (*(*this).GetClient().GetCredentials()).GetCLSCommand()
 	if credentials_command_errors != nil {
 		errors = append(errors, credentials_command_errors...)	
 	}
@@ -282,16 +273,16 @@ func (this *HostUser) getCLSCRUDHostUserCommand(command string, options map[stri
 		sql_command += fmt.Sprintf("%s ", logic_option)
 	}
 	
-	sql_command += fmt.Sprintf("'%s' ", (*(*this).GetUserCredentials().GetUsername()))
-	sql_command += fmt.Sprintf("@'%s' ", (*(*this).GetDomain().GetDomainName()))
+	sql_command += fmt.Sprintf("'%s' ", (*(*this).GetCredentials().GetUsername()))
+	sql_command += fmt.Sprintf("@'%s' ", (*(*this).GetDomainName().GetDomainName()))
 	sql_command += fmt.Sprintf("IDENTIFIED BY ")
-	sql_command += fmt.Sprintf("'%s' ", ((*(*this).GetUserCredentials()).GetPassword()))
+	sql_command += fmt.Sprintf("'%s' ", ((*(*this).GetCredentials()).GetPassword()))
 
 	sql_command += ";\""
 	return &sql_command, nil
 }
 
-func (this *HostUser) Validate() []error {
+func (this *User) Validate() []error {
 	var errors []error 
 	var fieldsNotFound []string
 	reflected_value := reflect.ValueOf(this)
@@ -335,21 +326,21 @@ func (this *HostUser) Validate() []error {
 	return nil
 }
 
-func (this *HostUser) getValidationFunctions() map[string]func() []error {
+func (this *User) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
 }
 
-func (this *HostUser) validateHost()  ([]error) {
+func (this *User) validateClient()  ([]error) {
 	var errors []error 
-	if (*this).GetHost() == nil {
-		errors = append(errors, fmt.Errorf("host is nil"))
+	if (*this).GetClient() == nil {
+		errors = append(errors, fmt.Errorf("client is nil"))
 		return errors
 	}
 
-	return (*((*this).GetHost())).Validate()
+	return (*((*this).GetClient())).Validate()
 }
 
-func (this *HostUser) validateCredentials()  ([]error) {
+func (this *User) validateCredentials()  ([]error) {
 	var errors []error 
 	if (*this).GetCredentials() == nil {
 		errors = append(errors, fmt.Errorf("credentials is nil"))
@@ -359,24 +350,14 @@ func (this *HostUser) validateCredentials()  ([]error) {
 	return (*((*this).GetCredentials())).Validate()
 }
 
-func (this *HostUser) validateUserCredentials()  ([]error) {
-	var errors []error 
-	if (*this).GetUserCredentials() == nil {
-		errors = append(errors, fmt.Errorf("credentials is nil"))
-		return errors
-	}
-
-	return (*((*this).GetUserCredentials())).Validate()
-}
-
-func (this *HostUser) GetCredentials() *Credentials {
+func (this *User) GetCredentials() *Credentials {
 	return (*this).credentials
 }
 
-func (this *HostUser) GetUserCredentials() *Credentials {
-	return (*this).user_credentials
+func (this *User) GetExtraOptions() map[string][]string {
+	return (*this).extra_options
 }
 
-func (this *HostUser) GetExtraOptions() map[string][]string {
-	return (*this).extra_options
+func (this *User) GetClient() *Client {
+	return (*this).client
 }
