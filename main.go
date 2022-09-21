@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	
+	class "github.com/matehaxor03/holistic_db_client/holistic_db_client/class"
 )
 
 func main() {
