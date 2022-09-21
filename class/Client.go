@@ -89,8 +89,22 @@ func (this *Client) CreateDatabase(database_name *string, database_create_option
 }
 
 func (this *Client) CreateUser(username *string, password *string, domain_name *string, options map[string][]string) (*User, *string, []error) {
+	var errors []error 
 	credentials := NewCredentials(username, password)
 	domain := NewDomainName(domain_name)
+
+	if (*this).GetHost() == nil {
+		errors = append(errors, fmt.Errorf("holistic.Client: holistic.Host is nil, please set the host"))
+	}
+
+	if (*this).GetCredentials() == nil {
+		errors = append(errors, fmt.Errorf("holistic.Client: holistic.Credentials is nil, please set the credentials"))
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
+	}
+
 	
 	return newUser((this), credentials, domain, options).Create()
 }
