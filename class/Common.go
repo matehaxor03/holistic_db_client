@@ -15,11 +15,11 @@ func (m Map) M(s string) Map {
 	return m[s].(Map)
 }
 
-func (m Map) Func(s string) func(...interface{}) []error {
-	return m[s].(func(...interface{}) []error)
+func (m Map) Func(s string) func(...interface{}) (interface{}) {
+	return m[s].(func(...interface{}) (interface{}))
 }
 
-func (m Map) FA(s string) Array {
+func (m Map) Array(s string) Array {
 	return m[s].(Array)
 }
 
@@ -28,6 +28,14 @@ func (m Map) S(s string) string {
 }
 
 func (m Map) Keys() []string {
+	var keys []string
+	for a, _ := range m {
+		keys = append(keys, a)
+	}
+	return keys
+}
+
+func KeysForMap(m map[string]interface{}) []string {
 	var keys []string
 	for a, _ := range m {
 		keys = append(keys, a)
@@ -71,7 +79,7 @@ func Contains(array []string, str *string, label string) []error {
 	return errors
 }*/
 
-func Containsy(args...interface{}) []error {
+func Containsy(args...interface{}) interface{} {
 	
 	/*for _, array_value := range array {
 		if array_value == *str {

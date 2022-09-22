@@ -65,10 +65,10 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	return &x
 }
 
-func (this *DatabaseCreateOptions) getValidations(data Map) Map {	
-	validations := Map {}
+func (this *DatabaseCreateOptions) getValidations(data Map) map[string]interface{} {	
+	validations := make(map[string]interface{})
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
-	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{"validations": Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}}
+	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}
 
 	return validations
 }
@@ -119,22 +119,25 @@ func (this *DatabaseCreateOptions) GetCollate() *string {
 func (this *DatabaseCreateOptions) Validate() []error {
 	var errors []error 
 	var mappy = (*this).getValidations((*this).data)
-	var keys = mappy.Keys()
+	var keys = KeysForMap(mappy)
 	for _, parameter := range keys {
-		var map_of_validations = mappy.M(parameter)
-		var array_of_validations = map_of_validations.FA("validations")
+		var array_of_validations = mappy[parameter].(Array)
+		
 		for _, validation := range array_of_validations {
 			
 			//	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
+			keys_of_parameters = append(keys_of_parameters, "_column_name")
 
 			var vargs = make(map[string]interface{})
 			
 			for _, v := range keys_of_parameters {
 				vargs[v] = reflect.ValueOf(parameters[v])
 			}
+			vargs["_column_name"] = parameter
+			
 
 			var vargsConvert = []reflect.Value{reflect.ValueOf(vargs)}
 
