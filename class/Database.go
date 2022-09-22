@@ -123,6 +123,7 @@ func (this *Database) validateDatabaseCreateOptions()  ([]error) {
 		return nil
 	}
 
+
 	return (*((*this).GetDatabaseCreateOptions())).Validate()
 }
 

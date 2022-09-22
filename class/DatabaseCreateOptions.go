@@ -3,10 +3,22 @@ package class
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
+func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
+	return "character_set"
+}
+
+func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
+	return "collate"
+}
+
 type DatabaseCreateOptions struct {
+	data Map
+	validations Map
+	
 	character_set *string
 	collate *string
 
@@ -14,14 +26,57 @@ type DatabaseCreateOptions struct {
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
-	x := DatabaseCreateOptions{character_set: character_set, collate: collate}
+	/*data := Map{"a":"apple", 
+	"b":2}*/
+
+	data := Map {}
+	
+	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = character_set
+	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] = collate
+	data["type"] = reflect.TypeOf(DatabaseCreateOptions{})
+
+	validations := Map {}
+	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{}
+	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
+	validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(*character_set)}}}}
+	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS()] = Array{consts.GET_CHARACTER_SETS()}
+
+	//validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] =  (*this).validateCollate
+	
+	/*args := []string{"hello", "go"}
+	vargs := make([]reflect.Value, len(args))
+	
+	for n, v := range args {
+		vargs[n] = reflect.ValueOf(v)
+	}*/
+
+
+	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
+
+	x := DatabaseCreateOptions{data: data, validations: validations}
+
+
+	
+
+	//Containsy("hi")
 	
 	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
 	return &x
 }
 
+func (this *DatabaseCreateOptions) getValidations(data Map) Map {	
+	validations := Map {}
+	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
+	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{"validations": Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}}
+
+	return validations
+}
+
 func (this *DatabaseCreateOptions) InitValidationFunctions() ()  {
+	
+	
+	
 	validation_functions := (*this).getValidationFunctions()
 	validation_functions["validateCharacterSet"] = (*this).validateCharacterSet
 	validation_functions["validateCollate"] = (*this).validateCollate
@@ -33,13 +88,16 @@ func (this *DatabaseCreateOptions) InitValidationFunctions() ()  {
 	}
 }
 
+func (this *DatabaseCreateOptions) getData() map[string]interface{} {
+	return (*this).data
+}
 
 func (this *DatabaseCreateOptions) validateCharacterSet() ([]error) {
 	if (*this).character_set == nil {
 		return nil
 	}
 
-	return Contains(consts.GET_CHRACTER_SETS(), (*this).character_set, "character_set")
+	return Contains(consts.GET_CHARACTER_SETS(), (*this).character_set, "character_set")
 }
 
 func (this *DatabaseCreateOptions) validateCollate() ([]error) {
@@ -58,6 +116,38 @@ func (this *DatabaseCreateOptions) GetCollate() *string {
 	return (*this).collate
 }
 
+func (this *DatabaseCreateOptions) Validate() []error {
+	var errors []error 
+	var mappy = (*this).getValidations((*this).data)
+	var keys = mappy.Keys()
+	for _, parameter := range keys {
+		var map_of_validations = mappy.M(parameter)
+		var array_of_validations = map_of_validations.FA("validations")
+		for _, validation := range array_of_validations {
+			
+			//	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
+			var function = validation.(Map).Func("function")
+			var parameters = validation.(Map).M("parameters")
+			var keys_of_parameters = parameters.Keys()
+
+			var vargs = make(map[string]interface{})
+			
+			for _, v := range keys_of_parameters {
+				vargs[v] = reflect.ValueOf(parameters[v])
+			}
+
+			var vargsConvert = []reflect.Value{reflect.ValueOf(vargs)}
+
+		    errors := reflect.ValueOf(function).Call(vargsConvert)
+			panic("hi")
+			panic(errors)
+		}	
+	}
+
+	return errors
+}
+
+/*
 func (this *DatabaseCreateOptions) Validate() []error {
 	var errors []error 
 	var fieldsNotFound []string
@@ -90,7 +180,7 @@ func (this *DatabaseCreateOptions) Validate() []error {
 	}
 
 	return nil
-}
+}*/
 
 func (this *DatabaseCreateOptions) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
@@ -124,3 +214,4 @@ func (this *DatabaseCreateOptions) validateValidationFunctions() ([]error) {
 
 	return nil
 }
+

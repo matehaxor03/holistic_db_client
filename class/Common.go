@@ -8,6 +8,42 @@ import (
 	"strings"
 )
 
+type Map map[string]interface{}
+type Array []interface{}
+
+func (m Map) M(s string) Map {
+	return m[s].(Map)
+}
+
+func (m Map) Func(s string) func(...interface{}) []error {
+	return m[s].(func(...interface{}) []error)
+}
+
+func (m Map) FA(s string) Array {
+	return m[s].(Array)
+}
+
+func (m Map) S(s string) string {
+	return m[s].(string)
+}
+
+func (m Map) Keys() []string {
+	var keys []string
+	for a, _ := range m {
+		keys = append(keys, a)
+	}
+	return keys
+}
+
+func FIELD_NAME_VALIDATION_FUNCTIONS() string {
+	return "validation_functions"
+}
+
+func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
+	return "validation_functions_parameters"
+}
+
+
 func Contains(array []string, str *string, label string) []error {
 	for _, array_value := range array {
 		if array_value == *str {
@@ -17,6 +53,45 @@ func Contains(array []string, str *string, label string) []error {
 
 	var errors []error 
     errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, (*str) , array))
+	return errors
+}
+
+/*func Containsy(args...interface{}) []error {
+	
+	/*for _, array_value := range array {
+		if array_value == *str {
+			return nil
+		}
+	}
+
+	panic(args[0].(string) + " " + args[1].(string))
+
+	var errors []error 
+    //errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, (*str) , array))
+	return errors
+}*/
+
+func Containsy(args...interface{}) []error {
+	
+	/*for _, array_value := range array {
+		if array_value == *str {
+			return nil
+		}
+	}*/
+
+	panic(args[0])
+
+	var errors []error 
+    //errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, (*str) , array))
+	return errors
+}
+
+func Validate(args...interface{}) []error {
+	var errors []error 
+
+	panic("hellowworld")
+
+
 	return errors
 }
 
@@ -180,4 +255,6 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 
 	return &logic_option, nil
 }
+
+
 
