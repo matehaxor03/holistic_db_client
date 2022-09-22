@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"bytes"
 	"reflect"
-	"strings"
 	"os/exec"
+	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
 type User struct {
@@ -13,29 +13,34 @@ type User struct {
 	credentials *Credentials
 	domain_name *DomainName
 
-	extra_options map[string][]string
+	extra_options map[string]map[string][][]string
 	validation_functions map[string]func() []error
-
-	DATA_DEFINITION_STATEMENT_CREATE string
-	DATA_DEFINITION_STATEMENTS []string
-
-	LOGIC_OPTION_FIELD string
-	LOGIC_OPTION_IF_NOT_EXISTS []string
-	LOGIC_OPTION_CREATE_OPTIONS []string
 }
 
-func newUser(client *Client, credentials *Credentials, domain_name *DomainName, extra_options map[string][]string) (*User) {
+func GET_USER_DATA_DEFINITION_STATEMENTS() ([]string) {
+	return []string{consts.GET_DATA_DEFINTION_STATEMENT_CREATE()}
+}
+
+func GET_USER_LOGIC_OPTIONS_CREATE() ([][]string){
+	return [][]string{consts.GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
+}
+
+func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
+	var root = make(map[string]map[string][][]string)
+	
+	var logic_options = make(map[string][][]string)
+	logic_options[consts.GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_USER_LOGIC_OPTIONS_CREATE()
+
+	root[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+
+	return root
+}
+
+func newUser(client *Client, credentials *Credentials, domain_name *DomainName, extra_options map[string]map[string][][]string) (*User) {
 	x := User{client: client,
 				credentials: credentials,
-				domain_name: domain_name}
-				
-	x.DATA_DEFINITION_STATEMENT_CREATE = "CREATE"
-	x.DATA_DEFINITION_STATEMENTS = []string{x.DATA_DEFINITION_STATEMENT_CREATE}
-
-	x.LOGIC_OPTION_FIELD = "LOGIC"
-	x.LOGIC_OPTION_IF_NOT_EXISTS = []string{"IF", "NOT", "EXISTS"}
-	x.LOGIC_OPTION_CREATE_OPTIONS = append(x.LOGIC_OPTION_CREATE_OPTIONS, x.LOGIC_OPTION_IF_NOT_EXISTS...)
-	
+				domain_name: domain_name,
+			    extra_options: extra_options}
 	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
 	return &x
@@ -57,61 +62,15 @@ func (this *User) InitValidationFunctions() ()  {
 	validation_functions["validateDomainName"] = (*this).validateDomainName
 	validation_functions["validateExtraOptions"] = (*this).validateExtraOptions
 	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
-	validation_functions["validateConstants"] = (*this).validateConstants
 
 	if validation_functions["validateValidationFunctions"] == nil|| 
 	   GetFunctionName(validation_functions["validateValidationFunctions"]) != GetFunctionName((*this).validateValidationFunctions) {
 		panic(fmt.Errorf("validateValidationFunctions validation method not found potential sql injection without it"))
 	}
-
-	if validation_functions["validateConstants"] == nil|| 
-	   GetFunctionName(validation_functions["validateConstants"]) != GetFunctionName((*this).validateConstants) {
-		panic(fmt.Errorf("validateConstants validation method not found potential sql injection without it"))
-	}
 }
 
 func (this *User) GetDomainName() *DomainName {
 	return (*this).domain_name
-}
-
-func (this *User) validateConstants()  ([]error) {
-	var errors []error 
-	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
-	reflected_value := reflect.ValueOf(this)
-	refected_element := reflected_value.Elem()
-	string_fieldValue := ""
-
-	for i := 0; i < refected_element.NumField(); i++ {
-		string_fieldValue = ""
-		field := refected_element.Type().Field(i)
-		fieldName := field.Name
-		if !IsUpper(fieldName) {
-			continue
-		}
-
-		fieldValue := refected_element.FieldByName(fieldName)		
-		if fieldValue.Kind().String() == "string" {
-			string_fieldValue = fmt.Sprintf("%s", fieldValue)	
-		} else if fieldValue.Kind().String() == "slice" {
-			var array = fieldValue.Interface().([]string)
-			for _, value := range array {
-				string_fieldValue += fmt.Sprintf("%s", value)
-			}
-		} else {
-			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
-		}
-
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this).Kind())
-		if character_errors != nil {
-			errors = append(errors, character_errors...)
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
 }
 
 func (this *User) validateValidationFunctions() ([]error) {
@@ -144,31 +103,12 @@ func (this *User) validateValidationFunctions() ([]error) {
 }
 
 func (this *User) validateExtraOptions()  ([]error) {
-	var errors []error 
-	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
-	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("%s extra_options key %s", reflect.ValueOf(*this).Kind(), key),  reflect.ValueOf(*this).Kind())
-		if key_extra_options_errors != nil {
-			errors = append(errors, key_extra_options_errors...)	
-		}
-
-		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("%s extra_options value %s",reflect.ValueOf(*this).Kind(), key),  reflect.ValueOf(*this).Kind())
-		if value_extra_options_errors != nil {
-			errors = append(errors, value_extra_options_errors...)	
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
+	return ValidateExtraOptions((*this).GetExtraOptions(), reflect.ValueOf(*this))
 }
 
 func (this *User) createUser() (*User, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand((*this).DATA_DEFINITION_STATEMENT_CREATE, (*this).GetExtraOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetExtraOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -200,10 +140,10 @@ func (this *User) createUser() (*User, *string, []error) {
     return this, &shell_ouput, nil
 }
 
-func (this *User) getCLSCRUDUserCommand(command string, options map[string][]string) (*string, []error) {
+func (this *User) getCLSCRUDUserCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
-	command_errs := Contains((*this).DATA_DEFINITION_STATEMENTS, &command, "command")
+	command_errs := Contains(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command")
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	
@@ -215,18 +155,9 @@ func (this *User) getCLSCRUDUserCommand(command string, options map[string][]str
 		errors = append(errors, database_errs...)	
 	}
 
-	logic_option := ""
-	if options != nil {
-	    logic_option_value, logic_option_exists := options[(*this).LOGIC_OPTION_FIELD]
-		if command == (*this).DATA_DEFINITION_STATEMENT_CREATE &&
-		   logic_option_exists {
-		    logic_option_errors := ArrayContainsArray((*this).LOGIC_OPTION_CREATE_OPTIONS, logic_option_value, "LOGIC")
-			if logic_option_errors != nil {
-				errors = append(errors, logic_option_errors...)	
-			} else {
-				logic_option = strings.Join(logic_option_value, " ")
-			}
-		}
+	logic_option, logic_option_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), options, reflect.ValueOf(*this))
+	if logic_option_errs != nil {
+		errors = append(errors, logic_option_errs...)	
 	}
 
 	host_command, host_command_errors := (*(*this).GetClient().GetHost()).GetCLSCommand()
@@ -246,8 +177,8 @@ func (this *User) getCLSCRUDUserCommand(command string, options map[string][]str
 	sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
 	sql_command += fmt.Sprintf(" -e \"%s USER ", command)
 	
-	if logic_option != "" {
-		sql_command += fmt.Sprintf("%s ", logic_option)
+	if *logic_option != "" {
+		sql_command += fmt.Sprintf("%s ", *logic_option)
 	}
 	
 	sql_command += fmt.Sprintf("'%s' ", (*(*this).GetCredentials().GetUsername()))
@@ -277,16 +208,6 @@ func (this *User) Validate() []error {
 			if relection_errors != nil{
 				errors = append(errors, relection_errors...)
 			}
-		}
-	}
-
-	method, found_method := (*this).getValidationFunctions()["validateConstants"]
-	if !found_method {
-		errors = append(errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
-	} else {
-		constant_errors := method()
-		if constant_errors != nil{
-			errors = append(errors, constant_errors...)
 		}
 	}
 
@@ -341,7 +262,7 @@ func (this *User) GetCredentials() *Credentials {
 	return (*this).credentials
 }
 
-func (this *User) GetExtraOptions() map[string][]string {
+func (this *User) GetExtraOptions() map[string]map[string][][]string {
 	return (*this).extra_options
 }
 

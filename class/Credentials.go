@@ -50,12 +50,12 @@ func (this *Credentials) Validate() []error {
 
 func (this *Credentials) ValidateUsername() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetUsername(), "username", reflect.ValueOf(*this).Kind())
+	return ValidateCharacters(VALID_CHARACTERS, (*this).GetUsername(), "username", reflect.ValueOf(*this))
 }
 
  func (this *Credentials) ValidatePassword() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789="
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPassword(), "password", reflect.ValueOf(*this).Kind())
+	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPassword(), "password", reflect.ValueOf(*this))
 }
 
  func (this *Credentials) GetUsername() *string {

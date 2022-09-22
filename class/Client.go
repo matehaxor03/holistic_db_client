@@ -51,7 +51,7 @@ func (this *Client) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this).Kind())
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this))
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}
@@ -84,11 +84,11 @@ func (this *Client) InitValidationFunctions() ()  {
 	}
 }
 
-func (this *Client) CreateDatabase(database_name *string, database_create_options *DatabaseCreateOptions, options map[string][]string) (*Database, *string, []error) {
+func (this *Client) CreateDatabase(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
 	return NewDatabase((*this).GetHost(), (*this).GetCredentials(), database_name, database_create_options, options).Create()
 }
 
-func (this *Client) CreateUser(username *string, password *string, domain_name *string, options map[string][]string) (*User, *string, []error) {
+func (this *Client) CreateUser(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
 	var errors []error 
 	credentials := NewCredentials(username, password)
 	domain := NewDomainName(domain_name)

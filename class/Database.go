@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strings"
 	"runtime"
+	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
 type Database struct {
@@ -14,7 +15,7 @@ type Database struct {
 	credentials *Credentials
     database_name *string
 	database_create_options *DatabaseCreateOptions
-	extra_options map[string][]string
+	extra_options map[string]map[string][][]string
 	validation_functions map[string]func() []error
 	
 	DATA_DEFINITION_STATEMENT_CREATE string
@@ -25,7 +26,7 @@ type Database struct {
 	LOGIC_OPTION_CREATE_OPTIONS []string
 }
 
-func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, extra_options map[string][]string) (*Database) {
+func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, extra_options map[string]map[string][][]string) (*Database) {
 	x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, extra_options: extra_options}
 	
 	x.DATA_DEFINITION_STATEMENT_CREATE = "CREATE"
@@ -105,7 +106,7 @@ func (this *Database) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this).Kind())
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this))
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}
@@ -179,27 +180,8 @@ func (this *Database) validateDatabaseCreateOptions()  ([]error) {
 	return (*((*this).GetDatabaseCreateOptions())).Validate()
 }
 
-func (this *Database) validateExtraOptions()  ([]error) {
-	var errors []error 
-	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ "
-	for key, value := range (*this).GetExtraOptions() {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options key %s", key),  reflect.ValueOf(*this).Kind())
-		if key_extra_options_errors != nil {
-			errors = append(errors, key_extra_options_errors...)	
-		}
-
-		var combined = strings.Join(value, "")
-		value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options value %s", key),  reflect.ValueOf(*this).Kind())
-		if value_extra_options_errors != nil {
-			errors = append(errors, value_extra_options_errors...)	
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
+func (this *Database) validateExtraOptions() ([]error) {
+	return ValidateExtraOptions((*this).GetExtraOptions(), reflect.ValueOf(*this))
 }
 
 
@@ -225,7 +207,7 @@ func (this *Database) validateCredentials()  ([]error) {
 
 func (this *Database) validateDatabaseName() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name",  reflect.ValueOf(*this).Kind())
+	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name",  reflect.ValueOf(*this))
 }
 
 func GetFunctionName(i interface{}) string {
@@ -304,7 +286,7 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
 }
 
 
-func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string][]string) (*string, []error) {
+func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
 	command_errs := Contains((*this).DATA_DEFINITION_STATEMENTS, &command, "command")
@@ -319,18 +301,9 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 		errors = append(errors, database_errs...)	
 	}
 
-	logic_option := ""
-	if options != nil {
-	    logic_option_value, logic_option_exists := options[(*this).LOGIC_OPTION_FIELD]
-		if command == (*this).DATA_DEFINITION_STATEMENT_CREATE &&
-		   logic_option_exists {
-		    logic_option_errors := ArrayContainsArray((*this).LOGIC_OPTION_CREATE_OPTIONS, logic_option_value, "LOGIC")
-			if logic_option_errors != nil {
-				errors = append(errors, logic_option_errors...)	
-			} else {
-				logic_option = strings.Join(logic_option_value, " ")
-			}
-		}
+	logic_option, logic_options_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), options, reflect.ValueOf(*this))
+	if logic_options_errs != nil {
+		errors = append(errors, logic_options_errs...)	
 	}
 
 	host_command, host_command_errors := (*(*this).GetHost()).GetCLSCommand()
@@ -350,8 +323,8 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 	sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
 	sql_command += fmt.Sprintf(" -e \"%s DATABASE ", command)
 	
-	if logic_option != "" {
-		sql_command += fmt.Sprintf("%s ", logic_option)
+	if *logic_option != "" {
+		sql_command += fmt.Sprintf("%s ", *logic_option)
 	}
 	
 	sql_command += fmt.Sprintf("%s ", (*(*this).GetDatabaseName()))
@@ -382,6 +355,6 @@ func (this *Database) GetDatabaseCreateOptions() *DatabaseCreateOptions {
 	return (*this).database_create_options
 }
 
-func (this *Database) GetExtraOptions() map[string][]string {
+func (this *Database) GetExtraOptions() map[string]map[string][][]string {
 	return (*this).extra_options
 }

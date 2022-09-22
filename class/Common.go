@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"unicode"
 	"reflect"
+	"strings"
 )
 
 func Contains(array []string, str *string, label string) []error {
@@ -19,21 +20,26 @@ func Contains(array []string, str *string, label string) []error {
 	return errors
 }
 
-func ArrayContainsArray(array []string, second_array []string, label string) []error {
+func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) []error {
 	var errors []error 
-	var array_found []string
 	
-	for _, array_value := range array {
-		for _, second_value := range second_array {
-			if array_value == second_value {
-				array_found = append(array_found, second_value)
+	for _, b_value := range b {
+		var current = strings.Join(b_value, "")
+		var found = false
+		for _, a_value := range a {
+			var compare =  strings.Join(a_value, "")
+
+			if current == compare {
+				found = true
+				break
 			}
 		}
-	}
 
-	if len(array_found) != len(second_array) {
-		errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, second_array, array))
+		if !found {
+			errors = append(errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", reflect_value.Kind(), label, b_value, a))
+		}
 	}
+	
 
 	if len(errors) > 0 {
 		return errors
@@ -42,16 +48,16 @@ func ArrayContainsArray(array []string, second_array []string, label string) []e
 	return nil
 }
 
-func ValidateCharacters(whitelist string, str *string, label string, kind reflect.Kind) ([]error) {
+func ValidateCharacters(whitelist string, str *string, label string, reflect_value reflect.Value) ([]error) {
 	var errors []error 
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s %s is nil", kind, label))
+		errors = append(errors, fmt.Errorf("%s %s is nil", reflect_value.Kind(), label))
 		return errors
 	}
 
 	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s %s is empty", kind, label))
+		errors = append(errors, fmt.Errorf("%s %s is empty", reflect_value.Kind(), label))
 		return errors
 	}
 
@@ -66,7 +72,7 @@ func ValidateCharacters(whitelist string, str *string, label string, kind reflec
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("invalid letter %s for %s please use %s", string(letter), label, whitelist))
+			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", reflect_value.Kind(), string(letter), label, whitelist))
 		}
 	}
 	
@@ -97,5 +103,81 @@ func IsLower(s string) bool {
 
 func GetConstantValueAllowedCharacters() (string) {
 	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+}
+
+
+func ValidateExtraOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
+	var errors []error 
+	var VALID_CHARACTERS = GetConstantValueAllowedCharacters()
+	for key, value := range extra_options {
+		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), reflect_value)
+		if key_extra_options_errors != nil {
+			errors = append(errors, key_extra_options_errors...)	
+		}
+
+		for key2, value2 := range value {
+			var combined = ""
+			for _, array_value := range value2 {
+				combined += strings.Join(array_value, "")
+			}
+
+			value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), reflect_value)
+			if value_extra_options_errors != nil {
+				errors = append(errors, value_extra_options_errors...)	
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+func GetLogicCommand(command string, field_name string, allowed_options map[string]map[string][][]string, options map[string]map[string][][]string, reflect_value reflect.Value) (*string, []error){
+	var errors []error 
+	logic_option := ""
+
+	if options == nil {
+		return &logic_option, nil
+	}
+	
+	logic_option_value, logic_option_exists := options[field_name]
+	if !logic_option_exists {
+		return &logic_option, nil
+	}
+
+	allowed_logic_option_value, allowed_logic_option_exists := allowed_options[field_name]
+
+	if !allowed_logic_option_exists {
+		errors = append(errors, fmt.Errorf("%s field: %s is not supported but was provided", reflect_value.Kind(), field_name))
+		return nil, errors
+	}
+
+	logic_option_command_value, logic_option_command_exists := logic_option_value[command]
+	if !logic_option_command_exists {
+		return &logic_option, nil
+	}
+	
+	allowed_logic_option_command_value, allowed_logic_option_command_exists := allowed_logic_option_value[command]
+
+	if !allowed_logic_option_command_exists {
+		errors = append(errors, fmt.Errorf("%s field: %s is not supported for command: %s but was provided", reflect_value.Kind(), field_name, command))
+		return nil, errors
+	}
+
+
+	logic_option_errors := ArraysContainsArraysOrdered(allowed_logic_option_command_value, logic_option_command_value, field_name + "->" + command, reflect_value)
+	if logic_option_errors != nil {
+		errors = append(errors, logic_option_errors...)	
+		return nil, errors
+	} 
+
+	for _, statements := range logic_option_command_value {
+		logic_option += strings.Join(statements, " ") + " "
+	}
+
+	return &logic_option, nil
 }
 

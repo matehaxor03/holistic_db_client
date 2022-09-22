@@ -53,12 +53,12 @@ func (this *Host) Validate() []error {
 
 func (this *Host) validateHostname() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789."
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetHostName(), "host_name", reflect.ValueOf(*this).Kind())
+	return ValidateCharacters(VALID_CHARACTERS, (*this).GetHostName(), "host_name", reflect.ValueOf(*this))
 }
 
 func (this *Host) validatePort() ([]error) {
 	var VALID_CHARACTERS = "1234567890"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPortNumber(), "port", reflect.ValueOf(*this).Kind())
+	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPortNumber(), "port", reflect.ValueOf(*this))
 }
 
  func (this *Host) GetHostName() (*string) {
