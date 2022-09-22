@@ -106,7 +106,7 @@ func GetConstantValueAllowedCharacters() (string) {
 }
 
 
-func ValidateExtraOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
+func ValidateOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
 	var errors []error 
 	var VALID_CHARACTERS = GetConstantValueAllowedCharacters()
 	for key, value := range extra_options {

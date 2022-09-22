@@ -13,7 +13,7 @@ type User struct {
 	credentials *Credentials
 	domain_name *DomainName
 
-	extra_options map[string]map[string][][]string
+	options map[string]map[string][][]string
 	validation_functions map[string]func() []error
 }
 
@@ -36,11 +36,11 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 	return root
 }
 
-func newUser(client *Client, credentials *Credentials, domain_name *DomainName, extra_options map[string]map[string][][]string) (*User) {
+func newUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User) {
 	x := User{client: client,
 				credentials: credentials,
 				domain_name: domain_name,
-			    extra_options: extra_options}
+			    options: options}
 	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
 	return &x
@@ -60,7 +60,7 @@ func (this *User) InitValidationFunctions() ()  {
 	validation_functions["validateClient"] = (*this).validateClient
 	validation_functions["validateCredentials"] = (*this).validateCredentials
 	validation_functions["validateDomainName"] = (*this).validateDomainName
-	validation_functions["validateExtraOptions"] = (*this).validateExtraOptions
+	validation_functions["validateOptions"] = (*this).validateOptions
 	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
 
 	if validation_functions["validateValidationFunctions"] == nil|| 
@@ -102,13 +102,13 @@ func (this *User) validateValidationFunctions() ([]error) {
 	return nil
 }
 
-func (this *User) validateExtraOptions()  ([]error) {
-	return ValidateExtraOptions((*this).GetExtraOptions(), reflect.ValueOf(*this))
+func (this *User) validateOptions()  ([]error) {
+	return ValidateOptions((*this).GetOptions(), reflect.ValueOf(*this))
 }
 
 func (this *User) createUser() (*User, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetExtraOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -262,8 +262,8 @@ func (this *User) GetCredentials() *Credentials {
 	return (*this).credentials
 }
 
-func (this *User) GetExtraOptions() map[string]map[string][][]string {
-	return (*this).extra_options
+func (this *User) GetOptions() map[string]map[string][][]string {
+	return (*this).options
 }
 
 func (this *User) GetClient() *Client {

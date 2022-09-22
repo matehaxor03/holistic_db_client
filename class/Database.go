@@ -10,33 +10,36 @@ import (
 	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
+func GET_DATABASE_DATA_DEFINITION_STATEMENTS() ([]string) {
+	return []string{consts.GET_DATA_DEFINTION_STATEMENT_CREATE()}
+}
+
+func GET_DATABASE_LOGIC_OPTIONS_CREATE() ([][]string){
+	return [][]string{consts.GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
+}
+
+func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
+	var root = make(map[string]map[string][][]string)
+	
+	var logic_options = make(map[string][][]string)
+	logic_options[consts.GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_DATABASE_LOGIC_OPTIONS_CREATE()
+
+	root[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+
+	return root
+}
+
 type Database struct {
 	host *Host
 	credentials *Credentials
     database_name *string
 	database_create_options *DatabaseCreateOptions
-	extra_options map[string]map[string][][]string
+	options map[string]map[string][][]string
 	validation_functions map[string]func() []error
-	
-	DATA_DEFINITION_STATEMENT_CREATE string
-	DATA_DEFINITION_STATEMENTS []string
-
-	LOGIC_OPTION_FIELD string
-	LOGIC_OPTION_IF_NOT_EXISTS []string
-	LOGIC_OPTION_CREATE_OPTIONS []string
 }
 
-func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, extra_options map[string]map[string][][]string) (*Database) {
-	x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, extra_options: extra_options}
-	
-	x.DATA_DEFINITION_STATEMENT_CREATE = "CREATE"
-	x.DATA_DEFINITION_STATEMENTS = []string{x.DATA_DEFINITION_STATEMENT_CREATE}
-	
-	x.LOGIC_OPTION_FIELD = "LOGIC"
-	x.LOGIC_OPTION_IF_NOT_EXISTS = []string{"IF", "NOT", "EXISTS"}
-	x.LOGIC_OPTION_CREATE_OPTIONS = []string{}
-
-	x.LOGIC_OPTION_CREATE_OPTIONS = append(x.LOGIC_OPTION_CREATE_OPTIONS, x.LOGIC_OPTION_IF_NOT_EXISTS...)
+func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database) {
+	x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
 	
 	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
@@ -50,19 +53,12 @@ func (this *Database) InitValidationFunctions() ()  {
 	validation_functions["validateCredentials"] = (*this).validateCredentials
 	validation_functions["validateDatabaseName"] = (*this).validateDatabaseName
 	validation_functions["validateDatabaseCreateOptions"] = (*this).validateDatabaseCreateOptions
-	validation_functions["validateExtraOptions"] = (*this).validateExtraOptions
+	validation_functions["validateOptions"] = (*this).validateOptions
 	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
-	validation_functions["validateConstants"] = (*this).validateConstants
-
 
 	if validation_functions["validateValidationFunctions"] == nil|| 
 	   GetFunctionName(validation_functions["validateValidationFunctions"]) != GetFunctionName((*this).validateValidationFunctions) {
 		panic(fmt.Errorf("validateValidationFunctions validation method not found potential sql injection without it"))
-	}
-
-	if validation_functions["validateConstants"] == nil|| 
-	   GetFunctionName(validation_functions["validateConstants"]) != GetFunctionName((*this).validateConstants) {
-		panic(fmt.Errorf("validateConstants validation method not found potential sql injection without it"))
 	}
 }
 
@@ -77,46 +73,6 @@ func (this *Database) Create() (*Database, *string, []error)  {
 
 func (this *Database) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
-}
-
-func (this *Database) validateConstants()  ([]error) {
-	var errors []error 
-	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
-	reflected_value := reflect.ValueOf(this)
-	refected_element := reflected_value.Elem()
-	string_fieldValue := ""
-
-	for i := 0; i < refected_element.NumField(); i++ {
-		string_fieldValue = ""
-		field := refected_element.Type().Field(i)
-		fieldName := field.Name
-		if !IsUpper(fieldName) {
-			continue
-		}
-
-		fieldValue := refected_element.FieldByName(fieldName)		
-		if fieldValue.Kind().String() == "string" {
-			string_fieldValue = fmt.Sprintf("%s", fieldValue)	
-		} else if fieldValue.Kind().String() == "slice" {
-			var array = fieldValue.Interface().([]string)
-			for _, value := range array {
-				string_fieldValue += fmt.Sprintf("%s", value)
-			}
-		} else {
-			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
-		}
-
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this))
-		if character_errors != nil {
-			errors = append(errors, character_errors...)
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
 }
 
 func GetValidationMethodNameForFieldName(fieldName string) string {
@@ -149,16 +105,6 @@ func (this *Database) Validate() []error {
 		}
 	}
 
-	method, found_method := (*this).getValidationFunctions()["validateConstants"]
-	if !found_method {
-		errors = append(errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
-	} else {
-		constant_errors := method()
-		if constant_errors != nil{
-			errors = append(errors, constant_errors...)
-		}
-	}
-
 	for _, value := range fieldsNotFound {
 		if !IsUpper(value) {
 			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
@@ -180,8 +126,8 @@ func (this *Database) validateDatabaseCreateOptions()  ([]error) {
 	return (*((*this).GetDatabaseCreateOptions())).Validate()
 }
 
-func (this *Database) validateExtraOptions() ([]error) {
-	return ValidateExtraOptions((*this).GetExtraOptions(), reflect.ValueOf(*this))
+func (this *Database) validateOptions() ([]error) {
+	return ValidateOptions((*this).GetOptions(), reflect.ValueOf(*this))
 }
 
 
@@ -247,13 +193,9 @@ func (this *Database) GetDatabaseName() *string {
 	return (*this).database_name
 }
 
-func (this *Database) GetDataDefinitionStatements() []string {
-	return (*this).DATA_DEFINITION_STATEMENTS
-}
-
 func (this *Database) createDatabase() (*Database, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand((*this).DATA_DEFINITION_STATEMENT_CREATE, (*this).GetExtraOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -289,7 +231,7 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
 func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
-	command_errs := Contains((*this).DATA_DEFINITION_STATEMENTS, &command, "command")
+	command_errs := Contains(GET_DATABASE_DATA_DEFINITION_STATEMENTS(), &command, "command")
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	
@@ -301,7 +243,7 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 		errors = append(errors, database_errs...)	
 	}
 
-	logic_option, logic_options_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), options, reflect.ValueOf(*this))
+	logic_option, logic_options_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, reflect.ValueOf(*this))
 	if logic_options_errs != nil {
 		errors = append(errors, logic_options_errs...)	
 	}
@@ -355,6 +297,6 @@ func (this *Database) GetDatabaseCreateOptions() *DatabaseCreateOptions {
 	return (*this).database_create_options
 }
 
-func (this *Database) GetExtraOptions() map[string]map[string][][]string {
-	return (*this).extra_options
+func (this *Database) GetOptions() map[string]map[string][][]string {
+	return (*this).options
 }
