@@ -3,22 +3,18 @@ package class
 import (
 	"fmt"
 	"reflect"
+	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
 type DatabaseCreateOptions struct {
 	character_set *string
 	collate *string
-	CHARACTER_SETS []string
-	COLLATES []string
 
 	validation_functions map[string]func() []error
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
 	x := DatabaseCreateOptions{character_set: character_set, collate: collate}
-	
-	x.CHARACTER_SETS = []string{"utf8"}
-	x.COLLATES = []string{"utf8_general_ci"}
 	
 	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
@@ -30,17 +26,10 @@ func (this *DatabaseCreateOptions) InitValidationFunctions() ()  {
 	validation_functions["validateCharacterSet"] = (*this).validateCharacterSet
 	validation_functions["validateCollate"] = (*this).validateCollate
 	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
-	validation_functions["validateConstants"] = (*this).validateConstants
-
 
 	if validation_functions["validateValidationFunctions"] == nil|| 
 	   GetFunctionName(validation_functions["validateValidationFunctions"]) != GetFunctionName((*this).validateValidationFunctions) {
 		panic(fmt.Errorf("validateValidationFunctions validation method not found potential sql injection without it"))
-	}
-
-	if validation_functions["validateConstants"] == nil|| 
-	   GetFunctionName(validation_functions["validateConstants"]) != GetFunctionName((*this).validateConstants) {
-		panic(fmt.Errorf("validateConstants validation method not found potential sql injection without it"))
 	}
 }
 
@@ -50,7 +39,7 @@ func (this *DatabaseCreateOptions) validateCharacterSet() ([]error) {
 		return nil
 	}
 
-	return Contains((*this).CHARACTER_SETS, (*this).character_set, "character_set")
+	return Contains(consts.GET_CHRACTER_SETS(), (*this).character_set, "character_set")
 }
 
 func (this *DatabaseCreateOptions) validateCollate() ([]error) {
@@ -58,7 +47,7 @@ func (this *DatabaseCreateOptions) validateCollate() ([]error) {
 		return nil
 	}
 
-	return Contains((*this).COLLATES, (*this).collate, "collate")
+	return Contains(consts.GET_COLLATES(), (*this).collate, "collate")
 }
 
 func (this *DatabaseCreateOptions) GetCharacterSet() *string {
@@ -90,16 +79,6 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		}
 	}
 
-	method, found_method := (*this).getValidationFunctions()["validateConstants"]
-	if !found_method {
-		errors = append(errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
-	} else {
-		constant_errors := method()
-		if constant_errors != nil{
-			errors = append(errors, constant_errors...)
-		}
-	}
-
 	for _, value := range fieldsNotFound {
 		if !IsUpper(value) {
 			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
@@ -115,46 +94,6 @@ func (this *DatabaseCreateOptions) Validate() []error {
 
 func (this *DatabaseCreateOptions) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
-}
-
-func (this *DatabaseCreateOptions) validateConstants()  ([]error) {
-	var errors []error 
-	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
-	reflected_value := reflect.ValueOf(this)
-	refected_element := reflected_value.Elem()
-	string_fieldValue := ""
-
-	for i := 0; i < refected_element.NumField(); i++ {
-		string_fieldValue = ""
-		field := refected_element.Type().Field(i)
-		fieldName := field.Name
-		if !IsUpper(fieldName) {
-			continue
-		}
-
-		fieldValue := refected_element.FieldByName(fieldName)		
-		if fieldValue.Kind().String() == "string" {
-			string_fieldValue = fmt.Sprintf("%s", fieldValue)	
-		} else if fieldValue.Kind().String() == "slice" {
-			var array = fieldValue.Interface().([]string)
-			for _, value := range array {
-				string_fieldValue += fmt.Sprintf("%s", value)
-			}
-		} else {
-			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
-		}
-
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  reflect.ValueOf(*this))
-		if character_errors != nil {
-			errors = append(errors, character_errors...)
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
 }
 
 func (this *DatabaseCreateOptions) validateValidationFunctions() ([]error) {
