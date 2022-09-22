@@ -143,7 +143,7 @@ func (this *User) createUser() (*User, *string, []error) {
 func (this *User) getCLSCRUDUserCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
-	command_errs := Contains(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command")
+	command_errs := ContainsExactMatch(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command", reflect.ValueOf(*this))
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	

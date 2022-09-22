@@ -1,5 +1,8 @@
 package consts
 
+type Array []interface{}
+
+
 func GET_CHARACTER_SET_UTF8() string {
 	return "utf8"
 }
@@ -8,8 +11,8 @@ func GET_CHARACTER_SET_UTF8MB4() string {
 	return "utf8mb4"
 }
 
-func GET_CHARACTER_SETS() []string {
-	return []string{GET_CHARACTER_SET_UTF8(), GET_CHARACTER_SET_UTF8MB4()}
+func GET_CHARACTER_SETS() Array {
+	return Array{GET_CHARACTER_SET_UTF8(), GET_CHARACTER_SET_UTF8MB4()}
 }
 
 func GET_COLLATE_UTF8_GENERAL_CI() string {

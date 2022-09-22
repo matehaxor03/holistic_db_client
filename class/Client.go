@@ -29,7 +29,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 func (this *Client) validateConstants()  ([]error) {
 	var errors []error 
 	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
-	reflected_value := reflect.ValueOf(this)
+	reflected_value := reflect.ValueOf(*this)
 	refected_element := reflected_value.Elem()
 	string_fieldValue := ""
 
@@ -159,7 +159,7 @@ func (this *Client) getValidationFunctions() map[string]func() []error {
 func (this *Client) Validate() []error {
 	var errors []error 
 	var fieldsNotFound []string
-	reflected_value := reflect.ValueOf(this)
+	reflected_value := reflect.ValueOf(*this)
 	refected_element := reflected_value.Elem()
 	
     for i := 0; i < refected_element.NumField(); i++ {

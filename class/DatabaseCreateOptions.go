@@ -35,10 +35,13 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] = collate
 	data["type"] = reflect.TypeOf(DatabaseCreateOptions{})
 
-	validations := Map {}
-	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{}
+	//validations := Map {}
+	//validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{}
+	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "kind":reflect.ValueOf(*this), "data": func () string {return strings.Clone(*character_set)}}}}
+
+
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
-	validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(*character_set)}}}}
+	
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS()] = Array{consts.GET_CHARACTER_SETS()}
 
 	//validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] =  (*this).validateCollate
@@ -53,7 +56,8 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
 
-	x := DatabaseCreateOptions{data: data, validations: validations}
+	x := DatabaseCreateOptions{data: data}
+	x.validations = x.getValidations(data)
 
 
 	
@@ -65,10 +69,15 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	return &x
 }
 
-func (this *DatabaseCreateOptions) getValidations(data Map) map[string]interface{} {	
-	validations := make(map[string]interface{})
+func (this *DatabaseCreateOptions) getValidations(data Map) Map {	
+	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "kind":reflect.ValueOf(*this), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}}
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
-	validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Array{Map{"function": Containsy, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}
+	/*var whiltlistCustome = Array{}
+	for _, value := range consts.GET_CHARACTER_SETS() {
+		whiltlistCustome = append(whiltlistCustome, value)
+	}*/
+
+	//validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "kind":reflect.ValueOf(*this), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}
 
 	return validations
 }
@@ -97,7 +106,7 @@ func (this *DatabaseCreateOptions) validateCharacterSet() ([]error) {
 		return nil
 	}
 
-	return Contains(consts.GET_CHARACTER_SETS(), (*this).character_set, "character_set")
+	return ContainsExactMatch(ConvertIntefaceArrayToStringArray(consts.GET_CHARACTER_SETS()), (*this).character_set, "character_set", reflect.ValueOf(*this))
 }
 
 func (this *DatabaseCreateOptions) validateCollate() ([]error) {
@@ -105,7 +114,7 @@ func (this *DatabaseCreateOptions) validateCollate() ([]error) {
 		return nil
 	}
 
-	return Contains(consts.GET_COLLATES(), (*this).collate, "collate")
+	return ContainsExactMatch(consts.GET_COLLATES(), (*this).collate, "collate", reflect.ValueOf(*this))
 }
 
 func (this *DatabaseCreateOptions) GetCharacterSet() *string {
@@ -124,26 +133,37 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		var array_of_validations = mappy[parameter].(Array)
 		
 		for _, validation := range array_of_validations {
-			
+			//panic(strings.Join(KeysForMap(validation), " "))
 			//	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
+			fmt.Println(validation)
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
-			keys_of_parameters = append(keys_of_parameters, "_column_name")
+			keys_of_parameters = append(keys_of_parameters, "column_name")
 
 			var vargs = make(map[string]interface{})
 			
 			for _, v := range keys_of_parameters {
 				vargs[v] = reflect.ValueOf(parameters[v])
 			}
-			vargs["_column_name"] = parameter
+			vargs["column_name"] = parameter
+
+			var root = make(map[string]interface{})
+			root["function"] = function
+			root["parameters"] = vargs
 			
+			var vargsConvert = []reflect.Value{reflect.ValueOf(root)}
 
-			var vargsConvert = []reflect.Value{reflect.ValueOf(vargs)}
+		    var result = reflect.ValueOf(function).Call(vargsConvert)
+			var argsArray = make([]map[string]interface{}, len(result))
+			for _, currentArg := range result {
+				argsArray = append(argsArray, currentArg.Interface().(map[string]interface{}))
+			}
 
-		    errors := reflect.ValueOf(function).Call(vargsConvert)
-			panic("hi")
-			panic(errors)
+			var singleRecord = argsArray[0]
+			panic(strings.Join(KeysForMap(singleRecord)," "))
+			//unboxed := result.(map[string]interface{})
+			//errors = append(errors, unboxed["errors"].([]error)...)
 		}	
 	}
 
