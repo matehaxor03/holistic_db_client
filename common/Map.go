@@ -2,46 +2,79 @@ package common
 
 import (
 	"fmt"
-	"reflect"
+//	"reflect"
 )
 
-func ConvertPrimativeMapToMap(m map[string]interface{}) Map {
-	var primitMap = make(map[string]interface{})
-	var primitArray []interface{}
-	var arrayise = Array{}
-	var copy = Map{}
-	for key, value := range m {
-		fmt.Println("valueof: " + reflect.ValueOf(value).String() + " type: " + reflect.TypeOf(value).String())
+type Map map[string]interface{}
 
-		if reflect.ValueOf(value).Type() == reflect.TypeOf(reflect.Map) || 
-		   reflect.ValueOf(value).Type() == reflect.TypeOf(copy) ||
-		   reflect.ValueOf(value).Type() == reflect.TypeOf(primitMap) {
-			fmt.Println("ConvertPrimativeMapToMap map")
-			copy.setMap(key, ConvertPrimativeMapToMap(value.(map[string]interface{})))
-		} else if reflect.ValueOf(value).Type() == reflect.TypeOf(reflect.Slice) ||
-		          reflect.ValueOf(value).Type() == reflect.TypeOf(reflect.Array) ||
-				  reflect.ValueOf(value).Type() == reflect.TypeOf(arrayise) ||
-				  reflect.ValueOf(value).Type() == reflect.TypeOf(primitArray) {
-					fmt.Println("ConvertPrimativeMapToMap array")
-			copy.setArray(key, ConvertPrimativeArrayToThing(value.([]interface{})))
-		} else {
-			fmt.Println("ConvertPrimativeMapToMap value")
-			copy.setValue(key, value)
-		}		
+func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
+	if m == nil {
+		return nil
 	}
-	return copy
+
+	newMap := Map{}
+	for key, value := range m {
+		rep := fmt.Sprintf("%T", value)
+		switch rep {
+		case "string":
+			nestedMap := Map{}
+			newMap[key] = nestedMap
+			break
+		case "common.Map":
+			// todo deep clone
+			clone := Map{}
+			for clone_key, clone_value := range value.(map[string]interface{}) {
+				clone[clone_key] = clone_value
+			}
+			newMap[key] = clone
+		default:
+			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+		}
+	}
+
+	return newMap
+}
+
+func KeysForMap(m map[string]interface{}) []string {
+	var keys []string
+	for a, _ := range m {
+		keys = append(keys, a)
+	}
+	return keys
 }
 
 
 func (m Map) M(s string) Map {
-	//maapp := Map{}
+	rep := fmt.Sprintf("%T", m[s])
 	
-	//if reflect.ValueOf(value).Type() == 
+	switch rep {
+	/*	
+	case "string":
+		key := m[s].(string)
+		newMap := Map{}
+		m[key] = newMap
+		return newMap
+		break*/
+	case "common.Map":
+		return m[s].(Map)
+	default:
+		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+	}
 
-	fmt.Println(s)
-	fmt.Println("valueof: " + reflect.ValueOf(m[s]).String() + " type: " + reflect.TypeOf(m[s]).String())
+	return nil
+}
 
-	return m[s].(Map)
+func (m Map) A(s string) Array {
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "common.Array":
+		return m[s].(Array)
+		break
+	default:
+		panic(fmt.Errorf("Map.A: type %s is not supported please implement", rep))
+	}
+
+	return nil
 }
 
 func (m Map) M_self() Map {
@@ -74,7 +107,17 @@ func (m Map) Array(s string) []interface{} {
 }
 
 func (m Map) S(s string) string {
-	return m[s].(string)
+	rep := fmt.Sprintf("%T", m[s])
+	
+	switch rep {
+	case "string":
+		return m[s].(string)
+		break
+	default:
+		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+	}
+
+	return ""
 }
 
 func (m Map) InterfaceString(s string) interface{} {

@@ -61,27 +61,13 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 	if len(result["errors"].([]error)) > 0 {
 		return result
 	}
-
-	/*
-	var argsArray = make([]map[string]interface{}, len(args))
-	for index, currentArg := range args {
-		fmt.Println(strings.Join(KeysForMap(currentArg[index]), " "))
-		argsArray = append(argsArray, currentArg[index])
-	}*/
-	//var argsArray = make([]map[string]interface{}, 1)
-	//fmt.Println("%s", args)
-	//argsArray[0] = args[0].(map[string]interface{})
-	var array = args[0]
-	fmt.Println("%s", array)
-	var array2 = array[0]
-	fmt.Println("%s", array2)
-
-
-	var payload = common.ConvertPrimativeMapToMap(array2)
-	var tempKeys = strings.Join(payload.Keys(), " ")
+	
+	array_of_args := common.ConvertPrimativeArrayOfMapsToArray(args[0])
+	payload := array_of_args[0].(common.Map)
+	top_level_keys := strings.Join(payload.Keys(), " ")
 	var function, function_exists = payload["function"]
 	if !function_exists {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", tempKeys))
+		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", top_level_keys))
 	} else if function == nil {
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args ha key: function but it had value nil"))
 	} else {
@@ -100,10 +86,8 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 		return result
 	}
 
-	var whitelistStringValue = fmt.Sprintf("%s", parameters["whitelist"])
-	whitelistStringValue = strings.Replace(whitelistStringValue, "[", "", -1)
-	whitelistStringValue = strings.Replace(whitelistStringValue, "]", "", -1)
-	var whitelist = strings.Split(whitelistStringValue, " ")
+	
+	whitelist := parameters.A("whitelist")
 
 	if whitelist == nil {
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters->whiltelist keys: %s", parameter_keys))
@@ -113,7 +97,7 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 		result["whitelist"] = whitelist
 	}
 	
-	var data = fmt.Sprintf("%s",parameters.InterfaceString("data"))
+	var data = parameters.S("data")
 	if (data) == "" {
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION:Common: ValidateGeneric args had empty data: parameters->data keys: %s", parameter_keys))
 	} else {
