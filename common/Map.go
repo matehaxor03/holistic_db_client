@@ -16,17 +16,21 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 	for key, value := range m {
 		rep := fmt.Sprintf("%T", value)
 		switch rep {
-		case "string":
-			nestedMap := Map{}
-			newMap[key] = nestedMap
-			break
 		case "common.Map":
-			// todo deep clone
+		case "map[string]interface {}":
 			clone := Map{}
 			for clone_key, clone_value := range value.(map[string]interface{}) {
-				clone[clone_key] = clone_value
+				clone_rep := fmt.Sprintf("%T", clone_value)
+				switch clone_rep {
+				case "common.Map":
+				clone[clone_key] = ConvertPrimitiveMapToMap(clone_value.(map[string]interface{}))
+				break
+				default:
+					panic(fmt.Errorf("Map.M: type %s is not supported please implement", clone_rep))
+				}
 			}
 			newMap[key] = clone
+			break
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 		}
