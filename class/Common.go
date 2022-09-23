@@ -145,7 +145,6 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.(common.Array).ToPrimativeArray(), &data, columnName.(string), reflect.ValueOf(kind))
 	if containsExactMatchErrors != nil {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
-		panic("die here")
 	}
 
 	
@@ -165,8 +164,8 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 	//panic(result)
 	var arrayresults = make(map[string]interface{})
 	count := 0
-	for key, _ := range result {
-		arrayresults[key + strconv.Itoa(count)] = key
+	for _, value := range result["errors"].([]error) {
+		arrayresults[string(strconv.Itoa(count))] = value
 		count++
 	}
 
