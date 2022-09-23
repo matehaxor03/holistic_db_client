@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"reflect"
 )
 
 type Array []interface{}
@@ -59,4 +60,23 @@ func ConvertIntefaceArrayToStringArray(aInterface []interface{}) []string{
 		aString[i] = v.(string)
 	}
 	return aString
+}
+
+func (a Array) ToPrimativeArray() []string {
+	var results []string 
+	for _, value := range a {
+		rep := fmt.Sprintf("%T", value)
+		switch rep {
+		case "string":
+			results = append(results, value.(string))
+			break
+		case "reflect.Value":
+			reflect_value := reflect.ValueOf(value)
+			results = append(results, fmt.Sprintf("%s", reflect_value))
+			break
+		default:
+			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+		}
+	}
+	return results
 }

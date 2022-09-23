@@ -62,7 +62,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 func (this *DatabaseCreateOptions) getValidations() common.Map {	
 	//data := (*this).getData()
 	
-	validations := common.Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): common.Array{common.Map{"function": ContainsExactMatchz, "parameters": common.Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data": "gfgff"}}}}
+	validations := common.Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): common.Array{common.Map{"function": ContainsExactMatchz, "parameters": common.Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data":"gfgff"}}}}
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
 	/*var whiltlistCustome = Array{}
 	for _, value := range consts.GET_CHARACTER_SETS() {

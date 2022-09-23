@@ -104,14 +104,14 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 		result["data"] = data
 	}
 
-	var kind = fmt.Sprintf("%s",parameters.InterfaceString("reflect.ValueOf"))
+	var kind = parameters.S("reflect.ValueOf")
 	if (data) == "" {
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had empty data: parameters->kind keys: %s", parameter_keys))
 	} else {
 		result["reflect.ValueOf"] = kind
 	}
 
-	var column_name = fmt.Sprintf("%s",parameters["column_name"])
+	var column_name = parameters.S("column_name")
 	if (column_name) == "" {
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had the key: parameters->_column_name however had an empty value" ))
 	} else {
@@ -142,7 +142,7 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 
 
 	//panic(fmt.Sprintf("%s %s %s %s", whitelist, data, columnName, kind))
-	var containsExactMatchErrors = ContainsExactMatch(whitelist.([]string), &data, columnName.(string), reflect.ValueOf(kind))
+	var containsExactMatchErrors = ContainsExactMatch(whitelist.(common.Array).ToPrimativeArray(), &data, columnName.(string), reflect.ValueOf(kind))
 	if containsExactMatchErrors != nil {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
 		panic("die here")
