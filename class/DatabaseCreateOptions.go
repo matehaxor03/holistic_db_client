@@ -33,7 +33,6 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	
 	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = character_set
 	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] = collate
-	data["type"] = reflect.TypeOf(DatabaseCreateOptions{})
 
 	//validations := Map {}
 	//validations[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = Map{}
@@ -70,7 +69,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 }
 
 func (this *DatabaseCreateOptions) getValidations(data Map) Map {	
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "kind":reflect.ValueOf(*this), "data": func () string {return strings.Clone(data.S(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()))}}}}}
+
+	
+	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data": "gfgff"}}}}
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
 	/*var whiltlistCustome = Array{}
 	for _, value := range consts.GET_CHARACTER_SETS() {
@@ -133,8 +134,6 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		var array_of_validations = mappy[parameter].(Array)
 		
 		for _, validation := range array_of_validations {
-			//panic(strings.Join(KeysForMap(validation), " "))
-			//	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
 			fmt.Println(validation)
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
@@ -154,17 +153,38 @@ func (this *DatabaseCreateOptions) Validate() []error {
 			
 			var vargsConvert = []reflect.Value{reflect.ValueOf(root)}
 
-		    var result = reflect.ValueOf(function).Call(vargsConvert)
-			var argsArray = make([]map[string]interface{}, len(result))
-			for _, currentArg := range result {
-				argsArray = append(argsArray, currentArg.Interface().(map[string]interface{}))
-			}
+		   var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
+		   
+		   var singleResult = make([]interface{}, len(output_array_map_result))
+		   var counttit = 0
+		   singleResult[counttit] = output_array_map_result
+		   
+		   fmt.Println("##############################")
+		   //fmt.Println(output_array_map_result)
+		   for key, value := range singleResult {
+			fmt.Println(fmt.Sprintf("key: %s value: %s", key, value))
+			mappoutput := value
+			for key2, value2 := range mappoutput.([]reflect.Value) {
+				fmt.Println(fmt.Sprintf("%s %s", key2, value2))
+				if strings.Contains(fmt.Sprintf("%s", key2), "POTENTIAL SQL INJECTION:") || 
+				   strings.Contains(fmt.Sprintf("%s", value2), "POTENTIAL SQL INJECTION:") {
+					errors = append(errors, fmt.Errorf("WWWWWWWWWWWW%s", key2))
+					errors = append(errors, fmt.Errorf("WWWWWWWWWWWW%s", value2))
+				}
+				
+				
+				
+				/*var valueOfit = reflect.ValueOf(value2).(map[string]interface{})
 
-			var singleRecord = argsArray[0]
-			panic(strings.Join(KeysForMap(singleRecord)," "))
-			//unboxed := result.(map[string]interface{})
-			//errors = append(errors, unboxed["errors"].([]error)...)
-		}	
+
+				errorrssdfd := valueOfit["errors"]
+				if errorrssdfd != nil && len(errorrssdfd) > 0 {
+					errors = append(errors, errorrssdfd...)
+				}
+				panic(errorrssdfd)*/
+			}
+		   }
+		}
 	}
 
 	return errors
