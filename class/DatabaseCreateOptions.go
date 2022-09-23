@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	consts "github.com/matehaxor03/holistic_db_client/consts"
+	common "github.com/matehaxor03/holistic_db_client/common"
 )
 
 func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
@@ -16,8 +17,8 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 }
 
 type DatabaseCreateOptions struct {
-	data Map
-	validations Map
+	data common.Map
+	validations common.Map
 	
 	character_set *string
 	collate *string
@@ -29,7 +30,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	/*data := Map{"a":"apple", 
 	"b":2}*/
 
-	data := Map {}
+	data := common.Map {}
 	
 	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()] = character_set
 	data[GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE()] = collate
@@ -58,10 +59,10 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	return &x
 }
 
-func (this *DatabaseCreateOptions) getValidations() Map {	
+func (this *DatabaseCreateOptions) getValidations() common.Map {	
 	//data := (*this).getData()
 	
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data": "gfgff"}}}}
+	validations := common.Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): common.Array{common.Map{"function": ContainsExactMatchz, "parameters": common.Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data": "gfgff"}}}}
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
 	/*var whiltlistCustome = Array{}
 	for _, value := range consts.GET_CHARACTER_SETS() {
@@ -106,14 +107,14 @@ func (this *DatabaseCreateOptions) GetCollate() *string {
 func (this *DatabaseCreateOptions) Validate() []error {
 	var errors []error 
 	var mappy = (*this).getValidations()
-	var keys = KeysForMap(mappy)
+	var keys = common.KeysForMap(mappy)
 	for _, parameter := range keys {
-		var array_of_validations = mappy[parameter].(Array)
+		var array_of_validations = mappy[parameter].(common.Array)
 		
 		for _, validation := range array_of_validations {
 			fmt.Println(validation)
-			var function = validation.(Map).Func("function")
-			var parameters = validation.(Map).M("parameters")
+			var function = validation.(common.Map).Func("function")
+			var parameters = validation.(common.Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
 			keys_of_parameters = append(keys_of_parameters, "column_name")
 
