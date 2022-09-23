@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"strings"
 	"runtime"
-	consts "github.com/matehaxor03/holistic_db_client/consts"
+	consts "github.com/matehaxor03/holistic_db_client/class/consts"
 )
 
 func GET_DATABASE_DATA_DEFINITION_STATEMENTS() ([]string) {

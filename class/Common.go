@@ -222,10 +222,8 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 	var tempKeys = strings.Join(payload.Keys(), " ")
 	var function, function_exists = payload["function"]
 	if !function_exists {
-		panic("functino does not exist")
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", tempKeys))
 	} else if function == nil {
-		panic("functino is nil")
 		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args ha key: function but it had value nil"))
 	} else {
 		result["function"] = payload["function"]
@@ -255,9 +253,6 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 	} else {
 		result["whitelist"] = whitelist
 	}
-
-	fmt.Println(fmt.Sprintf("sxzczxczxc", reflect.ValueOf(parameters["whitelist"]).Interface()) +  " valueof: " + fmt.Sprintf("%s", reflect.ValueOf(parameters["whitelist"])) )
-
 	
 	var data = fmt.Sprintf("%s",parameters.InterfaceString("data"))
 	if (data) == "" {
@@ -307,6 +302,7 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.([]string), &data, columnName.(string), reflect.ValueOf(kind))
 	if containsExactMatchErrors != nil {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
+		panic("die here")
 	}
 
 	

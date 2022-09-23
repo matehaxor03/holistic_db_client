@@ -52,24 +52,14 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		vargs[n] = reflect.ValueOf(v)
 	}*/
 
-
 	//reflect.ValueOf(validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()).FA(FIELD_NAME_VALIDATION_FUNCTIONS())[0].(func(...interface{}) []error)).Call(vargs)
 
 	x := DatabaseCreateOptions{data: data}
-	x.validations = x.getValidations(data)
-
-
-	
-
-	//Containsy("hi")
-	
-	x.validation_functions = make(map[string]func() []error)
-	x.InitValidationFunctions()
 	return &x
 }
 
-func (this *DatabaseCreateOptions) getValidations(data Map) Map {	
-
+func (this *DatabaseCreateOptions) getValidations() Map {	
+	//data := (*this).getData()
 	
 	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": consts.GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data": "gfgff"}}}}
 	//validations.M(GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET())[FIELD_NAME_VALIDATION_FUNCTIONS()] = []func(...interface{}) []error {Containsy}
@@ -83,25 +73,11 @@ func (this *DatabaseCreateOptions) getValidations(data Map) Map {
 	return validations
 }
 
-func (this *DatabaseCreateOptions) InitValidationFunctions() ()  {
-	
-	
-	
-	validation_functions := (*this).getValidationFunctions()
-	validation_functions["validateCharacterSet"] = (*this).validateCharacterSet
-	validation_functions["validateCollate"] = (*this).validateCollate
-	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
-
-	if validation_functions["validateValidationFunctions"] == nil|| 
-	   GetFunctionName(validation_functions["validateValidationFunctions"]) != GetFunctionName((*this).validateValidationFunctions) {
-		panic(fmt.Errorf("validateValidationFunctions validation method not found potential sql injection without it"))
-	}
-}
-
 func (this *DatabaseCreateOptions) getData() map[string]interface{} {
 	return (*this).data
 }
 
+/*
 func (this *DatabaseCreateOptions) validateCharacterSet() ([]error) {
 	if (*this).character_set == nil {
 		return nil
@@ -117,6 +93,7 @@ func (this *DatabaseCreateOptions) validateCollate() ([]error) {
 
 	return ContainsExactMatch(consts.GET_COLLATES(), (*this).collate, "collate", reflect.ValueOf(*this))
 }
+*/
 
 func (this *DatabaseCreateOptions) GetCharacterSet() *string {
 	return (*this).character_set
@@ -128,7 +105,7 @@ func (this *DatabaseCreateOptions) GetCollate() *string {
 
 func (this *DatabaseCreateOptions) Validate() []error {
 	var errors []error 
-	var mappy = (*this).getValidations((*this).data)
+	var mappy = (*this).getValidations()
 	var keys = KeysForMap(mappy)
 	for _, parameter := range keys {
 		var array_of_validations = mappy[parameter].(Array)
@@ -225,10 +202,8 @@ func (this *DatabaseCreateOptions) Validate() []error {
 	return nil
 }*/
 
-func (this *DatabaseCreateOptions) getValidationFunctions() map[string]func() []error {
-	return (*this).validation_functions
-}
 
+/*
 func (this *DatabaseCreateOptions) validateValidationFunctions() ([]error) {
 	var errors []error 
 	current := (*this).getValidationFunctions()
@@ -256,5 +231,5 @@ func (this *DatabaseCreateOptions) validateValidationFunctions() ([]error) {
 	}
 
 	return nil
-}
+}*/
 
