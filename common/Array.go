@@ -7,6 +7,16 @@ import (
 
 type Array []interface{}
 
+func ConvertReflectArrayToPrimativeArray(a []reflect.Value) []reflect.Value {
+	length := len(a)
+	copy := make([]reflect.Value, length)
+	for i := 0; i < length; i++ {
+		copy = append(copy, a[i])
+	}
+
+	return copy
+}
+
 func ConvertPrimativeArrayToArray(a []interface{}) Array {
 	if a == nil {
 		return nil
