@@ -12,7 +12,10 @@ func GET_CHARACTER_SET_UTF8MB4() string {
 }
 
 func GET_CHARACTER_SETS() Array {
-	return Array{GET_CHARACTER_SET_UTF8(), GET_CHARACTER_SET_UTF8MB4()}
+	var array = Array{}
+	array = append(array, GET_CHARACTER_SET_UTF8())
+	array = append(array, GET_CHARACTER_SET_UTF8MB4())
+	return array
 }
 
 func GET_COLLATE_UTF8_GENERAL_CI() string {
