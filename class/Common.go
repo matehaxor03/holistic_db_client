@@ -108,13 +108,7 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 	var result = ValidateGeneric(args)
 
 	if len(result["errors"].([]error)) > 0 {
-		var arrayresults = make(map[string]interface{})
-		count := 0
-		for key, _ := range result {
-			arrayresults[key + strconv.Itoa(count)] = key
-			count++
-		}
-		return arrayresults
+		return result
 	}
 
 	var whitelist, _ = result["whitelist"]
@@ -128,13 +122,7 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
 	}
 
-	var arrayresults = make(map[string]interface{})
-	count := 0
-	for _, value := range result["errors"].([]error) {
-		arrayresults[string(strconv.Itoa(count))] = value
-		count++
-	}
-	return arrayresults
+	return result
 }
 
 func Validate(args...interface{}) []error {
