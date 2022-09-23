@@ -21,7 +21,6 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
-
 func ContainsExactMatch(array []string, str *string, label string, reflect_value reflect.Value) []error {
 	for _, array_value := range array {
 		if array_value == *str {
@@ -34,23 +33,7 @@ func ContainsExactMatch(array []string, str *string, label string, reflect_value
 	return errors
 }
 
-/*func Containsy(args...interface{}) []error {
-	
-	/*for _, array_value := range array {
-		if array_value == *str {
-			return nil
-		}
-	}
-
-	panic(args[0].(string) + " " + args[1].(string))
-
-	var errors []error 
-    //errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, (*str) , array))
-	return errors
-}*/
-
 func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
-	//panic("validate generic")
 	var result = make(map[string]interface{})
 	result["errors"] = []error{}
 	
@@ -122,7 +105,6 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 }
 
 func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
-	//panic(args)
 	var result = ValidateGeneric(args)
 
 	if len(result["errors"].([]error)) > 0 {
@@ -141,43 +123,22 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 	var columnName = result["column_name"]
 
 
-	//panic(fmt.Sprintf("%s %s %s %s", whitelist, data, columnName, kind))
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.(common.Array).ToPrimativeArray(), &data, columnName.(string), reflect.ValueOf(kind))
 	if containsExactMatchErrors != nil {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
 	}
 
-	
-
-	
-	//var map := args[0]
-
-
-
-
-	/*for _, array_value := range array {
-		if array_value == *str {
-			return nil
-		}
-	}*/
-
-	//panic(result)
 	var arrayresults = make(map[string]interface{})
 	count := 0
 	for _, value := range result["errors"].([]error) {
 		arrayresults[string(strconv.Itoa(count))] = value
 		count++
 	}
-
-	
-    //errors = append(errors, fmt.Errorf("%s has value '%s' expected to have value in %s", label, (*str) , array))
 	return arrayresults
 }
 
 func Validate(args...interface{}) []error {
 	var errors []error 
-
-	//panic("hellowworld")
 
 
 	return errors
