@@ -17,6 +17,22 @@ func ConvertReflectArrayToPrimativeArray(a []reflect.Value) []reflect.Value {
 	return copy
 }
 
+func ConvertPrimitiveReflectValueArrayToArray(a []reflect.Value) Array {
+	array := Array{}
+	rep := fmt.Sprintf("%T", a)
+	switch rep {
+		case "[]reflect.Value":
+			length := len(a)
+			for i := 0; i < length; i++ {
+				array = append(array, ConvertPrimitiveReflectValueToValue(a[i]))
+			}
+	default:
+		panic(fmt.Errorf("Map.A: type %s is not supported please implement", rep))
+	}
+
+	return array
+}
+
 func ConvertPrimativeArrayToArray(a []interface{}) Array {
 	if a == nil {
 		return nil
@@ -76,6 +92,9 @@ func (a Array) ToJSONString() string {
 			json += value.(Map).ToJSONString()
 		case "class.Array":
 			json += value.(Array).ToJSONString()
+		case "reflect.Value":
+			fmt.Println("trying to draw refelect array")
+			json = json + fmt.Sprintf("\"%s\"", value)
 		default:
 			panic(fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep))
 		}

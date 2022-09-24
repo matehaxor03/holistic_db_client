@@ -125,9 +125,9 @@ func ValidateGeneric(payload Map) []error {
 		return errors
 	}
 	
-	whitelist := parameters.A("whitelist|[]string")
+	whitelist, whitelist_err := parameters.A("whitelist|[]string")
 
-	if whitelist != nil {
+	if whitelist_err != nil {
 		errors = append(errors, fmt.Errorf("ValidateGeneric key: parameters->whiltelist did not exist"))
 	} else if len(whitelist) == 0 {
 		errors = append(errors, fmt.Errorf("ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
@@ -148,18 +148,13 @@ func ValidateGeneric(payload Map) []error {
 		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or emtpy data parameters->column_name: %s", parameter_keys))
 	} 
 
-
-	if len(errors) > 0 {
-		return errors
-	}
-
 	//panic(parameters.ToJSONString() + "dfdfdfdf")
 	return nil
 }
 
 func ContainsExactMatchz(payload Map) []error {
 	errors := []error{}
-	fmt.Println("running contains exact matchz")
+	//fmt.Println("running contains exact matchz")
 
 	if ValidateGeneric(payload) != nil {
 		return errors
@@ -169,7 +164,7 @@ func ContainsExactMatchz(payload Map) []error {
 
 	//panic((*result).GetData().ToJSONString() + "hello2fff")
 	parameters := payload.M("parameters")
-	whitelist := parameters.A("whitelist|[]string")
+	whitelist, _ := parameters.A("whitelist|[]string")
 	data, _ := parameters.S("data|string")
 	column_name, _ := parameters.S("column_name|string")
 	data_type, _ := parameters.S("type|data_type")
@@ -184,7 +179,10 @@ func ContainsExactMatchz(payload Map) []error {
 		errors = append(errors, containsExactMatchErrors...)
 	}
 
-	if errors != nil {
+	if errors != nil && len(errors) > 0 {
+		for i := 0; i < len(errors); i++ {
+			fmt.Println(errors[i])
+		}
 		return errors
 	}
 

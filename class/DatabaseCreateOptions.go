@@ -36,7 +36,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 func (this *DatabaseCreateOptions) getValidations() Map {	
 	typeOf := fmt.Sprintf("%T", *this)
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET():Array{Map{"function":ContainsExactMatchz,"parameters": Map{"whitelist|[]string":GET_CHARACTER_SETS(),"type|data_type":typeOf,"data|string":"utjjf8","column_name|string":GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()}}}}
+	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET():Array{Map{"function":ContainsExactMatchz,"parameters": Map{"whitelist|[]string":GET_CHARACTER_SETS(),"type|data_type":typeOf,"data|string":"utf8","column_name|string":GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()}}}}
 	
 
 	return validations
@@ -62,7 +62,7 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		var method_signiture = array_of_validations[parameter].(Array)
 		
 		for _, validation := range method_signiture {
-			var function = validation.(Map).Func("function")
+			/*var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
 			
@@ -80,7 +80,7 @@ func (this *DatabaseCreateOptions) Validate() []error {
 					panic(fmt.Sprintf("creating generic function call and type: %s is not supported please implement", rep))
 				}
 			}
-			//vargs["column_name|string"] = parameter
+			//vargs["column_name|string"] = parameter*/
 
 			
 			//var root = make(map[string]interface{})
@@ -92,17 +92,37 @@ func (this *DatabaseCreateOptions) Validate() []error {
 			
 			var vargsConvert = []reflect.Value{reflect.ValueOf(validation)}
 
-		    var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
+		    var output_array_map_result = reflect.ValueOf(validation.(Map).Func("function")).Call(vargsConvert)
+			
+			//panic(output_array_map_result)
 
-			Examiner(reflect.TypeOf(output_array_map_result), 0)
+			//Examiner(reflect.TypeOf(output_array_map_result), 0)
+
+			validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
+			outer_array_length := len(validation_errors)
+			for i := 0; i < outer_array_length; i++ {
+				validation_error := validation_errors[i]
+				error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
+				if error_value == "[]" {
+					continue
+				}
+				errors = append(errors, fmt.Errorf(error_value))
+			}
+
+
 			
 			//var functionReturnResult = output_array_map_result[0].Interface()
-			return_result_of_func := ConvertPrimitiveValueToMap(output_array_map_result[0])
-			fmt.Println(fmt.Sprintf("%s", return_result_of_func))
-			return_result_of_map_func := ConvertPrimitiveValueToMap(return_result_of_func["value"])
-			fmt.Println(fmt.Sprintf("%s", return_result_of_map_func))
-			return_result_of_map_func_value := reflect.ValueOf(return_result_of_map_func["value"])
-			fmt.Println(fmt.Sprintf("%s", return_result_of_map_func_value))
+			//return_result_of_func := ConvertPrimitiveValueToMap(output_array_map_result[0])
+			//println(return_result_of_func.ToJSONString())
+
+
+			//fmt.Println(fmt.Sprintf("%s", return_result_of_func))
+			//return_result_of_map_func := ConvertPrimitiveValueToMap(return_result_of_func["value"])
+			//fmt.Println(fmt.Sprintf("%s", return_result_of_map_func))
+			//return_result_of_map_func_value := reflect.ValueOf(return_result_of_map_func["value"])
+			//fmt.Println(fmt.Sprintf("%s", return_result_of_map_func_value))
+
+			//return_result_of_map_func_value.([]error)
 
 			//return_result_of_obj_value := return_result_of_map_func_value.Interface().(Result)
 			//Examiner(reflect.TypeOf(return_result_of_obj_value), 5)

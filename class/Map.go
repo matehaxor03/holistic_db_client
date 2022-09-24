@@ -8,21 +8,17 @@ import (
 
 type Map map[string]interface{}
 
-func ConvertPrimitiveValueToMap(f interface{}) Map {
-	m := Map{}
-	rep := fmt.Sprintf("%T", f)
+func ConvertPrimitiveReflectValueToValue(v reflect.Value) any {
+	rep := fmt.Sprintf("%T", v)
 	switch rep {
 		case "reflect.Value":
-			reflect_value := reflect.ValueOf(f)
-			m["value"] = reflect_value
-			return m
+			return reflect.ValueOf(v).Interface()
 	default:
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement", rep))
 	}
 
 	return nil
 }
-
 
 func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 	if m == nil {
@@ -56,7 +52,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 						switch inner_clone_key_data_type {
 						case "string":
 						case "data_type":	
-							fmt.Println(clone_key)
+							//fmt.Println(clone_key)
 							clone.SetString(clone_key, fmt.Sprintf("%s", reflect.ValueOf(clone_value).Interface()))
 							break
 						case "[]string":
@@ -83,11 +79,11 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 						panic(fmt.Errorf("Map.M: cannot determine field struct for field '%s' key needs to be in format fieldName|datatype", clone_key))
 					}
 					
-					inner_rep := fmt.Sprintf("%T", reflect.ValueOf(clone_value).Interface())
+					//inner_rep := fmt.Sprintf("%T", reflect.ValueOf(clone_value).Interface())
 					
 					//zype := fmt.Sprintf("%T", clone_value)
 					//panic(clone_key)
-					fmt.Println(fmt.Sprintf("%s %s %s", clone_key, reflect.ValueOf(clone_value).Interface(), inner_rep))
+					//fmt.Println(fmt.Sprintf("%s %s %s", clone_key, reflect.ValueOf(clone_value).Interface(), inner_rep))
 					//clone[clone_key] = reflect.ValueOf(clone_value).Interface()
 				default:
 					panic(fmt.Errorf("Map.M: type %s is not supported please implement", clone_rep))
@@ -169,7 +165,9 @@ func (m Map) ToJSONString() string {
 					json += ","
 				}
 			}
-			json += "]"			
+			json += "]"	
+		case "reflect.Value":
+			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		default:
 			//panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
@@ -183,26 +181,21 @@ func (m Map) ToJSONString() string {
 	return json
 }
 
-func (m Map) A(s string) Array {
+func (m Map) A(s string) (Array, error) {
 	rep := fmt.Sprintf("%T", m[s])
 	if m[s] == nil {
-		return nil
+		return nil, fmt.Errorf("Map.A: array was nil")
 	}
 
 	switch rep {
 		case "class.Array":
-			return m[s].(Array)
+			return m[s].(Array), nil
 		case "[]string":
 			newArray := Array{}
 			for _, v := range m[s].([]string) {
 				newArray = append(newArray, v)
 			}
-			return newArray
-
-		/*case "reflect.Value":
-			reflect_value := reflect.ValueOf(m[s])
-			array := Array{reflect.ValueOf(reflect_value)}
-			return array*/
+			return newArray, nil
 	default:
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
 	}
