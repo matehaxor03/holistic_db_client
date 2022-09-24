@@ -36,7 +36,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 func (this *DatabaseCreateOptions) getValidations() Map {	
 	typeOf := fmt.Sprintf("%T", *this)
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist|[]string": GET_CHARACTER_SETS(), "type|data_type":typeOf, "data|string":"utjjf8"}}}}
+	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET():Array{Map{"function":ContainsExactMatchz,"parameters": Map{"whitelist|[]string":GET_CHARACTER_SETS(),"type|data_type":typeOf,"data|string":"utjjf8","column_name|string":GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()}}}}
 	
 
 	return validations
@@ -66,14 +66,22 @@ func (this *DatabaseCreateOptions) Validate() []error {
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
-			keys_of_parameters = append(keys_of_parameters, "column_name|string")
-
+			
 			var vargs = make(map[string]interface{})
 			
 			for _, v := range keys_of_parameters {
-				vargs[v] = reflect.ValueOf(parameters[v])
+				rep := fmt.Sprintf("%T", v)
+				switch rep {
+				case "string":
+					fmt.Println(parameters[v])
+					//vargs[v] = reflect.ValueOf(parameters[v])
+					vargs[v] = parameters[v]
+
+				default:
+					panic(fmt.Sprintf("creating generic function call and type: %s is not supported please implement", rep))
+				}
 			}
-			vargs["column_name|string"] = parameter
+			//vargs["column_name|string"] = parameter
 
 			var root = make(map[string]interface{})
 			root["function"] = function

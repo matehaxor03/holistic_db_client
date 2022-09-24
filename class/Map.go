@@ -42,6 +42,10 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 				case "class.Map":
 					clone[clone_key] = ConvertPrimitiveMapToMap(clone_value.(map[string]interface{}))
 					break
+				case "class.Array":
+					// todo copy
+					clone[clone_key] = clone_value
+					break
 				case "string": 
 					clone[clone_key] = clone_value
 				case "reflect.Value":
@@ -93,7 +97,11 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 			break
 		case "func(...map[string]interface {}) *class.Result":
 		case "*class.Result":
+		case "string":
 			newMap[key] = value
+			break
+		case "class.Array":
+			newMap[key] = ConvertPrimativeArrayToArray(value.([]interface{}))
 			break
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
@@ -257,18 +265,24 @@ func (m Map) SetString(s string, value string) {
 	}
 }
 
-func (m Map) GetResult(s string) *Result {
+func (m Map) GetResult(s string) (*Result, error) {
 	rep := fmt.Sprintf("%T", m[s])
-	
+	if rep != "*class.Result" {
+		return nil, fmt.Errorf("Map.M: GetResult(s string) tried to read a value of a different data type %s", rep)
+	}
+
+	return m[s].(*Result), nil
+}
+
+func (m Map) SetResult(s string, result *Result) {
+	rep := fmt.Sprintf("%T", result)
 	switch rep {
 	case "*class.Result":
-		return m[s].(*Result)
+		m[s] = result
 		break
 	default:
 		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 	}
-
-	return nil
 }
 
 func (m Map) Keys() []string {

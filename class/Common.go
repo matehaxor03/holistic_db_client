@@ -78,6 +78,7 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 }
 
 func ValidateGeneric(args...[]map[string]interface{}) *Result {	
+	
 	if args == nil {
 		result := NewResult()
 		(*result).LogError(fmt.Errorf("ValidateGeneric received a nil args"))
@@ -96,13 +97,13 @@ func ValidateGeneric(args...[]map[string]interface{}) *Result {
 		return result
 	}
 	
-	array_of_args := ConvertPrimativeArrayOfMapsToArray(args[0])
-	payload := array_of_args[0].(Map)
-
-	result := payload.GetResult("result")
-	if result == nil {
+	payload := ConvertPrimitiveMapToMap(args[0][0])
+	//payload := array_of_args[0].(Map)
+	//panic(payload.ToJSONString())
+	result, err := payload.GetResult("result")
+	if result == nil || err != nil {
 		result = NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric no result refereence received"))
+		(*result).LogError(fmt.Errorf("ValidateGeneric no result reference received"))
 		return result
 	}
 
@@ -166,7 +167,7 @@ func ValidateGeneric(args...[]map[string]interface{}) *Result {
 func ContainsExactMatchz(args...map[string]interface{}) *Result {
 	var result = ValidateGeneric(args)
 
-	if len(result.GetErrors()) > 0 {
+	if len((*result).GetErrors()) > 0 {
 		return result
 	}
 
@@ -188,15 +189,13 @@ func ContainsExactMatchz(args...map[string]interface{}) *Result {
 		(*result).LogError(column_name_err)
 	}
 
-
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.ToPrimativeArray(), &data, column_name, data_type)
-
-	json := data_obj.ToJSONString()
-	panic(json)
 
 	if containsExactMatchErrors != nil {
 		(*result).LogErrors(containsExactMatchErrors)
 	}
+
+	panic((*result).GetErrors()[0])
 
 	return result
 }
