@@ -1,4 +1,4 @@
-package common
+package class
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func ConvertPrimativeArrayToArray(a []interface{}) Array {
 		case "string":
 			array = append(array, value)
 			break
-		case "common.Map":
+		case "class.Map":
 			// todo deep copy map
 			array = append(array, value)
 		default:

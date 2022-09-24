@@ -6,10 +6,29 @@ import (
 	"unicode"
 	"reflect"
 	"strings"
-	common "github.com/matehaxor03/holistic_db_client/common"
+	//common "github.com/matehaxor03/holistic_db_client/common"
 
 )
 
+func Examiner(t reflect.Type, depth int) {
+	fmt.Println(strings.Repeat("\t", depth), "Type is", t.Name(), "and kind is", t.Kind())
+	switch t.Kind() {
+	case reflect.Array, reflect.Chan, reflect.Map, reflect.Ptr, reflect.Slice:
+		fmt.Println(strings.Repeat("\t", depth+1), "Contained type:")
+		Examiner(t.Elem(), depth+1)
+	case reflect.Struct:
+		for i := 0; i < t.NumField(); i++ {
+			f := t.Field(i)
+			fmt.Println(strings.Repeat("\t", depth+1), "Field", i+1, "name is", f.Name, "type is", f.Type.Name(), "and kind is", f.Type.Kind())
+			if f.Tag != "" {
+				fmt.Println(strings.Repeat("\t", depth+2), "Tag is", f.Tag)
+				fmt.Println(strings.Repeat("\t", depth+2), "tag1 is", f.Tag.Get("tag1"), "tag2 is", f.Tag.Get("tag2"))
+			}
+		}
+	default:
+		panic(fmt.Sprintf("kind %s is not supported please implement", t.Kind()))
+	}
+}
 
 
 func FIELD_NAME_VALIDATION_FUNCTIONS() string {
@@ -32,39 +51,44 @@ func ContainsExactMatch(array []string, str *string, label string, reflect_value
 	return errors
 }
 
-func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
-	var result = make(map[string]interface{})
-	result["errors"] = []error{}
+func ValidateGeneric(args...[]map[string]interface{}) *Result {
 	
 	if len(args[0]) != 1 {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric received %s args however expected %s", len(args[0]), 1))
-	}
-
-	if len(result["errors"].([]error)) > 0 {
+		result := NewResult()
+		(*result).LogError(fmt.Errorf("ValidateGeneric received %s args however expected %s", len(args[0]), 1))
 		return result
 	}
 	
-	array_of_args := common.ConvertPrimativeArrayOfMapsToArray(args[0])
-	payload := array_of_args[0].(common.Map)
+	array_of_args := ConvertPrimativeArrayOfMapsToArray(args[0])
+	payload := array_of_args[0].(Map)
+
+	result := payload.GetResult("result")
+	if result == nil {
+		result = NewResult()
+		(*result).LogError(fmt.Errorf("ValidateGeneric no result refereence received"))
+		return result
+	}
+
+
 	top_level_keys := strings.Join(payload.Keys(), " ")
 	var function, function_exists = payload["function"]
 	if !function_exists {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", top_level_keys))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", top_level_keys))
 	} else if function == nil {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args ha key: function but it had value nil"))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args ha key: function but it had value nil"))
 	} else {
-		result["function"] = payload["function"]
+		(*result).GetData().SetFunc("function", function.(func(...map[string]interface{}) *Result))
 	}
 
 	var parameters = payload.M("parameters")
 	var parameter_keys = strings.Join(parameters.Keys(), " ")
 	if parameters == nil {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters keys: %s", parameter_keys))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters keys: %s", parameter_keys))
 	} else {
-		result["parameters"] = payload["parameters"]
+		(*result).GetData().SetMap("parameters", parameters)
 	}
 
-	if len(result["errors"].([]error)) > 0 {
+	if len((*result).GetErrors()) > 0 {
 		return result
 	}
 
@@ -72,42 +96,49 @@ func ValidateGeneric(args...[]map[string]interface{}) map[string]interface{} {
 	whitelist := parameters.A("whitelist")
 
 	if whitelist == nil {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters->whiltelist keys: %s", parameter_keys))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters->whiltelist keys: %s", parameter_keys))
 	} else if len(whitelist) == 0 {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
 	} else {
-		result["whitelist"] = whitelist
+		(*result).GetData().SetArray("whitelist", whitelist)
 	}
 	
 	var data = parameters.S("data")
 	if (data) == "" {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION:Common: ValidateGeneric args had empty data: parameters->data keys: %s", parameter_keys))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION:Common: ValidateGeneric args had empty data: parameters->data keys: %s", parameter_keys))
 	} else {
-		result["data"] = data
+		(*result).GetData().SetString("data", data)
 	}
 
 	var kind = parameters.S("reflect.ValueOf")
 	if (data) == "" {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had empty data: parameters->kind keys: %s", parameter_keys))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had empty data: parameters->kind keys: %s", parameter_keys))
 	} else {
-		result["reflect.ValueOf"] = kind
+		(*result).GetData().SetString("reflect.ValueOf", kind)
 	}
 
 	var column_name = parameters.S("column_name")
 	if (column_name) == "" {
-		result["errors"] = append(result["errors"].([]error), fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had the key: parameters->_column_name however had an empty value" ))
+		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had the key: parameters->_column_name however had an empty value" ))
 	} else {
-		result["column_name"] = column_name
+		(*result).GetData().SetString("column_name", column_name)
 	}
 
 	return result
 }
 
-func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
+func ContainsExactMatchz(args...map[string]interface{}) *Result {
 	var result = ValidateGeneric(args)
+	fmt.Sprintf("%T", &result)
+	result_obj2 := NewResult()
+		//return result
+	return result_obj2
 
+	/*
 	if len(result["errors"].([]error)) > 0 {
-		return result
+		result_obj := NewResult()
+		//return result
+		return result_obj
 	}
 
 	var whitelist, _ = result["whitelist"]
@@ -121,7 +152,10 @@ func ContainsExactMatchz(args...map[string]interface{}) map[string]interface{} {
 		result["errors"] = append(result["errors"].([]error), containsExactMatchErrors...)
 	}
 
-	return result
+	result_obj := NewResult()
+	//return result
+	return result_obj
+	*/
 }
 
 func Validate(args...interface{}) []error {

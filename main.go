@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	consts "github.com/matehaxor03/holistic_db_client/consts"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -89,14 +88,14 @@ func main() {
 	options := make(map[string]map[string][][]string)
 	if if_not_exists {
 		logic_options := make(map[string][][]string)
-		logic_options[command_value] = append(logic_options[command_value], consts.GET_LOGIC_STATEMENT_IF_NOT_EXISTS())
-		options[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+		logic_options[command_value] = append(logic_options[command_value], class.GET_LOGIC_STATEMENT_IF_NOT_EXISTS())
+		options[class.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 	}
 
 	if if_exists {
 		logic_options := make(map[string][][]string)
-		logic_options[command_value] = append(logic_options[command_value], consts.GET_LOGIC_STATEMENT_IF_EXISTS())
-		options[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+		logic_options[command_value] = append(logic_options[command_value], class.GET_LOGIC_STATEMENT_IF_EXISTS())
+		options[class.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 	}
 
 	host := class.NewHost(host_value, port_value)

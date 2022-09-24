@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"reflect"
 	"os/exec"
-	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
 type User struct {
@@ -18,20 +17,20 @@ type User struct {
 }
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() ([]string) {
-	return []string{consts.GET_DATA_DEFINTION_STATEMENT_CREATE()}
+	return []string{GET_DATA_DEFINTION_STATEMENT_CREATE()}
 }
 
 func GET_USER_LOGIC_OPTIONS_CREATE() ([][]string){
-	return [][]string{consts.GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
+	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
 }
 
 func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 	var root = make(map[string]map[string][][]string)
 	
 	var logic_options = make(map[string][][]string)
-	logic_options[consts.GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_USER_LOGIC_OPTIONS_CREATE()
+	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_USER_LOGIC_OPTIONS_CREATE()
 
-	root[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+	root[GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 
 	return root
 }
@@ -108,7 +107,7 @@ func (this *User) validateOptions()  ([]error) {
 
 func (this *User) createUser() (*User, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDUserCommand(GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -155,7 +154,7 @@ func (this *User) getCLSCRUDUserCommand(command string, options map[string]map[s
 		errors = append(errors, database_errs...)	
 	}
 
-	logic_option, logic_option_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), options, reflect.ValueOf(*this))
+	logic_option, logic_option_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), options, reflect.ValueOf(*this))
 	if logic_option_errs != nil {
 		errors = append(errors, logic_option_errs...)	
 	}

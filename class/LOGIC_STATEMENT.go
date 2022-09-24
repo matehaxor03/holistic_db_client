@@ -1,4 +1,4 @@
-package consts
+package class
 
 func GET_LOGIC_STATEMENT_FIELD_NAME() (string) {
 	return "LOGIC"

@@ -7,24 +7,23 @@ import (
 	"reflect"
 	"strings"
 	"runtime"
-	consts "github.com/matehaxor03/holistic_db_client/consts"
 )
 
 func GET_DATABASE_DATA_DEFINITION_STATEMENTS() ([]string) {
-	return []string{consts.GET_DATA_DEFINTION_STATEMENT_CREATE()}
+	return []string{GET_DATA_DEFINTION_STATEMENT_CREATE()}
 }
 
 func GET_DATABASE_LOGIC_OPTIONS_CREATE() ([][]string){
-	return [][]string{consts.GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
+	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
 }
 
 func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
 	var root = make(map[string]map[string][][]string)
 	
 	var logic_options = make(map[string][][]string)
-	logic_options[consts.GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_DATABASE_LOGIC_OPTIONS_CREATE()
+	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_DATABASE_LOGIC_OPTIONS_CREATE()
 
-	root[consts.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
+	root[GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 
 	return root
 }
@@ -196,7 +195,7 @@ func (this *Database) GetDatabaseName() *string {
 
 func (this *Database) createDatabase() (*Database, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand(consts.GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
+	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand(GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -244,7 +243,7 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 		errors = append(errors, database_errs...)	
 	}
 
-	logic_option, logic_options_errs := GetLogicCommand(command, consts.GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, reflect.ValueOf(*this))
+	logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, reflect.ValueOf(*this))
 	if logic_options_errs != nil {
 		errors = append(errors, logic_options_errs...)	
 	}
