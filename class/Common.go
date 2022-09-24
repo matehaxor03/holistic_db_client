@@ -43,12 +43,10 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 	var errors []error 
 	if array == nil {
 		errors = append(errors, fmt.Errorf("ContainsExactMatch: has nil array"))
-		return errors
 	}
 
 	if len(array) == 0 {
 		errors = append(errors, fmt.Errorf("ContainsExactMatch: has empty array"))
-		return errors
 	}
 
 	for _, value := range array {
@@ -59,11 +57,13 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 
 	if str == nil {
 		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
-		return errors
 	}
 
 	if *str == "" {
 		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
+	}
+
+	if len(errors) > 0 {
 		return errors
 	}
 	
@@ -77,127 +77,120 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 	return errors
 }
 
-func ValidateGeneric(args...[]map[string]interface{}) *Result {	
-	
-	if args == nil {
-		result := NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric received a nil args"))
-		return result
+func ValidateGeneric(payload Map) []error {	
+	errors := []error{}
+	if payload == nil {
+		errors = append(errors, fmt.Errorf("ValidateGeneric received a nil payload"))
+		return errors
 	}
-
+	/*
+	
 	if len(args) == 0 {
 		result := NewResult()
 		(*result).LogError(fmt.Errorf("ValidateGeneric received a empty args"))
 		return result
 	}
+
+	if len(args) > 1 {
+		result := NewResult()
+		(*result).LogError(fmt.Errorf("ValidateGeneric received too many args %s when expected 1", len(args)))
+		return result
+	}
+
 	
 	if len(args[0]) != 1 {
 		result := NewResult()
 		(*result).LogError(fmt.Errorf("ValidateGeneric received %s args however expected %s", len(args[0]), 1))
 		return result
-	}
+	}*/
 	
-	payload := ConvertPrimitiveMapToMap(args[0][0])
+	//payload := args
 	//payload := array_of_args[0].(Map)
-	//panic(payload.ToJSONString())
-	result, err := payload.GetResult("result")
-	if result == nil || err != nil {
-		result = NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric no result reference received"))
-		return result
-	}
 
-	top_level_keys := strings.Join(payload.Keys(), " ")
 	var function, function_exists = payload["function"]
 	if !function_exists {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: function keys: %s", top_level_keys))
+		errors = append(errors, fmt.Errorf("ValidateGeneric: key: 'function' did not exist"))
 	} else if function == nil {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args ha key: function but it had value nil"))
+		errors = append(errors, fmt.Errorf("ValidateGeneric: key: 'function' had a nil value"))
 	} 
 
 	var parameters = payload.M("parameters")
+	
 	var parameter_keys = strings.Join(parameters.Keys(), " ")
 	if parameters == nil {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters keys: %s", parameter_keys))
+		errors = append(errors, fmt.Errorf("ValidateGeneric: key 'parameters' did not exist"))
 	} 
 
-	if len((*result).GetErrors()) > 0 {
-		return result
+	if len(errors) > 0 {
+		return errors
 	}
-
 	
 	whitelist := parameters.A("whitelist|[]string")
 
-	if whitelist == nil {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args did not have key: parameters->whiltelist keys: %s", parameter_keys))
+	if whitelist != nil {
+		errors = append(errors, fmt.Errorf("ValidateGeneric key: parameters->whiltelist did not exist"))
 	} else if len(whitelist) == 0 {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
+		errors = append(errors, fmt.Errorf("ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
 	} 
 
 	var data, data_err = parameters.S("data|string")
-	if data_err == nil || data == "" {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION:Common: ValidateGeneric args had empty data: parameters->data keys: %s", parameter_keys))
+	if data_err != nil || data == "" {
+		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or empty data: parameters->data keys: %s", parameter_keys))
 	}
 
 	var data_type, data_type_err = parameters.S("type|data_type")
-	if (data_type_err == nil || data_type == "") {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had empty data: parameters->kind keys: %s", parameter_keys))
+	if (data_type_err != nil || data_type == "") {
+		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or empty data: parameters->kind keys: %s", parameter_keys))
 	} 
 
 	var column_name, column_name_err = parameters.S("column_name|string")
-	if ( column_name_err == nil || column_name == "") {
-		(*result).LogError(fmt.Errorf("POTENTIAL SQL INJECTION: Common: ValidateGeneric args had the key: parameters->_column_name however had an empty value" ))
+	if ( column_name_err != nil || column_name == "") {
+		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or emtpy data parameters->column_name: %s", parameter_keys))
 	} 
 
-	if len((*result).GetErrors()) > 0 {
-		return result
+
+	if len(errors) > 0 {
+		return errors
 	}
 
-	output := (*result).GetData()
-	(*output).SetArray("whitelist|[]string", whitelist)
-	(*output).SetString("data|string", data)
-	(*output).SetString("type|data_type", data_type)
-	(*output).SetString("column_name|string", column_name)
-
-	panic("zzzzzz" + output.ToJSONString())
-
-	return result
+	//panic(parameters.ToJSONString() + "dfdfdfdf")
+	return nil
 }
 
-func ContainsExactMatchz(args...map[string]interface{}) *Result {
-	var result = ValidateGeneric(args)
+func ContainsExactMatchz(payload Map) []error {
+	errors := []error{}
+	fmt.Println("running contains exact matchz")
 
-	if len((*result).GetErrors()) > 0 {
-		return result
+	if ValidateGeneric(payload) != nil {
+		return errors
 	}
+	//panic((args).ToJSONString() + "hello3")
+	//panic((*result).GetData().ToJSONString() + "hello2")
 
-	data_obj := (*result).GetData()
-	var whitelist = data_obj.A("whitelist|[]string")
-	
-	var data, data_err = data_obj.S("data|string")
-	if data_err != nil {
-		(*result).LogError(data_err)
-	}
+	//panic((*result).GetData().ToJSONString() + "hello2fff")
+	parameters := payload.M("parameters")
+	whitelist := parameters.A("whitelist|[]string")
+	data, _ := parameters.S("data|string")
+	column_name, _ := parameters.S("column_name|string")
+	data_type, _ := parameters.S("type|data_type")
 
-	var data_type, data_type_err = data_obj.S("type|data_type")
-	if data_type_err != nil {
-		(*result).LogError(data_type_err)
-	}
-	
-	var column_name, column_name_err = data_obj.S("column_name|string")
-	if column_name_err != nil {
-		(*result).LogError(column_name_err)
-	}
+
 
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.ToPrimativeArray(), &data, column_name, data_type)
 
+	//panic((*result).GetData().ToJSONString() + "hello4442fff")
+
 	if containsExactMatchErrors != nil {
-		(*result).LogErrors(containsExactMatchErrors)
+		errors = append(errors, containsExactMatchErrors...)
 	}
 
-	panic((*result).GetErrors()[0])
+	if errors != nil {
+		return errors
+	}
 
-	return result
+	//panic(strings.Join((*result).GetErrorsToStringArray(), "\n"))
+
+	return nil
 }
 
 func Validate(args...interface{}) []error {

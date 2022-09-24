@@ -62,7 +62,6 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		var method_signiture = array_of_validations[parameter].(Array)
 		
 		for _, validation := range method_signiture {
-			result_obj := NewResult()
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
@@ -83,13 +82,15 @@ func (this *DatabaseCreateOptions) Validate() []error {
 			}
 			//vargs["column_name|string"] = parameter
 
-			var root = make(map[string]interface{})
-			root["function"] = function
-			root["parameters"] = vargs
-			root["result"] = result_obj
+			
+			//var root = make(map[string]interface{})
+			//root := Map{}
+			//root["function"].SetFunc(function)
+			//root["parameters"].SetMap() vargs
+			//root["result"] = result_obj
 
 			
-			var vargsConvert = []reflect.Value{reflect.ValueOf(root)}
+			var vargsConvert = []reflect.Value{reflect.ValueOf(validation)}
 
 		    var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
 
@@ -105,7 +106,6 @@ func (this *DatabaseCreateOptions) Validate() []error {
 
 			//return_result_of_obj_value := return_result_of_map_func_value.Interface().(Result)
 			//Examiner(reflect.TypeOf(return_result_of_obj_value), 5)
-			fmt.Println(fmt.Sprintf("%s", (*result_obj).GetErrors()))
 			
 			//Examiner(reflect.TypeOf(return_result_of_map_func_value), 5)
 

@@ -47,7 +47,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 					clone[clone_key] = clone_value
 					break
 				case "string": 
-					clone[clone_key] = clone_value
+					clone.SetString(clone_key, clone_value.(string))
 				case "reflect.Value":
 					if strings.Contains(clone_key, "|") && len(strings.Split(clone_key, "|")) == 2 {
 						parts := strings.Split(clone_key, "|")
@@ -57,7 +57,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 						case "string":
 						case "data_type":	
 							fmt.Println(clone_key)
-							clone[clone_key] = fmt.Sprintf("%s", reflect.ValueOf(clone_value).Interface())
+							clone.SetString(clone_key, fmt.Sprintf("%s", reflect.ValueOf(clone_value).Interface()))
 							break
 						case "[]string":
 							raw_data := fmt.Sprintf("%s",  reflect.ValueOf(clone_value).Interface())
@@ -171,7 +171,7 @@ func (m Map) ToJSONString() string {
 			}
 			json += "]"			
 		default:
-			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
+			//panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
 
 		if i < length {
@@ -223,11 +223,11 @@ func (m Map) Func(s string) func(...map[string]interface{}) (map[string]interfac
 	return m[s].(func(...map[string]interface{}) (map[string]interface{}))
 }*/
 
-func (m Map) Func(s string) func(...map[string]interface{}) (*Result) {
-	return m[s].(func(...map[string]interface{}) (*Result))
+func (m Map) Func(s string) func(Map) ([]error) {
+	return m[s].(func(Map) ([]error))
 }
 
-func (m Map) SetFunc(s string, function func(...map[string]interface{}) (*Result)) {
+func (m Map) SetFunc(s string, function func(...map[string]interface{}) ([]error)) {
 	m[s] = function
 }
 
@@ -259,26 +259,6 @@ func (m Map) SetString(s string, value string) {
 	switch rep {
 	case "string":
 		m[s] = value
-		break
-	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
-	}
-}
-
-func (m Map) GetResult(s string) (*Result, error) {
-	rep := fmt.Sprintf("%T", m[s])
-	if rep != "*class.Result" {
-		return nil, fmt.Errorf("Map.M: GetResult(s string) tried to read a value of a different data type %s", rep)
-	}
-
-	return m[s].(*Result), nil
-}
-
-func (m Map) SetResult(s string, result *Result) {
-	rep := fmt.Sprintf("%T", result)
-	switch rep {
-	case "*class.Result":
-		m[s] = result
 		break
 	default:
 		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
