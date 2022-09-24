@@ -231,7 +231,7 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
 func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
-	command_errs := ContainsExactMatch(GET_DATABASE_DATA_DEFINITION_STATEMENTS(), &command, "command", reflect.ValueOf(*this))
+	command_errs := ContainsExactMatch(GET_DATABASE_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	

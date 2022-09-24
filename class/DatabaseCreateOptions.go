@@ -35,8 +35,8 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 }
 
 func (this *DatabaseCreateOptions) getValidations() Map {	
-	
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist": GET_CHARACTER_SETS(), "reflect.ValueOf":reflect.ValueOf(*this), "data":"utjjf8"}}}}
+	typeOf := fmt.Sprintf("%T", *this)
+	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET(): Array{Map{"function": ContainsExactMatchz, "parameters": Map{"whitelist|[]string": GET_CHARACTER_SETS(), "type|data_type":typeOf, "data|string":"utjjf8"}}}}
 	
 
 	return validations
@@ -62,18 +62,18 @@ func (this *DatabaseCreateOptions) Validate() []error {
 		var method_signiture = array_of_validations[parameter].(Array)
 		
 		for _, validation := range method_signiture {
-			var result_obj = NewResult()
+			result_obj := NewResult()
 			var function = validation.(Map).Func("function")
 			var parameters = validation.(Map).M("parameters")
 			var keys_of_parameters = parameters.Keys()
-			keys_of_parameters = append(keys_of_parameters, "column_name")
+			keys_of_parameters = append(keys_of_parameters, "column_name|string")
 
 			var vargs = make(map[string]interface{})
 			
 			for _, v := range keys_of_parameters {
 				vargs[v] = reflect.ValueOf(parameters[v])
 			}
-			vargs["column_name"] = parameter
+			vargs["column_name|string"] = parameter
 
 			var root = make(map[string]interface{})
 			root["function"] = function
@@ -97,7 +97,7 @@ func (this *DatabaseCreateOptions) Validate() []error {
 
 			//return_result_of_obj_value := return_result_of_map_func_value.Interface().(Result)
 			//Examiner(reflect.TypeOf(return_result_of_obj_value), 5)
-			fmt.Println(fmt.Sprintf("%s", return_result_of_map_func_value))
+			fmt.Println(fmt.Sprintf("%s", (*result_obj).GetErrors()))
 			
 			//Examiner(reflect.TypeOf(return_result_of_map_func_value), 5)
 

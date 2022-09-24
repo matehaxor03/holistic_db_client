@@ -18,6 +18,11 @@ func (this *Result) LogError(err error) (*Result)  {
 	return this
 }
 
+func (this *Result) LogErrors(err []error) (*Result)  {
+	(*this).errors = append((*this).errors, err...)
+	return this
+}
+
 func (this *Result) GetErrors() ([]error)  {
 	return (*this).errors
 }

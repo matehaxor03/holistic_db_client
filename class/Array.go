@@ -64,6 +64,32 @@ func ConvertPrimativeArrayOfMapsToArray(a []map[string]interface{}) Array {
 	return array
 }
 
+func (a Array) ToJSONString() string {
+	json := "[\n"
+	length := len(a)
+	for i, value := range a {
+		rep := fmt.Sprintf("%T", value)
+		switch rep {
+		case "string":
+			json = json + "\"" + value.(string) + "\""
+		case "class.Map":
+			json += value.(Map).ToJSONString()
+		case "class.Array":
+			json += value.(Array).ToJSONString()
+		default:
+			panic(fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep))
+		}
+
+		if i < length {
+			json += ","
+		} 
+
+		json += "\n"
+	}
+	json += "]"
+	return json
+}
+
 func ConvertIntefaceArrayToStringArray(aInterface []interface{}) []string{
 	aString := make([]string, len(aInterface))
 	for i, v := range aInterface {
@@ -82,10 +108,14 @@ func (a Array) ToPrimativeArray() []string {
 			break
 		case "reflect.Value":
 			reflect_value := reflect.ValueOf(value)
-			results = append(results, fmt.Sprintf("%s", reflect_value))
+			reflect_result_value := fmt.Sprintf("%s", reflect_value)
+			if reflect_result_value == "reflect.Value" {
+				panic("Array.ToPrimativeArray: failed to unpack primitive")
+			}
+			results = append(results, reflect_result_value)
 			break
 		default:
-			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+			panic(fmt.Errorf("Array.ToPrimativeArray: type %s is not supported please implement", rep))
 		}
 	}
 	return results

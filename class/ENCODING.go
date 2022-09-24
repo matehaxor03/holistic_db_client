@@ -20,6 +20,6 @@ func GET_COLLATE_UTF8MB4_0900_AI_CI() string {
 	return "utf8mb4_0900_ai_ci"
 }
 
-func GET_COLLATES() []string {
-	return []string{GET_COLLATE_UTF8_GENERAL_CI(), GET_COLLATE_UTF8MB4_0900_AI_CI()}
+func GET_COLLATES() Array {
+	return Array{GET_COLLATE_UTF8_GENERAL_CI(), GET_COLLATE_UTF8MB4_0900_AI_CI()}
 }
