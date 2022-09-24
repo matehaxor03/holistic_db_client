@@ -39,7 +39,6 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 					clone[clone_key] = ConvertPrimitiveMapToMap(clone_value.(map[string]interface{}))
 					break
 				case "class.Array":
-					// todo copy
 					clone[clone_key] = clone_value
 					break
 				case "string": 
@@ -47,12 +46,10 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 				case "reflect.Value":
 					if strings.Contains(clone_key, "|") && len(strings.Split(clone_key, "|")) == 2 {
 						parts := strings.Split(clone_key, "|")
-						//inner_clone_key := parts[0]
 						inner_clone_key_data_type := parts[1]
 						switch inner_clone_key_data_type {
 						case "string":
 						case "data_type":	
-							//fmt.Println(clone_key)
 							clone.SetString(clone_key, fmt.Sprintf("%s", reflect.ValueOf(clone_value).Interface()))
 							break
 						case "[]string":
@@ -69,7 +66,6 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 							} else {
 								panic(fmt.Errorf("Map.M: data for data type: '%s' for %s->%s was in the wrong format and neds to be [data1 data2 ...]", inner_clone_key_data_type, key, clone_key))
 							}
-							//fmt.Println(fmt.Sprintf("%s %s %s", clone_key, reflect.ValueOf(clone_value).Interface()))
 							break
 						default:
 							panic(fmt.Errorf("Map.M: data type: '%s' not supported for %s->%s please implement", inner_clone_key_data_type, key, clone_key))
@@ -78,13 +74,6 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 					} else {
 						panic(fmt.Errorf("Map.M: cannot determine field struct for field '%s' key needs to be in format fieldName|datatype", clone_key))
 					}
-					
-					//inner_rep := fmt.Sprintf("%T", reflect.ValueOf(clone_value).Interface())
-					
-					//zype := fmt.Sprintf("%T", clone_value)
-					//panic(clone_key)
-					//fmt.Println(fmt.Sprintf("%s %s %s", clone_key, reflect.ValueOf(clone_value).Interface(), inner_rep))
-					//clone[clone_key] = reflect.ValueOf(clone_value).Interface()
 				default:
 					panic(fmt.Errorf("Map.M: type %s is not supported please implement", clone_rep))
 				}
@@ -169,7 +158,7 @@ func (m Map) ToJSONString() string {
 		case "reflect.Value":
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		default:
-			//panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
+			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
 
 		if i < length {
@@ -210,11 +199,6 @@ func (m Map) SetArray(s string, array Array) {
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
 	}
 }
-
-/*
-func (m Map) Func(s string) func(...map[string]interface{}) (map[string]interface{}) {
-	return m[s].(func(...map[string]interface{}) (map[string]interface{}))
-}*/
 
 func (m Map) Func(s string) func(Map) ([]error) {
 	return m[s].(func(Map) ([]error))

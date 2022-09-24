@@ -6,8 +6,6 @@ import (
 	"unicode"
 	"reflect"
 	"strings"
-	//common "github.com/matehaxor03/holistic_db_client/common"
-
 )
 
 func Examiner(t reflect.Type, depth int) {
@@ -83,29 +81,6 @@ func ValidateGeneric(payload Map) []error {
 		errors = append(errors, fmt.Errorf("ValidateGeneric received a nil payload"))
 		return errors
 	}
-	/*
-	
-	if len(args) == 0 {
-		result := NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric received a empty args"))
-		return result
-	}
-
-	if len(args) > 1 {
-		result := NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric received too many args %s when expected 1", len(args)))
-		return result
-	}
-
-	
-	if len(args[0]) != 1 {
-		result := NewResult()
-		(*result).LogError(fmt.Errorf("ValidateGeneric received %s args however expected %s", len(args[0]), 1))
-		return result
-	}*/
-	
-	//payload := args
-	//payload := array_of_args[0].(Map)
 
 	var function, function_exists = payload["function"]
 	if !function_exists {
@@ -148,21 +123,16 @@ func ValidateGeneric(payload Map) []error {
 		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or emtpy data parameters->column_name: %s", parameter_keys))
 	} 
 
-	//panic(parameters.ToJSONString() + "dfdfdfdf")
 	return nil
 }
 
 func ContainsExactMatchz(payload Map) []error {
 	errors := []error{}
-	//fmt.Println("running contains exact matchz")
 
 	if ValidateGeneric(payload) != nil {
 		return errors
 	}
-	//panic((args).ToJSONString() + "hello3")
-	//panic((*result).GetData().ToJSONString() + "hello2")
-
-	//panic((*result).GetData().ToJSONString() + "hello2fff")
+	
 	parameters := payload.M("parameters")
 	whitelist, _ := parameters.A("whitelist|[]string")
 	data, _ := parameters.S("data|string")
@@ -172,8 +142,6 @@ func ContainsExactMatchz(payload Map) []error {
 
 
 	var containsExactMatchErrors = ContainsExactMatch(whitelist.ToPrimativeArray(), &data, column_name, data_type)
-
-	//panic((*result).GetData().ToJSONString() + "hello4442fff")
 
 	if containsExactMatchErrors != nil {
 		errors = append(errors, containsExactMatchErrors...)
@@ -185,8 +153,6 @@ func ContainsExactMatchz(payload Map) []error {
 		}
 		return errors
 	}
-
-	//panic(strings.Join((*result).GetErrorsToStringArray(), "\n"))
 
 	return nil
 }
