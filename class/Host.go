@@ -18,8 +18,8 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 	return &x
 }
 
-func (this *Host) Validate() []error {
-	var errors []error 
+func (this *Host) Validate() *[]error {
+	var errors *[]error 
 	e := reflect.ValueOf(this).Elem()
 	
     for i := 0; i < e.NumField(); i++ {
@@ -29,20 +29,20 @@ func (this *Host) Validate() []error {
 			host_errs := (*this).validateHostname()
 
 			if host_errs != nil {
-				errors = append(errors, host_errs...)	
+				*errors = append(*errors, *host_errs...)	
 			}
 		} else if varName == "port_number" {
 			port_errs :=  (*this).validatePort()
 
 			if port_errs != nil {
-				errors = append(errors, port_errs...)	
+				*errors = append(*errors, *port_errs...)	
 			}
 		} else {
-			errors = append(errors, fmt.Errorf("%s field is not being validated for Crendentials", varName))	
+			*errors = append(*errors, fmt.Errorf("%s field is not being validated for Crendentials", varName))	
 		}
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
@@ -51,12 +51,12 @@ func (this *Host) Validate() []error {
 
 
 
-func (this *Host) validateHostname() ([]error) {
+func (this *Host) validateHostname() (*[]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789."
 	return ValidateCharacters(VALID_CHARACTERS, (*this).GetHostName(), "host_name", reflect.ValueOf(*this))
 }
 
-func (this *Host) validatePort() ([]error) {
+func (this *Host) validatePort() (*[]error) {
 	var VALID_CHARACTERS = "1234567890"
 	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPortNumber(), "port", reflect.ValueOf(*this))
 }
@@ -69,9 +69,9 @@ func (this *Host) validatePort() ([]error) {
 	return (*this).port_number
  }
 
- func (this *Host) GetCLSCommand() (*string, []error) {
+ func (this *Host) GetCLSCommand() (*string, *[]error) {
 	errors := (*this).Validate()
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return nil, errors
 	}
 

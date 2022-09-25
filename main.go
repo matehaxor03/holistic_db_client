@@ -8,7 +8,6 @@ import (
 )
 
 func main() {
-	var errors []error 
 	const CLS_USER string = "username"
 	const CLS_PASSWORD string = "password"
 	const CLS_HOST string = "host_name"
@@ -37,10 +36,13 @@ func main() {
 	//var IF_NOT_EXISTS string = "IF NOT EXISTS"
 	
     params, errors := getParams(os.Args[1:])
-	if errors != nil {
-		fmt.Println(fmt.Errorf("%s", errors))
+	if errors != nil || len(*errors) > 0 {
+		fmt.Println(fmt.Errorf("%s", *errors))
 		os.Exit(1)
 	}
+
+	errors_value := []error{}
+	errors = &errors_value
 
 	host_value, _ := params[CLS_HOST] 
 	port_value, _ := params[CLS_PORT] 
@@ -58,28 +60,34 @@ func main() {
 	user_domain_name, _ := params[CLS_USER_DOMAIN_NAME]
 
 	command_pt, command_found := params[CLS_COMMAND] 
+	command_value := ""
+	if command_pt != nil && command_found {
+		command_value = strings.ToUpper(*command_pt)
+	}
+
 	class_pt, class_found := params[CLS_CLASS]
-	
-	command_value :=  strings.ToUpper(*command_pt)
-	class_value := strings.ToUpper(*class_pt)
+	class_value := ""
+	if class_pt != nil && class_found {
+		class_value = strings.ToUpper(*class_pt)
+	}
 
 	_, if_exists := params[CLS_IF_EXISTS]
 	_, if_not_exists := params[CLS_IF_NOT_EXISTS]
 	
 	if if_exists && if_not_exists {
-		errors = append(errors, fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
+		*errors = append(*errors, fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
 	}
 
-	if !command_found {
-		errors = append(errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
+	if command_pt == nil || !command_found {
+		*errors = append(*errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
-	if !class_found {
-		errors = append(errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
+	if class_pt == nil || !class_found {
+		*errors = append(*errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
 	}
 
-	if errors != nil {
-		for _, e := range errors {
+	if errors != nil && len(*errors) > 0 {
+		for _, e := range *errors {
 			fmt.Println(e)
 		}
 		os.Exit(1)
@@ -109,7 +117,7 @@ func main() {
 			_, shell_output, database_errors := client.CreateDatabase(database_name, database_create_options, options)
 			
 			if database_errors != nil {
-				for _, e := range database_errors {
+				for _, e := range *database_errors {
 					fmt.Println(e)
 				}
 
@@ -122,7 +130,7 @@ func main() {
 			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 			
 			if user_errors != nil {
-				for _, e := range user_errors {
+				for _, e := range *user_errors {
 					fmt.Println(e)
 				}
 
@@ -143,8 +151,10 @@ func main() {
 	os.Exit(0)
 }
 
-func getParams(params []string) (map[string]*string, []error) {
-	var errors []error 
+func getParams(params []string) (map[string]*string, *[]error) {
+	errors_value := []error{}
+	errors := &errors_value
+
 	m := make(map[string]*string)
 	for _, value := range params {
 		if !strings.Contains(value, "=") {
@@ -154,21 +164,21 @@ func getParams(params []string) (map[string]*string, []error) {
 
 		results := strings.SplitN(value, "=", 2)
 		if len(results) != 2 {
-			errors = append(errors, fmt.Errorf("invalid param found: %s must be in the format {paramName}={paramValue}", value))
+			*errors = append(*errors, fmt.Errorf("invalid param found: %s must be in the format {paramName}={paramValue}", value))
 			continue
 		}
 		m[results[0]] = &results[1]
 	}
 
-	if len(errors) > 0 {
+	if errors != nil || len(*errors) > 0 {
 		return nil, errors
 	}
  
 	return m, nil
 }
 
-func validateCharacters(whitelist string, str string) ([]error) {
-	var errors []error 
+func validateCharacters(whitelist string, str string) (*[]error) {
+	var errors *[]error 
 	for _, letter := range str {
 		found := false
 
@@ -180,11 +190,11 @@ func validateCharacters(whitelist string, str string) ([]error) {
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("invalid letter detected %s", string(letter)))
+			*errors = append(*errors, fmt.Errorf("invalid letter detected %s", string(letter)))
 		}
 	}
 	
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 

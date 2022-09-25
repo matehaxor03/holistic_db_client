@@ -1,6 +1,8 @@
 package class
 
 import (
+	"fmt"
+	"strings"
 	//"reflect"
 	//"fmt"
 )
@@ -15,9 +17,8 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 
 type DatabaseCreateOptions struct {
 	GetData func() Map
-	GetCharacterSet func() (*string, error)
-	GetCollate func() (*string, error)
-	Validate func() ([]error)
+	Validate func() (*[]error)
+	GetSQL func() (*string, *[]error)
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
@@ -28,30 +29,58 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return data
     }
 
-	getCharacterSet := func() (*string, error) {
-		return data.M("character_set").S("value|string")
+	getCharacterSet := func() (*string, *error) {
+		v, err := data.M("character_set").S("value|string")
+		if v == nil {
+			return nil, err
+		}
+		clone := strings.Clone(*v)
+		return &clone, nil
 	}
 
-	getCollate := func() (*string, error) {
-		return data.M("collate").S("value|string")
+	getCollate := func() (*string, *error) {
+		v, err := data.M("collate").S("value|string")
+		if err != nil {
+			return nil, err
+		}
+		clone := strings.Clone(*v)
+		return &clone, err
 	}
 
-	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "DatabaseCreateOptions")
+	validate := func() (*[]error) {
+		return ValidateGenericSpecial(getData(), "DatabaseCreateOptions")
+	}
+
+	getSQL := func() (*string, *[]error) {
+		errs := validate()
+		if errs != nil || len(*errs) > 0 {
+			return nil, errs
+		}
+		
+		sql_command := ""
+
+		character_set, _ := getCharacterSet()
+		if character_set != nil && *character_set != "" {
+			sql_command += fmt.Sprintf("CHARACTER SET %s ", character_set)
+		}
+		
+		collate, _ := getCollate()
+		if collate != nil && *collate != "" {
+			sql_command += fmt.Sprintf("COLLATE %s ", collate)
+		}
+
+		return &sql_command, nil
 	}
 	
 	return &DatabaseCreateOptions{
         GetData: func() Map {
             return getData()
         },
-		GetCharacterSet: func() (*string, error) {
-			return getCharacterSet()
-		},
-		GetCollate: func() (*string, error) {
-			return getCollate()
-		},
-		Validate: func() ([]error) {
+		Validate: func() (*[]error) {
 			return validate()
+		},
+		GetSQL: func() (*string, *[]error) {
+			return getSQL()
 		},
     }
 }

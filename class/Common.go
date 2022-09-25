@@ -37,29 +37,29 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
-func ContainsExactMatch(array []string, str *string, label string, data_type string) []error {
-	var errors []error 
+func ContainsExactMatch(array []string, str *string, label string, data_type string) *[]error {
+	var errors *[]error 
 	if array == nil {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: has nil array"))
+		*errors = append(*errors, fmt.Errorf("ContainsExactMatch: has nil array"))
 	}
 
 	if len(array) == 0 {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: has empty array"))
+		*errors = append(*errors, fmt.Errorf("ContainsExactMatch: has empty array"))
 	}
 
 	for _, value := range array {
 		if value == "" {
-			errors = append(errors, fmt.Errorf("ContainsExactMatch: array has empty value"))
+			*errors = append(*errors, fmt.Errorf("ContainsExactMatch: array has empty value"))
 		}
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
+		*errors = append(*errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is empty"))
+		*errors = append(*errors, fmt.Errorf("ContainsExactMatch: compare value is empty"))
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 	
@@ -69,7 +69,7 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 		}
 	}
 
-    errors = append(errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", data_type, label, *str , array))
+    *errors = append(*errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", data_type, label, *str , array))
 	return errors
 }
 
@@ -167,8 +167,22 @@ func Validate(args...interface{}) []error {
 }
 */
 
-func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) []error {
-	var errors []error 
+/*
+func CloneStringPtr(s* string) (*string) {
+	if s == nil {
+		return nil
+	}
+
+	var builder strings.Builder
+    if _, err := sb.WriteString(*s); err != nil {
+        //log & return
+    }
+    newstring := sb.String()
+	return &newstring
+}*/
+
+func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) *[]error {
+	var errors *[]error 
 	
 	for _, b_value := range b {
 		var current = strings.Join(b_value, "")
@@ -183,28 +197,28 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, refle
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", reflect_value.Kind(), label, b_value, a))
+			*errors = append(*errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", reflect_value.Kind(), label, b_value, a))
 		}
 	}
 	
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func ValidateCharacters(whitelist string, str *string, label string, reflect_value reflect.Value) ([]error) {
-	var errors []error 
+func ValidateCharacters(whitelist string, str *string, label string, reflect_value reflect.Value) (*[]error) {
+	var errors *[]error 
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s %s is nil", reflect_value.Kind(), label))
+		*errors = append(*errors, fmt.Errorf("%s %s is nil", reflect_value.Kind(), label))
 		return errors
 	}
 
 	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s %s is empty", reflect_value.Kind(), label))
+		*errors = append(*errors, fmt.Errorf("%s %s is empty", reflect_value.Kind(), label))
 		return errors
 	}
 
@@ -219,11 +233,11 @@ func ValidateCharacters(whitelist string, str *string, label string, reflect_val
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", reflect_value.Kind(), string(letter), label, whitelist))
+			*errors = append(*errors, fmt.Errorf("%s invalid letter %s for %s please use %s", reflect_value.Kind(), string(letter), label, whitelist))
 		}
 	}
 	
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
@@ -253,13 +267,13 @@ func GetConstantValueAllowedCharacters() (string) {
 }
 
 
-func ValidateOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
-	var errors []error 
+func ValidateOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) (*[]error) {
+	var errors *[]error 
 	var VALID_CHARACTERS = GetConstantValueAllowedCharacters()
 	for key, value := range extra_options {
 		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), reflect_value)
 		if key_extra_options_errors != nil {
-			errors = append(errors, key_extra_options_errors...)	
+			*errors = append(*errors, *key_extra_options_errors...)	
 		}
 
 		for key2, value2 := range value {
@@ -270,20 +284,20 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 
 			value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), reflect_value)
 			if value_extra_options_errors != nil {
-				errors = append(errors, value_extra_options_errors...)	
+				*errors = append(*errors, *value_extra_options_errors...)	
 			}
 		}
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func GetLogicCommand(command string, field_name string, allowed_options map[string]map[string][][]string, options map[string]map[string][][]string, reflect_value reflect.Value) (*string, []error){
-	var errors []error 
+func GetLogicCommand(command string, field_name string, allowed_options map[string]map[string][][]string, options map[string]map[string][][]string, reflect_value reflect.Value) (*string, *[]error){
+	var errors *[]error 
 	logic_option := ""
 
 	if options == nil {
@@ -298,7 +312,7 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	allowed_logic_option_value, allowed_logic_option_exists := allowed_options[field_name]
 
 	if !allowed_logic_option_exists {
-		errors = append(errors, fmt.Errorf("%s field: %s is not supported but was provided", reflect_value.Kind(), field_name))
+		*errors = append(*errors, fmt.Errorf("%s field: %s is not supported but was provided", reflect_value.Kind(), field_name))
 		return nil, errors
 	}
 
@@ -310,14 +324,14 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	allowed_logic_option_command_value, allowed_logic_option_command_exists := allowed_logic_option_value[command]
 
 	if !allowed_logic_option_command_exists {
-		errors = append(errors, fmt.Errorf("%s field: %s is not supported for command: %s but was provided", reflect_value.Kind(), field_name, command))
+		*errors = append(*errors, fmt.Errorf("%s field: %s is not supported for command: %s but was provided", reflect_value.Kind(), field_name, command))
 		return nil, errors
 	}
 
 
 	logic_option_errors := ArraysContainsArraysOrdered(allowed_logic_option_command_value, logic_option_command_value, field_name + "->" + command, reflect_value)
 	if logic_option_errors != nil {
-		errors = append(errors, logic_option_errors...)	
+		*errors = append(*errors, *logic_option_errors...)	
 		return nil, errors
 	} 
 
@@ -328,11 +342,11 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	return &logic_option, nil
 }
 
-func ValidateGenericSpecial(fields Map, structType string) []error {
-	var errors []error 
+func ValidateGenericSpecial(fields Map, structType string) *[]error {
+	var errors*[]error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
-		var errors_for_param []error 
+		var errors_for_param *[]error 
 		isOptional := false
 		error_on_value_of := false
 
@@ -340,7 +354,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		typeOf, _ := map_of.S("type|string")
 
 		if typeOf == nil || *typeOf == "" {
-			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
+			*errors = append(*errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
 			continue
 		}
 		
@@ -367,13 +381,13 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					case "GET_CHARACTER_SETS":
 						errors_of_filter := ContainsExactMatch(GET_CHARACTER_SETS().ToPrimativeArray(), valueOf, parameter, structType)
 						if errors_of_filter != nil {
-							errors_for_param = append(errors_for_param, errors_of_filter...)
+							*errors_for_param = append(*errors_for_param, *errors_of_filter...)
 						}
 					break
 					case "GET_COLLATES":
 						errors_of_filter := ContainsExactMatch(GET_COLLATES().ToPrimativeArray(), valueOf, parameter, structType)
 						if errors_of_filter != nil {
-							errors_for_param = append(errors_for_param, errors_of_filter...)
+							*errors_for_param = append(*errors_for_param, *errors_of_filter...)
 						}
 					break
 					default:
@@ -393,7 +407,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		if error_on_value_of && isOptional {
 			errors_for_param = nil
 		} else {
-			errors = append(errors, errors_for_param...)
+			*errors = append(*errors, *errors_for_param...)
 		}
 	}
 

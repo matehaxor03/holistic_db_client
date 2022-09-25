@@ -34,13 +34,13 @@ type Database struct {
     database_name *string
 	database_create_options *DatabaseCreateOptions
 	options map[string]map[string][][]string
-	validation_functions map[string]func() []error
+	validation_functions map[string]func() *[]error
 }
 
 func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database) {
 	x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
 	
-	x.validation_functions = make(map[string]func() []error)
+	x.validation_functions = make(map[string]func() *[]error)
 	x.InitValidationFunctions()
 
 	return &x
@@ -61,7 +61,7 @@ func (this *Database) InitValidationFunctions() ()  {
 	}
 }
 
-func (this *Database) Create() (*Database, *string, []error)  {
+func (this *Database) Create() (*Database, *string, *[]error)  {
 	this, result, errors := (*this).createDatabase()
 	if errors != nil {
 		return nil, result, errors
@@ -70,7 +70,7 @@ func (this *Database) Create() (*Database, *string, []error)  {
 	return this, result, nil
 }
 
-func (this *Database) getValidationFunctions() map[string]func() []error {
+func (this *Database) getValidationFunctions() map[string]func() *[]error {
 	return (*this).validation_functions
 }
 
@@ -83,8 +83,8 @@ func GetValidationMethodNameForFieldName(fieldName string) string {
 	return varName
 }
 
-func (this *Database) Validate() []error {
-	var errors []error 
+func (this *Database) Validate() *[]error {
+	var errors *[]error 
 	var fieldsNotFound []string
 	reflected_value := reflect.ValueOf(this)
 	refected_element := reflected_value.Elem()
@@ -99,59 +99,59 @@ func (this *Database) Validate() []error {
 		} else {
 			relection_errors := method()
 			if relection_errors != nil{
-				errors = append(errors, relection_errors...)
+				*errors = append(*errors, *relection_errors...)
 			}
 		}
 	}
 
 	for _, value := range fieldsNotFound {
 		if !IsUpper(value) {
-			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
+			*errors = append(*errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
 		}
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func (this *Database) validateDatabaseCreateOptions()  ([]error) {
+func (this *Database) validateDatabaseCreateOptions()  (*[]error) {
 	if (*this).GetDatabaseCreateOptions() == nil {
 		return nil
 	}
 
 
-	return (*this).GetDatabaseCreateOptions().Validate()
+	return (*(*this).GetDatabaseCreateOptions()).Validate()
 }
 
-func (this *Database) validateOptions() ([]error) {
+func (this *Database) validateOptions() (*[]error) {
 	return ValidateOptions((*this).GetOptions(), reflect.ValueOf(*this))
 }
 
 
-func (this *Database) validateHost()  ([]error) {
-	var errors []error 
+func (this *Database) validateHost()  (*[]error) {
+	var errors *[]error 
 	if (*this).GetHost() == nil {
-		errors = append(errors, fmt.Errorf("host is nil"))
+		*errors = append(*errors, fmt.Errorf("host is nil"))
 		return errors
 	}
 
 	return (*((*this).GetHost())).Validate()
 }
 
-func (this *Database) validateCredentials()  ([]error) {
-	var errors []error 
+func (this *Database) validateCredentials()  (*[]error) {
+	var errors *[]error 
 	if (*this).GetCredentials() == nil {
-		errors = append(errors, fmt.Errorf("credentials is nil"))
+		*errors = append(*errors, fmt.Errorf("credentials is nil"))
 		return errors
 	}
 
 	return (*((*this).GetCredentials())).Validate()
 }
 
-func (this *Database) validateDatabaseName() ([]error) {
+func (this *Database) validateDatabaseName() (*[]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name",  reflect.ValueOf(*this))
 }
@@ -160,10 +160,10 @@ func GetFunctionName(i interface{}) string {
     return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-func (this *Database) validateValidationFunctions() ([]error) {
-	var errors []error 
+func (this *Database) validateValidationFunctions() (*[]error) {
+	var errors *[]error 
 	current := (*this).getValidationFunctions()
-	compare := make(map[string]func() []error)
+	compare := make(map[string]func() *[]error)
 	found := false
 
     for current_key, current_value := range current {
@@ -172,7 +172,7 @@ func (this *Database) validateValidationFunctions() ([]error) {
 			if GetFunctionName(current_value) == GetFunctionName(compare_value) && 
 			   current_key != compare_key {
 				found = true
-				errors = append(errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
+				*errors = append(*errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
 				break
 			}
 		}
@@ -182,7 +182,7 @@ func (this *Database) validateValidationFunctions() ([]error) {
 		}
     }
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return errors
 	}
 
@@ -193,15 +193,15 @@ func (this *Database) GetDatabaseName() *string {
 	return (*this).database_name
 }
 
-func (this *Database) createDatabase() (*Database, *string, []error) {
-	var errors []error 
+func (this *Database) createDatabase() (*Database, *string, *[]error) {
+	var errors *[]error 
 	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand(GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
 
 	if crud_command_errors != nil {
-		errors = append(errors, crud_command_errors...)	
+		*errors = append(*errors, *crud_command_errors...)	
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return nil, nil, errors
 	}
 
@@ -213,12 +213,12 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
     command_err := cmd.Run()
 
     if command_err != nil {
-		errors = append(errors, command_err)	
+		*errors = append(*errors, command_err)	
 	}
 
 	shell_ouput := ""
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		shell_ouput = stderr.String()
 		return nil, &shell_ouput, errors
 	}
@@ -228,37 +228,37 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
 }
 
 
-func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, []error) {
-	var errors []error 
+func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, *[]error) {
+	var errors *[]error 
 
 	command_errs := ContainsExactMatch(GET_DATABASE_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
 
 	if command_errs != nil {
-		errors = append(errors, command_errs...)	
+		*errors = append(*errors, *command_errs...)	
 	}
 
 	database_errs := (*this).Validate()
 
 	if database_errs != nil {
-		errors = append(errors, database_errs...)	
+		*errors = append(*errors, *database_errs...)	
 	}
 
 	logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, reflect.ValueOf(*this))
 	if logic_options_errs != nil {
-		errors = append(errors, logic_options_errs...)	
+		*errors = append(*errors, *logic_options_errs...)	
 	}
 
 	host_command, host_command_errors := (*(*this).GetHost()).GetCLSCommand()
 	if host_command_errors != nil {
-		errors = append(errors, host_command_errors...)	
+		*errors = append(*errors, *host_command_errors...)	
 	}
 
 	credentials_command, credentials_command_errors := (*(*this).GetCredentials()).GetCLSCommand()
 	if credentials_command_errors != nil {
-		errors = append(errors, credentials_command_errors...)	
+		*errors = append(*errors, *credentials_command_errors...)	
 	}
 
-	if len(errors) > 0 {
+	if len(*errors) > 0 {
 		return nil, errors
 	}
 
@@ -271,15 +271,13 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 	
 	sql_command += fmt.Sprintf("%s ", (*(*this).GetDatabaseName()))
 	
-	character_set, character_set_err := (*this).GetDatabaseCreateOptions().GetCharacterSet()
-	if character_set_err == nil && *character_set != "" {
-		sql_command += fmt.Sprintf("CHARACTER SET %s ", character_set)
+	database_create_options_command, database_create_options_command_errs := (*this).GetDatabaseCreateOptions().GetSQL()
+	if database_create_options_command_errs != nil || len(*database_create_options_command_errs) > 0 {
+		*errors = append(*errors, *database_create_options_command_errs...)
+		return nil, errors
 	}
 
-	collate, collate_err := (*this).GetDatabaseCreateOptions().GetCollate()
-	if collate_err == nil && *collate != "" {
-		sql_command += fmt.Sprintf("COLLATE %s", collate)
-	}
+	sql_command += *database_create_options_command
 
 	sql_command += ";\""
 	return &sql_command, nil
