@@ -294,6 +294,9 @@ func (m Map) Clone() Map {
 		case "class.Map":
 			clone[key] = current.(Map).Clone()
 			break
+		case "class.Array":
+			clone[key] = current.(Array).Clone()
+			break
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 		}

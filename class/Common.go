@@ -354,8 +354,8 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		isOptional := false
 		error_on_value_of := false
 
-		map_of := fields.M(parameter)
-		typeOf := map_of.S("type|string")
+		parameter_fields := fields.M(parameter)
+		typeOf := parameter_fields.S("type|string")
 
 		if typeOf == nil {
 			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
@@ -364,42 +364,54 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		
 		switch *typeOf {
 		case "string":
-			valueOf := map_of.S("value|string")
+			valueOf := parameter_fields.S("value|string")
 			
 			if valueOf == nil {
 				error_on_value_of = true
 			}
 			
-			constraints := map_of.S("constraints|string")
-			if constraints != nil {
-				constraint_signitures := strings.Split(*constraints, ",")
-				for _, constraint_signiture := range constraint_signitures {
-					constraint_signiture_parts := strings.Split(constraint_signiture, ":")
-					constraint_method := constraint_signiture_parts[0]
-					constraint_filter := constraint_signiture_parts[1]
-					switch constraint_method {
-					case "optional":
-						isOptional = true
-						break
-					default:
-						filters := GET_FILTERS()
-						target_filter := filters.M(constraint_method)
-						if target_filter == nil {
-							panic(fmt.Sprintf("please implement filter %s", constraint_method))
-						}
+			filters := parameter_fields.A(FILTERS())
+			if filters != nil {
+				all_compare_filters := GET_FILTERS()
+				for _, filter := range filters {
 
-						allowed_values := target_filter.A(constraint_filter)
-						if allowed_values == nil {
-							panic(fmt.Sprintf("please implement filter %s->%s", constraint_method, constraint_filter))
-						}
+					compare_filter := all_compare_filters.M(filter.(string))
+					if compare_filter == nil {
+						errors_for_param = append(errors_for_param, fmt.Errorf("please implement filter for %s", filter))
+						continue
+					}
+
+					compare_filter_values := compare_filter.A(parameter)
+					if compare_filter_values == nil {
+						errors_for_param = append(errors_for_param, fmt.Errorf("please implement create compare values for %s->%s", filter, parameter))
+						continue
+					}
+
+					errors_of_filter := ContainsExactMatch(compare_filter_values.ToPrimativeArray(), valueOf, parameter, structType)
+					if errors_of_filter != nil {
+						errors_for_param = append(errors_for_param, errors_of_filter...)
+					}	
+
+
+
+
+					
+					/*
+					switch filter {
+					case WHITELIST_FILTER():
+						
+						
 
 						errors_of_filter := ContainsExactMatch(allowed_values.ToPrimativeArray(), valueOf, parameter, structType)
 						if errors_of_filter != nil {
 							errors_for_param = append(errors_for_param, errors_of_filter...)
-						}
-					}
+						}	
+						
+					default:
+					}*/	
 				}
 			}
+			
 
 			default_errors_filter := ValidateCharacters(GetAllowedStringValues(), valueOf, parameter, structType)
 			if default_errors_filter != nil {

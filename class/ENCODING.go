@@ -32,12 +32,16 @@ func GET_COLLATE() string {
 	return "collate"
 }
 
-func GET_WHITELIST_FILTER() string {
+func WHITELIST_FILTER() string {
 	return "white_list"
 }
 
+func FILTERS() string {
+	return "filters"
+}
+
 func GET_FILTERS() Map {
-	return Map{GET_WHITELIST_FILTER():Map{
+	return Map{WHITELIST_FILTER():Map{
 			GET_COLLATE():GET_COLLATES(),
 			GET_CHARACTER_SET():GET_CHARACTER_SETS(),
 		},

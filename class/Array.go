@@ -3,6 +3,7 @@ package class
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type Array []interface{}
@@ -138,4 +139,26 @@ func (a Array) ToPrimativeArray() []string {
 		}
 	}
 	return results
+}
+
+func (a Array) Clone() Array {
+	clone := Array{}
+	for _, current := range a {
+		rep := fmt.Sprintf("%T", current)
+		switch rep {
+		case "string":
+			cloneString := strings.Clone(current.(string))
+			clone = append(clone, cloneString)
+			break	
+		case "class.Map":
+			clone = append(clone, current.(Map).Clone())
+			break
+		case "class.Array":
+			clone = append(clone, current.(Array).Clone())
+			break
+		default:
+			panic(fmt.Errorf("Array.Clone: type %s is not supported please implement", rep))
+		}
+	}
+	return clone
 }

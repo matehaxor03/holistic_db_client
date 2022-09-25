@@ -22,8 +22,10 @@ type DatabaseCreateOptions struct {
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
 	data := Map {
-	"character_set":Map{"type|string":"string","value|string":character_set,"constraints|string":"optional:,white_list:character_set"},
-	"collate":Map{"type|string":"string","value|string":collate,"constraints|string":"optional:,white_list:collate"},
+		"character_set":Map{"type|string":"string","value|string":character_set, 
+		FILTERS(): Array{ WHITELIST_FILTER() }},
+		"collate":Map{"type|string":"string","value|string":collate,
+		FILTERS(): Array{ WHITELIST_FILTER() }},
 	}
 	
 	getData := func() Map {
