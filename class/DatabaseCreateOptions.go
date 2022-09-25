@@ -16,7 +16,6 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 }
 
 type DatabaseCreateOptions struct {
-	GetData func() Map
 	Validate func() ([]error)
 	GetSQL func() (*string, []error)
 }
@@ -28,7 +27,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 	
 	getData := func() Map {
-		return data
+		return data.Clone()
     }
 
 	getCharacterSet := func() (*string) {
@@ -75,9 +74,6 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 	
 	return &DatabaseCreateOptions{
-        GetData: func() Map {
-            return getData()
-        },
 		Validate: func() ([]error) {
 			return validate()
 		},
