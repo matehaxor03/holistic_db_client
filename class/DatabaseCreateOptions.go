@@ -3,8 +3,6 @@ package class
 import (
 	"fmt"
 	"strings"
-	//"reflect"
-	//"fmt"
 )
 
 func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
@@ -22,13 +20,11 @@ type DatabaseCreateOptions struct {
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
 	data := Map {
-		"character_set":Map{"type|string":"string","value|string":character_set, 
+		"character_set":Map{"type|string":"string","value|string":character_set,"mandatory|boolean":false,
 		FILTERS(): Array{ Map {"values|array":GET_CHARACTER_SETS(),"function|func":ContainsExactMatch } }},
-		"collate":Map{"type|string":"string","value|string":collate,
+		"collate":Map{"type|string":"string","value|string":collate,"mandatory|boolean":false,
 		FILTERS(): Array{ Map {"values|array":GET_COLLATES(),"function|func":ContainsExactMatch } }},
 	}
-
-	//panic(data.ToJSONString())
 	
 	getData := func() Map {
 		return data

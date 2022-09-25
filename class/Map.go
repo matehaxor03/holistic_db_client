@@ -273,6 +273,33 @@ func (m Map) S(s string) (*string) {
 	return nil
 }
 
+func (m Map) B(s string) (*bool) {
+	if m[s] == nil {
+		return nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "bool":
+		value := m[s].(bool)
+		newValue := value
+		return &newValue
+		break
+	case "*bool":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*bool=<nil>)" {
+			newValue := *((m[s]).(*bool))
+			return &newValue
+		} else {
+			return nil
+		}
+		break
+	default:
+		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
+	}
+
+	return nil
+}
+
 func (m Map) SetString(s string, value *string) {
 	rep := fmt.Sprintf("%T", value)
 	

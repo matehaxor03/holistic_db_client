@@ -366,11 +366,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
 		var errors_for_param []error 
-		isOptional := false
-		error_on_value_of := false
+		value_is_mandatory := true
+		value_is_null := false
 
 		parameter_fields := fields.M(parameter)
 		typeOf := parameter_fields.S("type|string")
+		mandatory_field := parameter_fields.B("mandatory|boolean")
+		
+		if mandatory_field != nil {
+			fmt.Println(fmt.Sprintf("is mandatory: %b", *mandatory_field))
+			value_is_mandatory = *mandatory_field
+		}
 
 		if typeOf == nil {
 			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
@@ -382,7 +388,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			valueOf := parameter_fields.S("value|string")
 			
 			if valueOf == nil {
-				error_on_value_of = true
+				value_is_null = true
+			}
+
+			if value_is_null && !value_is_mandatory {
+				continue
 			}
 			
 			filters := parameter_fields.A(FILTERS())
@@ -410,45 +420,8 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 						}
 						errors = append(errors, fmt.Errorf(error_value))
 					}
-
-					/*
-					compare_filter := all_compare_filters.M(filter.(string))
-					if compare_filter == nil {
-						errors_for_param = append(errors_for_param, fmt.Errorf("please implement filter for %s", filter))
-						continue
-					}
-
-					compare_filter_values := compare_filter.A(parameter)
-					if compare_filter_values == nil {
-						errors_for_param = append(errors_for_param, fmt.Errorf("please implement create compare values for %s->%s", filter, parameter))
-						continue
-					}
-
-					errors_of_filter := ContainsExactMatch(compare_filter_values.ToPrimativeArray(), valueOf, parameter, structType)
-					if errors_of_filter != nil {
-						errors_for_param = append(errors_for_param, errors_of_filter...)
-					}*/	
-
-
-
-
-					
-					/*
-					switch filter {
-					case WHITELIST_FILTER():
-						
-						
-
-						errors_of_filter := ContainsExactMatch(allowed_values.ToPrimativeArray(), valueOf, parameter, structType)
-						if errors_of_filter != nil {
-							errors_for_param = append(errors_for_param, errors_of_filter...)
-						}	
-						
-					default:
-					}*/	
 				}
 			}
-			
 
 			default_errors_filter := ValidateCharacters(GetAllowedStringValues(), valueOf, parameter, structType)
 			if default_errors_filter != nil {
@@ -460,11 +433,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			panic(fmt.Sprintf("please implement type %s", typeOf))
 		}
 
-		if error_on_value_of && isOptional {
-			errors_for_param = nil
-		} else {
-			errors = append(errors, errors_for_param...)
-		}
+		
 	}
 
 	return errors
