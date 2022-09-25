@@ -209,16 +209,16 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, refle
 	return nil
 }
 
-func ValidateCharacters(whitelist string, str *string, label string, reflect_value reflect.Value) ([]error) {
+func ValidateCharacters(whitelist string, str *string, label string, typeOf string) ([]error) {
 	var errors []error 
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s %s is nil", reflect_value.Kind(), label))
+		errors = append(errors, fmt.Errorf("%s %s is nil", typeOf, label))
 		return errors
 	}
 
 	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s %s is empty", reflect_value.Kind(), label))
+		errors = append(errors, fmt.Errorf("%s %s is empty", typeOf, label))
 		return errors
 	}
 
@@ -233,7 +233,7 @@ func ValidateCharacters(whitelist string, str *string, label string, reflect_val
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", reflect_value.Kind(), string(letter), label, whitelist))
+			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", typeOf, string(letter), label, whitelist))
 		}
 	}
 	
@@ -266,12 +266,16 @@ func GetConstantValueAllowedCharacters() (string) {
 	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 }
 
+func GetAllowedStringValues() (string) {
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+}
+
 
 func ValidateOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
 	var errors []error 
 	var VALID_CHARACTERS = GetConstantValueAllowedCharacters()
 	for key, value := range extra_options {
-		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), reflect_value)
+		key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), fmt.Sprintf("%T", reflect_value))
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
 		}
@@ -282,7 +286,7 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 				combined += strings.Join(array_value, "")
 			}
 
-			value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), reflect_value)
+			value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), fmt.Sprintf("%T", reflect_value))
 			if value_extra_options_errors != nil {
 				errors = append(errors, value_extra_options_errors...)	
 			}
@@ -351,54 +355,57 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		error_on_value_of := false
 
 		map_of := fields.M(parameter)
-		typeOf, _ := map_of.S("type|string")
+		typeOf := map_of.S("type|string")
 
-		if typeOf == nil || *typeOf == "" {
+		if typeOf == nil {
 			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
 			continue
 		}
 		
 		switch *typeOf {
 		case "string":
-			valueOf, valueOf_error := map_of.S("value|string")
-			constraints, _ := map_of.S("constraints|string")
-			constraint_signitures := strings.Split(*constraints, ",")
-
-			if valueOf_error != nil {
+			valueOf := map_of.S("value|string")
+			
+			if valueOf == nil {
 				error_on_value_of = true
 			}
 			
-			for _, constraint_signiture := range constraint_signitures {
-				constraint_signiture_parts := strings.Split(constraint_signiture, ":")
-				constraint_method := constraint_signiture_parts[0]
-				constraint_filter := constraint_signiture_parts[1]
-				switch constraint_method {
-				case "optional":
-					isOptional = true
-					break
-				case "white_list":
-					switch constraint_filter {
-					case "GET_CHARACTER_SETS":
-						errors_of_filter := ContainsExactMatch(GET_CHARACTER_SETS().ToPrimativeArray(), valueOf, parameter, structType)
-						if errors_of_filter != nil {
-							errors_for_param = append(errors_for_param, errors_of_filter...)
-						}
-					break
-					case "GET_COLLATES":
-						errors_of_filter := ContainsExactMatch(GET_COLLATES().ToPrimativeArray(), valueOf, parameter, structType)
-						if errors_of_filter != nil {
-							errors_for_param = append(errors_for_param, errors_of_filter...)
-						}
-					break
+			constraints := map_of.S("constraints|string")
+			if constraints != nil {
+				constraint_signitures := strings.Split(*constraints, ",")
+				for _, constraint_signiture := range constraint_signitures {
+					constraint_signiture_parts := strings.Split(constraint_signiture, ":")
+					constraint_method := constraint_signiture_parts[0]
+					constraint_filter := constraint_signiture_parts[1]
+					switch constraint_method {
+					case "optional":
+						isOptional = true
+						break
 					default:
-						panic(fmt.Sprintf("please implement filter %s", constraint_filter))
-					}
-				default:
-					panic(fmt.Sprintf("please implement type %s", constraint_method))
-				}
+						filters := GET_FILTERS()
+						target_filter := filters.M(constraint_method)
+						if target_filter == nil {
+							panic(fmt.Sprintf("please implement filter %s", constraint_method))
+						}
 
-				
+						allowed_values := target_filter.A(constraint_filter)
+						if allowed_values == nil {
+							panic(fmt.Sprintf("please implement filter %s->%s", constraint_method, constraint_filter))
+						}
+
+						errors_of_filter := ContainsExactMatch(allowed_values.ToPrimativeArray(), valueOf, parameter, structType)
+						if errors_of_filter != nil {
+							errors_for_param = append(errors_for_param, errors_of_filter...)
+						}
+					}
+				}
 			}
+
+			default_errors_filter := ValidateCharacters(GetAllowedStringValues(), valueOf, parameter, structType)
+			if default_errors_filter != nil {
+				errors_for_param = append(errors_for_param, default_errors_filter...)
+			}
+
 			break
 		default:
 			panic(fmt.Sprintf("please implement type %s", typeOf))

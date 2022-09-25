@@ -153,7 +153,7 @@ func (this *Database) validateCredentials()  ([]error) {
 
 func (this *Database) validateDatabaseName() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name",  reflect.ValueOf(*this))
+	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name", fmt.Sprintf("%T", *this))
 }
 
 func GetFunctionName(i interface{}) string {
@@ -280,6 +280,7 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 	sql_command += *database_create_options_command
 
 	sql_command += ";\""
+	fmt.Println(sql_command)
 	return &sql_command, nil
 }
 

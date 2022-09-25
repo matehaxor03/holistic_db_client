@@ -170,21 +170,21 @@ func (m Map) ToJSONString() string {
 	return json
 }
 
-func (m Map) A(s string) (Array, error) {
+func (m Map) A(s string) (Array) {
 	rep := fmt.Sprintf("%T", m[s])
 	if m[s] == nil {
-		return nil, fmt.Errorf("Map.A: array was nil")
+		return nil
 	}
 
 	switch rep {
 		case "class.Array":
-			return m[s].(Array), nil
+			return m[s].(Array)
 		case "[]string":
 			newArray := Array{}
 			for _, v := range m[s].([]string) {
 				newArray = append(newArray, v)
 			}
-			return newArray, nil
+			return newArray
 	default:
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
 	}
@@ -213,25 +213,23 @@ func (m Map) Array(s string) []interface{} {
 	return m[s].([]interface{})
 }
 
-func (m Map) S(s string) (*string, error) {
+func (m Map) S(s string) (*string) {
 	if m[s] == nil {
-		err := fmt.Errorf("Map.S(s string): field: %s is not set", s)
-		return nil, err
+		return nil
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "string":
 		value := m[s].(string)
-		return &value, nil
+		return &value
 		break
 	case "reflect.Value":
 		value := fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface())
-		return &value, nil
+		return &value
 	}
 
-	err := fmt.Errorf("Map.S(s string): datatype: '%s' is not supported please implement when fetching field: %s", rep, s)
-	return nil, err
+	return nil
 }
 
 func (m Map) SetString(s string, value string) {

@@ -22,29 +22,31 @@ type DatabaseCreateOptions struct {
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
-	data := Map {"character_set":Map{"type|string":"string","value|string":character_set,"constraints|string":"optional:,white_list:GET_CHARACTER_SETS"},
-	"collate":Map{"type|string":"string","value|string":collate,"constraints|string":"optional:,white_list:GET_COLLATES"}}
+	data := Map {
+	"character_set":Map{"type|string":"string","value|string":character_set,"constraints|string":"optional:,white_list:character_set"},
+	"collate":Map{"type|string":"string","value|string":collate,"constraints|string":"optional:,white_list:collate"},
+	}
 	
 	getData := func() Map {
 		return data
     }
 
-	getCharacterSet := func() (*string, error) {
-		v, err := data.M("character_set").S("value|string")
+	getCharacterSet := func() (*string) {
+		v := data.M("character_set").S("value|string")
 		if v == nil {
-			return nil, err
+			return nil
 		}
 		clone := strings.Clone(*v)
-		return &clone, nil
+		return &clone
 	}
 
-	getCollate := func() (*string, error) {
-		v, err := data.M("collate").S("value|string")
-		if err != nil {
-			return nil, err
+	getCollate := func() (*string) {
+		v := data.M("collate").S("value|string")
+		if v == nil {
+			return nil
 		}
 		clone := strings.Clone(*v)
-		return &clone, err
+		return &clone
 	}
 
 	validate := func() ([]error) {
@@ -59,14 +61,14 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		
 		sql_command := ""
 
-		character_set, _ := getCharacterSet()
-		if character_set != nil && *character_set != "" {
-			sql_command += fmt.Sprintf("CHARACTER SET %s ", character_set)
+		character_set := getCharacterSet()
+		if character_set != nil {
+			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 		
-		collate, _ := getCollate()
-		if collate != nil && *collate != "" {
-			sql_command += fmt.Sprintf("COLLATE %s ", collate)
+		collate := getCollate()
+		if collate != nil {
+			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
 
 		return &sql_command, nil

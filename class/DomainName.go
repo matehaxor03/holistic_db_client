@@ -39,7 +39,7 @@ func (this *DomainName) InitValidationFunctions() ()  {
 
 func (this *DomainName) validateDomainName() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetDomainName(), "domain_name", reflect.ValueOf(*this))
+	return ValidateCharacters(VALID_CHARACTERS, (*this).GetDomainName(), "domain_name", fmt.Sprintf("%T", *this))
 }
 
 func (this *DomainName) GetDomainName() *string {
@@ -73,7 +73,7 @@ func (this *DomainName) GetDomainName() *string {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this))
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName,  fmt.Sprintf("%T", *this))
 		if character_errors != nil {
 			errors = append(errors, character_errors...)
 		}

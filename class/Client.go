@@ -53,7 +53,7 @@ func (this *Client) validateConstants()  ([]error) {
 			panic(fmt.Sprintf("please implement validation for constant value %s", fieldName))
 		}
 
-		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this))
+		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, fmt.Sprintf("%T", *this))
 		if character_errors != nil {
 			(errors) = append((errors), (character_errors)...)
 		}
