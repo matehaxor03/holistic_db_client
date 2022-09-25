@@ -123,7 +123,7 @@ func (this *Database) validateDatabaseCreateOptions()  ([]error) {
 	}
 
 
-	return (*((*this).GetDatabaseCreateOptions())).Validate()
+	return (*this).GetDatabaseCreateOptions().Validate()
 }
 
 func (this *Database) validateOptions() ([]error) {
@@ -271,14 +271,14 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 	
 	sql_command += fmt.Sprintf("%s ", (*(*this).GetDatabaseName()))
 	
-	character_set := (*(*this).GetDatabaseCreateOptions()).GetCharacterSet()
-	if character_set != nil {
-		sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
+	character_set, character_set_err := (*this).GetDatabaseCreateOptions().GetCharacterSet()
+	if character_set_err == nil && *character_set != "" {
+		sql_command += fmt.Sprintf("CHARACTER SET %s ", character_set)
 	}
 
-	collate := (*(*this).GetDatabaseCreateOptions()).GetCollate()
-	if collate != nil {
-		sql_command += fmt.Sprintf("COLLATE %s", *collate)
+	collate, collate_err := (*this).GetDatabaseCreateOptions().GetCollate()
+	if collate_err == nil && *collate != "" {
+		sql_command += fmt.Sprintf("COLLATE %s", collate)
 	}
 
 	sql_command += ";\""

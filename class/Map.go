@@ -213,21 +213,23 @@ func (m Map) Array(s string) []interface{} {
 	return m[s].([]interface{})
 }
 
-func (m Map) S(s string) (string, error) {
-	rep := fmt.Sprintf("%T", m[s])
+func (m Map) S(s string) (*string, error) {
 	if m[s] == nil {
-		return "",fmt.Errorf("Map.S(s string): field: %s is not set", s)
-	}
-	
-	switch rep {
-	case "string":
-		return m[s].(string), nil
-		break
-	case "reflect.Value":
-		return fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface()), nil
+		return nil, fmt.Errorf("Map.S(s string): field: %s is not set", s)
 	}
 
-	return "", fmt.Errorf("Map.S(s string): datatype: '%s' is not supported please implement when fetching field: %s", rep, s)
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "string":
+		value := m[s].(string)
+		return &value, nil
+		break
+	case "reflect.Value":
+		value := fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface())
+		return &value, nil
+	}
+
+	return nil, fmt.Errorf("Map.S(s string): datatype: '%s' is not supported please implement when fetching field: %s", rep, s)
 }
 
 func (m Map) SetString(s string, value string) {

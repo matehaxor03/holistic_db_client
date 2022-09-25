@@ -55,10 +55,8 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 
 	if str == nil {
 		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
-	}
-
-	if *str == "" {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
+	} else if *str == "" {
+		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is empty"))
 	}
 
 	if len(errors) > 0 {
@@ -75,6 +73,7 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 	return errors
 }
 
+/*
 func ValidateGeneric(payload Map) []error {	
 	errors := []error{}
 	if payload == nil {
@@ -125,7 +124,9 @@ func ValidateGeneric(payload Map) []error {
 
 	return nil
 }
+*/
 
+/*
 func ContainsExactMatchz(payload Map) []error {
 	errors := []error{}
 
@@ -157,12 +158,14 @@ func ContainsExactMatchz(payload Map) []error {
 	return nil
 }
 
+
 func Validate(args...interface{}) []error {
 	var errors []error 
 
 
 	return errors
 }
+*/
 
 func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) []error {
 	var errors []error 
@@ -325,5 +328,74 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	return &logic_option, nil
 }
 
+func ValidateGenericSpecial(fields Map, structType string) []error {
+	var errors []error 
+	var parameters = fields.Keys()
+	for _, parameter := range parameters {
+		var errors_for_param []error 
+		isOptional := false
+		error_on_value_of := false
 
+		map_of := fields.M(parameter)
+		typeOf, _ := map_of.S("type|string")
 
+		if typeOf == nil || *typeOf == "" {
+			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
+			continue
+		}
+		
+		switch *typeOf {
+		case "string":
+			valueOf, valueOf_error := map_of.S("value|string")
+			constraints, _ := map_of.S("constraints|string")
+			constraint_signitures := strings.Split(*constraints, ",")
+
+			if valueOf_error != nil {
+				error_on_value_of = true
+			}
+			
+			for _, constraint_signiture := range constraint_signitures {
+				constraint_signiture_parts := strings.Split(constraint_signiture, ":")
+				constraint_method := constraint_signiture_parts[0]
+				constraint_filter := constraint_signiture_parts[1]
+				switch constraint_method {
+				case "optional":
+					isOptional = true
+					break
+				case "white_list":
+					switch constraint_filter {
+					case "GET_CHARACTER_SETS":
+						errors_of_filter := ContainsExactMatch(GET_CHARACTER_SETS().ToPrimativeArray(), valueOf, parameter, structType)
+						if errors_of_filter != nil {
+							errors_for_param = append(errors_for_param, errors_of_filter...)
+						}
+					break
+					case "GET_COLLATES":
+						errors_of_filter := ContainsExactMatch(GET_COLLATES().ToPrimativeArray(), valueOf, parameter, structType)
+						if errors_of_filter != nil {
+							errors_for_param = append(errors_for_param, errors_of_filter...)
+						}
+					break
+					default:
+						panic(fmt.Sprintf("please implement filter %s", constraint_filter))
+					}
+				default:
+					panic(fmt.Sprintf("please implement type %s", constraint_method))
+				}
+
+				
+			}
+			break
+		default:
+			panic(fmt.Sprintf("please implement type %s", typeOf))
+		}
+
+		if error_on_value_of && isOptional {
+			errors_for_param = nil
+		} else {
+			errors = append(errors, errors_for_param...)
+		}
+	}
+
+	return errors
+}
