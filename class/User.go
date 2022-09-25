@@ -16,8 +16,8 @@ type User struct {
 	validation_functions map[string]func() []error
 }
 
-func GET_USER_DATA_DEFINITION_STATEMENTS() ([]string) {
-	return []string{GET_DATA_DEFINTION_STATEMENT_CREATE()}
+func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
+	return Array{GET_DATA_DEFINTION_STATEMENT_CREATE()}
 }
 
 func GET_USER_LOGIC_OPTIONS_CREATE() ([][]string){
@@ -142,7 +142,18 @@ func (this *User) createUser() (*User, *string, []error) {
 func (this *User) getCLSCRUDUserCommand(command string, options map[string]map[string][][]string) (*string, []error) {
 	var errors []error 
 
-	command_errs := ContainsExactMatch(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
+	m := Map{}
+	m.SetArray("values|array", GET_USER_DATA_DEFINITION_STATEMENTS())
+	m.SetString("value|string", &command)
+	commandTemp := "command"
+	m.SetString("label|string", &commandTemp)
+	rep :=  fmt.Sprintf("%T", *this)
+	m.SetString("data_type|string", &rep)
+
+
+	command_errs := ContainsExactMatch(m)
+
+	//command_errs := ContainsExactMatch(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	

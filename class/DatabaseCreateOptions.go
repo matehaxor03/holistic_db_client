@@ -23,13 +23,15 @@ type DatabaseCreateOptions struct {
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
 	data := Map {
 		"character_set":Map{"type|string":"string","value|string":character_set, 
-		FILTERS(): Array{ WHITELIST_FILTER() }},
+		FILTERS(): Array{ Map {"values|array":GET_CHARACTER_SETS(),"function|func":ContainsExactMatch } }},
 		"collate":Map{"type|string":"string","value|string":collate,
-		FILTERS(): Array{ WHITELIST_FILTER() }},
+		FILTERS(): Array{ Map {"values|array":GET_COLLATES(),"function|func":ContainsExactMatch } }},
 	}
+
+	//panic(data.ToJSONString())
 	
 	getData := func() Map {
-		return data.Clone()
+		return data
     }
 
 	getCharacterSet := func() (*string) {

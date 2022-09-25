@@ -42,15 +42,16 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 					clone[clone_key] = clone_value
 					break
 				case "string": 
-					clone.SetString(clone_key, clone_value.(string))
+					clone.SetString(clone_key, clone_value.(*string))
 				case "reflect.Value":
 					if strings.Contains(clone_key, "|") && len(strings.Split(clone_key, "|")) == 2 {
 						parts := strings.Split(clone_key, "|")
 						inner_clone_key_data_type := parts[1]
 						switch inner_clone_key_data_type {
 						case "string":
-						case "data_type":	
-							clone.SetString(clone_key, fmt.Sprintf("%s", reflect.ValueOf(clone_value).Interface()))
+						case "data_type":
+							s := strings.Clone(fmt.Sprintf("%s", value))
+							clone[clone_key] = &s
 							break
 						case "[]string":
 							raw_data := fmt.Sprintf("%s",  reflect.ValueOf(clone_value).Interface())
@@ -81,12 +82,27 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 			newMap[key] = clone
 			break
 		case "func(...map[string]interface {}) *class.Result":
-		case "*class.Result":
-		case "string":
+		case "func(class.Map) []error":
 			newMap[key] = value
 			break
+		case "*string":
+			if fmt.Sprintf("%s", value) != "%!s(*string=<nil>)" {
+				s := strings.Clone(*((value).(*string)))
+				newMap[key] = &s
+			} else {
+				newMap[key] = nil
+			}
+			break
+		case "string":
+		case "data_type":
+			s := strings.Clone(fmt.Sprintf("%s", value))
+			newMap[key] = &s
+			break
 		case "class.Array":
-			newMap[key] = ConvertPrimativeArrayToArray(value.([]interface{}))
+			newMap[key] = value.(Array).Clone()
+			break
+		case "func(class.Map)":
+			newMap[key] = value.(Map).Clone()
 			break
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
@@ -139,6 +155,8 @@ func (m Map) ToJSONString() string {
 		value := m[key]
 		rep := fmt.Sprintf("%T", value)
 		switch rep {
+		case "<nil>":
+			json = json + "null"
 		case "string":
 			json = json + "\"" + value.(string) + "\""
 		case "*string":
@@ -164,6 +182,8 @@ func (m Map) ToJSONString() string {
 			json += "]"	
 		case "reflect.Value":
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
+		case "func(class.Map) []error": 
+			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		default:
 			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
@@ -179,6 +199,7 @@ func (m Map) ToJSONString() string {
 
 func (m Map) A(s string) (Array) {
 	rep := fmt.Sprintf("%T", m[s])
+	//fmt.Println(rep)
 	if m[s] == nil {
 		return nil
 	}
@@ -230,22 +251,36 @@ func (m Map) S(s string) (*string) {
 	case "string":
 		value := m[s].(string)
 		newValue := strings.Clone(value)
+		
 		return &newValue
 		break
 	case "reflect.Value":
 		value := fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface())
 		newValue := strings.Clone(value)
 		return &newValue
+	case "*string":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
+			s := strings.Clone(*((m[s]).(*string)))
+			return &s
+		} else {
+			return nil
+		}
+		break
+	default:
+		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
 	}
 
 	return nil
 }
 
-func (m Map) SetString(s string, value string) {
+func (m Map) SetString(s string, value *string) {
 	rep := fmt.Sprintf("%T", value)
 	
 	switch rep {
 	case "string":
+		m[s] = value
+		break
+	case "*string":
 		m[s] = value
 		break
 	default:
@@ -261,6 +296,14 @@ func (m Map) Keys() []string {
 	return keys
 }
 
+func (m Map) Values() Array {
+	array := Array{}
+	for _, f := range m {
+		array = append(array, f)
+	}
+	return array
+}
+
 func (m Map) Clone() Map {
 	clone := Map{}
 	keys := m.Keys()
@@ -271,7 +314,7 @@ func (m Map) Clone() Map {
 		switch rep {
 		case "string":
 			cloneString := strings.Clone(*(m.S(key)))
-			clone.SetString(key, cloneString)
+			clone.SetString(key, &cloneString)
 			break	
 		case "*string":
 			if fmt.Sprintf("%s", m[key]) == "%!s(*string=<nil>)" {
@@ -285,7 +328,7 @@ func (m Map) Clone() Map {
 			case "string":
 				value := *(m[key].(*string))
 				cloneString := strings.Clone(value)
-				clone.SetString(key, cloneString)
+				clone.SetString(key, &cloneString)
 				break
 			default:
 				panic(fmt.Errorf("Map.M: type %s is not supported please implement", keyValueType))
@@ -297,10 +340,14 @@ func (m Map) Clone() Map {
 		case "class.Array":
 			clone[key] = current.(Array).Clone()
 			break
+		case "func(class.Map) []error":
+			clone[key] = current
+			break			
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 		}
 	}
+
 	return clone
 }
 

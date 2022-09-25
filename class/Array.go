@@ -87,6 +87,12 @@ func (a Array) ToJSONString() string {
 	for i, value := range a {
 		rep := fmt.Sprintf("%T", value)
 		switch rep {
+		case "*string":
+			if fmt.Sprintf("%s", value) != "%!s(*string=<nil>)" {
+				json = json + "null"
+			} else {
+				json = json + "\"" + (*(value).(*string)) + "\""
+			}
 		case "string":
 			json = json + "\"" + value.(string) + "\""
 		case "class.Map":
@@ -96,6 +102,10 @@ func (a Array) ToJSONString() string {
 		case "reflect.Value":
 			fmt.Println("trying to draw refelect array")
 			json = json + fmt.Sprintf("\"%s\"", value)
+		case "func(class.Map) []error": 
+			json = json + fmt.Sprintf("\"func(class.Map) []error\"")
+		case "<nil>":
+			json = json + fmt.Sprintf("null")
 		default:
 			panic(fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep))
 		}

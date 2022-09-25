@@ -37,26 +37,41 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
-func ContainsExactMatch(array []string, str *string, label string, data_type string) []error {
+func ContainsExactMatch(m Map) []error {
+	//rep := fmt.Sprintf("%T", m)
+	m = ConvertPrimitiveMapToMap(m)
+
+	fmt.Println(m.ToJSONString())
+	
+	array := m.A("values|array")
+	str := m.S("value|string")
+	label := m.S("label|string")
+	data_type := m.S("data_type|string")
+	
+
+	
+	
+	//array []string, str *string, label string, data_type string
+	
 	var errors []error 
 	if array == nil {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: has nil array"))
+		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: has nil array", *data_type, *label))
 	}
 
 	if len(array) == 0 {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: has empty array"))
+		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: has empty array", *data_type, *label))
 	}
 
 	for _, value := range array {
 		if value == "" {
-			errors = append(errors, fmt.Errorf("ContainsExactMatch: array has empty value"))
+			errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: array has empty value", *data_type, *label))
 		}
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is nil"))
+		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("ContainsExactMatch: compare value is empty"))
+		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -69,7 +84,7 @@ func ContainsExactMatch(array []string, str *string, label string, data_type str
 		}
 	}
 
-    errors = append(errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", data_type, label, *str , array))
+    errors = append(errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", *data_type, *label, *str , array))
 	return errors
 }
 
@@ -372,9 +387,31 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			
 			filters := parameter_fields.A(FILTERS())
 			if filters != nil {
-				all_compare_filters := GET_FILTERS()
 				for _, filter := range filters {
+					//values := filter.(Map).A("values|array")
+					function := filter.(Map).Func("function|func")
 
+					filter.(Map).SetString("value|string", valueOf)
+					filter.(Map).SetString("data_type|string", &structType)
+					temp := "ValidateGenericSpecial"
+					filter.(Map).SetString("label|string", &temp)
+				
+					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
+
+					var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
+
+					validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
+					outer_array_length := len(validation_errors)
+					for i := 0; i < outer_array_length; i++ {
+						validation_error := validation_errors[i]
+						error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
+						if error_value == "[]" {
+							continue
+						}
+						errors = append(errors, fmt.Errorf(error_value))
+					}
+
+					/*
 					compare_filter := all_compare_filters.M(filter.(string))
 					if compare_filter == nil {
 						errors_for_param = append(errors_for_param, fmt.Errorf("please implement filter for %s", filter))
@@ -390,7 +427,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					errors_of_filter := ContainsExactMatch(compare_filter_values.ToPrimativeArray(), valueOf, parameter, structType)
 					if errors_of_filter != nil {
 						errors_for_param = append(errors_for_param, errors_of_filter...)
-					}	
+					}*/	
 
 
 
