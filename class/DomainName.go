@@ -8,13 +8,13 @@ import (
 type DomainName struct {
 	domain_name *string
 
-	validation_functions map[string]func() *[]error
+	validation_functions map[string]func() []error
 }
 
 func NewDomainName(domain_name *string) (*DomainName) {
 	x := DomainName{domain_name: domain_name}
 
-	x.validation_functions = make(map[string]func() *[]error)
+	x.validation_functions = make(map[string]func() []error)
 	x.InitValidationFunctions()
 
 	return &x
@@ -37,7 +37,7 @@ func (this *DomainName) InitValidationFunctions() ()  {
 	}
 }
 
-func (this *DomainName) validateDomainName() (*[]error) {
+func (this *DomainName) validateDomainName() ([]error) {
 	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
 	return ValidateCharacters(VALID_CHARACTERS, (*this).GetDomainName(), "domain_name", reflect.ValueOf(*this))
 }
@@ -46,8 +46,8 @@ func (this *DomainName) GetDomainName() *string {
 	return (*this).domain_name
  }
 
- func (this *DomainName) validateConstants()  (*[]error) {
-	var errors *[]error 
+ func (this *DomainName) validateConstants()  ([]error) {
+	var errors []error 
 	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
 	reflected_value := reflect.ValueOf(this)
 	refected_element := reflected_value.Elem()
@@ -75,21 +75,21 @@ func (this *DomainName) GetDomainName() *string {
 
 		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this))
 		if character_errors != nil {
-			*errors = append(*errors, *character_errors...)
+			errors = append(errors, character_errors...)
 		}
 	}
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func (this *DomainName) validateValidationFunctions() (*[]error) {
-	var errors *[]error 
+func (this *DomainName) validateValidationFunctions() ([]error) {
+	var errors []error 
 	current := (*this).getValidationFunctions()
-	compare := make(map[string]func() *[]error)
+	compare := make(map[string]func() []error)
 	found := false
 
     for current_key, current_value := range current {
@@ -98,7 +98,7 @@ func (this *DomainName) validateValidationFunctions() (*[]error) {
 			if GetFunctionName(current_value) == GetFunctionName(compare_value) && 
 			   current_key != compare_key {
 				found = true
-				*errors = append(*errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
+				errors = append(errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
 				break
 			}
 		}
@@ -108,19 +108,19 @@ func (this *DomainName) validateValidationFunctions() (*[]error) {
 		}
     }
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func (this *DomainName) getValidationFunctions() map[string]func() *[]error {
+func (this *DomainName) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
 }
 
-func (this *DomainName) Validate() *[]error {
-	var errors *[]error 
+func (this *DomainName) Validate() []error {
+	var errors []error 
 	var fieldsNotFound []string
 	reflected_value := reflect.ValueOf(this)
 	refected_element := reflected_value.Elem()
@@ -135,28 +135,28 @@ func (this *DomainName) Validate() *[]error {
 		} else {
 			relection_errors := method()
 			if relection_errors != nil{
-				*errors = append(*errors, *relection_errors...)
+				errors = append(errors, relection_errors...)
 			}
 		}
 	}
 
 	method, found_method := (*this).getValidationFunctions()["validateConstants"]
 	if !found_method {
-		*errors = append(*errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
+		errors = append(errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
 	} else {
 		constant_errors := method()
 		if constant_errors != nil{
-			*errors = append(*errors, *constant_errors...)
+			errors = append(errors, constant_errors...)
 		}
 	}
 
 	for _, value := range fieldsNotFound {
 		if !IsUpper(value) {
-			*errors = append(*errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
+			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
 		}
 	}
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 

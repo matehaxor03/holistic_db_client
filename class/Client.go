@@ -12,7 +12,7 @@ type Client struct {
 	credentials *Credentials
 	database *Database
 
-	validation_functions map[string]func() *[]error
+	validation_functions map[string]func() []error
 }
 
 func NewClient(host *Host, credentials *Credentials, database *Database) (*Client) {
@@ -20,14 +20,14 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 				credentials: credentials,
 				database: database}
 
-	x.validation_functions = make(map[string]func() *[]error)		
+	x.validation_functions = make(map[string]func() []error)		
 	x.InitValidationFunctions()
 			    
 	return &x
 }
 
-func (this *Client) validateConstants()  (*[]error) {
-	var errors *[]error 
+func (this *Client) validateConstants()  ([]error) {
+	var errors []error 
 	VALID_CHARACTERS := GetConstantValueAllowedCharacters()
 	reflected_value := reflect.ValueOf(*this)
 	refected_element := reflected_value.Elem()
@@ -55,11 +55,11 @@ func (this *Client) validateConstants()  (*[]error) {
 
 		character_errors := ValidateCharacters(VALID_CHARACTERS, &string_fieldValue, fieldName, reflect.ValueOf(*this))
 		if character_errors != nil {
-			(*errors) = append((*errors), (*character_errors)...)
+			(errors) = append((errors), (character_errors)...)
 		}
 	}
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
@@ -86,29 +86,38 @@ func (this *Client) InitValidationFunctions() ()  {
 	}
 }
 
-func (this *Client) CreateDatabase(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, *[]error) {
-	return NewDatabase((*this).GetHost(), (*this).GetCredentials(), database_name, database_create_options, options).Create()
+func (this *Client) CreateDatabase(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
+	database, errs := NewDatabase((*this).GetHost(), (*this).GetCredentials(), database_name, database_create_options, options)
+	if errs != nil {
+		return nil, nil, errs
+	}
+	
+	return database.Create()
 }
 
-func (this *Client) CreateUser(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, *[]error) {
-	var errors *[]error 
+func (this *Client) CreateUser(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
+	var errors []error 
 	credentials := NewCredentials(username, password)
 	domain := NewDomainName(domain_name)
 
 	if (*this).GetHost() == nil {
-		*errors = append(*errors, fmt.Errorf("holistic.Client: holistic.Host is nil, please set the host"))
+		errors = append(errors, fmt.Errorf("holistic.Client: holistic.Host is nil, please set the host"))
 	}
 
 	if (*this).GetCredentials() == nil {
-		*errors = append(*errors, fmt.Errorf("holistic.Client: holistic.Credentials is nil, please set the credentials"))
+		errors = append(errors, fmt.Errorf("holistic.Client: holistic.Credentials is nil, please set the credentials"))
 	}
 
-	if len(*errors) > 0 {
+	if errors != nil {
 		return nil, nil, errors
 	}
 
-	
-	return newUser((this), credentials, domain, options).Create()
+	user, user_errs := newUser((this), credentials, domain, options)
+	if user_errs != nil {
+		return nil, nil, user_errs
+	}
+
+	return user.Create()
 }
 
 func (this *Client) GetHost() *Host {
@@ -123,10 +132,10 @@ func (this *Client) GetCredentials() *Credentials {
 	return (*this).database
  }
 
- func (this *Client) validateValidationFunctions() (*[]error) {
-	var errors *[]error 
+ func (this *Client) validateValidationFunctions() ([]error) {
+	var errors []error 
 	current := (*this).getValidationFunctions()
-	compare := make(map[string]func() *[]error)
+	compare := make(map[string]func() []error)
 	found := false
 
     for current_key, current_value := range current {
@@ -135,7 +144,7 @@ func (this *Client) GetCredentials() *Credentials {
 			if GetFunctionName(current_value) == GetFunctionName(compare_value) && 
 			   current_key != compare_key {
 				found = true
-				*errors = append(*errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
+				errors = append(errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
 				break
 			}
 		}
@@ -145,19 +154,19 @@ func (this *Client) GetCredentials() *Credentials {
 		}
     }
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func (this *Client) getValidationFunctions() map[string]func() *[]error {
+func (this *Client) getValidationFunctions() map[string]func() []error {
 	return (*this).validation_functions
 }
 
-func (this *Client) Validate() *[]error {
-	var errors *[]error 
+func (this *Client) Validate() []error {
+	var errors []error 
 	var fieldsNotFound []string
 	reflected_value := reflect.ValueOf(*this)
 	refected_element := reflected_value.Elem()
@@ -172,35 +181,35 @@ func (this *Client) Validate() *[]error {
 		} else {
 			relection_errors := method()
 			if relection_errors != nil{
-				*errors = append(*errors, *relection_errors...)
+				errors = append(errors, relection_errors...)
 			}
 		}
 	}
 
 	method, found_method := (*this).getValidationFunctions()["validateConstants"]
 	if !found_method {
-		*errors = append(*errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
+		errors = append(errors, fmt.Errorf("validation method: validateConstants not found please add to InitValidationFunctions"))
 	} else {
 		constant_errors := method()
 		if constant_errors != nil{
-			*errors = append(*errors, *constant_errors...)
+			errors = append(errors, constant_errors...)
 		}
 	}
 
 	for _, value := range fieldsNotFound {
 		if !IsUpper(value) {
-			*errors = append(*errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
+			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
 		}
 	}
 
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
 	return nil
 }
 
-func (this *Client) validateHost()  (*[]error) {
+func (this *Client) validateHost()  ([]error) {
 	if (*this).GetHost() == nil {
 		return nil
 	}
@@ -208,7 +217,7 @@ func (this *Client) validateHost()  (*[]error) {
 	return (*((*this).GetHost())).Validate()
 }
 
-func (this *Client) validateCredentials()  (*[]error) {
+func (this *Client) validateCredentials()  ([]error) {
 	if (*this).GetCredentials() == nil {
 		return nil
 	}
@@ -216,7 +225,7 @@ func (this *Client) validateCredentials()  (*[]error) {
 	return (*((*this).GetCredentials())).Validate()
 }
 
-func (this *Client) validateDatabase()  (*[]error) {
+func (this *Client) validateDatabase()  ([]error) {
 	if (*this).GetDatabase() == nil {
 		return nil
 	}

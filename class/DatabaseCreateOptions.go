@@ -17,8 +17,8 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 
 type DatabaseCreateOptions struct {
 	GetData func() Map
-	Validate func() (*[]error)
-	GetSQL func() (*string, *[]error)
+	Validate func() ([]error)
+	GetSQL func() (*string, []error)
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
@@ -29,7 +29,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return data
     }
 
-	getCharacterSet := func() (*string, *error) {
+	getCharacterSet := func() (*string, error) {
 		v, err := data.M("character_set").S("value|string")
 		if v == nil {
 			return nil, err
@@ -38,7 +38,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return &clone, nil
 	}
 
-	getCollate := func() (*string, *error) {
+	getCollate := func() (*string, error) {
 		v, err := data.M("collate").S("value|string")
 		if err != nil {
 			return nil, err
@@ -47,13 +47,13 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return &clone, err
 	}
 
-	validate := func() (*[]error) {
+	validate := func() ([]error) {
 		return ValidateGenericSpecial(getData(), "DatabaseCreateOptions")
 	}
 
-	getSQL := func() (*string, *[]error) {
+	getSQL := func() (*string, []error) {
 		errs := validate()
-		if errs != nil || len(*errs) > 0 {
+		if errs != nil {
 			return nil, errs
 		}
 		
@@ -76,10 +76,10 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
         GetData: func() Map {
             return getData()
         },
-		Validate: func() (*[]error) {
+		Validate: func() ([]error) {
 			return validate()
 		},
-		GetSQL: func() (*string, *[]error) {
+		GetSQL: func() (*string, []error) {
 			return getSQL()
 		},
     }

@@ -213,10 +213,10 @@ func (m Map) Array(s string) []interface{} {
 	return m[s].([]interface{})
 }
 
-func (m Map) S(s string) (*string, *error) {
+func (m Map) S(s string) (*string, error) {
 	if m[s] == nil {
 		err := fmt.Errorf("Map.S(s string): field: %s is not set", s)
-		return nil, &err
+		return nil, err
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
@@ -231,7 +231,7 @@ func (m Map) S(s string) (*string, *error) {
 	}
 
 	err := fmt.Errorf("Map.S(s string): datatype: '%s' is not supported please implement when fetching field: %s", rep, s)
-	return nil, &err
+	return nil, err
 }
 
 func (m Map) SetString(s string, value string) {

@@ -8,6 +8,7 @@ import (
 )
 
 func main() {
+	errors := []error{}
 	const CLS_USER string = "username"
 	const CLS_PASSWORD string = "password"
 	const CLS_HOST string = "host_name"
@@ -34,15 +35,15 @@ func main() {
 
 	//var IF_EXISTS string = "IF EXISTS"
 	//var IF_NOT_EXISTS string = "IF NOT EXISTS"
-	
+	fmt.Println("hi")
+	context := class.NewContext()
     params, errors := getParams(os.Args[1:])
-	if errors != nil || len(*errors) > 0 {
-		fmt.Println(fmt.Errorf("%s", *errors))
+	if errors != nil || len((errors)) > 0 {
+		context.LogErrors(errors)
 		os.Exit(1)
 	}
 
-	errors_value := []error{}
-	errors = &errors_value
+	fmt.Println("h2i")
 
 	host_value, _ := params[CLS_HOST] 
 	port_value, _ := params[CLS_PORT] 
@@ -75,21 +76,19 @@ func main() {
 	_, if_not_exists := params[CLS_IF_NOT_EXISTS]
 	
 	if if_exists && if_not_exists {
-		*errors = append(*errors, fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
+		context.LogError(fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
 	}
 
 	if command_pt == nil || !command_found {
-		*errors = append(*errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
 	if class_pt == nil || !class_found {
-		*errors = append(*errors, fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
 	}
 
-	if errors != nil && len(*errors) > 0 {
-		for _, e := range *errors {
-			fmt.Println(e)
-		}
+	if len(errors) > 0 {
+	    context.LogErrors(errors)
 		os.Exit(1)
 	}
 
@@ -117,9 +116,7 @@ func main() {
 			_, shell_output, database_errors := client.CreateDatabase(database_name, database_create_options, options)
 			
 			if database_errors != nil {
-				for _, e := range *database_errors {
-					fmt.Println(e)
-				}
+				context.LogErrors(database_errors)
 
 				if shell_output != nil {
 					fmt.Println(*shell_output)
@@ -130,9 +127,8 @@ func main() {
 			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 			
 			if user_errors != nil {
-				for _, e := range *user_errors {
-					fmt.Println(e)
-				}
+				context.LogErrors(user_errors)
+
 
 				if shell_output != nil {
 					fmt.Println(*shell_output)
@@ -151,9 +147,8 @@ func main() {
 	os.Exit(0)
 }
 
-func getParams(params []string) (map[string]*string, *[]error) {
-	errors_value := []error{}
-	errors := &errors_value
+func getParams(params []string) (map[string]*string, []error) {
+	errors := []error{}
 
 	m := make(map[string]*string)
 	for _, value := range params {
@@ -164,21 +159,22 @@ func getParams(params []string) (map[string]*string, *[]error) {
 
 		results := strings.SplitN(value, "=", 2)
 		if len(results) != 2 {
-			*errors = append(*errors, fmt.Errorf("invalid param found: %s must be in the format {paramName}={paramValue}", value))
+			errors = append(errors, fmt.Errorf("invalid param found: %s must be in the format {paramName}={paramValue}", value))
+			fmt.Println(errors)
 			continue
 		}
 		m[results[0]] = &results[1]
 	}
 
-	if errors != nil || len(*errors) > 0 {
+	if len(errors) > 0 {
 		return nil, errors
 	}
  
 	return m, nil
 }
 
-func validateCharacters(whitelist string, str string) (*[]error) {
-	var errors *[]error 
+func validateCharacters(whitelist string, str string) ([]error) {
+	var errors []error 
 	for _, letter := range str {
 		found := false
 
@@ -190,11 +186,11 @@ func validateCharacters(whitelist string, str string) (*[]error) {
 		}
 
 		if !found {
-			*errors = append(*errors, fmt.Errorf("invalid letter detected %s", string(letter)))
+			errors = append(errors, fmt.Errorf("invalid letter detected %s", string(letter)))
 		}
 	}
 	
-	if len(*errors) > 0 {
+	if len(errors) > 0 {
 		return errors
 	}
 
