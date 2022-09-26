@@ -1,9 +1,10 @@
 package class
 
+/*
 import (
 	"fmt"
 	"reflect"
-)
+)*/
 
 
 
@@ -11,6 +12,8 @@ type Client struct {
 	host *Host
 	credentials *Credentials
 	database *Database
+	//GetHost func *Host
+	//GetCredentials func *Credentials
 }
 
 func NewClient(host *Host, credentials *Credentials, database *Database) (*Client) {
@@ -38,4 +41,13 @@ func (this *Client) CreateUser(username *string, password *string, domain_name *
 	// todo check validations
 	//domain := NewDomainName(domain_name)
 	return nil , nil, nil//user.Create()
+}
+
+
+func (this *Client) GetHost() (*Host) {
+	return (*this).host
+}
+
+func (this *Client) GetCredentials() (*Credentials) {
+	return (*this).credentials
 }

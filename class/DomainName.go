@@ -1,7 +1,7 @@
 package class
 
 import (
-	"fmt"
+	"strings"
 )
 
 func getValidateDomainNameCharacters() (string) {
@@ -10,6 +10,7 @@ func getValidateDomainNameCharacters() (string) {
 
 type DomainName struct {
 	Validate func() ([]error)
+	GetDomainName func() (*string)
 }
 
 func NewDomainName(domain_name *string) (*DomainName) {
@@ -21,11 +22,22 @@ func NewDomainName(domain_name *string) (*DomainName) {
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "DomainName")
 	}
-	
+
+	getDomainName := func () (*string) {
+		ptr := data.M("domain_name").S("value")
+		if ptr == nil {
+			return nil
+		}
+		cloneString := strings.Clone(*ptr)
+		return &cloneString
+	}
 	
 	x := DomainName{
 		Validate: func() ([]error) {
 			return validate()
+		},
+		GetDomainName: func() (*string) {
+			return getDomainName()
 		},
     }
 

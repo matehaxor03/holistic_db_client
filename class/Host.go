@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"reflect"
 )
 
 func GetHostNameValidCharacters() (string) {

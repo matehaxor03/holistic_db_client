@@ -320,5 +320,9 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		
 	}
 
-	return errors
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
 }
