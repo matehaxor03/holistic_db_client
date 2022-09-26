@@ -39,15 +39,3 @@ func WHITELIST_FILTER() string {
 func FILTERS() string {
 	return "filters"
 }
-
-func GET_FILTERS() Map {
-	return Map{WHITELIST_FILTER():Map{
-			GET_COLLATE():GET_COLLATES(),
-			GET_CHARACTER_SET():GET_CHARACTER_SETS(),
-		},
-	}
-}
-
-
-
-

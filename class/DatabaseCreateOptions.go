@@ -20,10 +20,10 @@ type DatabaseCreateOptions struct {
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
 	data := Map {
-		"character_set":Map{"type|string":"string","value|string":character_set,"mandatory|boolean":false,
-		FILTERS(): Array{ Map {"values|array":GET_CHARACTER_SETS(),"function|func":ContainsExactMatch } }},
-		"collate":Map{"type|string":"string","value|string":collate,"mandatory|boolean":false,
-		FILTERS(): Array{ Map {"values|array":GET_COLLATES(),"function|func":ContainsExactMatch } }},
+		"character_set":Map{"type":"string","value":character_set,"mandatory":false,
+		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":ContainsExactMatch } }},
+		"collate":Map{"type":"string","value":collate,"mandatory":false,
+		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":ContainsExactMatch } }},
 	}
 	
 	getData := func() Map {
@@ -31,7 +31,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
     }
 
 	getCharacterSet := func() (*string) {
-		v := data.M("character_set").S("value|string")
+		v := data.M("character_set").S("value")
 		if v == nil {
 			return nil
 		}
@@ -40,7 +40,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	getCollate := func() (*string) {
-		v := data.M("collate").S("value|string")
+		v := data.M("collate").S("value")
 		if v == nil {
 			return nil
 		}
@@ -82,55 +82,3 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		},
     }
 }
-
-/*
-func (this *DatabaseCreateOptions) getValidations() Map {	
-	typeOf := fmt.Sprintf("%T", *this)
-	validations := Map{GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET():Array{Map{"function":ContainsExactMatchz,"parameters": Map{"whitelist|[]string":GET_CHARACTER_SETS(),"type|data_type":typeOf,"data|string":"utf8","column_name|string":GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET()}}}}
-	
-
-	return validations
-}*/
-
-/*
-func (this *DatabaseCreateOptions) getData() map[string]interface{} {
-	return (*this).data
-}
-
-func (this *DatabaseCreateOptions) GetCharacterSet() *string {
-	return (*this).character_set
-}
-
-func (this *DatabaseCreateOptions) GetCollate() *string {
-	return (*this).collate
-}*/
-/*
-func (this *DatabaseCreateOptions) Validate() []error {
-	var errors []error 
-	var array_of_validations = (*this).getValidations()
-	var keys = KeysForMap(array_of_validations)
-	for _, parameter := range keys {
-		var method_signiture = array_of_validations[parameter].(Array)
-		
-		for _, validation := range method_signiture {
-	
-			var vargsConvert = []reflect.Value{reflect.ValueOf(validation)}
-
-		    var output_array_map_result = reflect.ValueOf(validation.(Map).Func("function")).Call(vargsConvert)
-
-			validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
-			outer_array_length := len(validation_errors)
-			for i := 0; i < outer_array_length; i++ {
-				validation_error := validation_errors[i]
-				error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
-				if error_value == "[]" {
-					continue
-				}
-				errors = append(errors, fmt.Errorf(error_value))
-			}
-
-		}
-	}
-
-	return errors
-}*/

@@ -143,17 +143,15 @@ func (this *User) getCLSCRUDUserCommand(command string, options map[string]map[s
 	var errors []error 
 
 	m := Map{}
-	m.SetArray("values|array", GET_USER_DATA_DEFINITION_STATEMENTS())
-	m.SetString("value|string", &command)
+	m.SetArray("values", GET_USER_DATA_DEFINITION_STATEMENTS())
+	m.SetString("value", &command)
 	commandTemp := "command"
-	m.SetString("label|string", &commandTemp)
+	m.SetString("label", &commandTemp)
 	rep :=  fmt.Sprintf("%T", *this)
-	m.SetString("data_type|string", &rep)
+	m.SetString("data_type", &rep)
 
 
 	command_errs := ContainsExactMatch(m)
-
-	//command_errs := ContainsExactMatch(GET_USER_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
 
 	if command_errs != nil {
 		errors = append(errors, command_errs...)	

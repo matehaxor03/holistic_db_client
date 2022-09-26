@@ -38,21 +38,13 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 }
 
 func ContainsExactMatch(m Map) []error {
-	//rep := fmt.Sprintf("%T", m)
 	m = ConvertPrimitiveMapToMap(m)
 
-	fmt.Println(m.ToJSONString())
-	
-	array := m.A("values|array")
-	str := m.S("value|string")
-	label := m.S("label|string")
-	data_type := m.S("data_type|string")
-	
-
-	
-	
-	//array []string, str *string, label string, data_type string
-	
+	array := m.A("values")
+	str := m.S("value")
+	label := m.S("label")
+	data_type := m.S("data_type")
+		
 	var errors []error 
 	if array == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: has nil array", *data_type, *label))
@@ -87,114 +79,6 @@ func ContainsExactMatch(m Map) []error {
     errors = append(errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", *data_type, *label, *str , array))
 	return errors
 }
-
-/*
-func ValidateGeneric(payload Map) []error {	
-	errors := []error{}
-	if payload == nil {
-		errors = append(errors, fmt.Errorf("ValidateGeneric received a nil payload"))
-		return errors
-	}
-
-	var function, function_exists = payload["function"]
-	if !function_exists {
-		errors = append(errors, fmt.Errorf("ValidateGeneric: key: 'function' did not exist"))
-	} else if function == nil {
-		errors = append(errors, fmt.Errorf("ValidateGeneric: key: 'function' had a nil value"))
-	} 
-
-	var parameters = payload.M("parameters")
-	
-	var parameter_keys = strings.Join(parameters.Keys(), " ")
-	if parameters == nil {
-		errors = append(errors, fmt.Errorf("ValidateGeneric: key 'parameters' did not exist"))
-	} 
-
-	if len(errors) > 0 {
-		return errors
-	}
-	
-	whitelist, whitelist_err := parameters.A("whitelist|[]string")
-
-	if whitelist_err != nil {
-		errors = append(errors, fmt.Errorf("ValidateGeneric key: parameters->whiltelist did not exist"))
-	} else if len(whitelist) == 0 {
-		errors = append(errors, fmt.Errorf("ValidateGeneric args had key: parameters->whiltelist but it did have an empty value"))
-	} 
-
-	var data, data_err = parameters.S("data|string")
-	if data_err != nil || data == "" {
-		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or empty data: parameters->data keys: %s", parameter_keys))
-	}
-
-	var data_type, data_type_err = parameters.S("type|data_type")
-	if (data_type_err != nil || data_type == "") {
-		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or empty data: parameters->kind keys: %s", parameter_keys))
-	} 
-
-	var column_name, column_name_err = parameters.S("column_name|string")
-	if ( column_name_err != nil || column_name == "") {
-		errors = append(errors, fmt.Errorf("ValidateGeneric had nil or emtpy data parameters->column_name: %s", parameter_keys))
-	} 
-
-	return nil
-}
-*/
-
-/*
-func ContainsExactMatchz(payload Map) []error {
-	errors := []error{}
-
-	if ValidateGeneric(payload) != nil {
-		return errors
-	}
-	
-	parameters := payload.M("parameters")
-	whitelist, _ := parameters.A("whitelist|[]string")
-	data, _ := parameters.S("data|string")
-	column_name, _ := parameters.S("column_name|string")
-	data_type, _ := parameters.S("type|data_type")
-
-
-
-	var containsExactMatchErrors = ContainsExactMatch(whitelist.ToPrimativeArray(), &data, column_name, data_type)
-
-	if containsExactMatchErrors != nil {
-		errors = append(errors, containsExactMatchErrors...)
-	}
-
-	if errors != nil && len(errors) > 0 {
-		for i := 0; i < len(errors); i++ {
-			fmt.Println(errors[i])
-		}
-		return errors
-	}
-
-	return nil
-}
-
-
-func Validate(args...interface{}) []error {
-	var errors []error 
-
-
-	return errors
-}
-*/
-
-/*
-func CloneStringPtr(s* string) (*string) {
-	if s == nil {
-		return nil
-	}
-
-	var builder strings.Builder
-    if _, err := sb.WriteString(*s); err != nil {
-        //log & return
-    }
-    newstring := sb.String()
-	return &newstring
-}*/
 
 func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) []error {
 	var errors []error 
@@ -370,8 +254,8 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		value_is_null := false
 
 		parameter_fields := fields.M(parameter)
-		typeOf := parameter_fields.S("type|string")
-		mandatory_field := parameter_fields.B("mandatory|boolean")
+		typeOf := parameter_fields.S("type")
+		mandatory_field := parameter_fields.B("mandatory")
 		
 		if mandatory_field != nil {
 			fmt.Println(fmt.Sprintf("is mandatory: %b", *mandatory_field))
@@ -385,7 +269,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		
 		switch *typeOf {
 		case "string":
-			valueOf := parameter_fields.S("value|string")
+			valueOf := parameter_fields.S("value")
 			
 			if valueOf == nil {
 				value_is_null = true
@@ -398,13 +282,13 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			filters := parameter_fields.A(FILTERS())
 			if filters != nil {
 				for _, filter := range filters {
-					//values := filter.(Map).A("values|array")
-					function := filter.(Map).Func("function|func")
+					//values := filter.(Map).A("values")
+					function := filter.(Map).Func("function")
 
-					filter.(Map).SetString("value|string", valueOf)
-					filter.(Map).SetString("data_type|string", &structType)
+					filter.(Map).SetString("value", valueOf)
+					filter.(Map).SetString("data_type", &structType)
 					temp := "ValidateGenericSpecial"
-					filter.(Map).SetString("label|string", &temp)
+					filter.(Map).SetString("label", &temp)
 				
 					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
 

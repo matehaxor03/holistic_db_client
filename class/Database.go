@@ -232,14 +232,13 @@ func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[stri
 	var errors []error 
 
 	m := Map{}
-	m.SetArray("values|array", GET_DATABASE_DATA_DEFINITION_STATEMENTS())
-	m.SetString("value|string", &command)
+	m.SetArray("values", GET_DATABASE_DATA_DEFINITION_STATEMENTS())
+	m.SetString("value", &command)
 	commandTemp := "command"
-	m.SetString("label|string", &commandTemp)
+	m.SetString("label", &commandTemp)
 	rep :=  fmt.Sprintf("%T", *this)
-	m.SetString("data_type|string", &rep)
+	m.SetString("data_type", &rep)
 
-	//command_errs := ContainsExactMatch(GET_DATABASE_DATA_DEFINITION_STATEMENTS(), &command, "command", fmt.Sprintf("%T", *this))
 	command_errs := ContainsExactMatch(m)
 
 
