@@ -5,77 +5,54 @@ import (
 	"reflect"
 )
 
+func GetHostNameValidCharacters() (string) {
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+}
+
+func  GetValidealidatePortCharacters() (string) {
+	return "1234567890"
+}
 
 
 type Host struct {
-    host_name *string
-	port_number *string
+	Validate func() ([]error)
+	GetCLSCommand func() (*string, []error)
 }
 
 func NewHost(host_name *string, port_number *string) (*Host) {
-	x := Host{host_name: host_name, port_number: port_number}
+	data := Map {
+		"host_name":Map{"type":"*string","value":host_name,"mandatory":true,
+		FILTERS(): Array{ Map {"values":GetHostNameValidCharacters(),"function":ValidateCharacters }}},
+		"port_number":Map{"type":"*string","value":port_number,"mandatory":true,
+		FILTERS(): Array{ Map {"values":GetValidealidatePortCharacters(),"function":ValidateCharacters }}},
+	}
+
+	validate := func() ([]error) {
+		return ValidateGenericSpecial(data.Clone(), "Host")
+	}
+
+	getCLSCommand := func() (*string, []error) {
+		errors := validate()
+		if len(errors) > 0 {
+			return nil, errors
+		}
+	
+		command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", data.M("host_name").S("value"),  data.M("port_number").S("value"))
+	
+		return &command, nil
+	 }
+	
+	
+	x := Host{
+		Validate: func() ([]error) {
+			return validate()
+		},
+		GetCLSCommand: func() (*string, []error) {
+			return getCLSCommand()
+		},
+    }
 
 	return &x
 }
 
-func (this *Host) Validate() []error {
-	var errors []error 
-	e := reflect.ValueOf(this).Elem()
-	
-    for i := 0; i < e.NumField(); i++ {
-		varName := e.Type().Field(i).Name
-
-		if varName == "host_name" {
-			host_errs := (*this).validateHostname()
-
-			if host_errs != nil {
-				errors = append(errors, host_errs...)	
-			}
-		} else if varName == "port_number" {
-			port_errs :=  (this).validatePort()
-
-			if port_errs != nil {
-				errors = append(errors, port_errs...)	
-			}
-		} else {
-			errors = append(errors, fmt.Errorf("%s field is not being validated for Crendentials", varName))	
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}
-
-
-
-func (this *Host) validateHostname() ([]error) {
-	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789."
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetHostName(), "host_name", fmt.Sprintf("%T", *this))
-}
-
-func (this *Host) validatePort() ([]error) {
-	var VALID_CHARACTERS = "1234567890"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).GetPortNumber(), "port", fmt.Sprintf("%T", *this))
-}
-
- func (this *Host) GetHostName() (*string) {
-	return (*this).host_name
- }
-
- func (this *Host) GetPortNumber() (*string) {
-	return (*this).port_number
- }
-
- func (this *Host) GetCLSCommand() (*string, []error) {
-	errors := (*this).Validate()
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", (*(*this).GetHostName()), (*(*this).GetPortNumber()))
-
-	return &command, nil
- }
+ 

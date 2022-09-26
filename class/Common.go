@@ -80,7 +80,7 @@ func ContainsExactMatch(m Map) []error {
 	return errors
 }
 
-func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, reflect_value reflect.Value) []error {
+func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeof string) []error {
 	var errors []error 
 	
 	for _, b_value := range b {
@@ -96,7 +96,7 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, refle
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", reflect_value.Kind(), label, b_value, a))
+			errors = append(errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", typeof, label, b_value, a))
 		}
 	}
 	
@@ -199,7 +199,7 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 	return nil
 }
 
-func GetLogicCommand(command string, field_name string, allowed_options map[string]map[string][][]string, options map[string]map[string][][]string, reflect_value reflect.Value) (*string, []error){
+func GetLogicCommand(command string, field_name string, allowed_options map[string]map[string][][]string, options map[string]map[string][][]string, typeof string) (*string, []error){
 	var errors []error 
 	logic_option := ""
 
@@ -215,7 +215,7 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	allowed_logic_option_value, allowed_logic_option_exists := allowed_options[field_name]
 
 	if !allowed_logic_option_exists {
-		errors = append(errors, fmt.Errorf("%s field: %s is not supported but was provided", reflect_value.Kind(), field_name))
+		errors = append(errors, fmt.Errorf("%s field: %s is not supported but was provided", typeof, field_name))
 		return nil, errors
 	}
 
@@ -227,12 +227,12 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	allowed_logic_option_command_value, allowed_logic_option_command_exists := allowed_logic_option_value[command]
 
 	if !allowed_logic_option_command_exists {
-		errors = append(errors, fmt.Errorf("%s field: %s is not supported for command: %s but was provided", reflect_value.Kind(), field_name, command))
+		errors = append(errors, fmt.Errorf("%s field: %s is not supported for command: %s but was provided", typeof, field_name, command))
 		return nil, errors
 	}
 
 
-	logic_option_errors := ArraysContainsArraysOrdered(allowed_logic_option_command_value, logic_option_command_value, field_name + "->" + command, reflect_value)
+	logic_option_errors := ArraysContainsArraysOrdered(allowed_logic_option_command_value, logic_option_command_value, field_name + "->" + command, typeof)
 	if logic_option_errors != nil {
 		errors = append(errors, logic_option_errors...)	
 		return nil, errors

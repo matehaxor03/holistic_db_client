@@ -5,6 +5,14 @@ import (
 	"reflect"
 )
 
+func GetCredentialsUsernameValidCharacters() string{
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+}
+
+func GetCredentialPasswordValidCharacters() string {
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
+}
+
 type Credentials struct {
 	username *string
 	password *string

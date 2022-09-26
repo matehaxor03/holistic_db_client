@@ -284,6 +284,35 @@ func (m Map) S(s string) (*string) {
 	return nil
 }
 
+func (m Map) GetObject(s string) (interface{}) {
+	return m[s]
+
+	/*
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "string":
+		value := m[s].(string)
+		newValue := strings.Clone(value)
+		
+		return &newValue
+		break
+	case "reflect.Value":
+		value := fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface())
+		newValue := strings.Clone(value)
+		return &newValue
+	case "*string":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
+			s := strings.Clone(*((m[s]).(*string)))
+			return &s
+		} else {
+			return nil
+		}
+		break
+	default:
+		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
+	}*/
+}
+
 func (m Map) B(s string) (*bool) {
 	if m[s] == nil {
 		return nil
@@ -333,6 +362,8 @@ func (m Map) Keys() []string {
 	}
 	return keys
 }
+
+
 
 func (m Map) Values() Array {
 	array := Array{}

@@ -28,37 +28,135 @@ func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
 	return root
 }
 
+func GetDatabasenameValidCharacters() string {
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
+}
+
 type Database struct {
-	host *Host
-	credentials *Credentials
-    database_name *string
-	database_create_options *DatabaseCreateOptions
-	options map[string]map[string][][]string
-	validation_functions map[string]func() []error
+	GetSQL func(action string) (*string, []error)
 }
 
 func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
-	x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
+	//x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
+
+	data := Map {
+		"host":Map{"type":"*Host","value":host,"mandatory":true},
+		"credentials":Map{"type":"*Credentials","value":credentials,"mandatory":true},
+		"database_name":Map{"type":"*string","value":database_name,"mandatory":true,
+		FILTERS(): Array{ Map {"values":GetDatabasenameValidCharacters(),"function":ValidateCharacters }}},
+		"database_create_options":Map{"type":"*DatabaseCreateOptions","value":database_create_options,"mandatory":false},
+		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
+	}
+
+	getSQL := func(command string) (*string, []error) {
+		errors := ValidateGenericSpecial(data.Clone(), "Database")
+
+		m := Map{}
+		m.SetArray("values", GET_DATABASE_DATA_DEFINITION_STATEMENTS())
+		m.SetString("value", &command)
+		commandTemp := "command"
+		m.SetString("label", &commandTemp)
+		someValue :=  "dsfdf"
+		m.SetString("data_type", &someValue)
+
+		command_errs := ContainsExactMatch(m)
+
+
+		if command_errs != nil {
+			errors = append(errors, command_errs...)	
+		}
+
+		database_errs := ValidateGenericSpecial(data, "Database")
+
+		if database_errs != nil {
+			errors = append(errors, database_errs...)	
+		}
+
+		logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, "Database")
+		if logic_options_errs != nil {
+			errors = append(errors, logic_options_errs...)	
+		}
+
+		mapHost := data.M("host")
+		if mapHost == nil {
+			errors = append(errors, fmt.Errorf("host field not found in data"))	
+		}
+
+		host := mapHost.GetObject("value").(*Host)
+		if host == nil {
+			errors = append(errors, fmt.Errorf("host field is nil in data"))	
+		}
+
+		host_command, host_command_errors := (*host).GetCLSCommand()
+		if host_command_errors != nil {
+			errors = append(errors, host_command_errors...)	
+		}
+
+		mapCredentials := data.M("credentials")
+		if mapCredentials == nil {
+			errors = append(errors, fmt.Errorf("credentials field not found in data"))	
+		}
+
+		credentials = mapCredentials.GetObject("value").(*Credentials)
+		if credentials == nil {
+			errors = append(errors, fmt.Errorf("credentials field is nil in data"))	
+		}
+
+		credentials_command, credentials_command_errors := (*credentials).GetCLSCommand()
+		if credentials_command_errors != nil {
+			errors = append(errors, credentials_command_errors...)	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
+		sql_command += fmt.Sprintf(" -e \"%s DATABASE ", command)
+		
+		if *logic_option != "" {
+			sql_command += fmt.Sprintf("%s ", *logic_option)
+		}
+		
+		sql_command += fmt.Sprintf("%s ", *database_name)
+
+		mapDatabaseCreateOptions := data.M("database_create_options")
+		if mapDatabaseCreateOptions == nil {
+			errors = append(errors, fmt.Errorf("database_create_options field not found in data"))	
+		}
+
+		databaseCreateOptions := mapDatabaseCreateOptions.GetObject("value").(*DatabaseCreateOptions)
+		if databaseCreateOptions == nil {
+			errors = append(errors, fmt.Errorf("database_create_options field is nil in data"))	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		
+		database_create_options_command, database_create_options_command_errs := (*databaseCreateOptions).GetSQL()
+		if database_create_options_command_errs != nil {
+			errors = append(errors, database_create_options_command_errs...)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		sql_command += *database_create_options_command
+
+		sql_command += ";\""
+		fmt.Println(sql_command)
+		return &sql_command, nil
+	}
 	
-	x.validation_functions = make(map[string]func() []error)
-	x.InitValidationFunctions()
+	x := Database{
+		GetSQL: func(action string) (*string, []error) {
+			return getSQL(action)
+		},
+    }
 
 	return &x, nil
-}
-
-func (this *Database) InitValidationFunctions() ()  {
-	validation_functions := (*this).getValidationFunctions()
-	validation_functions["validateHost"] = (*this).validateHost
-	validation_functions["validateCredentials"] = (*this).validateCredentials
-	validation_functions["validateDatabaseName"] = (*this).validateDatabaseName
-	validation_functions["validateDatabaseCreateOptions"] = (*this).validateDatabaseCreateOptions
-	validation_functions["validateOptions"] = (*this).validateOptions
-	validation_functions["validateValidationFunctions"] = (*this).validateValidationFunctions
-
-	if validation_functions["validateValidationFunctions"] == nil|| 
-	   GetFunctionName(validation_functions["validateValidationFunctions"]) != GetFunctionName((*this).validateValidationFunctions) {
-		panic(fmt.Errorf("validateValidationFunctions validation method not found potential sql injection without it"))
-	}
 }
 
 func (this *Database) Create() (*Database, *string, []error)  {
@@ -70,132 +168,9 @@ func (this *Database) Create() (*Database, *string, []error)  {
 	return this, result, nil
 }
 
-func (this *Database) getValidationFunctions() map[string]func() []error {
-	return (*this).validation_functions
-}
-
-func GetValidationMethodNameForFieldName(fieldName string) string {
-	varName := fieldName
-	varName = strings.Replace(varName, "_", " ", -1)
-	varName = strings.Title(strings.ToLower(varName))
-	varName = strings.Replace(varName, " ", "", -1)
-	varName = "validate" + varName
-	return varName
-}
-
-func (this *Database) Validate() []error {
-	var errors []error 
-	var fieldsNotFound []string
-	reflected_value := reflect.ValueOf(this)
-	refected_element := reflected_value.Elem()
-	
-    for i := 0; i < refected_element.NumField(); i++ {
-		field := refected_element.Type().Field(i)
-		validationMethodName := GetValidationMethodNameForFieldName(field.Name)
-
-		method, found_method := (*this).getValidationFunctions()[validationMethodName]
-		if !found_method {
-			fieldsNotFound = append(fieldsNotFound, field.Name)
-		} else {
-			relection_errors := method()
-			if relection_errors != nil{
-				errors = append(errors, relection_errors...)
-			}
-		}
-	}
-
-	for _, value := range fieldsNotFound {
-		if !IsUpper(value) {
-			errors = append(errors, fmt.Errorf("validation method: %s not found for %s please add to InitValidationFunctions", GetValidationMethodNameForFieldName(value), value))	
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}
-
-func (this *Database) validateDatabaseCreateOptions()  ([]error) {
-	if (*this).GetDatabaseCreateOptions() == nil {
-		return nil
-	}
-
-
-	return (*(*this).GetDatabaseCreateOptions()).Validate()
-}
-
-func (this *Database) validateOptions() ([]error) {
-	return ValidateOptions((*this).GetOptions(), reflect.ValueOf(*this))
-}
-
-
-func (this *Database) validateHost()  ([]error) {
-	var errors []error 
-	if (*this).GetHost() == nil {
-		errors = append(errors, fmt.Errorf("host is nil"))
-		return errors
-	}
-
-	return (*((*this).GetHost())).Validate()
-}
-
-func (this *Database) validateCredentials()  ([]error) {
-	var errors []error 
-	if (*this).GetCredentials() == nil {
-		errors = append(errors, fmt.Errorf("credentials is nil"))
-		return errors
-	}
-
-	return (*((*this).GetCredentials())).Validate()
-}
-
-func (this *Database) validateDatabaseName() ([]error) {
-	var VALID_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	return ValidateCharacters(VALID_CHARACTERS, (*this).database_name, "database_name", fmt.Sprintf("%T", *this))
-}
-
-func GetFunctionName(i interface{}) string {
-    return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-}
-
-func (this *Database) validateValidationFunctions() ([]error) {
-	var errors []error 
-	current := (*this).getValidationFunctions()
-	compare := make(map[string]func() []error)
-	found := false
-
-    for current_key, current_value := range current {
-		found = false
-		for compare_key, compare_value := range compare {
-			if GetFunctionName(current_value) == GetFunctionName(compare_value) && 
-			   current_key != compare_key {
-				found = true
-				errors = append(errors, fmt.Errorf("key %s and key %s contain duplicate validation functions %s",  current_key, compare_key, current_value))
-				break
-			}
-		}
-
-		if !found {
-			compare[current_key] = current_value
-		}
-    }
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}
-
-func (this *Database) GetDatabaseName() *string {
-	return (*this).database_name
-}
-
 func (this *Database) createDatabase() (*Database, *string, []error) {
 	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).getCLSCRUDDatabaseCommand(GET_DATA_DEFINTION_STATEMENT_CREATE(), (*this).GetOptions())
+	crud_sql_command, crud_command_errors := (*this).GetSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 
 	if crud_command_errors != nil {
 		errors = append(errors, crud_command_errors...)	
@@ -225,86 +200,4 @@ func (this *Database) createDatabase() (*Database, *string, []error) {
 
 	shell_ouput = stdout.String()
     return this, &shell_ouput, nil
-}
-
-
-func (this *Database) getCLSCRUDDatabaseCommand(command string, options map[string]map[string][][]string) (*string, []error) {
-	var errors []error 
-
-	m := Map{}
-	m.SetArray("values", GET_DATABASE_DATA_DEFINITION_STATEMENTS())
-	m.SetString("value", &command)
-	commandTemp := "command"
-	m.SetString("label", &commandTemp)
-	rep :=  fmt.Sprintf("%T", *this)
-	m.SetString("data_type", &rep)
-
-	command_errs := ContainsExactMatch(m)
-
-
-	if command_errs != nil {
-		errors = append(errors, command_errs...)	
-	}
-
-	database_errs := (*this).Validate()
-
-	if database_errs != nil {
-		errors = append(errors, database_errs...)	
-	}
-
-	logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, reflect.ValueOf(*this))
-	if logic_options_errs != nil {
-		errors = append(errors, logic_options_errs...)	
-	}
-
-	host_command, host_command_errors := (*(*this).GetHost()).GetCLSCommand()
-	if host_command_errors != nil {
-		errors = append(errors, host_command_errors...)	
-	}
-
-	credentials_command, credentials_command_errors := (*(*this).GetCredentials()).GetCLSCommand()
-	if credentials_command_errors != nil {
-		errors = append(errors, credentials_command_errors...)	
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
-	sql_command += fmt.Sprintf(" -e \"%s DATABASE ", command)
-	
-	if *logic_option != "" {
-		sql_command += fmt.Sprintf("%s ", *logic_option)
-	}
-	
-	sql_command += fmt.Sprintf("%s ", (*(*this).GetDatabaseName()))
-	
-	database_create_options_command, database_create_options_command_errs := (*this).GetDatabaseCreateOptions().GetSQL()
-	if database_create_options_command_errs != nil {
-		errors = append(errors, database_create_options_command_errs...)
-		return nil, errors
-	}
-
-	sql_command += *database_create_options_command
-
-	sql_command += ";\""
-	fmt.Println(sql_command)
-	return &sql_command, nil
-}
-
-func (this *Database) GetHost() *Host {
-	return (*this).host
-}
-
-func (this *Database) GetCredentials() *Credentials {
-	return (*this).credentials
-}
-
-func (this *Database) GetDatabaseCreateOptions() *DatabaseCreateOptions {
-	return (*this).database_create_options
-}
-
-func (this *Database) GetOptions() map[string]map[string][][]string {
-	return (*this).options
 }

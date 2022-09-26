@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"strings"
 )
 
 func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
@@ -14,7 +13,6 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 }
 
 type DatabaseCreateOptions struct {
-	Validate func() ([]error)
 	GetSQL func() (*string, []error)
 }
 
@@ -25,47 +23,21 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		"collate":Map{"type":"string","value":collate,"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":ContainsExactMatch } }},
 	}
-	
-	getData := func() Map {
-		return data.Clone()
-    }
-
-	getCharacterSet := func() (*string) {
-		v := data.M("character_set").S("value")
-		if v == nil {
-			return nil
-		}
-		clone := strings.Clone(*v)
-		return &clone
-	}
-
-	getCollate := func() (*string) {
-		v := data.M("collate").S("value")
-		if v == nil {
-			return nil
-		}
-		clone := strings.Clone(*v)
-		return &clone
-	}
-
-	validate := func() ([]error) {
-		return ValidateGenericSpecial(getData(), "DatabaseCreateOptions")
-	}
 
 	getSQL := func() (*string, []error) {
-		errs := validate()
+		errs := ValidateGenericSpecial(data.Clone(), "DatabaseCreateOptions")
 		if errs != nil {
 			return nil, errs
 		}
 		
 		sql_command := ""
 
-		character_set := getCharacterSet()
+		character_set := data.M("character_set").S("value")
 		if character_set != nil {
 			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 		
-		collate := getCollate()
+		collate := data.M("collate").S("value")
 		if collate != nil {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
@@ -74,9 +46,6 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 	
 	return &DatabaseCreateOptions{
-		Validate: func() ([]error) {
-			return validate()
-		},
 		GetSQL: func() (*string, []error) {
 			return getSQL()
 		},
