@@ -27,7 +27,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 	
 	getData := func() Map {
-		return data
+		return data.Clone()
     }
 
 	getCharacterSet := func() (*string) {

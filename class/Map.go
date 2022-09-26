@@ -184,6 +184,17 @@ func (m Map) ToJSONString() string {
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		case "func(class.Map) []error": 
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
+		case "bool": 
+			boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
+			if boolValue  == "%!B(bool=false)" {
+				json = json + fmt.Sprintf("false")
+			} else if boolValue == "%!B(bool=true)" {
+				json = json + fmt.Sprintf("true")
+			} else if boolValue == "%!B(bool=nil)" {
+				json = json + fmt.Sprintf("null")
+			} else {
+				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s %s", rep, key, boolValue))
+			}
 		default:
 			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
@@ -369,7 +380,9 @@ func (m Map) Clone() Map {
 			break
 		case "func(class.Map) []error":
 			clone[key] = current
-			break			
+			break	
+		case "bool": 
+			clone[key] = current.(bool)	
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 		}
