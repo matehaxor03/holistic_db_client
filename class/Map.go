@@ -250,9 +250,21 @@ func (m Map) SetArray(s string, array Array) {
 	}
 }
 
-func (m Map) Func(s string) func(Map) ([]error) {
-	fmt.Println(s)
-	return m[s].(func(Map) ([]error))
+func (m Map) Func(s string) (func(Map) []error) {
+	rep := fmt.Sprintf("%T", m[s])
+	//fmt.Println(rep)
+	if m[s] == nil {
+		return nil
+	}
+
+	switch rep {
+		case "func(class.Map) []error":
+			return m[s].(func(Map) []error)
+	default:
+		panic(fmt.Errorf("Map.func: type %s is not supported please implement for field: %s", rep, s))
+	}
+	
+	return nil
 }
 
 func (m Map) SetFunc(s string, function func(Map) ([]error)) {
@@ -375,6 +387,16 @@ func (m Map) Keys() []string {
 	return keys
 }
 
+func (m Map) HasKey(key string) bool {
+	keys := m.Keys()
+	for _, compare_key := range keys {
+		if key == compare_key {
+			return true
+		}
+	}
+	return false
+}
+
 
 
 func (m Map) Values() Array {
@@ -388,10 +410,12 @@ func (m Map) Values() Array {
 func (m Map) Clone() Map {
 	clone := Map{}
 	keys := m.Keys()
-	fmt.Println(m.ToJSONString())
+
 	for _, key := range keys {
 		current := m[key] 
 		rep := fmt.Sprintf("%T", current)
+
+		fmt.Println("key: " + key + " rep:" + rep)
 		switch rep {
 		case "string":
 			cloneString := strings.Clone(*(m.S(key)))
@@ -411,7 +435,6 @@ func (m Map) Clone() Map {
 		case "class.Array":
 			clone[key] = current.(Array).Clone()
 			break
-		case "func(string, *string, string, string) []error":
 		case "func(class.Map) []error":
 		case "map[string]map[string][][]string":
 			clone[key] = current

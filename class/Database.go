@@ -50,8 +50,12 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 		"options":Map{"type":&mapType,"value":options,"mandatory":false},
 	}
 
+	validate := func() ([]error) {
+		return ValidateGenericSpecial(data, "Database")
+	}
+
 	getSQL := func(command string) (*string, []error) {
-		errors := ValidateGenericSpecial(data.Clone(), "Database")
+		errors := validate()
 
 		m := Map{}
 		m.SetArray("values", GET_DATABASE_DATA_DEFINITION_STATEMENTS())

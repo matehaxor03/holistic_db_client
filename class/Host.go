@@ -39,7 +39,7 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Host")
+		return ValidateGenericSpecial(data, "Host")
 	}
 
 	getCLSCommand := func() (*string, []error) {

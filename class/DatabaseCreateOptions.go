@@ -39,11 +39,11 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "DatabaseCreateOptions")
+		return ValidateGenericSpecial(data, "DatabaseCreateOptions")
 	}
 
 	getSQL := func() (*string, []error) {
-		errs := ValidateGenericSpecial(data.Clone(), "DatabaseCreateOptions")
+		errs := validate()
 		if errs != nil {
 			return nil, errs
 		}

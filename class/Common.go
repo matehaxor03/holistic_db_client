@@ -111,26 +111,37 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeo
 func ValidateCharacters(m Map) ([]error) {
 	var errors []error 
 	m = ConvertPrimitiveMapToMap(m)
-	whitelist := *(m.S("whitelist"))
-	str := (m.S("str"))
+	fmt.Println(m.ToJSONString())
+	whitelist := m.S("values")
+	str := (m.S("value"))
 	label := (m.S("label"))
-	typeOf := (m.S("typeOf"))
+	typeOf := (m.S("data_type"))
 
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s %s is nil", typeOf, label))
+		errors = append(errors, fmt.Errorf("%s %s value is nil", *typeOf, *label))
 		return errors
 	}
 
 	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s %s is empty", typeOf, label))
+		errors = append(errors, fmt.Errorf("%s %s value is empty", *typeOf, *label))
+		return errors
+	}
+
+	if whitelist == nil {
+		errors = append(errors, fmt.Errorf("%s %s values is nil", *typeOf, *label))
+		return errors
+	}
+
+	if *whitelist == "" {
+		errors = append(errors, fmt.Errorf("%s %s values is empty", *typeOf, *label))
 		return errors
 	}
 
 	for _, letter := range *str {
 		found := false
 
-		for _, check := range whitelist {
+		for _, check := range *whitelist {
 			if check == letter {
 				found = true
 				break
@@ -138,7 +149,7 @@ func ValidateCharacters(m Map) ([]error) {
 		}
 
 		if !found {
-			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", typeOf, string(letter), label, whitelist))
+			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", *typeOf, string(letter), *label, *whitelist))
 		}
 	}
 	
@@ -168,11 +179,11 @@ func IsLower(s string) bool {
 }
 
 func GetConstantValueAllowedCharacters() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_="
 }
 
 func GetAllowedStringValues() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
+	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_="
 }
 
 
@@ -296,18 +307,25 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			
 			filters := parameter_fields.A(FILTERS())
 			if filters != nil {
-				for _, filter := range filters {
-					fmt.Println("START")
-					fmt.Println(parameter + " " + *valueOf)
-					fmt.Println(filter.(Map).ToJSONString())
+				for filter_index, filter := range filters {
+					filter_map := filter.(Map)
 
-					function := filter.(Map).Func("function")
+					if !filter_map.HasKey("function") {
+						panic(fmt.Sprintf("parameter: %s does not have function parameter for filter index: %d " + filter_map.ToJSONString(), parameter, filter_index))
+					}
 
-					filter.(Map).SetString("value", valueOf)
-					filter.(Map).SetString("data_type", &structType)
+					function := filter_map.Func("function")	
+					if function == nil {
+						panic(fmt.Sprintf("parameter: %s has function parameter for filter index: %d but it has nil value " + filter_map.ToJSONString(), parameter, filter_index))
+					}
+										
+					filter_map.SetString("value", valueOf)
+					filter_map.SetString("data_type", &structType)
 					temp := "ValidateGenericSpecial"
-					filter.(Map).SetString("label", &temp)
+					filter_map.SetString("label", &temp)
+
 				
+									
 					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
 
 					var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
@@ -325,8 +343,9 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				}
 			}
 
-
-			default_filter_params := Map{"whitelist":GetAllowedStringValues(), "str":valueOf, "label":parameter, "typeOf":structType }
+			default_allowed_values := GetAllowedStringValues()
+			default_allowed_valuesAddress := &default_allowed_values
+			default_filter_params := Map{"values":default_allowed_valuesAddress, "value":valueOf, "label": &parameter, "data_type":&structType }
 
 			default_errors_filter := ValidateCharacters(default_filter_params)
 

@@ -38,11 +38,14 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "User")
+		return ValidateGenericSpecial(data, "User")
 	}
 
 	getSQL := func(action string) (*string, []error) {
-		var errors []error 
+		errors := validate()
+		if len(errors) > 0 {
+			return nil, errors
+		}
 
 		m := Map{}
 		m.SetArray("values", GET_USER_DATA_DEFINITION_STATEMENTS())

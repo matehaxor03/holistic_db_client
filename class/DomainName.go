@@ -20,7 +20,7 @@ func NewDomainName(domain_name *string) (*DomainName) {
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "DomainName")
+		return ValidateGenericSpecial(data, "DomainName")
 	}
 
 	getDomainName := func () (*string) {
