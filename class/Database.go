@@ -40,12 +40,13 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 	credentialsType := "*Credentials"
 	databaseCreateOptionsType := "*DatabaseCreateOptions"
 	stringType := "*string"
+	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
 		"host":Map{"type":&hostType,"value":host,"mandatory":true},
 		"credentials":Map{"type":&credentialsType,"value":credentials,"mandatory":true},
 		"database_name":Map{"type":&stringType,"value":database_name,"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetDatabasenameValidCharacters(),"function":ValidateCharacters }}},
+		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":ValidateCharacters }}},
 		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
 		"options":Map{"type":&mapType,"value":options,"mandatory":false},
 	}

@@ -25,12 +25,14 @@ type Credentials struct {
 func NewCredentials(username *string, password *string) (*Credentials) {
 	username_copy := strings.Clone(*username)
 	password_copy := strings.Clone(*password)
+	username_whitelist := GetCredentialsUsernameValidCharacters()
+	password_whitelist := GetCredentialPasswordValidCharacters()
 	
 	data := Map {
 		"username":Map{"type":"*string","value":&username_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":ValidateCharacters }}},
+		FILTERS(): Array{ Map {"values":&username_whitelist,"function":ValidateCharacters }}},
 		"password":Map{"type":"*string","value":&password_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":ValidateCharacters }}},
+		FILTERS(): Array{ Map {"values":&password_whitelist,"function":ValidateCharacters }}},
 	}
 
 	validate := func() ([]error) {
@@ -71,7 +73,7 @@ func NewCredentials(username *string, password *string) (*Credentials) {
 				return nil, errors
 			}
 		
-			command := fmt.Sprintf("--user=%s --password=%s ", getUsername(), getPassword())
+			command := fmt.Sprintf("--user=%s --password=%s ", *(getUsername()), *(getPassword()))
 		
 			return &command, nil
 		 },

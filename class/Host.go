@@ -30,12 +30,15 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 	if port_number != nil {
 		port_number_copy = strings.Clone(*port_number)
 	}
+
+	hostname_whitelist := GetHostNameValidCharacters()
+	port_number_whitelist := GetValidealidatePortCharacters()
 	
 	data := Map {
 		"host_name":Map{"type":"*string","value":host_name_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetHostNameValidCharacters(),"function":ValidateCharacters }}},
+		FILTERS(): Array{ Map {"values":&hostname_whitelist,"function":ValidateCharacters }}},
 		"port_number":Map{"type":"*string","value":port_number_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetValidealidatePortCharacters(),"function":ValidateCharacters }}},
+		FILTERS(): Array{ Map {"values":&port_number_whitelist,"function":ValidateCharacters }}},
 	}
 
 	validate := func() ([]error) {
@@ -48,7 +51,7 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 			return nil, errors
 		}
 	
-		command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", data.M("host_name").S("value"),  data.M("port_number").S("value"))
+		command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(data.M("host_name").S("value")), *(data.M("port_number").S("value")))
 	
 		return &command, nil
 	 }

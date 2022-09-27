@@ -51,12 +51,12 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		sql_command := ""
 
 		character_set := data.M("character_set").S("value")
-		if character_set != nil {
+		if character_set != nil && *character_set != "" {
 			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 		
 		collate := data.M("collate").S("value")
-		if collate != nil {
+		if collate != nil  && *collate != "" {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
 
