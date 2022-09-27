@@ -184,7 +184,7 @@ func (m Map) ToJSONString() string {
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		case "func(string, *string, string, string) []error":
 		case "func(class.Map) []error": 
-			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
+			json = json + fmt.Sprintf("\"%s\"", rep)
 		case "bool": 
 			boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
 			if boolValue  == "%!B(bool=false)" {
@@ -255,7 +255,7 @@ func (m Map) Func(s string) func(Map) ([]error) {
 	return m[s].(func(Map) ([]error))
 }
 
-func (m Map) SetFunc(s string, function func(...map[string]interface{}) ([]error)) {
+func (m Map) SetFunc(s string, function func(Map) ([]error)) {
 	m[s] = function
 }
 

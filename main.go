@@ -173,30 +173,6 @@ func getParams(params []string) (map[string]*string, []error) {
 	return m, nil
 }
 
-func validateCharacters(whitelist string, str string) ([]error) {
-	var errors []error 
-	for _, letter := range str {
-		found := false
-
-		for _, check := range whitelist {
-			if check == letter {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			errors = append(errors, fmt.Errorf("invalid letter detected %s", string(letter)))
-		}
-	}
-	
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
- }
-
 func contains(s []string, str string) bool {
 	for _, v := range s {
 		if v == str {

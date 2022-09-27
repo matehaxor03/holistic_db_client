@@ -33,6 +33,10 @@ func NewCredentials(username *string, password *string) (*Credentials) {
 		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":ValidateCharacters }}},
 	}
 
+	//(data.M("username").A("filters")[0]).(Map).SetFunc(ValidateCharacters)
+
+	//panic(data.ToJSONString())
+
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "Credentials")
 	}
@@ -75,7 +79,7 @@ func NewCredentials(username *string, password *string) (*Credentials) {
 		
 			return &command, nil
 		 },
-		 ToJSONString: func() string {
+		ToJSONString: func() string {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Credentials {
