@@ -32,9 +32,9 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 	}
 	
 	data := Map {
-		"host_name":Map{"type":"*string","value":&host_name_copy,"mandatory":true,
+		"host_name":Map{"type":"*string","value":host_name_copy,"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetHostNameValidCharacters(),"function":ValidateCharacters }}},
-		"port_number":Map{"type":"*string","value":&port_number_copy,"mandatory":true,
+		"port_number":Map{"type":"*string","value":port_number_copy,"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetValidealidatePortCharacters(),"function":ValidateCharacters }}},
 	}
 

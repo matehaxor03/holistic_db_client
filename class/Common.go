@@ -246,10 +246,9 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 }
 
 func ValidateGenericSpecial(fields Map, structType string) []error {
-	var errors[]error 
+	var errors []error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
-		var errors_for_param []error 
 		value_is_mandatory := true
 		value_is_null := false
 
@@ -268,7 +267,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		}
 		
 		switch *typeOf {
+		case "map[string]map[string][][]string)":
+			// todo: convert these to objects for validations
+			break
 		case "string":
+		case "*string":
 			valueOf := parameter_fields.S("value")
 			
 			if valueOf == nil {
@@ -282,7 +285,10 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			filters := parameter_fields.A(FILTERS())
 			if filters != nil {
 				for _, filter := range filters {
-					//values := filter.(Map).A("values")
+					fmt.Println("START")
+					fmt.Println(parameter + " " + *valueOf)
+					fmt.Println(filter.(Map).ToJSONString())
+
 					function := filter.(Map).Func("function")
 
 					filter.(Map).SetString("value", valueOf)
@@ -309,12 +315,28 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 
 			default_errors_filter := ValidateCharacters(GetAllowedStringValues(), valueOf, parameter, structType)
 			if default_errors_filter != nil {
-				errors_for_param = append(errors_for_param, default_errors_filter...)
+				errors = append(errors, default_errors_filter...)
 			}
 
 			break
+		case "*Host":
+			errors_for_host := parameter_fields.GetObject("value").(*Host).Validate()
+			if errors_for_host != nil {
+				errors = append(errors, errors_for_host...)
+			}
+			break
+		case "*Credentials":
+			errors_for_credentaials := parameter_fields.GetObject("value").(*Credentials).Validate()
+			if errors_for_credentaials != nil {
+				errors = append(errors, errors_for_credentaials...)
+			}
+		case "*DatabaseCreateOptions":
+			errors_for_database_create_options := parameter_fields.GetObject("value").(*DatabaseCreateOptions).Validate()
+			if errors_for_database_create_options != nil {
+				errors = append(errors, errors_for_database_create_options...)
+			}
 		default:
-			panic(fmt.Sprintf("please implement type %s", typeOf))
+			panic(fmt.Sprintf("please implement type %s", *typeOf))
 		}
 
 		

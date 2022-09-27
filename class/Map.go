@@ -251,6 +251,7 @@ func (m Map) SetArray(s string, array Array) {
 }
 
 func (m Map) Func(s string) func(Map) ([]error) {
+	fmt.Println(s)
 	return m[s].(func(Map) ([]error))
 }
 

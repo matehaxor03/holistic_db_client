@@ -17,6 +17,7 @@ type DatabaseCreateOptions struct {
 	GetSQL func() (*string, []error)
 	ToJSONString func() string
 	Clone func() *DatabaseCreateOptions
+	Validate func() ([]error)
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
@@ -35,6 +36,10 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":ContainsExactMatch } }},
 		"collate":Map{"type":"string","value":&collate_copy,"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":ContainsExactMatch } }},
+	}
+
+	validate := func() ([]error) {
+		return ValidateGenericSpecial(data.Clone(), "DatabaseCreateOptions")
 	}
 
 	getSQL := func() (*string, []error) {
@@ -67,6 +72,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		},
 		Clone: func() *DatabaseCreateOptions {
 			return NewDatabaseCreateOptions(data.M("character_set").S("value"), data.M("collate").S("value"))
+		},
+		Validate: func() ([]error) {
+			return validate()
 		},
     }
 }

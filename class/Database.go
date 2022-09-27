@@ -35,14 +35,19 @@ type Database struct {
 
 func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
 	//x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
+	mapType := "map[string]map[string][][]string)"
+	hostType := "*Host"
+	credentialsType := "*Credentials"
+	databaseCreateOptionsType := "*DatabaseCreateOptions"
+	stringType := "*string"
 
 	data := Map {
-		"host":Map{"type":"*Host","value":host,"mandatory":true},
-		"credentials":Map{"type":"*Credentials","value":credentials,"mandatory":true},
-		"database_name":Map{"type":"*string","value":database_name,"mandatory":true,
+		"host":Map{"type":&hostType,"value":host,"mandatory":true},
+		"credentials":Map{"type":&credentialsType,"value":credentials,"mandatory":true},
+		"database_name":Map{"type":&stringType,"value":database_name,"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetDatabasenameValidCharacters(),"function":ValidateCharacters }}},
-		"database_create_options":Map{"type":"*DatabaseCreateOptions","value":database_create_options,"mandatory":false},
-		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
+		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
+		"options":Map{"type":&mapType,"value":options,"mandatory":false},
 	}
 
 	getSQL := func(command string) (*string, []error) {
