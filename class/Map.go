@@ -182,6 +182,7 @@ func (m Map) ToJSONString() string {
 			json += "]"	
 		case "reflect.Value":
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
+		case "func(string, *string, string, string) []error":
 		case "func(class.Map) []error": 
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		case "bool": 
@@ -195,7 +196,17 @@ func (m Map) ToJSONString() string {
 			} else {
 				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s %s", rep, key, boolValue))
 			}
+		case "*class.Host":
+			json += (*(value.(*Host))).ToJSONString()
+		case "*class.Credentials":
+			json += (*(value.(*Credentials))).ToJSONString()
+		case "*class.DatabaseCreateOptions":
+			json += (*(value.(*DatabaseCreateOptions))).ToJSONString()
+		case "map[string]map[string][][]string":
+			json = json + "\"map[string]map[string][][]string\""
 		default:
+			
+
 			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
 
@@ -390,18 +401,8 @@ func (m Map) Clone() Map {
 				clone[key] = nil
 				continue
 			}
-			
-			parts := strings.Split(key, "|")
-			keyValueType := parts[1]
-			switch  keyValueType {
-			case "string":
-				value := *(m[key].(*string))
-				cloneString := strings.Clone(value)
-				clone.SetString(key, &cloneString)
-				break
-			default:
-				panic(fmt.Errorf("Map.M: type %s is not supported please implement", keyValueType))
-			}
+			cloneString := strings.Clone(*(m.S(key)))
+			clone.SetString(key, &cloneString)
 			break
 		case "class.Map":
 			clone[key] = current.(Map).Clone()
@@ -409,9 +410,20 @@ func (m Map) Clone() Map {
 		case "class.Array":
 			clone[key] = current.(Array).Clone()
 			break
+		case "func(string, *string, string, string) []error":
 		case "func(class.Map) []error":
+		case "map[string]map[string][][]string":
 			clone[key] = current
 			break	
+		case "*class.Credentials":
+			clone[key] = (*(current.(*Credentials))).Clone()
+			break
+		case "*class.DatabaseCreateOptions":
+			clone[key] = (*(current.(*DatabaseCreateOptions))).Clone()
+			break
+		case "*class.Host":
+			clone[key] = (*(current.(*Host))).Clone()
+			break
 		case "bool": 
 			clone[key] = current.(bool)	
 		default:

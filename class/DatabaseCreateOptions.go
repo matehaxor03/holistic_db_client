@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 )
 
 func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
@@ -14,13 +15,25 @@ func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
 
 type DatabaseCreateOptions struct {
 	GetSQL func() (*string, []error)
+	ToJSONString func() string
+	Clone func() *DatabaseCreateOptions
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
+	var character_set_copy string
+	if character_set != nil {
+		character_set_copy = strings.Clone(*character_set)
+	}
+	
+	var collate_copy string
+	if collate != nil {
+		collate_copy = strings.Clone(*collate)
+	}
+	
 	data := Map {
-		"character_set":Map{"type":"string","value":character_set,"mandatory":false,
+		"character_set":Map{"type":"string","value":&character_set_copy,"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":ContainsExactMatch } }},
-		"collate":Map{"type":"string","value":collate,"mandatory":false,
+		"collate":Map{"type":"string","value":&collate_copy,"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":ContainsExactMatch } }},
 	}
 
@@ -48,6 +61,12 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	return &DatabaseCreateOptions{
 		GetSQL: func() (*string, []error) {
 			return getSQL()
+		},
+		ToJSONString: func() string {
+			return data.Clone().ToJSONString()
+		},
+		Clone: func() *DatabaseCreateOptions {
+			return NewDatabaseCreateOptions(data.M("character_set").S("value"), data.M("collate").S("value"))
 		},
     }
 }

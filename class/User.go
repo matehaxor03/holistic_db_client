@@ -108,7 +108,7 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			errors = append(errors, crud_command_errors...)	
 		}
 	
-		if len(errors) > 0 {
+		if errors != nil {
 			return nil, errors
 		}
 	
@@ -133,14 +133,16 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		shell_ouput = stdout.String()
 		return &shell_ouput, nil
 	}	
-		
-	x := User{
-		Create: func() (*string, []error) {
-			return create()
-		},
-	}
 
 	errors := validate()
-	
-	return &x, errors
+
+	if errors != nil {
+		return nil, errors
+	}
+		
+	return &User{
+			Create: func() (*string, []error) {
+				return create()
+			},
+		}, nil
 }
