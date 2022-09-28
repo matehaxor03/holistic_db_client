@@ -2,17 +2,7 @@ package class
 
 import (
 	"fmt"
-	"strings"
 )
-
-func GetHostNameValidCharacters() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
-}
-
-func  GetValidealidatePortCharacters() (string) {
-	return "1234567890"
-}
-
 
 type Host struct {
 	Validate func() ([]error)
@@ -22,27 +12,26 @@ type Host struct {
 }
 
 func NewHost(host_name *string, port_number *string) (*Host) {
-	var host_name_copy string 
-	if host_name != nil {
-		host_name_copy = strings.Clone(*host_name)
+	
+	getHostNameValidCharacters := func() (*string) {
+		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+		return &temp
 	}
-	var port_number_copy string
-	if port_number != nil {
-		port_number_copy = strings.Clone(*port_number)
+	
+	getValidPortCharacters := func() (*string) {
+		temp := "1234567890"
+		return &temp
 	}
-
-	hostname_whitelist := GetHostNameValidCharacters()
-	port_number_whitelist := GetValidealidatePortCharacters()
 	
 	data := Map {
-		"host_name":Map{"type":"*string","value":host_name_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":&hostname_whitelist,"function":ValidateCharacters }}},
-		"port_number":Map{"type":"*string","value":port_number_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":&port_number_whitelist,"function":ValidateCharacters }}},
+		"host_name":Map{"type":"*string","value":CloneString(host_name),"mandatory":true,
+		FILTERS(): Array{ Map {"values":getHostNameValidCharacters(),"function":getValidateCharacters() }}},
+		"port_number":Map{"type":"*string","value":CloneString(port_number),"mandatory":true,
+		FILTERS(): Array{ Map {"values":getValidPortCharacters(),"function":getValidateCharacters() }}},
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "Host")
+		return ValidateGenericSpecial(data.Clone(), "Host")
 	}
 
 	getCLSCommand := func() (*string, []error) {
