@@ -4,23 +4,25 @@ import (
 	"strings"
 )
 
-func getValidateDomainNameCharacters() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
-}
-
 type DomainName struct {
 	Validate func() ([]error)
 	GetDomainName func() (*string)
 }
 
 func NewDomainName(domain_name *string) (*DomainName) {
+	
+	getValidateDomainNameCharacters := func() (*string) {
+		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
+		return &temp
+	}
+	
 	data := Map {
-		"domain_name":Map{"type":"*string","value":domain_name,"mandatory":true,
-		FILTERS(): Array{ Map {"values":getValidateDomainNameCharacters(),"function":ValidateCharacters }}},
+		"domain_name":Map{"type":"*string","value":CloneString(domain_name),"mandatory":true,
+		FILTERS(): Array{ Map {"values":getValidateDomainNameCharacters(),"function":getValidateCharacters()}}},
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "DomainName")
+		return ValidateGenericSpecial(data.Clone(), "DomainName")
 	}
 
 	getDomainName := func () (*string) {

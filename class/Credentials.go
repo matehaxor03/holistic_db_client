@@ -2,16 +2,7 @@ package class
 
 import (
 	"fmt"
-	"strings"
 )
-
-func GetCredentialsUsernameValidCharacters() string{
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
-}
-
-func GetCredentialPasswordValidCharacters() string {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
-}
 
 type Credentials struct {
 	Validate func() ([]error)
@@ -23,38 +14,34 @@ type Credentials struct {
 }
 
 func NewCredentials(username *string, password *string) (*Credentials) {
-	username_copy := strings.Clone(*username)
-	password_copy := strings.Clone(*password)
-	username_whitelist := GetCredentialsUsernameValidCharacters()
-	password_whitelist := GetCredentialPasswordValidCharacters()
+	
+	getCredentialsUsernameValidCharacters := func() *string {
+		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+		return &temp
+	}
+
+	getCredentialPasswordValidCharacters := func() *string {
+		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
+		return &temp
+	}
 	
 	data := Map {
-		"username":Map{"type":"*string","value":&username_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":&username_whitelist,"function":ValidateCharacters }}},
-		"password":Map{"type":"*string","value":&password_copy,"mandatory":true,
-		FILTERS(): Array{ Map {"values":&password_whitelist,"function":ValidateCharacters }}},
+		"username":Map{"type":"*string","value":CloneString(username),"mandatory":true,
+		FILTERS(): Array{ Map {"values":getCredentialsUsernameValidCharacters(),"function":getValidateCharacters() }}},
+		"password":Map{"type":"*string","value":CloneString(password),"mandatory":true,
+		FILTERS(): Array{ Map {"values":getCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "Credentials")
+		return ValidateGenericSpecial(data.Clone(), "Credentials")
 	}
 
 	getUsername := func () (*string) {
-		ptr := data.M("username").S("value")
-		if ptr == nil {
-			return nil
-		}
-		cloneString := strings.Clone(*ptr)
-		return &cloneString
+		return CloneString(data.M("username").S("value"))
 	}
 
 	getPassword := func () (*string) {
-		ptr := data.M("password").S("value")
-		if ptr == nil {
-			return nil
-		}
-		cloneString := strings.Clone(*ptr)
-		return &cloneString
+		return CloneString(data.M("password").S("value"))
 	}
 	
 	x := Credentials{

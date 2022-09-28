@@ -83,6 +83,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 			break
 		case "func(...map[string]interface {}) *class.Result":
 		case "func(class.Map) []error":
+		case "*func(class.Map) []error":
 			newMap[key] = value
 			break
 		case "*string":
@@ -184,6 +185,7 @@ func (m Map) ToJSONString() string {
 			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
 		case "func(string, *string, string, string) []error":
 		case "func(class.Map) []error": 
+		case "*func(class.Map) []error":
 			json = json + fmt.Sprintf("\"%s\"", rep)
 		case "bool": 
 			boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
@@ -260,6 +262,9 @@ func (m Map) Func(s string) (func(Map) []error) {
 	switch rep {
 		case "func(class.Map) []error":
 			return m[s].(func(Map) []error)
+		case "*func(class.Map) []error":
+			value :=  m[s].(*func(Map) []error)
+			return *value
 	default:
 		panic(fmt.Errorf("Map.func: type %s is not supported please implement for field: %s", rep, s))
 	}
@@ -437,6 +442,7 @@ func (m Map) Clone() Map {
 			break
 		case "func(class.Map) []error":
 		case "map[string]map[string][][]string":
+		case "*func(class.Map) []error":
 			clone[key] = current
 			break	
 		case "*class.Credentials":

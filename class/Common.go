@@ -8,6 +8,15 @@ import (
 	"strings"
 )
 
+func CloneString(value *string) (*string) {
+	if value == nil {
+		return nil
+	}
+
+	temp := strings.Clone(*value)
+	return &temp
+}
+
 func Examiner(t reflect.Type, depth int) {
 	fmt.Println(strings.Repeat("\t", depth), "Type is", t.Name(), "and kind is", t.Kind())
 	switch t.Kind() {
@@ -106,6 +115,11 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeo
 	}
 
 	return nil
+}
+
+func getValidateCharacters() (*func(m Map) []error) {
+	funcValue := ValidateCharacters
+	return &funcValue
 }
 
 func ValidateCharacters(m Map) ([]error) {
