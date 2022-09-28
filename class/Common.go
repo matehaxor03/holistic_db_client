@@ -46,6 +46,11 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
+func getContainsExactMatch() (*func(m Map) []error) {
+	function := ContainsExactMatch
+	return &function
+}
+
 func ContainsExactMatch(m Map) []error {
 	m = ConvertPrimitiveMapToMap(m)
 

@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"strings"
 )
 
 func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
@@ -21,21 +20,35 @@ type DatabaseCreateOptions struct {
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions) {
-	var character_set_copy string
-	if character_set != nil {
-		character_set_copy = strings.Clone(*character_set)
+	GET_CHARACTER_SET_UTF8 := func() string {
+		return "utf8"
 	}
 	
-	var collate_copy string
-	if collate != nil {
-		collate_copy = strings.Clone(*collate)
+	GET_CHARACTER_SET_UTF8MB4 := func() string {
+		return "utf8mb4"
+	}
+	
+	GET_CHARACTER_SETS := func() Array {
+		return Array{GET_CHARACTER_SET_UTF8(), GET_CHARACTER_SET_UTF8MB4()}
+	}
+	
+	GET_COLLATE_UTF8_GENERAL_CI := func() string {
+		return "utf8_general_ci"
+	}
+	
+	GET_COLLATE_UTF8MB4_0900_AI_CI := func() string {
+		return "utf8mb4_0900_ai_ci"
+	}
+	
+	GET_COLLATES := func() Array {
+		return Array{GET_COLLATE_UTF8_GENERAL_CI(), GET_COLLATE_UTF8MB4_0900_AI_CI()}
 	}
 	
 	data := Map {
-		"character_set":Map{"type":"string","value":&character_set_copy,"mandatory":false,
-		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":ContainsExactMatch } }},
-		"collate":Map{"type":"string","value":&collate_copy,"mandatory":false,
-		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":ContainsExactMatch } }},
+		"character_set":Map{"type":"string","value":CloneString(character_set),"mandatory":false,
+		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":getContainsExactMatch() } }},
+		"collate":Map{"type":"string","value":CloneString(collate),"mandatory":false,
+		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":getContainsExactMatch()}}},
 	}
 
 	validate := func() ([]error) {
