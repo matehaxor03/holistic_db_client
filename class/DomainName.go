@@ -4,12 +4,21 @@ import (
 	"strings"
 )
 
+func CloneDomainName(domain_name *DomainName) *DomainName {
+	if domain_name == nil {
+		return nil
+	}
+
+	return domain_name.Clone()
+}
+
 type DomainName struct {
+	Clone func() (*DomainName)
 	Validate func() ([]error)
 	GetDomainName func() (*string)
 }
 
-func NewDomainName(domain_name *string) (*DomainName) {
+func NewDomainName(domain_name *string) (*DomainName, []error) {
 	
 	getValidateDomainNameCharacters := func() (*string) {
 		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
@@ -33,6 +42,12 @@ func NewDomainName(domain_name *string) (*DomainName) {
 		cloneString := strings.Clone(*ptr)
 		return &cloneString
 	}
+
+	errors := validate()
+
+	if errors != nil {
+		return nil, errors
+	}
 	
 	x := DomainName{
 		Validate: func() ([]error) {
@@ -41,7 +56,11 @@ func NewDomainName(domain_name *string) (*DomainName) {
 		GetDomainName: func() (*string) {
 			return getDomainName()
 		},
+		Clone: func() (*DomainName) {
+			cloned, _ := NewDomainName(getDomainName())
+			return cloned
+		},
     }
 
-	return &x
+	return &x, nil
 }

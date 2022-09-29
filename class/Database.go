@@ -29,7 +29,16 @@ func GetDatabasenameValidCharacters() string {
 	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
 }
 
+func CloneDatabase(database *Database) (*Database) {
+	if database == nil {
+		return nil
+	}
+
+	return database.Clone()
+}
+
 type Database struct {
+	Clone func() (*Database)
 	GetSQL func(action string) (*string, []error)
 }
 
@@ -53,6 +62,26 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data, "Database")
+	}
+
+	getHost := func() (*Host) {
+		return data.M("host").GetObject("value").(*Host)
+	}
+
+	getCredentials := func() (*Credentials) {
+		return data.M("credentials").GetObject("value").(*Credentials)
+	}
+
+	getDatabaseName := func() (*string) {
+		return data.M("database_name").GetObject("value").(*string)
+	}
+
+	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
+		return data.M("database_create_options").GetObject("value").(*DatabaseCreateOptions)
+	}
+
+	getOptions := func() (map[string]map[string][][]string) {
+		return data.M("options").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	getSQL := func(command string) (*string, []error) {
@@ -156,10 +185,20 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 		fmt.Println(sql_command)
 		return &sql_command, nil
 	}
+
+	errors := validate()
+
+	if errors != nil {
+		return nil, errors
+	}
 	
 	x := Database{
 		GetSQL: func(action string) (*string, []error) {
 			return getSQL(action)
+		},
+		Clone: func() (*Database) {
+			clone_value, _ := NewDatabase(getHost(), getCredentials(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
+			return clone_value
 		},
     }
 

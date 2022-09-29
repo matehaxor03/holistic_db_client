@@ -105,9 +105,26 @@ func main() {
 		options[class.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 	}
 
-	host := class.NewHost(host_value, port_value)
-	credentials :=  class.NewCredentials(user_value, password_value)
-	client := class.NewClient(host, credentials, nil)
+	host, host_errors := class.NewHost(host_value, port_value)
+	if host_errors != nil {
+		errors = append(errors, host_errors...)
+	}
+
+	credentials, credential_errors :=  class.NewCredentials(user_value, password_value)
+	if credential_errors != nil {
+		errors = append(errors, credential_errors...)
+	}
+	
+	client, client_errors := class.NewClient(host, credentials, nil)
+	if client_errors != nil {
+		errors = append(errors, client_errors...)
+	}
+
+	if len(errors) > 0 {
+	    context.LogErrors(errors)
+		os.Exit(1)
+	}
+	
 
 	if command_value == CREATE_COMMAND {
 		if class_value == DATABASE_CLASS {

@@ -29,11 +29,12 @@ type User struct {
 	Create func() (*string, []error)
 }
 
-func newUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
+func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
 	data := Map {
-		"client":Map{"type":"*Client","value":client,"mandatory":true},
-		"credentials":Map{"type":"*Credentials","value":credentials,"mandatory":true},
-		"domain_name":Map{"type":"*DomainName","value":domain_name,"mandatory":true},
+		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
+		"host_credentials":Map{"type":"*Credentials","value":CloneCredentials(host_credentials),"mandatory":true},
+		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
+		"domain_name":Map{"type":"*DomainName","value":CloneDomainName(domain_name),"mandatory":true},
 		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
 	}
 
@@ -73,12 +74,12 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			errors = append(errors, logic_option_errs...)	
 		}
 
-		host_command, host_command_errors := (*(data.M("client").GetObject("value").(*Client))).GetHost().GetCLSCommand()
+		host_command, host_command_errors := (*(data.M("host").GetObject("value").(*Host))).GetCLSCommand()
 		if host_command_errors != nil {
 			errors = append(errors, host_command_errors...)	
 		}
 
-		credentials_command, credentials_command_errors := (*(data.M("client").GetObject("value").(*Client))).GetCredentials().GetCLSCommand()
+		credentials_command, credentials_command_errors := (*(data.M("host_credentials").GetObject("value").(*Credentials))).GetCLSCommand()
 		if credentials_command_errors != nil {
 			errors = append(errors, credentials_command_errors...)	
 		}
@@ -94,10 +95,10 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s' ", (*(*(data.M("credentials").GetObject("value").(*Client))).GetCredentials()).GetUsername())
+		sql_command += fmt.Sprintf("'%s' ", (*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
 		sql_command += fmt.Sprintf("@'%s' ",(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s' ",  (*(*(data.M("credentials").GetObject("value").(*Client))).GetCredentials()).GetPassword())
+		sql_command += fmt.Sprintf("'%s' ",  (*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
 
 		sql_command += ";\""
 		return &sql_command, nil

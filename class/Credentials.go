@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+func CloneCredentials(credentials *Credentials) *Credentials {
+	if credentials == nil {
+		return credentials
+	}
+
+	return credentials.Clone()
+}
+
 type Credentials struct {
 	Validate func() ([]error)
 	GetUsername func() (*string)
@@ -13,7 +21,7 @@ type Credentials struct {
 	Clone func() *Credentials
 }
 
-func NewCredentials(username *string, password *string) (*Credentials) {
+func NewCredentials(username *string, password *string) (*Credentials, []error) {
 	
 	getCredentialsUsernameValidCharacters := func() *string {
 		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
@@ -68,10 +76,17 @@ func NewCredentials(username *string, password *string) (*Credentials) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Credentials {
-			return NewCredentials(getUsername(), getPassword())
+			cloned, _ :=  NewCredentials(getUsername(), getPassword())
+			return cloned
 		},
     }
 
-	return &x
+	errors := validate()
+
+	if errors != nil {
+		return nil, errors
+	}
+
+	return &x, nil
 }
 

@@ -11,7 +11,15 @@ type Host struct {
 	Clone func() *Host
 }
 
-func NewHost(host_name *string, port_number *string) (*Host) {
+func CloneHost(host *Host) *Host {
+	if host == nil {
+		return host
+	}
+
+	return host.Clone()
+}
+
+func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	
 	getHostNameValidCharacters := func() (*string) {
 		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
@@ -44,7 +52,12 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 	
 		return &command, nil
 	 }
-	
+
+	errors := validate()
+
+	if errors != nil {
+		return nil, errors
+	}
 	
 	x := Host{
 		Validate: func() ([]error) {
@@ -57,11 +70,12 @@ func NewHost(host_name *string, port_number *string) (*Host) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Host {
-			return NewHost(data.M("host_name").S("value"), data.M("port_number").S("value"))
+			cloned, _ := NewHost(data.M("host_name").S("value"), data.M("port_number").S("value"))
+			return cloned
 		},
     }
 
-	return &x
+	return &x, nil
 }
 
  
