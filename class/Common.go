@@ -353,6 +353,16 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			}
 
 			break
+		case "*Database":
+			database := parameter_fields.GetObject("value").(*Database)
+			if database != nil {
+				errors_for_database := database.Validate()
+				if errors_for_database != nil {
+					errors = append(errors, errors_for_database...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			}
 		case "*Host":
 			errors_for_host := parameter_fields.GetObject("value").(*Host).Validate()
 			if errors_for_host != nil {

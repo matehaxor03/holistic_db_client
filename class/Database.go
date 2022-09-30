@@ -38,6 +38,7 @@ func CloneDatabase(database *Database) (*Database) {
 }
 
 type Database struct {
+	Validate func() ([]error)
 	Clone func() (*Database)
 	GetSQL func(action string) (*string, []error)
 }
@@ -193,6 +194,9 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 	}
 	
 	x := Database{
+		Validate: func() ([]error) {
+			return validate()
+		},
 		GetSQL: func(action string) (*string, []error) {
 			return getSQL(action)
 		},
