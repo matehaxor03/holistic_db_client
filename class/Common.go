@@ -363,22 +363,40 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			} else if value_is_mandatory {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
+			break
 		case "*Host":
-			errors_for_host := parameter_fields.GetObject("value").(*Host).Validate()
-			if errors_for_host != nil {
-				errors = append(errors, errors_for_host...)
+			host := parameter_fields.GetObject("value").(*Host)
+			if host != nil {
+				errors_for_host := host.Validate()
+				if errors_for_host != nil {
+					errors = append(errors, errors_for_host...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
 		case "*Credentials":
-			errors_for_credentaials := parameter_fields.GetObject("value").(*Credentials).Validate()
-			if errors_for_credentaials != nil {
-				errors = append(errors, errors_for_credentaials...)
+			credentials := parameter_fields.GetObject("value").(*Credentials)
+			if credentials != nil {
+				errors_for_credentaials := credentials.Validate()
+				if errors_for_credentaials != nil {
+					errors = append(errors, errors_for_credentaials...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
+			break
 		case "*DatabaseCreateOptions":
-			errors_for_database_create_options := parameter_fields.GetObject("value").(*DatabaseCreateOptions).Validate()
-			if errors_for_database_create_options != nil {
-				errors = append(errors, errors_for_database_create_options...)
+			database_create_options := parameter_fields.GetObject("value").(*DatabaseCreateOptions)
+			if database_create_options != nil {
+				errors_for_database_create_options := database_create_options.Validate()
+				if errors_for_database_create_options != nil {
+					errors = append(errors, errors_for_database_create_options...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
+			break
 		default:
 			panic(fmt.Sprintf("please implement type %s", *typeOf))
 		}
