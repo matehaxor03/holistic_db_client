@@ -2,8 +2,6 @@ package class
 
 import (
 	"fmt"
-	"bytes"
-	"os/exec"
 )
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
@@ -30,6 +28,8 @@ type User struct {
 }
 
 func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
+	bashCommand := newBashCommand()
+	
 	data := Map {
 		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
 		"host_credentials":Map{"type":"*Credentials","value":CloneCredentials(host_credentials),"mandatory":true},
@@ -116,21 +116,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 			return nil, nil, errors
 		}
 	
-		var stdout bytes.Buffer
-		var stderr bytes.Buffer
-		cmd := exec.Command("bash", "-c", *crud_sql_command)
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		command_err := cmd.Run()
-	
-		if command_err != nil {
-			errors = append(errors, command_err)	
-		}
-	
-		shell_output := stdout.String()
-		shell_output_errs := stderr.String()
-	
-		return &shell_output, &shell_output_errs, nil
+		return bashCommand.ExecuteUnsafeCommand(crud_sql_command)
 	}	
 
 	errors := validate()
