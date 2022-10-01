@@ -26,7 +26,7 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 }
 
 type User struct {
-	Create func() (*string, []error)
+	Create func() (*string, *string, []error)
 }
 
 func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
@@ -95,16 +95,16 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s' ", (*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
-		sql_command += fmt.Sprintf("@'%s' ",(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
+		sql_command += fmt.Sprintf("'%s' ", *(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
+		sql_command += fmt.Sprintf("@'%s' ",*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s' ",  (*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
+		sql_command += fmt.Sprintf("'%s' ",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
 
 		sql_command += ";\""
 		return &sql_command, nil
 	}
 
-	create := func () (*string, []error) {
+	create := func () (*string, *string, []error) {
 		var errors []error 
 		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
@@ -113,7 +113,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 		}
 	
 		if errors != nil {
-			return nil, errors
+			return nil, nil, errors
 		}
 	
 		var stdout bytes.Buffer
@@ -127,15 +127,10 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 			errors = append(errors, command_err)	
 		}
 	
-		shell_ouput := ""
+		shell_output := stdout.String()
+		shell_output_errs := stderr.String()
 	
-		if len(errors) > 0 {
-			shell_ouput = stderr.String()
-			return &shell_ouput, errors
-		}
-	
-		shell_ouput = stdout.String()
-		return &shell_ouput, nil
+		return &shell_output, &shell_output_errs, nil
 	}	
 
 	errors := validate()
@@ -145,7 +140,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 	}
 		
 	return &User{
-			Create: func() (*string, []error) {
+			Create: func() (*string, *string, []error) {
 				return create()
 			},
 		}, nil

@@ -35,15 +35,13 @@ func main() {
 
 	//var IF_EXISTS string = "IF EXISTS"
 	//var IF_NOT_EXISTS string = "IF NOT EXISTS"
-	fmt.Println("hi")
+	
 	context := class.NewContext()
     params, errors := getParams(os.Args[1:])
 	if errors != nil || len((errors)) > 0 {
 		context.LogErrors(errors)
 		os.Exit(1)
 	}
-
-	fmt.Println("h2i")
 
 	host_value, _ := params[CLS_HOST] 
 	port_value, _ := params[CLS_PORT] 
@@ -141,8 +139,11 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
+			_, shell_output, shell_output_errs, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 			
+			fmt.Println(*shell_output_errs)
+			fmt.Println(*shell_output)
+
 			if user_errors != nil {
 				context.LogErrors(user_errors)
 

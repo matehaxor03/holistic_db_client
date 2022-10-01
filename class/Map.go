@@ -420,7 +420,6 @@ func (m Map) Clone() Map {
 		current := m[key] 
 		rep := fmt.Sprintf("%T", current)
 
-		fmt.Println("key: " + key + " rep:" + rep)
 		switch rep {
 		case "string":
 			cloneString := strings.Clone(*(m.S(key)))

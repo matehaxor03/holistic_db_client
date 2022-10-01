@@ -109,7 +109,7 @@ func getValidateCharacters() (*func(m Map) []error) {
 func ValidateCharacters(m Map) ([]error) {
 	var errors []error 
 	m = ConvertPrimitiveMapToMap(m)
-	fmt.Println(m.ToJSONString())
+
 	whitelist := m.S("values")
 	str := (m.S("value"))
 	label := (m.S("label"))
@@ -278,7 +278,6 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		mandatory_field := parameter_fields.B("mandatory")
 		
 		if mandatory_field != nil {
-			fmt.Println(fmt.Sprintf("is mandatory: %b", *mandatory_field))
 			value_is_mandatory = *mandatory_field
 		}
 
@@ -359,6 +358,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors_for_database := database.Validate()
 				if errors_for_database != nil {
 					errors = append(errors, errors_for_database...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			}
+			break
+		case "*DomainName":
+			domain_name := parameter_fields.GetObject("value").(*DomainName)
+			if domain_name != nil {
+				errors_for_domain_name := domain_name.Validate()
+				if errors_for_domain_name != nil {
+					errors = append(errors, errors_for_domain_name...)
 				}
 			} else if value_is_mandatory {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
