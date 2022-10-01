@@ -2,8 +2,7 @@ package class
 
 import (
 	"fmt"
-	"bytes"
-	"os/exec"
+	"strings"
 )
 
 func GET_DATABASE_DATA_DEFINITION_STATEMENTS() Array {
@@ -41,10 +40,11 @@ type Database struct {
 	Validate func() ([]error)
 	Clone func() (*Database)
 	GetSQL func(action string) (*string, []error)
+	Create func() (*string, []error)
 }
 
 func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
-	//x := Database{host: host, credentials: credentials, database_name: database_name, database_create_options: database_create_options, options: options}
+	bashCommand := newBashCommand()
 	mapType := "map[string]map[string][][]string)"
 	hostType := "*Host"
 	credentialsType := "*Credentials"
@@ -187,6 +187,31 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 		return &sql_command, nil
 	}
 
+	createDatabase := func() (*string, []error) {
+		var errors []error 
+		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+	
+		if crud_command_errors != nil {
+			return nil, crud_command_errors
+		}
+	
+		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(crud_sql_command)
+	
+		if *stderr != "" {
+			if strings.Contains(*stderr, " database exists") {
+				errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
+			} else {
+				errors = append(errors, fmt.Errorf("unknown create user error"))
+			}
+		}
+	
+		if len(errors) > 0 {
+			return stdout, errors
+		}
+	
+		return stdout, nil
+	}
+
 	errors := validate()
 
 	if errors != nil {
@@ -204,50 +229,15 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 			clone_value, _ := NewDatabase(getHost(), getCredentials(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
 			return clone_value
 		},
+		Create: func() (*string, []error) {
+			result, errors := createDatabase()
+			if errors != nil {
+				return result, errors
+			}
+
+			return result, nil
+		},
     }
 
 	return &x, nil
-}
-
-func (this *Database) Create() (*Database, *string, []error)  {
-	this, result, errors := (*this).createDatabase()
-	if errors != nil {
-		return nil, result, errors
-	}
-
-	return this, result, nil
-}
-
-func (this *Database) createDatabase() (*Database, *string, []error) {
-	var errors []error 
-	crud_sql_command, crud_command_errors := (*this).GetSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
-
-	if crud_command_errors != nil {
-		errors = append(errors, crud_command_errors...)	
-	}
-
-	if len(errors) > 0 {
-		return nil, nil, errors
-	}
-
-	var stdout bytes.Buffer
-    var stderr bytes.Buffer
-    cmd := exec.Command("bash", "-c", *crud_sql_command)
-    cmd.Stdout = &stdout
-    cmd.Stderr = &stderr
-    command_err := cmd.Run()
-
-    if command_err != nil {
-		errors = append(errors, command_err)	
-	}
-
-	shell_ouput := ""
-
-	if len(errors) > 0 {
-		shell_ouput = stderr.String()
-		return nil, &shell_ouput, errors
-	}
-
-	shell_ouput = stdout.String()
-    return this, &shell_ouput, nil
 }

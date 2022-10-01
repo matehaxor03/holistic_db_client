@@ -52,8 +52,13 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			if errs != nil {
 				return nil, nil, errs
 			}
+
+			stdout, errors := database.Create()
+			if errors != nil {
+				return nil, stdout, errors
+			}
 			
-			return database.Create()
+			return database, stdout, nil
 		},
 		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)

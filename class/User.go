@@ -110,7 +110,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if crud_command_errors != nil {
-			return nil, errors
+			return nil, crud_command_errors
 		}
 	
 		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(crud_sql_command)
