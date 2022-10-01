@@ -20,14 +20,17 @@ type DomainName struct {
 
 func NewDomainName(domain_name *string) (*DomainName, []error) {
 	
-	getValidateDomainNameCharacters := func() (*string) {
-		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.%"
-		return &temp
+	LOCALHOST_IP := func() string {
+		return "127.0.0.1"
+	}
+	
+	GET_ALLOWED_DOMAIN_NAMES := func() Array {
+		return Array{LOCALHOST_IP()}
 	}
 	
 	data := Map {
 		"domain_name":Map{"type":"*string","value":CloneString(domain_name),"mandatory":true,
-		FILTERS(): Array{ Map {"values":getValidateDomainNameCharacters(),"function":getValidateCharacters()}}},
+		FILTERS(): Array{ Map {"values":GET_ALLOWED_DOMAIN_NAMES(),"function":getContainsExactMatch()}}},
 	}
 
 	validate := func() ([]error) {
