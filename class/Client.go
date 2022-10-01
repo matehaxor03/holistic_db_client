@@ -17,7 +17,7 @@ func CloneClient(client *Client) *Client {
 
 type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
-	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, *string, []error)
+	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetCredentials func() (*Credentials)
 	GetHost func() *Host 
 	Clone func() (*Client)
@@ -55,28 +55,28 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			
 			return database.Create()
 		},
-		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, *string, []error) {
+		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
 			if credentail_errors != nil {
-				return nil, nil, nil, credentail_errors
+				return nil, nil, credentail_errors
 			}
 
 			domain, domain_errors := NewDomainName(domain_name)
 			if domain_errors != nil {
-				return nil, nil, nil, domain_errors
+				return nil, nil, domain_errors
 			}
 
 			user, user_errors := NewUser(getHost(), getCredentials(), credentials, domain, options)
 			if user_errors != nil {
-				return nil, nil, nil, user_errors
+				return nil, nil, user_errors
 			}
 
-			sql_output, sql_output_errs, create_errors := user.Create()
-			if create_errors != nil || *sql_output_errs != "" {
-				return nil, sql_output, sql_output_errs, create_errors
+			sql_output, create_errors := user.Create()
+			if create_errors != nil {
+				return nil, sql_output, create_errors
 			}
 
-			return user, sql_output, nil, nil
+			return user, sql_output, nil
 		},
 		GetHost: func() *Host {
 			return getHost()

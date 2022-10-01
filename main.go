@@ -139,11 +139,7 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			_, shell_output, shell_output_errs, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
-			
-			if shell_output_errs != nil {
-				fmt.Println(*shell_output_errs)
-			}
+			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 
 			if shell_output != nil {
 				fmt.Println(*shell_output)

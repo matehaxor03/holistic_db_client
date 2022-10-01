@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 )
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
@@ -24,7 +25,7 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 }
 
 type User struct {
-	Create func() (*string, *string, []error)
+	Create func() (*string, []error)
 }
 
 func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
@@ -104,19 +105,29 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 		return &sql_command, nil
 	}
 
-	create := func () (*string, *string, []error) {
+	create := func () (*string, []error) {
 		var errors []error 
 		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if crud_command_errors != nil {
-			errors = append(errors, crud_command_errors...)	
+			return nil, errors
 		}
 	
-		if errors != nil {
-			return nil, nil, errors
+		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(crud_sql_command)
+
+		if *stderr != "" {
+			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
+				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
+			} else {
+				errors = append(errors, fmt.Errorf("unknown create user error"))
+			}
 		}
-	
-		return bashCommand.ExecuteUnsafeCommand(crud_sql_command)
+
+		if len(errors) > 0 {
+			return stdout, errors
+		}
+
+		return stdout, nil
 	}	
 
 	errors := validate()
@@ -126,7 +137,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 	}
 		
 	return &User{
-			Create: func() (*string, *string, []error) {
+			Create: func() (*string, []error) {
 				return create()
 			},
 		}, nil
