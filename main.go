@@ -121,8 +121,7 @@ func main() {
 	if len(errors) > 0 {
 	    context.LogErrors(errors)
 		os.Exit(1)
-	}
-	
+	}	
 
 	if command_value == CREATE_COMMAND {
 		if class_value == DATABASE_CLASS {

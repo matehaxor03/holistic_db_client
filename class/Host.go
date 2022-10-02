@@ -9,6 +9,8 @@ type Host struct {
 	GetCLSCommand func() (*string, []error)
 	ToJSONString func() string
 	Clone func() *Host
+	GetHostName func() (*string)
+	GetPortNumber func() (*string)
 }
 
 func CloneHost(host *Host) *Host {
@@ -36,6 +38,14 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 		FILTERS(): Array{ Map {"values":getHostNameValidCharacters(),"function":getValidateCharacters() }}},
 		"port_number":Map{"type":"*string","value":CloneString(port_number),"mandatory":true,
 		FILTERS(): Array{ Map {"values":getValidPortCharacters(),"function":getValidateCharacters() }}},
+	}
+
+	getHostName := func() (*string) {
+		return CloneString(data.M("host_name").S("value"))
+	}
+
+	getPortNumber := func() (*string) {
+		return CloneString(data.M("port_number").S("value"))
 	}
 
 	validate := func() ([]error) {
@@ -72,6 +82,12 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 		Clone: func() *Host {
 			cloned, _ := NewHost(data.M("host_name").S("value"), data.M("port_number").S("value"))
 			return cloned
+		},
+		GetHostName: func() (*string) {
+			return getHostName()
+		},
+		GetPortNumber: func() (*string) {
+			return getPortNumber()
 		},
     }
 
