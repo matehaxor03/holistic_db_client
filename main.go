@@ -85,6 +85,10 @@ func main() {
 		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
 	}
 
+	if database_name == nil || *database_name == "" {
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
+	}
+
 	if len(errors) > 0 {
 	    context.LogErrors(errors)
 		os.Exit(1)
@@ -138,6 +142,7 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
+			client.UseDatabase(database_name)
 			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 
 			if shell_output != nil {

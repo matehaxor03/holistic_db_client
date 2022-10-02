@@ -28,12 +28,13 @@ type User struct {
 	Create func() (*string, []error)
 }
 
-func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
+func NewUser(host *Host, host_credentials *Credentials, database *Database, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
 	bashCommand := newBashCommand()
 	
 	data := Map {
 		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
 		"host_credentials":Map{"type":"*Credentials","value":CloneCredentials(host_credentials),"mandatory":true},
+		"database":Map{"type":"*Database","value":CloneDatabase(database),"mandatory":true},
 		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
 		"domain_name":Map{"type":"*DomainName","value":CloneDomainName(domain_name),"mandatory":true},
 		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
@@ -41,6 +42,19 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data, "User")
+	}
+
+
+	getHost := func() (*Host) {
+		return CloneHost(data.M("host").GetObject("value").(*Host))
+	}
+
+	getHostCredentials := func() (*Credentials) {
+		return CloneCredentials(data.M("host_credentials").GetObject("value").(*Credentials))
+	}
+
+	getDatabase := func() (*Database) {
+		return CloneDatabase(data.M("database").GetObject("value").(*Database))
 	}
 
 	getSQL := func(action string) (*string, []error) {
@@ -75,21 +89,26 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 			errors = append(errors, logic_option_errs...)	
 		}
 
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		host := getHost()
+		host_credentials = getHostCredentials()
+		database := getDatabase()
+
 		host_command, host_command_errors := (*(data.M("host").GetObject("value").(*Host))).GetCLSCommand()
 		if host_command_errors != nil {
 			errors = append(errors, host_command_errors...)	
 		}
 
-		credentials_command, credentials_command_errors := (*(data.M("host_credentials").GetObject("value").(*Credentials))).GetCLSCommand()
-		if credentials_command_errors != nil {
-			errors = append(errors, credentials_command_errors...)	
-		}
+		credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(host_credentials.GetUsername()) + "-" + *((*database).GetDatabaseName()) + ".config"
 
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
+		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
 		sql_command += fmt.Sprintf(" -e \"%s USER ", action)
 		
 		if *logic_option != "" {
@@ -119,7 +138,7 @@ func NewUser(host *Host, host_credentials *Credentials, credentials *Credentials
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
 				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
 			} else {
-				errors = append(errors, fmt.Errorf("unknown create user error"))
+				errors = append(errors, fmt.Errorf("unknown create user error" + *stderr))
 			}
 		}
 

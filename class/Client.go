@@ -1,12 +1,5 @@
 package class
 
-
-import (
-	"fmt"
-	"os"
-)
-
-
 func CloneClient(client *Client) *Client {
 	if client == nil {
 		return client
@@ -17,6 +10,7 @@ func CloneClient(client *Client) *Client {
 
 type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
+	UseDatabase func(database_name *string) []error
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetCredentials func() (*Credentials)
 	GetHost func() *Host 
@@ -38,38 +32,16 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
 	}
 
-	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "Client")
+	getDatabase := func() *Database {
+		return CloneDatabase(data.M("database").GetObject("value").(*Database))
 	}
 
-	ensurePasswordFile := func () ([]error) {
-		var errors []error 
+	setDatabase := func(database *Database) {
+		data.M("database")["value"] = database
+	}
 
-		host := getHost()
-
-		if host == nil {
-			errors = append(errors, fmt.Errorf("database host is not specified"))
-		}
-
-		credentails := getCredentials()
-
-		if credentials == nil {
-			errors = append(errors, fmt.Errorf("database credentials is not specified"))
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		if err := os.WriteFile("dbconfig-" + *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentails.GetUsername()) + ".config", []byte("[client]\nuser=" + *(credentails.GetUsername()) + "\npassword=" + *(credentails.GetPassword())+"\n"), 0600); err != nil {
-			errors = append(errors, err)
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		return nil
+	validate := func() ([]error) {
+		return ValidateGenericSpecial(data, "Client")
 	}
 			    
 	x := Client{
@@ -78,11 +50,6 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			return cloned
 		},
 		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
-			password_file_errs := ensurePasswordFile()
-			if password_file_errs != nil {
-				return nil, nil, password_file_errs
-			}
-
 			database, errs := NewDatabase(getHost(), getCredentials(), database_name, database_create_options, options)
 			if errs != nil {
 				return nil, nil, errs
@@ -96,11 +63,6 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			return database, stdout, nil
 		},
 		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
-			password_file_errs := ensurePasswordFile()
-			if password_file_errs != nil {
-				return nil, nil, password_file_errs
-			}
-			
 			credentials, credentail_errors := NewCredentials(username, password)
 			if credentail_errors != nil {
 				return nil, nil, credentail_errors
@@ -111,7 +73,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 				return nil, nil, domain_errors
 			}
 
-			user, user_errors := NewUser(getHost(), getCredentials(), credentials, domain, options)
+			user, user_errors := NewUser(getHost(), getCredentials(), getDatabase(), credentials, domain, options)
 			if user_errors != nil {
 				return nil, nil, user_errors
 			}
@@ -128,6 +90,14 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		},
 		GetCredentials: func() *Credentials {
 			return getCredentials()
+		},
+		UseDatabase: func(database_name *string) []error {
+			database, database_errs := NewDatabase(getHost(), getCredentials(), database_name, nil, nil)
+			if database_errs != nil {
+				return database_errs
+			}
+			setDatabase(database)
+			return nil
 		},
     }
 

@@ -1,9 +1,5 @@
 package class
 
-import (
-	"fmt"
-)
-
 func CloneCredentials(credentials *Credentials) *Credentials {
 	if credentials == nil {
 		return credentials
@@ -16,7 +12,6 @@ type Credentials struct {
 	Validate func() ([]error)
 	GetUsername func() (*string)
 	GetPassword func() (*string)
-	GetCLSCommand func() (*string, []error)
 	ToJSONString func() string 
 	Clone func() *Credentials
 }
@@ -62,16 +57,6 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 		GetPassword: func() (*string) {
 			return getPassword()
 		},
-		GetCLSCommand: func() (*string, []error) {
-			errors := validate()
-			if errors != nil {
-				return nil, errors
-			}
-		
-			command := fmt.Sprintf("--user=%s --password=%s ", *(getUsername()), *(getPassword()))
-		
-			return &command, nil
-		 },
 		ToJSONString: func() string {
 			return data.Clone().ToJSONString()
 		},

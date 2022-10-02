@@ -41,21 +41,19 @@ type Database struct {
 	Clone func() (*Database)
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
+	GetDatabaseName func() (*string)
 }
 
 func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
 	bashCommand := newBashCommand()
 	mapType := "map[string]map[string][][]string)"
-	hostType := "*Host"
-	credentialsType := "*Credentials"
 	databaseCreateOptionsType := "*DatabaseCreateOptions"
-	stringType := "*string"
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
-		"host":Map{"type":&hostType,"value":host,"mandatory":true},
-		"credentials":Map{"type":&credentialsType,"value":credentials,"mandatory":true},
-		"database_name":Map{"type":&stringType,"value":database_name,"mandatory":true,
+		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
+		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
+		"database_name":Map{"type":"*string","value":database_name,"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":ValidateCharacters }}},
 		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
 		"options":Map{"type":&mapType,"value":options,"mandatory":false},
@@ -66,15 +64,15 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 	}
 
 	getHost := func() (*Host) {
-		return data.M("host").GetObject("value").(*Host)
+		return CloneHost(data.M("host").GetObject("value").(*Host))
 	}
 
 	getCredentials := func() (*Credentials) {
-		return data.M("credentials").GetObject("value").(*Credentials)
+		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
 	}
 
 	getDatabaseName := func() (*string) {
-		return data.M("database_name").GetObject("value").(*string)
+		return CloneString(data.M("database_name").GetObject("value").(*string))
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
@@ -113,15 +111,9 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 		if logic_options_errs != nil {
 			errors = append(errors, logic_options_errs...)	
 		}
-
-		mapHost := data.M("host")
-		if mapHost == nil {
-			errors = append(errors, fmt.Errorf("host field not found in data"))	
-		}
-
-		host := mapHost.GetObject("value").(*Host)
-		if host == nil {
-			errors = append(errors, fmt.Errorf("host field is nil in data"))	
+		
+		if len(errors) > 0 {
+			return nil, errors
 		}
 
 		host_command, host_command_errors := (*host).GetCLSCommand()
@@ -129,26 +121,16 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 			errors = append(errors, host_command_errors...)	
 		}
 
-		mapCredentials := data.M("credentials")
-		if mapCredentials == nil {
-			errors = append(errors, fmt.Errorf("credentials field not found in data"))	
-		}
+		host := getHost()
+		credentials = getCredentials()
 
-		credentials = mapCredentials.GetObject("value").(*Credentials)
-		if credentials == nil {
-			errors = append(errors, fmt.Errorf("credentials field is nil in data"))	
-		}
-
-		credentials_command, credentials_command_errors := (*credentials).GetCLSCommand()
-		if credentials_command_errors != nil {
-			errors = append(errors, credentials_command_errors...)	
-		}
+		credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentials.GetUsername()) + "-" + *(getDatabaseName()) + ".config"
 
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", *host_command, *credentials_command) 
+		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
 		sql_command += fmt.Sprintf(" -e \"%s DATABASE ", command)
 		
 		if *logic_option != "" {
@@ -236,6 +218,9 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 			}
 
 			return result, nil
+		},
+		GetDatabaseName: func() (*string) {
+			return getDatabaseName()
 		},
     }
 
