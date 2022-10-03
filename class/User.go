@@ -3,6 +3,9 @@ package class
 import (
 	"fmt"
 	"strings"
+	"io/ioutil"
+	"os"
+	"time"
 )
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
@@ -57,10 +60,10 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		return CloneDatabase(data.M("database").GetObject("value").(*Database))
 	}
 
-	getSQL := func(action string) (*string, []error) {
+	getSQL := func(action string) (*string, *string, []error) {
 		errors := validate()
 		if len(errors) > 0 {
-			return nil, errors
+			return nil, nil, errors
 		}
 
 		m := Map{}
@@ -90,7 +93,7 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return nil, nil, errors
 		}
 
 		host := getHost()
@@ -105,11 +108,12 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(host_credentials.GetUsername()) + "-" + *((*database).GetDatabaseName()) + ".config"
 
 		if len(errors) > 0 {
-			return nil, errors
+			return nil, nil, errors
 		}
 
-		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
-		sql_command += fmt.Sprintf(" -e \"%s USER ", action)
+		sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
+
+		sql_command := fmt.Sprintf("%s USER ", action)
 		
 		if *logic_option != "" {
 			sql_command += fmt.Sprintf("%s ", *logic_option)
@@ -120,20 +124,26 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
 		sql_command += fmt.Sprintf("'%s' ",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
 
-		sql_command += ";\""
-		return &sql_command, nil
+		sql_command += ";"
+		return &sql_header_command, &sql_command, nil
 	}
 
 	create := func () (*string, []error) {
 		var errors []error 
-		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_header_command, crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if crud_command_errors != nil {
 			return nil, crud_command_errors
 		}
-	
-		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(crud_sql_command)
 
+		uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
+		filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
+	
+		ioutil.WriteFile(filename, []byte(*crud_sql_command), 0600)
+		command := *sql_header_command + " < " + filename
+		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(&command)
+		os.Remove(filename)
+		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
 				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
