@@ -3,9 +3,6 @@ package class
 import (
 	"fmt"
 	"strings"
-	"io/ioutil"
-	"os"
-	"time"
 )
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
@@ -32,7 +29,7 @@ type User struct {
 }
 
 func NewUser(host *Host, host_credentials *Credentials, database *Database, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
-	bashCommand := newBashCommand()
+	SQLCommand := newSQLCommand()
 	
 	data := Map {
 		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
@@ -60,10 +57,10 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		return CloneDatabase(data.M("database").GetObject("value").(*Database))
 	}
 
-	getSQL := func(action string) (*string, *string, []error) {
+	getSQL := func(action string) (*string, []error) {
 		errors := validate()
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, errors
 		}
 
 		m := Map{}
@@ -93,25 +90,8 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, errors
 		}
-
-		host := getHost()
-		host_credentials = getHostCredentials()
-		database := getDatabase()
-
-		host_command, host_command_errors := (*(data.M("host").GetObject("value").(*Host))).GetCLSCommand()
-		if host_command_errors != nil {
-			errors = append(errors, host_command_errors...)	
-		}
-
-		credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(host_credentials.GetUsername()) + "-" + *((*database).GetDatabaseName()) + ".config"
-
-		if len(errors) > 0 {
-			return nil, nil, errors
-		}
-
-		sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
 
 		sql_command := fmt.Sprintf("%s USER ", action)
 		
@@ -122,27 +102,21 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 		sql_command += fmt.Sprintf("'%s' ", *(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
 		sql_command += fmt.Sprintf("@'%s' ",*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s' ",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
+		sql_command += fmt.Sprintf("'%s'",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
 
 		sql_command += ";"
-		return &sql_header_command, &sql_command, nil
+		return &sql_command, nil
 	}
 
 	create := func () (*string, []error) {
 		var errors []error 
-		sql_header_command, crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
-		if crud_command_errors != nil {
-			return nil, crud_command_errors
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
 		}
 
-		uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
-		filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
-	
-		ioutil.WriteFile(filename, []byte(*crud_sql_command), 0600)
-		command := *sql_header_command + " < " + filename
-		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(&command)
-		os.Remove(filename)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getHost(), getDatabase(), getHostCredentials(), sql_command, true)
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
