@@ -28,13 +28,11 @@ type User struct {
 	Create func() (*string, []error)
 }
 
-func NewUser(host *Host, host_credentials *Credentials, database *Database, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
+func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
 	SQLCommand := newSQLCommand()
 	
 	data := Map {
-		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
-		"host_credentials":Map{"type":"*Credentials","value":CloneCredentials(host_credentials),"mandatory":true},
-		"database":Map{"type":"*Database","value":CloneDatabase(database),"mandatory":true},
+		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
 		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
 		"domain_name":Map{"type":"*DomainName","value":CloneDomainName(domain_name),"mandatory":true},
 		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
@@ -45,16 +43,8 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 	}
 
 
-	getHost := func() (*Host) {
-		return CloneHost(data.M("host").GetObject("value").(*Host))
-	}
-
-	getHostCredentials := func() (*Credentials) {
-		return CloneCredentials(data.M("host_credentials").GetObject("value").(*Credentials))
-	}
-
-	getDatabase := func() (*Database) {
-		return CloneDatabase(data.M("database").GetObject("value").(*Database))
+	getClient := func() (*Client) {
+		return CloneClient(data.M("client").GetObject("value").(*Client))
 	}
 
 	getSQL := func(action string) (*string, []error) {
@@ -116,7 +106,7 @@ func NewUser(host *Host, host_credentials *Credentials, database *Database, cred
 			return nil, sql_command_errors
 		}
 
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getHost(), getDatabase(), getHostCredentials(), sql_command, true)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {

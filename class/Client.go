@@ -14,10 +14,14 @@ type Client struct {
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetCredentials func() (*Credentials)
 	GetHost func() *Host 
+	GetDatabase func() *Database 
 	Clone func() (*Client)
+	Validate func() []error
 }
 
 func NewClient(host *Host, credentials *Credentials, database *Database) (*Client, []error) {
+	var this_client *Client
+	
 	data := Map {
 		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":false},
 		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":false},
@@ -37,20 +41,31 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 	}
 
 	setDatabase := func(database *Database) {
-		data.M("database")["value"] = database
+		data.M("database")["value"] = CloneDatabase(database)
 	}
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data, "Client")
 	}
+
+	setClient := func(client *Client) {
+		this_client = client
+	}
+
+	getClient := func() *Client {
+		return this_client
+	}
 			    
 	x := Client{
+		Validate: func() ([]error) {
+			return validate()
+		},
 		Clone: func() (*Client) {
 			cloned, _ := NewClient(host, credentials, database)
 			return cloned
 		},
 		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
-			database, errs := NewDatabase(getHost(), getCredentials(), database_name, database_create_options, options)
+			database, errs := NewDatabase(getClient(), database_name, database_create_options, options)
 			if errs != nil {
 				return nil, nil, errs
 			}
@@ -73,7 +88,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 				return nil, nil, domain_errors
 			}
 
-			user, user_errors := NewUser(getHost(), getCredentials(), getDatabase(), credentials, domain, options)
+			user, user_errors := NewUser(getClient(), credentials, domain, options)
 			if user_errors != nil {
 				return nil, nil, user_errors
 			}
@@ -91,8 +106,11 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		GetCredentials: func() *Credentials {
 			return getCredentials()
 		},
+		GetDatabase: func() *Database {
+			return getDatabase()
+		},
 		UseDatabase: func(database_name *string) []error {
-			database, database_errs := NewDatabase(getHost(), getCredentials(), database_name, nil, nil)
+			database, database_errs := NewDatabase(getClient(), database_name, nil, nil)
 			if database_errs != nil {
 				return database_errs
 			}
@@ -100,6 +118,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			return nil
 		},
     }
+	setClient(&x)
 
 	errors := validate()
 

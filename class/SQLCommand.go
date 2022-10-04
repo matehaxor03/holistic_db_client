@@ -9,51 +9,77 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(host *Host, database *Database, credentials *Credentials, sql_command *string, sql_command_use_file bool) (*string, *string, []error)
+	ExecuteUnsafeCommand func(client *Client, sql_command *string, sql_command_use_file bool) (*string, *string, []error)
 }
 
 func newSQLCommand() (*SQLCommand) {			    
 	bashCommand := newBashCommand()
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(host *Host, database *Database, credentials *Credentials, sql_command *string, sql_command_use_file bool) (*string, *string, []error) {
+		ExecuteUnsafeCommand: func(client *Client, sql_command *string, sql_command_use_file bool) (*string, *string, []error) {
 			var errors []error 
 
-			host_errs := host.Validate()
-			if host_errs != nil {
-				errors = append(errors, host_errs...)
-			}
-
-			database_errs := database.Validate()
-			if database_errs != nil {
-				errors = append(errors, database_errs...)
-			}
-
-			credential_errs := credentials.Validate()
-			if credential_errs != nil {
-				errors = append(errors, credential_errs...)
-			}
-
-			if sql_command == nil {
-				errors = append(errors, fmt.Errorf("sql command is nil"))
-			} else if *sql_command == "" {
-				errors = append(errors, fmt.Errorf("sql command is an empty string"))
-			}
-
-			host_command, host_command_errs := host.GetCLSCommand()
-			if host_command_errs != nil {
-				errors = append(errors, host_command_errs...)
+			if client == nil {
+				errors = append(errors, fmt.Errorf("client is nil"))
+			} else {
+				client_errs := client.Validate()
+				if client_errs != nil {
+					errors = append(errors, client_errs...)
+				}
 			}
 
 			if len(errors) > 0 {
 				return nil, nil, errors
 			}
 
-			credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentials.GetUsername()) + "-" + *((*database).GetDatabaseName()) + ".config"
-			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
+			host := client.GetHost()
+			if host == nil {
+				errors = append(errors, fmt.Errorf("host is nil"))
+			} else {
+				host_errs := host.Validate()
+				if host_errs != nil {
+					errors = append(errors, host_errs...)
+				}
+			}
+
+			credentials := client.GetCredentials()
+			if credentials == nil {
+				errors = append(errors, fmt.Errorf("credentials is nil"))
+			} else {
+				credential_errs := credentials.Validate()
+				if credential_errs != nil {
+					errors = append(errors, credential_errs...)
+				}
+			}
+			
+			database := client.GetDatabase()
+			if database != nil {
+				database_errs := database.Validate()
+				if database_errs != nil {
+					errors = append(errors, database_errs...)
+				}
+			}
+			
+			if sql_command == nil {
+				errors = append(errors, fmt.Errorf("sql command is nil"))
+			} else if *sql_command == "" {
+				errors = append(errors, fmt.Errorf("sql command is an empty string"))
+			}
+
+			if len(errors) > 0 {
+				return nil, nil, errors
+			}
+
+			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(*(host)).GetHostName(), *(*(host)).GetPortNumber())
+			credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentials.GetUsername()) + ".config"
+			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command) 
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
 			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
+
+			if database != nil {
+				*sql_command = fmt.Sprintf("USE %s;\n", (*database).GetDatabaseName()) + *sql_command
+			}
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(*sql_command), 0600)

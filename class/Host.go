@@ -1,12 +1,7 @@
 package class
 
-import (
-	"fmt"
-)
-
 type Host struct {
 	Validate func() ([]error)
-	GetCLSCommand func() (*string, []error)
 	ToJSONString func() string
 	Clone func() *Host
 	GetHostName func() (*string)
@@ -52,17 +47,6 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 		return ValidateGenericSpecial(data.Clone(), "Host")
 	}
 
-	getCLSCommand := func() (*string, []error) {
-		errors := validate()
-		if len(errors) > 0 {
-			return nil, errors
-		}
-	
-		command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(data.M("host_name").S("value")), *(data.M("port_number").S("value")))
-	
-		return &command, nil
-	 }
-
 	errors := validate()
 
 	if errors != nil {
@@ -72,9 +56,6 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	x := Host{
 		Validate: func() ([]error) {
 			return validate()
-		},
-		GetCLSCommand: func() (*string, []error) {
-			return getCLSCommand()
 		},
 		ToJSONString: func() string {
 			return data.Clone().ToJSONString()

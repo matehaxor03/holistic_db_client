@@ -142,7 +142,6 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			client.UseDatabase(database_name)
 			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 
 			if shell_output != nil {

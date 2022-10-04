@@ -44,15 +44,14 @@ type Database struct {
 	GetDatabaseName func() (*string)
 }
 
-func NewDatabase(host *Host, credentials *Credentials, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
-	bashCommand := newBashCommand()
+func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
+	SQLCommand := newSQLCommand()
 	mapType := "map[string]map[string][][]string)"
 	databaseCreateOptionsType := "*DatabaseCreateOptions"
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
-		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":true},
-		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
+		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
 		"database_name":Map{"type":"*string","value":database_name,"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":ValidateCharacters }}},
 		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
@@ -63,12 +62,8 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 		return ValidateGenericSpecial(data, "Database")
 	}
 
-	getHost := func() (*Host) {
-		return CloneHost(data.M("host").GetObject("value").(*Host))
-	}
-
-	getCredentials := func() (*Credentials) {
-		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
+	getClient := func() (*Client) {
+		return CloneClient(data.M("client").GetObject("value").(*Client))
 	}
 
 	getDatabaseName := func() (*string) {
@@ -116,22 +111,7 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 			return nil, errors
 		}
 
-		host_command, host_command_errors := (*host).GetCLSCommand()
-		if host_command_errors != nil {
-			errors = append(errors, host_command_errors...)	
-		}
-
-		host := getHost()
-		credentials = getCredentials()
-
-		credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentials.GetUsername()) + "-" + *(getDatabaseName()) + ".config"
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		sql_command :=  fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, *host_command) 
-		sql_command += fmt.Sprintf(" -e \"%s DATABASE ", command)
+		sql_command := fmt.Sprintf("%s DATABASE ", command)
 		
 		if *logic_option != "" {
 			sql_command += fmt.Sprintf("%s ", *logic_option)
@@ -164,20 +144,20 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 
 		sql_command += *database_create_options_command
 
-		sql_command += ";\""
-		fmt.Println(sql_command)
+		sql_command += ";"
+
 		return &sql_command, nil
 	}
 
 	createDatabase := func() (*string, []error) {
 		var errors []error 
-		crud_sql_command, crud_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
-		if crud_command_errors != nil {
-			return nil, crud_command_errors
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
 		}
 	
-		stdout, stderr, errors := bashCommand.ExecuteUnsafeCommand(crud_sql_command)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " database exists") {
@@ -208,7 +188,7 @@ func NewDatabase(host *Host, credentials *Credentials, database_name *string, da
 			return getSQL(action)
 		},
 		Clone: func() (*Database) {
-			clone_value, _ := NewDatabase(getHost(), getCredentials(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
+			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
 			return clone_value
 		},
 		Create: func() (*string, []error) {
