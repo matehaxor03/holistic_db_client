@@ -108,7 +108,7 @@ func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
 				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
 			} else {
-				errors = append(errors, fmt.Errorf("unknown create user error" + *stderr))
+				errors = append(errors, fmt.Errorf(*stderr))
 			}
 		}
 

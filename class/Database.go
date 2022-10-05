@@ -163,7 +163,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			if strings.Contains(*stderr, " database exists") {
 				errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
 			} else {
-				errors = append(errors, fmt.Errorf("unknown create user error"))
+				errors = append(errors, fmt.Errorf(*stderr))
 			}
 		}
 	
