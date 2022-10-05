@@ -453,6 +453,12 @@ func (m Map) Clone() Map {
 		case "*class.Host":
 			clone[key] = (*(current.(*Host))).Clone()
 			break
+		case "*class.Client":
+			clone[key] = (*(current.(*Client))).Clone()
+			break
+		case "*class.Grant":
+			clone[key] = (*(current.(*Grant))).Clone()
+			break
 		case "bool": 
 			clone[key] = current.(bool)	
 		default:

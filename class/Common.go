@@ -418,6 +418,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
+		case "*Grant":
+			grant := parameter_fields.GetObject("value").(*Grant)
+			if grant != nil {
+				errors_for_grant := grant.Validate()
+				if errors_for_grant != nil {
+					errors = append(errors, errors_for_grant...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			}
+			break
 		default:
 			panic(fmt.Sprintf("please implement type %s", *typeOf))
 		}
