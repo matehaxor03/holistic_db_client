@@ -65,7 +65,7 @@ func newSQLCommand() (*SQLCommand) {
 			}
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(*(host)).GetHostName(), *(*(host)).GetPortNumber())
-			credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(database_username) + ".config"
+			credentials_command := "--defaults-extra-file=./holistic_db_config|" +  *(host.GetHostName()) + "|" + *(host.GetPortNumber()) + "|" + *(database_username) + ".config"
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command) 
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
