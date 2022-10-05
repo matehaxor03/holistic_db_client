@@ -46,7 +46,8 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 	}
 
 	setDatabase := func(database *Database) {
-		data.M("database")["value"] = CloneDatabase(database)
+		(data.M("database"))["value"] = CloneDatabase(database)
+		(data.M("database"))["type"] = "*Database"
 	}
 
 	validate := func() ([]error) {
