@@ -48,9 +48,9 @@ func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*
 		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
 		"user":Map{"type":"*User","value":CloneUser(user),"mandatory":true},		
 		"grant":Map{"type":"*string","value":CloneString(grantValue),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":ContainsExactMatch}}},
+		FILTERS(): Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":getContainsExactMatch()}}},
 		"filter":Map{"type":"*string","value":CloneString(filter),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetAllowedStringValues(),"function":ValidateCharacters}}},
+		FILTERS(): Array{ Map {"values":GetAllowedStringValues(),"function":getValidateCharacters()}}},
 	}
 
 	validate := func() ([]error) {
