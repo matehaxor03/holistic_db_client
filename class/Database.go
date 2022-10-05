@@ -67,7 +67,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	getDatabaseName := func() (*string) {
-		return CloneString(data.M("database_name").GetObject("value").(*string))
+		return CloneString(data.M("database_name").S("value"))
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
