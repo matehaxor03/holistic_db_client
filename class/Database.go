@@ -52,8 +52,8 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 	data := Map {
 		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
-		"database_name":Map{"type":"*string","value":database_name,"mandatory":true,
-		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":ValidateCharacters }}},
+		"database_name":Map{"type":"*string","value":CloneString(database_name),"mandatory":true,
+		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getValidateCharacters() }}},
 		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
 		"options":Map{"type":&mapType,"value":options,"mandatory":false},
 	}

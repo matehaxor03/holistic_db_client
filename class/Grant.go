@@ -21,7 +21,7 @@ type Grant struct {
 	Grant func() (*string, []error) 
 }
 
-func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*Grant, []error) {
+func NewGrant(client *Client, user *User, grant_value *string, filter *string) (*Grant, []error) {
 	SQLCommand := newSQLCommand()
 
 	ALL := func() string {
@@ -47,7 +47,7 @@ func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*
 	data := Map {
 		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
 		"user":Map{"type":"*User","value":CloneUser(user),"mandatory":true},		
-		"grant":Map{"type":"*string","value":CloneString(grantValue),"mandatory":true,
+		"grant":Map{"type":"*string","value":CloneString(grant_value),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":getContainsExactMatch()}}},
 		"filter":Map{"type":"*string","value":CloneString(filter),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetAllowedStringValues(),"function":getValidateCharacters()}}},
@@ -79,16 +79,16 @@ func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*
 			return nil, errors
 		}
 
-		database := (*getClient()).GetDatabase()
+		database := (*(getClient())).GetDatabase()
 		user := getUser()
 		credentials := (*user).GetCredentials()
 		domain_name := (*user).GetDomainName()
 
 		grant_value := *(getGrantValue())
 		filter_value := *(getFilter())
-		database_name_value := *((*database).GetDatabaseName())
 		username_value := *((*credentials).GetUsername())
 		domain_name_value := *((*domain_name).GetDomainName())
+		database_name_value := *((*database).GetDatabaseName())
 
 		sql := fmt.Sprintf("GRANT %s ON %s.%s To '%s'@'%s';", 
 		grant_value, 
