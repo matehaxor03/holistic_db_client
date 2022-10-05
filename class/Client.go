@@ -67,7 +67,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			return validate()
 		},
 		Clone: func() (*Client) {
-			cloned, _ := NewClient(host, credentials, database)
+			cloned, _ := NewClient(getHost(), getCredentials(), getDatabase())
 			return cloned
 		},
 		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
