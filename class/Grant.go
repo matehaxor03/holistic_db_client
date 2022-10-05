@@ -84,12 +84,18 @@ func NewGrant(client *Client, user *User, grantValue *string, filter *string) (*
 		credentials := (*user).GetCredentials()
 		domain_name := (*user).GetDomainName()
 
+		grant_value := *(getGrantValue())
+		filter_value := *(getFilter())
+		database_name_value := *((*database).GetDatabaseName())
+		username_value := *((*credentials).GetUsername())
+		domain_name_value := *((*domain_name).GetDomainName())
+
 		sql := fmt.Sprintf("GRANT %s ON %s.%s To '%s'@'%s';", 
-		*getGrantValue(), 
-		(*(*database).GetDatabaseName()),  
-		*getFilter(), 
-		*((*credentials).GetUsername()),
-		*((*domain_name).GetDomainName()))
+		grant_value, 
+		database_name_value,  
+		filter_value, 
+		username_value,
+		domain_name_value)
 
 		return &sql, nil
 	}
