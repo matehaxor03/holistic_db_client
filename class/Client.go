@@ -1,5 +1,9 @@
 package class
 
+import (
+	"fmt"
+)
+
 func CloneClient(client *Client) *Client {
 	if client == nil {
 		return client
@@ -10,7 +14,7 @@ func CloneClient(client *Client) *Client {
 
 type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
-	UseDatabase func(database_name *string) []error
+	UseDatabase func(database *Database) []error
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetCredentials func() (*Credentials)
 	GetHost func() *Host 
@@ -110,11 +114,18 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		GetDatabase: func() *Database {
 			return getDatabase()
 		},
-		UseDatabase: func(database_name *string) []error {
-			database, database_errs := NewDatabase(getClient(), database_name, nil, nil)
-			if database_errs != nil {
-				return database_errs
+		UseDatabase: func(database *Database) []error {
+			var errors []error
+			if database == nil {
+				errors = append(errors,  fmt.Errorf("database is nil"))
+				return errors
 			}
+
+			database_errors := database.Validate()
+			if database_errors != nil {
+				return database_errors
+			}
+			
 			setDatabase(database)
 			return nil
 		},
