@@ -77,15 +77,16 @@ func newSQLCommand() (*SQLCommand) {
 			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
+			sql := ""
 			if database != nil {
-				*sql_command = fmt.Sprintf("USE %s;\n", (*database).GetDatabaseName()) + *sql_command
+				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName())) + *sql_command
 			}
 
 			if sql_command_use_file {
-				ioutil.WriteFile(filename, []byte(*sql_command), 0600)
+				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
-				command = sql_header_command + " -e \"" + *sql_command + "\""
+				command = sql_header_command + " -e \"" + sql + "\""
 			}
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
