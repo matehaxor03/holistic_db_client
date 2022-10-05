@@ -41,15 +41,10 @@ func newSQLCommand() (*SQLCommand) {
 				}
 			}
 
-			credentials := client.GetCredentials()
-			if credentials == nil {
-				errors = append(errors, fmt.Errorf("credentials is nil"))
-			} else {
-				credential_errs := credentials.Validate()
-				if credential_errs != nil {
-					errors = append(errors, credential_errs...)
-				}
-			}
+			database_username := client.GetDatabaseUsername()
+			if database_username == nil {
+				errors = append(errors, fmt.Errorf("database_username is nil"))
+			} 
 			
 			database := client.GetDatabase()
 			if database != nil {
@@ -70,7 +65,7 @@ func newSQLCommand() (*SQLCommand) {
 			}
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(*(host)).GetHostName(), *(*(host)).GetPortNumber())
-			credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(credentials.GetUsername()) + ".config"
+			credentials_command := "--defaults-extra-file=./holistic-db-config-" +  *(host.GetHostName()) + "-" + *(host.GetPortNumber()) + "-" + *(database_username) + ".config"
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command) 
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")

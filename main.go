@@ -10,7 +10,6 @@ import (
 func main() {
 	errors := []error{}
 	const CLS_USER string = "username"
-	const CLS_PASSWORD string = "password"
 	const CLS_HOST string = "host_name"
 	const CLS_PORT string = "port_number"
 	const CLS_COMMAND string = "command"
@@ -47,7 +46,6 @@ func main() {
 	port_value, _ := params[CLS_PORT] 
 
 	user_value, _ := params[CLS_USER] 
-	password_value, _ := params[CLS_PASSWORD] 
 
 	database_name, _ := params[CLS_DATABASE_NAME]
 	character_set, _ := params[CLS_CHARACTER_SET]
@@ -111,13 +109,8 @@ func main() {
 	if host_errors != nil {
 		errors = append(errors, host_errors...)
 	}
-
-	credentials, credential_errors :=  class.NewCredentials(user_value, password_value)
-	if credential_errors != nil {
-		errors = append(errors, credential_errors...)
-	}
 	
-	client, client_errors := class.NewClient(host, credentials, nil)
+	client, client_errors := class.NewClient(host, user_value, nil)
 	if client_errors != nil {
 		errors = append(errors, client_errors...)
 	}

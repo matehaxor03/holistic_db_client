@@ -16,7 +16,7 @@ type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
 	UseDatabase func(database *Database) []error
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
-	GetCredentials func() (*Credentials)
+	GetDatabaseUsername func() (*string)
 	GetHost func() *Host 
 	GetDatabase func() *Database 
 	Clone func() (*Client)
@@ -24,12 +24,12 @@ type Client struct {
 	Grant func(user *User, grant string, filter string) (*Grant, *string, []error)
 }
 
-func NewClient(host *Host, credentials *Credentials, database *Database) (*Client, []error) {
+func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
 	
 	data := Map {
 		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":false},
-		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":false},
+		"database_username":Map{"type":"*string","value":CloneString(database_username),"mandatory":false},
 		"database":Map{"type":"*Database","value":CloneDatabase(database),"mandatory":false},
 	}
 
@@ -37,8 +37,8 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		return CloneHost((data.M("host").GetObject("value").(*Host)))
 	}
 
-	getCredentials := func() *Credentials {
-		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
+	getDatabaseUsername := func() *string {
+		return CloneString(data.M("database_username").S("value"))
 	}
 
 	getDatabase := func() *Database {
@@ -67,7 +67,7 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			return validate()
 		},
 		Clone: func() (*Client) {
-			cloned, _ := NewClient(getHost(), getCredentials(), getDatabase())
+			cloned, _ := NewClient(getHost(), getDatabaseUsername(), getDatabase())
 			return cloned
 		},
 		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
@@ -109,8 +109,8 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 		GetHost: func() *Host {
 			return getHost()
 		},
-		GetCredentials: func() *Credentials {
-			return getCredentials()
+		GetDatabaseUsername: func() *string {
+			return getDatabaseUsername()
 		},
 		GetDatabase: func() *Database {
 			return getDatabase()
