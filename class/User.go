@@ -33,6 +33,7 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 }
 
 type User struct {
+	Validate func() ([]error)
 	Create func() (*string, []error)
 	GetCredentials func() (*Credentials)
 	GetDomainName func() (*DomainName)
@@ -152,6 +153,9 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	}
 		
 	return &User{
+			Validate: func() ([]error) {
+				return validate()
+			},
 			Create: func() (*string, []error) {
 				return create()
 			},

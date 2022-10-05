@@ -429,6 +429,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
+		case "*User":
+			user := parameter_fields.GetObject("value").(*User)
+			if user != nil {
+				errors_for_user := user.Validate()
+				if errors_for_user != nil {
+					errors = append(errors, errors_for_user...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			}
+			break
 		default:
 			panic(fmt.Sprintf("please implement type %s", *typeOf))
 		}
