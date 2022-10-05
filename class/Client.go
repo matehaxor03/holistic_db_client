@@ -17,6 +17,7 @@ type Client struct {
 	GetDatabase func() *Database 
 	Clone func() (*Client)
 	Validate func() []error
+	Grant func(user *User, grant string, filter string) (*Grant, *string, []error)
 }
 
 func NewClient(host *Host, credentials *Credentials, database *Database) (*Client, []error) {
@@ -116,6 +117,21 @@ func NewClient(host *Host, credentials *Credentials, database *Database) (*Clien
 			}
 			setDatabase(database)
 			return nil
+		},
+		Grant: func(user *User, grant string, filter string) (*Grant, *string, []error) {
+			client := getClient()
+			grant_obj, grant_errors := NewGrant(client, user, &grant, &filter)
+
+			if grant_errors != nil {
+				return nil, nil, grant_errors
+			}
+
+			stdout, grant_errs := (*grant_obj).Grant()
+			if grant_errs != nil {
+				return nil, stdout, grant_errs
+			}
+
+			return grant_obj, stdout, nil
 		},
     }
 	setClient(&x)

@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+func CloneUser(user *User) *User {
+	if user == nil {
+		return user
+	}
+
+	return user.Clone()
+}
+
 func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
 	return Array{GET_DATA_DEFINTION_STATEMENT_CREATE()}
 }
@@ -26,6 +34,9 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 
 type User struct {
 	Create func() (*string, []error)
+	GetCredentials func() (*Credentials)
+	GetDomainName func() (*DomainName)
+	Clone func() (*User)
 }
 
 func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
@@ -42,9 +53,20 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		return ValidateGenericSpecial(data, "User")
 	}
 
-
 	getClient := func() (*Client) {
 		return CloneClient(data.M("client").GetObject("value").(*Client))
+	}
+
+	getCredentials := func() (*Credentials) {
+		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
+	}
+
+	getDomainName := func() (*DomainName) {
+		return CloneDomainName(data.M("domain_name").GetObject("value").(*DomainName))
+	}
+
+	getOptions := func() (map[string]map[string][][]string) {
+		return data.M("options").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	getSQL := func(action string) (*string, []error) {
@@ -132,6 +154,16 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	return &User{
 			Create: func() (*string, []error) {
 				return create()
+			},
+			Clone: func() *User {
+				cloned, _ := NewUser(getClient(), getCredentials(), getDomainName(), getOptions())
+				return cloned
+			},
+			GetCredentials: func() *Credentials {
+				return getCredentials()
+			},
+			GetDomainName: func() *DomainName {
+				return getDomainName()
 			},
 		}, nil
 }
