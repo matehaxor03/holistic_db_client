@@ -43,10 +43,10 @@ type Table struct {
 	Clone func() (*Table)
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
-	GetTableName func() (*string)
+	GetTableName func() (string)
 }
 
-func NewTable(client *Client, table_name *string, schema Map, options map[string]map[string][][]string) (*Table, []error) {
+func NewTable(client *Client, table_name string, schema Map, options map[string]map[string][][]string) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	mapType := "map[string]map[string][][]string)"
 
@@ -56,7 +56,7 @@ func NewTable(client *Client, table_name *string, schema Map, options map[string
 
 	data := schema.Clone()
 	data["[client]"] = Map{"type":"*Client","value":CloneClient(client),"mandatory":true}
-	data["[table_name]"] = Map{"type":"*string","value":CloneString(table_name),"mandatory":true, FILTERS(): Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}}
+	data["[table_name]"] = Map{"type":"*string","value":CloneString(&table_name),"mandatory":true, FILTERS(): Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}}
 	data["[options]"] = Map{"type":&mapType,"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*Time","value":nil,"mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*Time","value":nil,"mandatory":true, "default":"now"}
@@ -69,8 +69,8 @@ func NewTable(client *Client, table_name *string, schema Map, options map[string
 		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
-	getTableName := func() (*string) {
-		return CloneString(data.M("[table_name]").S("value"))
+	getTableName := func() (string) {
+		return *(CloneString(data.M("[table_name]").S("value")))
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
@@ -114,7 +114,7 @@ func NewTable(client *Client, table_name *string, schema Map, options map[string
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("%s ", *getTableName())
+		sql_command += fmt.Sprintf("%s ", getTableName())
 
 		columns := data.Keys() 
 		var valid_columns []string
@@ -231,7 +231,7 @@ func NewTable(client *Client, table_name *string, schema Map, options map[string
 
 			return result, nil
 		},
-		GetTableName: func() (*string) {
+		GetTableName: func() (string) {
 			return getTableName()
 		},
     }
