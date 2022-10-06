@@ -149,7 +149,7 @@ func NewTable(client *Client, table_name string, schema Map, options map[string]
 					// todo check for safety that it's a number etc
 					sql_command += " DEFAULT " + strconv.FormatInt(*(columnSchema.GetInt64("default")), 10)
 				}
-			case "*Time":
+			case "*time.Time":
 				sql_command += column + " TIMESTAMP "
 				if columnSchema.HasKey("default") {
 					if columnSchema.S("default") == nil {
