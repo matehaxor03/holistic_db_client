@@ -483,6 +483,8 @@ func (m Map) Clone() Map {
 			clone[key] = current.(bool)	
 		case "int": 
 			clone[key] = current.(int)	
+		case "<nil>":
+			clone[key] = nil
 		default:
 			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 		}
