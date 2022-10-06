@@ -360,7 +360,18 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			if value_is_null && !value_is_mandatory {
 				continue
 			}
+
+
+		case "*time.Time":
+			valueOf := parameter_fields.GetTime("value")
 			
+			if valueOf == nil {
+				value_is_null = true
+			}
+
+			if value_is_null && !value_is_mandatory {
+				continue
+			}
 		case "*Database":
 			database := parameter_fields.GetObject("value").(*Database)
 			if database != nil {

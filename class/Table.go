@@ -58,8 +58,8 @@ func NewTable(client *Client, table_name string, schema Map, options map[string]
 	data["[client]"] = Map{"type":"*Client","value":CloneClient(client),"mandatory":true}
 	data["[table_name]"] = Map{"type":"*string","value":CloneString(&table_name),"mandatory":true, FILTERS(): Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}}
 	data["[options]"] = Map{"type":&mapType,"value":options,"mandatory":false}
-	data["created_date"] = Map{"type":"*Time","value":nil,"mandatory":true, "default":"now"}
-	data["last_modified_date"] = Map{"type":"*Time","value":nil,"mandatory":true, "default":"now"}
+	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "Table")

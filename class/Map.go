@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Map map[string]interface{}
@@ -416,6 +417,20 @@ func (m Map) GetInt64(s string) *int64 {
 	return nil
 }
 
+func (m Map) GetTime(s string) *time.Time {
+	if m[s] == nil {
+		return nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "*time.Time":
+		return m[s].(*time.Time)
+	}
+
+	return nil
+}
+
 
 
 func (m Map) Values() Array {
@@ -481,6 +496,8 @@ func (m Map) Clone() Map {
 			break
 		case "bool": 
 			clone[key] = current.(bool)	
+		case "*time.Time": 
+			clone[key] = current.(*time.Time)	
 		case "int": 
 			clone[key] = current.(int)	
 		case "<nil>":
