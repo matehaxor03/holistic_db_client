@@ -350,6 +350,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, default_errors_filter...)
 			}
 			break
+		case "*int64":
+			valueOf := parameter_fields.GetInt64("value")
+			
+			if valueOf == nil {
+				value_is_null = true
+			}
+
+			if value_is_null && !value_is_mandatory {
+				continue
+			}
+			
 		case "*Database":
 			database := parameter_fields.GetObject("value").(*Database)
 			if database != nil {
