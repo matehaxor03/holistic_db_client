@@ -38,6 +38,7 @@ type User struct {
 	GetCredentials func() (*Credentials)
 	GetDomainName func() (*DomainName)
 	Clone func() (*User)
+	UpdatePassword func(new_password string) ([]error)
 }
 
 func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
@@ -168,6 +169,57 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			},
 			GetDomainName: func() *DomainName {
 				return getDomainName()
+			},
+			UpdatePassword: func(new_password string) ([]error) {
+				var errors []error
+
+				if new_password == "" {
+					errors = append(errors, fmt.Errorf("new password is empty"))
+				}
+				
+				validate_errors := validate()
+				if validate_errors != nil {
+					errors = append(errors, validate_errors...)
+				}
+				
+				data := Map {
+					"password":Map{"type":"*string","value":CloneString(&new_password),"mandatory":true,
+					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
+				}
+
+				validate_password_errors := ValidateGenericSpecial(data.Clone(), "NewUserPassword")
+				if validate_password_errors != nil {
+					errors = append(errors, validate_password_errors...)
+				}
+
+				if len(errors) > 0 {
+					return errors
+				}
+
+				client := getClient()
+				host := client.GetHost()
+				host_name := host.GetHostName()
+				credentials := getCredentials()
+				username := credentials.GetUsername()
+
+
+				sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, *host_name, new_password)
+
+				_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, true)
+		
+				if *stderr != "" {
+					if strings.Contains(*stderr, "Operation CREATE USER failed for") {
+						errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
+					} else {
+						errors = append(errors, fmt.Errorf(*stderr))
+					}
+				}
+
+				if len(errors) > 0 {
+					return errors
+				}
+
+				return nil
 			},
 		}, nil
 }

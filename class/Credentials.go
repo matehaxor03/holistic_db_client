@@ -16,23 +16,23 @@ type Credentials struct {
 	Clone func() *Credentials
 }
 
-func NewCredentials(username *string, password *string) (*Credentials, []error) {
-	
-	getCredentialsUsernameValidCharacters := func() *string {
-		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
-		return &temp
-	}
+func GetCredentialsUsernameValidCharacters() *string {
+	temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
+	return &temp
+}
 
-	getCredentialPasswordValidCharacters := func() *string {
-		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
-		return &temp
-	}
+func GetCredentialPasswordValidCharacters() *string {
+	temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
+	return &temp
+}
+
+func NewCredentials(username *string, password *string) (*Credentials, []error) {
 	
 	data := Map {
 		"username":Map{"type":"*string","value":CloneString(username),"mandatory":true,
-		FILTERS(): Array{ Map {"values":getCredentialsUsernameValidCharacters(),"function":getValidateCharacters() }}},
+		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getValidateCharacters() }}},
 		"password":Map{"type":"*string","value":CloneString(password),"mandatory":true,
-		FILTERS(): Array{ Map {"values":getCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
+		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
 	}
 
 	validate := func() ([]error) {
