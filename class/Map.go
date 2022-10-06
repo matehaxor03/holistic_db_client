@@ -402,6 +402,20 @@ func (m Map) HasKey(key string) bool {
 	return false
 }
 
+func (m Map) GetInt64(s string) *int64 {
+	if m[s] == nil {
+		return nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "*int64":
+		return m[s].(*int64)
+	}
+
+	return nil
+}
+
 
 
 func (m Map) Values() Array {

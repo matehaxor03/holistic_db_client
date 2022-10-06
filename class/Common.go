@@ -346,11 +346,9 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 
 			default_errors_filter := ValidateCharacters(default_filter_params)
 
-			//default_errors_filter := ValidateCharacters(GetAllowedStringValues(), valueOf, parameter, structType)
 			if default_errors_filter != nil {
 				errors = append(errors, default_errors_filter...)
 			}
-
 			break
 		case "*Database":
 			database := parameter_fields.GetObject("value").(*Database)
