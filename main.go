@@ -187,14 +187,3 @@ func getParams(params []string) (map[string]*string, []error) {
  
 	return m, nil
 }
-
-func contains(s []string, str string) bool {
-	for _, v := range s {
-		if v == str {
-			return true
-		}
-	}
-
-	return false
-}
-

@@ -15,6 +15,7 @@ func CloneClient(client *Client) *Client {
 type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
 	UseDatabase func(database *Database) []error
+	UseDatabaseUsername func(database_username *string) []error
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetDatabaseUsername func() (*string)
 	GetHost func() *Host 
@@ -48,6 +49,11 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	setDatabase := func(database *Database) {
 		(data.M("database"))["value"] = CloneDatabase(database)
 		(data.M("database"))["type"] = "*Database"
+	}
+
+	setDatabaseUsername := func(database_username *string) {
+		(data.M("database_username"))["value"] = CloneString(database_username)
+		(data.M("database_username"))["type"] = "*string"
 	}
 
 	validate := func() ([]error) {
@@ -128,6 +134,16 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			}
 			
 			setDatabase(database)
+			return nil
+		},
+		UseDatabaseUsername: func(database_username *string) []error {
+			var errors []error
+			if database_username == nil {
+				errors = append(errors,  fmt.Errorf("database_username is nil"))
+				return errors
+			}
+
+			setDatabaseUsername(database_username)
 			return nil
 		},
 		Grant: func(user *User, grant string, filter string) (*Grant, *string, []error) {
