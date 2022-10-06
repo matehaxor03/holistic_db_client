@@ -68,9 +68,9 @@ func newSQLCommand() (*SQLCommand) {
 			credentials_command := ""
 			
 			if database != nil {
-				credentials_command = "--defaults-extra-file=./holistic_db_config|" +  *((*host).GetHostName()) + "|" + *((*host).GetPortNumber()) + "|" + *((*database).GetDatabaseName()) + "|" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + ":" + *((*database).GetDatabaseName()) + ":" + (*database_username) + ".config"
 			} else {
-				credentials_command = "--defaults-extra-file=./holistic_db_config|" +  *((*host).GetHostName()) + "|" + *((*host).GetPortNumber()) + "||" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + "::" + (*database_username) + ".config"
 			}
 			
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command) 
