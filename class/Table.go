@@ -163,7 +163,7 @@ func NewTable(client *Client, table_name string, schema Map, options map[string]
 					sql_command += " DEFAULT CURRENT_TIMESTAMP"
 				} 
 			default:
-				errors = append(errors, fmt.Errorf("type: %s is not supported please implement", type_value))
+				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *type_value, column))
 			}
 
 			if index < (len(valid_columns) - 1) {

@@ -15,7 +15,7 @@ func ConvertPrimitiveReflectValueToValue(v reflect.Value) any {
 		case "reflect.Value":
 			return reflect.ValueOf(v).Interface()
 	default:
-		panic(fmt.Errorf("Map.A: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Map.ConvertPrimitiveReflectValueToValue: type %s is not supported please implement", rep))
 	}
 
 	return nil
@@ -77,7 +77,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 						panic(fmt.Errorf("Map.M: cannot determine field struct for field '%s' key needs to be in format fieldName|datatype", clone_key))
 					}
 				default:
-					panic(fmt.Errorf("Map.M: type %s is not supported please implement", clone_rep))
+					panic(fmt.Errorf("Map.ConvertPrimitiveMapToMap: type %s is not supported please implement", clone_rep))
 				}
 			}
 			newMap[key] = clone
@@ -107,7 +107,7 @@ func ConvertPrimitiveMapToMap(m map[string]interface{}) Map {
 			newMap[key] = value.(Map).Clone()
 			break
 		default:
-			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+			panic(fmt.Errorf("Map.ConvertPrimitiveMapToMap: type %s is not supported please implement", rep))
 		}
 	}
 
@@ -143,7 +143,7 @@ func (m Map) SetMap(s string, zap Map) {
 	case "class.Map":
 		m[s] = zap
 	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement for %s", rep, s))
+		panic(fmt.Errorf("Map.SetMap: type %s is not supported please implement for %s", rep, s))
 	}
 }
 
@@ -249,7 +249,7 @@ func (m Map) SetArray(s string, array Array) {
 		case "class.Array":
 		 m[s] = array
 	default:
-		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
+		panic(fmt.Errorf("Map.SetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
 }
 
@@ -267,7 +267,7 @@ func (m Map) Func(s string) (func(Map) []error) {
 			value :=  m[s].(*func(Map) []error)
 			return *value
 	default:
-		panic(fmt.Errorf("Map.func: type %s is not supported please implement for field: %s", rep, s))
+		panic(fmt.Errorf("Map.Func: type %s is not supported please implement for field: %s", rep, s))
 	}
 	
 	return nil
@@ -364,7 +364,7 @@ func (m Map) B(s string) (*bool) {
 		}
 		break
 	default:
-		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Map.B: type %s is not supported please implement", rep))
 	}
 
 	return nil
@@ -381,7 +381,7 @@ func (m Map) SetString(s string, value *string) {
 		m[s] = value
 		break
 	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Map.SetString: type %s is not supported please implement", rep))
 	}
 }
 
@@ -419,7 +419,7 @@ func (m Map) GetInt64(s string) *int64 {
 		value := int64(*(m[s].(*int)))
 		return &value
 	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
 	}
 
 	return nil
@@ -512,7 +512,7 @@ func (m Map) Clone() Map {
 		case "<nil>":
 			clone[key] = nil
 		default:
-			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+			panic(fmt.Errorf("Map.Clone: type %s is not supported please implement", rep))
 		}
 	}
 

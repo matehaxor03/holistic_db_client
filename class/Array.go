@@ -28,7 +28,7 @@ func ConvertPrimitiveReflectValueArrayToArray(a []reflect.Value) Array {
 				array = append(array, ConvertPrimitiveReflectValueToValue(a[i]))
 			}
 	default:
-		panic(fmt.Errorf("Map.A: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Array.ConvertPrimitiveReflectValueArrayToArray: type %s is not supported please implement", rep))
 	}
 
 	return array
@@ -50,7 +50,7 @@ func ConvertPrimativeArrayToArray(a []interface{}) Array {
 			// todo deep copy map
 			array = append(array, value)
 		default:
-			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+			panic(fmt.Errorf("Array.ConvertPrimativeArrayToArray: type %s is not supported please implement", rep))
 		}
 	}
 	return array
@@ -75,7 +75,7 @@ func ConvertPrimativeArrayOfMapsToArray(a []map[string]interface{}) Array {
 			array = append(array, ConvertPrimitiveMapToMap(value))
 			break
 		default:
-			panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+			panic(fmt.Errorf("Array.ConvertPrimativeArrayOfMapsToArray: type %s is not supported please implement", rep))
 		}
 	}
 	return array
