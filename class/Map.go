@@ -412,6 +412,14 @@ func (m Map) GetInt64(s string) *int64 {
 	switch rep {
 	case "*int64":
 		return m[s].(*int64)
+	case "int":
+		value := int64(m[s].(int))
+		return &value
+	case "*int":
+		value := int64(*(m[s].(*int)))
+		return &value
+	default:
+		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
 	}
 
 	return nil
@@ -427,6 +435,7 @@ func (m Map) GetTime(s string) *time.Time {
 	case "*time.Time":
 		return m[s].(*time.Time)
 	}
+	
 
 	return nil
 }
