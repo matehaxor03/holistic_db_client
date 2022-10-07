@@ -159,7 +159,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			case "int64":
 				sql_command += column + " BIGINT"
 				if columnSchema.HasKey("unsigned") {
-					if columnSchema.GetType("unsigned") == "bool" {
+					if columnSchema.GetType("unsigned") == "*bool" {
 						if *(columnSchema.B("unsigned")) == true {
 							sql_command += " UNSIGNED"
 						}
@@ -170,7 +170,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 				if columnSchema.HasKey("auto_increment") {
 					if columnSchema.HasKey("auto_increment") {
-						if columnSchema.GetType("auto_increment") == "bool" {
+						if columnSchema.GetType("auto_increment") == "*bool" {
 							if *(columnSchema.B("auto_increment")) == true {
 								sql_command += " AUTO_INCREMENT"
 							}
@@ -182,7 +182,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 				if columnSchema.HasKey("primary_key") {
 					if columnSchema.HasKey("primary_key") {
-						if columnSchema.GetType("primary_key") == "bool" {
+						if columnSchema.GetType("primary_key") == "*bool" {
 							if *(columnSchema.B("primary_key")) == true {
 								sql_command += " PRIMARY KEY"
 							}
