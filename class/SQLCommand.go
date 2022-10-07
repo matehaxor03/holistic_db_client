@@ -83,7 +83,7 @@ func newSQLCommand() (*SQLCommand) {
 			if database != nil {
 				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
-			
+
 			sql += *sql_command
 
 			if sql_command_use_file {
@@ -92,6 +92,8 @@ func newSQLCommand() (*SQLCommand) {
 			} else {
 				command = sql_header_command + " -e \"" + sql + "\""
 			}
+
+			fmt.Println(command)
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
