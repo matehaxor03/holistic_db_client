@@ -156,17 +156,40 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 
 			case "*int64":
+			case "int64":
 				sql_command += column + " BIGINT"
-				if columnSchema.HasKey("unsigned") && columnSchema.GetType("unsigned") == "bool" && *(columnSchema.B("unsigned")) == true {
-					sql_command += " UNSIGNED"
+				if columnSchema.HasKey("unsigned") {
+					if columnSchema.GetType("unsigned") == "bool" {
+						if *(columnSchema.B("unsigned")) == true {
+							sql_command += " UNSIGNED"
+						}
+					} else {
+						errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool", column))
+					}
 				}
 
-				if columnSchema.HasKey("auto_increment") && columnSchema.GetType("auto_increment") == "bool" && *(columnSchema.B("auto_increment")) == true {
-					sql_command += " AUTO_INCREMENT"
+				if columnSchema.HasKey("auto_increment") {
+					if columnSchema.HasKey("auto_increment") {
+						if columnSchema.GetType("auto_increment") == "bool" {
+							if *(columnSchema.B("auto_increment")) == true {
+								sql_command += " AUTO_INCREMENT"
+							}
+						} else {
+							errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool", column))
+						}
+					}
 				}
 
-				if columnSchema.HasKey("primary_key") && columnSchema.GetType("primary_key") == "bool" && *(columnSchema.B("primary_key")) == true {
-					sql_command += " PRIMARY KEY"
+				if columnSchema.HasKey("primary_key") {
+					if columnSchema.HasKey("primary_key") {
+						if columnSchema.GetType("primary_key") == "bool" {
+							if *(columnSchema.B("primary_key")) == true {
+								sql_command += " PRIMARY KEY"
+							}
+						} else {
+							errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool", column))
+						}
+					}					
 				}
 
 				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
