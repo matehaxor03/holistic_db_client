@@ -157,12 +157,19 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 			case "*int64":
 				sql_command += column + " BIGINT "
-				if columnSchema.HasKey("primary_key") {
-					sql_command += "  UNSIGNED AUTO_INCREMENT PRIMARY KEY"
+				if columnSchema.HasKey("unsigned") && columnSchema.GetType("unsigned") == "bool" && *(columnSchema.B("unsigned")) == true {
+					sql_command += " UNSIGNED"
 				}
 
-				if columnSchema.HasKey("default") {
-					// todo check for safety that it's a number etc
+				if columnSchema.HasKey("auto_increment") && columnSchema.GetType("auto_increment") == "bool" && *(columnSchema.B("auto_increment")) == true {
+					sql_command += " AUTO INCREMENT"
+				}
+
+				if columnSchema.HasKey("primary_key") && columnSchema.GetType("primary_key") == "bool" && *(columnSchema.B("primary_key")) == true {
+					sql_command += " PRIMARY KEY"
+				}
+
+				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
 					sql_command += " DEFAULT " + strconv.FormatInt(*(columnSchema.GetInt64("default")), 10)
 				}
 			case "*time.Time":
