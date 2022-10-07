@@ -132,6 +132,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			}
 			
 			setDatabase(database)
+			database.SetClient(this_client)
 			return nil
 		},
 		UseDatabaseUsername: func(database_username *string) []error {
