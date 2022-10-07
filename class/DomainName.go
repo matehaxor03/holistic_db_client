@@ -29,7 +29,7 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 	}
 	
 	data := Map {
-		"domain_name":Map{"type":"*string","value":CloneString(domain_name),"mandatory":true,
+		"domain_name":Map{"value":CloneString(domain_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GET_ALLOWED_DOMAIN_NAMES(),"function":getContainsExactMatch()}}},
 	}
 

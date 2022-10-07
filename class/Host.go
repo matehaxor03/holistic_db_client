@@ -29,9 +29,9 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	}
 	
 	data := Map {
-		"host_name":Map{"type":"*string","value":CloneString(host_name),"mandatory":true,
+		"host_name":Map{"value":CloneString(host_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":getHostNameValidCharacters(),"function":getValidateCharacters() }}},
-		"port_number":Map{"type":"*string","value":CloneString(port_number),"mandatory":true,
+		"port_number":Map{"value":CloneString(port_number),"mandatory":true,
 		FILTERS(): Array{ Map {"values":getValidPortCharacters(),"function":getValidateCharacters() }}},
 	}
 

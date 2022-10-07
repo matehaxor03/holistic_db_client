@@ -23,6 +23,7 @@ func newBashCommand() (*BashCommand) {
 
 			var stdout bytes.Buffer
 			var stderr bytes.Buffer
+
 			cmd := exec.Command("bash", "-c", *command)
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stderr

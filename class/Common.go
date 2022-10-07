@@ -274,34 +274,30 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		value_is_null := false
 
 		parameter_fields := fields.M(parameter)
-		typeOf := parameter_fields.S("type")
+
+		typeOf := fmt.Sprintf("%T", parameter_fields["value"])
+		if typeOf == "nil" {
+			value_is_null = true
+		}
+
 		mandatory_field := parameter_fields.B("mandatory")
 		
 		if mandatory_field != nil {
 			value_is_mandatory = *mandatory_field
 		}
 
-		if typeOf == nil {
-			errors = append(errors, fmt.Errorf("tyoe of not specified for %s->%s", structType, parameter))
+		if value_is_null && !value_is_mandatory {
 			continue
 		}
 		
-		switch *typeOf {
-		case "map[string]map[string][][]string)":
+		switch typeOf {
+		case "map[string]map[string][][]string":
 			// todo: convert these to objects for validations
 			break
 		case "string":
 		case "*string":
 			valueOf := parameter_fields.S("value")
-			
-			if valueOf == nil {
-				value_is_null = true
-			}
 
-			if value_is_null && !value_is_mandatory {
-				continue
-			}
-			
 			filters := parameter_fields.A(FILTERS())
 			if filters != nil {
 				for filter_index, filter := range filters {
@@ -322,7 +318,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					filter_map.SetString("label", &temp)
 
 				
-									
+					function_errors := function(filter.(Map))
+					if function_errors != nil {
+						errors = append(errors, function_errors...)
+					}	
+					/*
 					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
 
 					var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
@@ -336,7 +336,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 							continue
 						}
 						errors = append(errors, fmt.Errorf(error_value))
-					}
+					}*/
 				}
 			}
 
@@ -372,7 +372,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			if value_is_null && !value_is_mandatory {
 				continue
 			}
-		case "*Database":
+		case "*class.Database":
 			database := parameter_fields.GetObject("value").(*Database)
 			if database != nil {
 				errors_for_database := database.Validate()
@@ -383,7 +383,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*DomainName":
+		case "*class.DomainName":
 			domain_name := parameter_fields.GetObject("value").(*DomainName)
 			if domain_name != nil {
 				errors_for_domain_name := domain_name.Validate()
@@ -394,7 +394,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*Host":
+		case "*class.Host":
 			host := parameter_fields.GetObject("value").(*Host)
 			if host != nil {
 				errors_for_host := host.Validate()
@@ -405,7 +405,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*Credentials":
+		case "*class.Credentials":
 			credentials := parameter_fields.GetObject("value").(*Credentials)
 			if credentials != nil {
 				errors_for_credentaials := credentials.Validate()
@@ -416,7 +416,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*DatabaseCreateOptions":
+		case "*class.DatabaseCreateOptions":
 			database_create_options := parameter_fields.GetObject("value").(*DatabaseCreateOptions)
 			if database_create_options != nil {
 				errors_for_database_create_options := database_create_options.Validate()
@@ -427,7 +427,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*Client":
+		case "*class.Client":
 			client := parameter_fields.GetObject("value").(*Client)
 			if client != nil {
 				errors_for_client := client.Validate()
@@ -438,7 +438,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*Grant":
+		case "*class.Grant":
 			grant := parameter_fields.GetObject("value").(*Grant)
 			if grant != nil {
 				errors_for_grant := grant.Validate()
@@ -449,7 +449,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
-		case "*User":
+		case "*class.User":
 			user := parameter_fields.GetObject("value").(*User)
 			if user != nil {
 				errors_for_user := user.Validate()
@@ -461,7 +461,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			}
 			break
 		default:
-			panic(fmt.Sprintf("please implement type %s", *typeOf))
+			panic(fmt.Sprintf("please implement type %s", typeOf))
 		}
 
 		

@@ -81,8 +81,10 @@ func newSQLCommand() (*SQLCommand) {
 
 			sql := ""
 			if database != nil {
-				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName())) + *sql_command
+				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
+			
+			sql += *sql_command
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
@@ -93,6 +95,7 @@ func newSQLCommand() (*SQLCommand) {
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
+			
 			if sql_command_use_file {
 				os.Remove(filename)
 			}

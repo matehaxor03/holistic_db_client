@@ -48,7 +48,6 @@ type Table struct {
 
 func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
 	SQLCommand := newSQLCommand()
-	mapType := "map[string]map[string][][]string)"
 	var errors []error
 
 	if schema == nil {
@@ -66,10 +65,10 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	}
 
 	data := schema.Clone()
-	data["[client]"] = Map{"type":"*Client","value":CloneClient(client),"mandatory":true}
-	data["[options]"] = Map{"type":&mapType,"value":options,"mandatory":false}
-	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
-	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
+	data["[options]"] = Map{"value":options,"mandatory":false}
+	data["created_date"] = Map{"value":nil,"mandatory":true, "default":"now"}
+	data["last_modified_date"] = Map{"value":nil,"mandatory":true, "default":"now"}
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "Table")
@@ -140,12 +139,9 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
 
-			if !columnSchema.HasKey("type") {
-				errors = append(errors, fmt.Errorf("column: %s does not have type attribute", column))
-			}
-
-			type_value := columnSchema.S("type")
-			switch *type_value {
+			typeOf := fmt.Sprintf("%T", columnSchema["value"])
+			
+			switch typeOf {
 			case "*string":
 
 
@@ -173,7 +169,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					sql_command += " DEFAULT CURRENT_TIMESTAMP"
 				} 
 			default:
-				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *type_value, column))
+				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", typeOf, column))
 			}
 
 			if index < (len(valid_columns) - 1) {

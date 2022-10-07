@@ -45,10 +45,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	SQLCommand := newSQLCommand()
 	
 	data := Map {
-		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
-		"credentials":Map{"type":"*Credentials","value":CloneCredentials(credentials),"mandatory":true},
-		"domain_name":Map{"type":"*DomainName","value":CloneDomainName(domain_name),"mandatory":true},
-		"options":Map{"type":"map[string]map[string][][]string)","value":options,"mandatory":false},
+		"client":Map{"value":CloneClient(client),"mandatory":true},
+		"credentials":Map{"value":CloneCredentials(credentials),"mandatory":true},
+		"domain_name":Map{"value":CloneDomainName(domain_name),"mandatory":true},
+		"options":Map{"value":options,"mandatory":false},
 	}
 
 	validate := func() ([]error) {
@@ -113,7 +113,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s' ", *(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
+		sql_command += fmt.Sprintf("'%s'", *(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
 		sql_command += fmt.Sprintf("@'%s' ",*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
 		sql_command += fmt.Sprintf("'%s'",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
@@ -125,7 +125,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	create := func () (*string, []error) {
 		var errors []error 
 		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
-	
+
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -183,7 +183,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 				}
 				
 				data := Map {
-					"password":Map{"type":"*string","value":CloneString(&new_password),"mandatory":true,
+					"password":Map{"value":CloneString(&new_password),"mandatory":true,
 					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
 				}
 

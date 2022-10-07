@@ -47,16 +47,14 @@ type Database struct {
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
 	SQLCommand := newSQLCommand()
-	mapType := "map[string]map[string][][]string)"
-	databaseCreateOptionsType := "*DatabaseCreateOptions"
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
-		"client":Map{"type":"*Client","value":CloneClient(client),"mandatory":true},
-		"database_name":Map{"type":"*string","value":CloneString(database_name),"mandatory":true,
+		"client":Map{"value":CloneClient(client),"mandatory":true},
+		"database_name":Map{"value":CloneString(database_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getValidateCharacters() }}},
-		"database_create_options":Map{"type":&databaseCreateOptionsType,"value":database_create_options,"mandatory":false},
-		"options":Map{"type":&mapType,"value":options,"mandatory":false},
+		"database_create_options":Map{"value":database_create_options,"mandatory":false},
+		"options":Map{"value":options,"mandatory":false},
 	}
 
 	validate := func() ([]error) {

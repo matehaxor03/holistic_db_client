@@ -29,9 +29,9 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	var this_client *Client
 	
 	data := Map {
-		"host":Map{"type":"*Host","value":CloneHost(host),"mandatory":false},
-		"database_username":Map{"type":"*string","value":CloneString(database_username),"mandatory":false},
-		"database":Map{"type":"*Database","value":CloneDatabase(database),"mandatory":false},
+		"host":Map{"value":CloneHost(host),"mandatory":false},
+		"database_username":Map{"value":CloneString(database_username),"mandatory":false},
+		"database":Map{"value":CloneDatabase(database),"mandatory":false},
 	}
 
 	getHost := func() *Host {
@@ -48,12 +48,10 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 	setDatabase := func(database *Database) {
 		(data.M("database"))["value"] = CloneDatabase(database)
-		(data.M("database"))["type"] = "*Database"
 	}
 
 	setDatabaseUsername := func(database_username *string) {
 		(data.M("database_username"))["value"] = CloneString(database_username)
-		(data.M("database_username"))["type"] = "*string"
 	}
 
 	validate := func() ([]error) {
