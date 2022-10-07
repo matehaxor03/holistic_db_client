@@ -31,8 +31,6 @@ func getContainsExactMatch() (*func(m Map) []error) {
 }
 
 func ContainsExactMatch(m Map) []error {
-	m = ConvertPrimitiveMapToMap(m)
-
 	array := m.A("values")
 	str := m.S("value")
 	label := m.S("label")
@@ -108,7 +106,6 @@ func getValidateCharacters() (*func(m Map) []error) {
 
 func ValidateCharacters(m Map) ([]error) {
 	var errors []error 
-	m = ConvertPrimitiveMapToMap(m)
 
 	whitelist := m.S("values")
 	str := (m.S("value"))

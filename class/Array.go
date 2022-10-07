@@ -2,84 +2,9 @@ package class
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 )
 
 type Array []interface{}
-
-func ConvertReflectArrayToPrimativeArray(a []reflect.Value) []reflect.Value {
-	length := len(a)
-	copy := make([]reflect.Value, length)
-	for i := 0; i < length; i++ {
-		copy = append(copy, a[i])
-	}
-
-	return copy
-}
-
-func ConvertPrimitiveReflectValueArrayToArray(a []reflect.Value) Array {
-	array := Array{}
-	rep := fmt.Sprintf("%T", a)
-	switch rep {
-		case "[]reflect.Value":
-			length := len(a)
-			for i := 0; i < length; i++ {
-				array = append(array, ConvertPrimitiveReflectValueToValue(a[i]))
-			}
-	default:
-		panic(fmt.Errorf("Array.ConvertPrimitiveReflectValueArrayToArray: type %s is not supported please implement", rep))
-	}
-
-	return array
-}
-
-func ConvertPrimativeArrayToArray(a []interface{}) Array {
-	if a == nil {
-		return nil
-	}
-
-	array := Array{}
-	for _, value := range a {
-		rep := fmt.Sprintf("%T", value)
-		switch rep {
-		case "string":
-			array = append(array, value)
-			break
-		case "class.Map":
-			// todo deep copy map
-			array = append(array, value)
-		default:
-			panic(fmt.Errorf("Array.ConvertPrimativeArrayToArray: type %s is not supported please implement", rep))
-		}
-	}
-	return array
-}
-
-func ConvertPrimativeArrayOfMapsToArray(a []map[string]interface{}) Array {
-	if a == nil {
-		return nil
-	}
-	
-	array := Array{}
-	for _, value := range a {
-		rep := fmt.Sprintf("%T", value)
-		switch rep {
-		case "string":
-			array = append(array, value)
-			break
-		case "common.Map":
-			array = append(array, value)
-			break
-		case "map[string]interface {}":
-			array = append(array, ConvertPrimitiveMapToMap(value))
-			break
-		default:
-			panic(fmt.Errorf("Array.ConvertPrimativeArrayOfMapsToArray: type %s is not supported please implement", rep))
-		}
-	}
-	return array
-}
 
 func (a Array) ToJSONString() string {
 	json := "[\n"
@@ -136,14 +61,6 @@ func (a Array) ToPrimativeArray() []string {
 		case "string":
 			results = append(results, value.(string))
 			break
-		case "reflect.Value":
-			reflect_value := reflect.ValueOf(value)
-			reflect_result_value := fmt.Sprintf("%s", reflect_value)
-			if reflect_result_value == "reflect.Value" {
-				panic("Array.ToPrimativeArray: failed to unpack primitive")
-			}
-			results = append(results, reflect_result_value)
-			break
 		default:
 			panic(fmt.Errorf("Array.ToPrimativeArray: type %s is not supported please implement", rep))
 		}
@@ -157,8 +74,7 @@ func (a Array) Clone() Array {
 		rep := fmt.Sprintf("%T", current)
 		switch rep {
 		case "string":
-			cloneString := strings.Clone(current.(string))
-			clone = append(clone, cloneString)
+			clone = append(clone, current)
 			break	
 		case "class.Map":
 			clone = append(clone, current.(Map).Clone())
