@@ -46,17 +46,27 @@ type Table struct {
 	GetTableName func() (string)
 }
 
-func NewTable(client *Client, table_name string, schema Map, options map[string]map[string][][]string) (*Table, []error) {
+func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	mapType := "map[string]map[string][][]string)"
+	var errors []error
 
 	if schema == nil {
-		schema = Map{}
+		errors = append(errors, fmt.Errorf("schema is nil"))
+	}
+
+	if !schema.HasKey("[table_name]") {
+		errors = append(errors, fmt.Errorf("[table_name] field is nil"))
+	} else if schema.GetType("[table_name]") != "class.Map" {
+		errors = append(errors, fmt.Errorf("[table_name] field is not a map"))
+	} else {
+		boolean_value := true
+		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
+		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}
 	}
 
 	data := schema.Clone()
 	data["[client]"] = Map{"type":"*Client","value":CloneClient(client),"mandatory":true}
-	data["[table_name]"] = Map{"type":"*string","value":CloneString(&table_name),"mandatory":true, FILTERS(): Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}}
 	data["[options]"] = Map{"type":&mapType,"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
@@ -206,9 +216,13 @@ func NewTable(client *Client, table_name string, schema Map, options map[string]
 		return stdout, nil
 	}
 
-	errors := validate()
+	validate_errors := validate()
 
-	if errors != nil {
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
 		return nil, errors
 	}
 	
@@ -220,7 +234,7 @@ func NewTable(client *Client, table_name string, schema Map, options map[string]
 			return getSQL(action)
 		},
 		Clone: func() (*Table) {
-			clone_value, _ := NewTable(getClient(), getTableName(), getData(), getOptions())
+			clone_value, _ := NewTable(getClient(), getData(), getOptions())
 			return clone_value
 		},
 		Create: func() (*string, []error) {

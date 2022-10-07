@@ -253,6 +253,10 @@ func (m Map) SetArray(s string, array Array) {
 	}
 }
 
+func (m Map) GetType(s string) (string) {
+	return fmt.Sprintf("%T", m[s])
+}
+
 func (m Map) Func(s string) (func(Map) []error) {
 	rep := fmt.Sprintf("%T", m[s])
 	//fmt.Println(rep)
@@ -368,6 +372,10 @@ func (m Map) B(s string) (*bool) {
 	}
 
 	return nil
+}
+
+func (m Map) SetBool(s string, value *bool) {
+	m[s] = value
 }
 
 func (m Map) SetString(s string, value *string) {
