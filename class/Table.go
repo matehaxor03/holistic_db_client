@@ -149,9 +149,6 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				errors = append(errors, fmt.Errorf("type field had nil value for column: " + column))
 				continue
 			}
-
-			fmt.Println(*typeOf)
-
 			
 			switch *typeOf {
 			case "*string":
