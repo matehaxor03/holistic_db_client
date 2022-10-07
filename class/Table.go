@@ -156,7 +156,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 
 			case "*int64":
-				sql_command += column + " BIGINT "
+				sql_command += column + " BIGINT"
 				if columnSchema.HasKey("unsigned") && columnSchema.GetType("unsigned") == "bool" && *(columnSchema.B("unsigned")) == true {
 					sql_command += " UNSIGNED"
 				}
@@ -190,7 +190,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 
 			if index < (len(valid_columns) - 1) {
-				sql_command += ","
+				sql_command += ", "
 			}
 		}
 		sql_command += ")"
