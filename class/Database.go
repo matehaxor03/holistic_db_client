@@ -42,6 +42,7 @@ type Database struct {
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
 	GetDatabaseName func() (*string)
+	SetClient func(client *Client) ([]error)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error)
 }
 
@@ -63,6 +64,10 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 	getClient := func() (*Client) {
 		return CloneClient(data.M("client").GetObject("value").(*Client))
+	}
+
+	setClient := func(client *Client) {
+		data.M("client")["value"] = client
 	}
 
 	getDatabaseName := func() (*string) {
@@ -211,6 +216,25 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 
 			return table, stdout, nil
+		},
+		SetClient: func(client *Client) ([]error) {
+			var errors []error
+			if client == nil {
+				errors = append(errors, fmt.Errorf("client is nil"))
+				return errors
+			}
+
+			client_errors := client.Validate()
+			if client_errors != nil {
+				errors = append(errors, client_errors...)
+			}
+
+			if len(errors) > 0 {
+				return errors
+			}
+
+			setClient(client)
+			return nil
 		},
 		GetDatabaseName: func() (*string) {
 			return getDatabaseName()
