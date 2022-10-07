@@ -67,8 +67,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	data := schema.Clone()
 	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
 	data["[options]"] = Map{"value":options,"mandatory":false}
-	data["created_date"] = Map{"value":nil,"mandatory":true, "default":"now"}
-	data["last_modified_date"] = Map{"value":nil,"mandatory":true, "default":"now"}
+	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "Table")
@@ -98,7 +98,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		m.SetString("value", &command)
 		commandTemp := "command"
 		m.SetString("label", &commandTemp)
-		someValue :=  "dsfdf"
+		someValue :=  "Table"
 		m.SetString("data_type", &someValue)
 
 		command_errs := ContainsExactMatch(m)
@@ -139,9 +139,19 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
 
-			typeOf := fmt.Sprintf("%T", columnSchema["value"])
+			if !columnSchema.HasKey("type") {
+				errors = append(errors, fmt.Errorf("type field not found for column: " + column))
+				continue
+			}
 			
-			switch typeOf {
+			typeOf := columnSchema.S("type")
+			if typeOf == nil {
+				errors = append(errors, fmt.Errorf("type field had nil value for column: " + column))
+				continue
+			}
+
+			
+			switch *typeOf {
 			case "*string":
 
 
@@ -169,7 +179,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					sql_command += " DEFAULT CURRENT_TIMESTAMP"
 				} 
 			default:
-				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", typeOf, column))
+				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
 			}
 
 			if index < (len(valid_columns) - 1) {
