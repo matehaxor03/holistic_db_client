@@ -162,7 +162,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				}
 
 				if columnSchema.HasKey("auto_increment") && columnSchema.GetType("auto_increment") == "bool" && *(columnSchema.B("auto_increment")) == true {
-					sql_command += " AUTO INCREMENT"
+					sql_command += " AUTO_INCREMENT"
 				}
 
 				if columnSchema.HasKey("primary_key") && columnSchema.GetType("primary_key") == "bool" && *(columnSchema.B("primary_key")) == true {
@@ -173,7 +173,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					sql_command += " DEFAULT " + strconv.FormatInt(*(columnSchema.GetInt64("default")), 10)
 				}
 			case "*time.Time":
-				sql_command += column + " TIMESTAMP "
+				sql_command += column + " TIMESTAMP"
 				if columnSchema.HasKey("default") {
 					if columnSchema.S("default") == nil {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
