@@ -460,6 +460,33 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
+		case "<nil>":
+			if !parameter_fields.HasKey("default") {
+				if value_is_null && value_is_mandatory {
+					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+				}
+			} else if !parameter_fields.HasKey("type") {
+				if value_is_null && value_is_mandatory {
+					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and did not have type", parameter))
+				}
+			} else {
+				typeOf := parameter_fields.S("type")
+				switch *typeOf {
+				case "*time.Time":
+					type_of_default := parameter_fields.GetType("default")
+					switch type_of_default {
+					case "string":
+						type_of_default_value := parameter_fields.S("default")
+						if *type_of_default_value != "now" {
+							errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil with type: %s and had default: %s please implement default value: %s", parameter, *typeOf, type_of_default, *type_of_default_value))
+						}
+					default:
+						errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil with type: %s please implement default for %s", parameter, *typeOf, type_of_default))
+					}
+				default:
+					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil please implement for type: %s", parameter, *typeOf))
+				}
+			}
 		default:
 			panic(fmt.Sprintf("please implement type %s", typeOf))
 		}
