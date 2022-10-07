@@ -84,7 +84,7 @@ func newSQLCommand() (*SQLCommand) {
 				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
 
-			sql += *sql_command
+			sql += " " + *sql_command
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
@@ -93,7 +93,7 @@ func newSQLCommand() (*SQLCommand) {
 				command = sql_header_command + " -e \"" + sql + "\""
 			}
 
-			fmt.Println(command)
+			fmt.Println(sql)
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
