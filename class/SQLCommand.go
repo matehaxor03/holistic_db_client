@@ -90,7 +90,7 @@ func newSQLCommand() (*SQLCommand) {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
-				command = sql_header_command + " -e \"" + sql + "\""
+				command = sql_header_command + " -e '" + sql + "'"
 			}
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
