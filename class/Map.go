@@ -512,10 +512,11 @@ func (m Map) Clone() Map {
 			clone[key] = (*(current.(*DomainName))).Clone()
 			break
 		case "bool": 
-			clone[key] = current.(bool)	
+			bool_value := current.(bool)	
+			clone[key] = &bool_value
 		case "*bool": 
 			bool_value := *(current.(*bool))
-			clone[key] = bool_value
+			clone[key] = &bool_value
 		case "*time.Time": 
 			clone[key] = current.(*time.Time)	
 		case "int": 
