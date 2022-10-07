@@ -45,14 +45,6 @@ func (a Array) ToJSONString() string {
 	return json
 }
 
-func ConvertIntefaceArrayToStringArray(aInterface []interface{}) []string{
-	aString := make([]string, len(aInterface))
-	for i, v := range aInterface {
-		aString[i] = v.(string)
-	}
-	return aString
-}
-
 func (a Array) ToPrimativeArray() []string {
 	var results []string 
 	for _, value := range a {

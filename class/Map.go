@@ -77,11 +77,7 @@ func (m Map) ToJSONString() string {
 				}
 			}
 			json += "]"	
-		case "reflect.Value":
-			json = json + fmt.Sprintf("\"%s\"", reflect.ValueOf(value).Interface())
-		case "func(string, *string, string, string) []error":
-		case "func(class.Map) []error": 
-		case "*func(class.Map) []error":
+		case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
 			json = json + fmt.Sprintf("\"%s\"", rep)
 		case "bool": 
 			boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
@@ -103,8 +99,6 @@ func (m Map) ToJSONString() string {
 		case "map[string]map[string][][]string":
 			json = json + "\"map[string]map[string][][]string\""
 		default:
-			
-
 			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
 
@@ -118,12 +112,11 @@ func (m Map) ToJSONString() string {
 }
 
 func (m Map) A(s string) (Array) {
-	rep := fmt.Sprintf("%T", m[s])
-	//fmt.Println(rep)
 	if m[s] == nil {
 		return nil
 	}
-
+	
+	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 		case "class.Array":
 			return m[s].(Array)
@@ -153,12 +146,11 @@ func (m Map) GetType(s string) (string) {
 }
 
 func (m Map) Func(s string) (func(Map) []error) {
-	rep := fmt.Sprintf("%T", m[s])
-	//fmt.Println(rep)
 	if m[s] == nil {
 		return nil
 	}
 
+	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 		case "func(class.Map) []error":
 			return m[s].(func(Map) []error)
@@ -177,7 +169,6 @@ func (m Map) SetFunc(s string, function func(Map) ([]error)) {
 }
 
 func (m Map) Array(s string) []interface{} {
-	
 	return m[s].([]interface{})
 }
 
@@ -191,12 +182,6 @@ func (m Map) S(s string) (*string) {
 	case "string":
 		value := m[s].(string)
 		newValue := strings.Clone(value)
-		
-		return &newValue
-		break
-	case "reflect.Value":
-		value := fmt.Sprintf("%s", reflect.ValueOf(m[s]).Interface())
-		newValue := strings.Clone(value)
 		return &newValue
 	case "*string":
 		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
@@ -205,7 +190,6 @@ func (m Map) S(s string) (*string) {
 		} else {
 			return nil
 		}
-		break
 	default:
 		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
 	}
@@ -314,7 +298,6 @@ func (m Map) GetTime(s string) *time.Time {
 		return m[s].(*time.Time)
 	}
 	
-
 	return nil
 }
 
@@ -355,9 +338,7 @@ func (m Map) Clone() Map {
 		case "class.Array":
 			clone[key] = current.(Array).Clone()
 			break
-		case "func(class.Map) []error":
-		case "map[string]map[string][][]string":
-		case "*func(class.Map) []error":
+		case "func(class.Map) []error", "map[string]map[string][][]string", "*func(class.Map) []error":
 			clone[key] = current
 			break	
 		case "*class.Credentials":
