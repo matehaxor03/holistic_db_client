@@ -154,11 +154,11 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			case "*string":
 
 
-			case "*int64", "int64":
+			case "*int64", "int64", "int", "*int":
 				sql_command += column + " BIGINT"
 				
 				if columnSchema.HasKey("unsigned") {
-					if columnSchema.GetType("unsigned") == "*bool" {
+					if columnSchema.GetType("unsigned") == "bool" {
 						if *(columnSchema.B("unsigned")) == true {
 							sql_command += " UNSIGNED"
 						} else if *(columnSchema.B("unsigned")) == false {
@@ -167,12 +167,12 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 							errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool: %s", column, columnSchema.B("unsigned")))
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool", column))
+						errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool: %s", column, columnSchema.GetType("unsigned")))
 					}
 				}
 
 				if columnSchema.HasKey("auto_increment") {
-					if columnSchema.GetType("auto_increment") == "*bool" {
+					if columnSchema.GetType("auto_increment") == "bool" {
 						if *(columnSchema.B("auto_increment")) == true {
 							sql_command += " AUTO_INCREMENT"
 						} else if *(columnSchema.B("auto_increment")) == false {
@@ -181,12 +181,12 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 							errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.B("auto_increment")))
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool", column))
+						errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
 					}
 				}
 
 				if columnSchema.HasKey("primary_key") {
-					if columnSchema.GetType("primary_key") == "*bool" {
+					if columnSchema.GetType("primary_key") == "bool" {
 						if *(columnSchema.B("primary_key")) == true {
 							sql_command += " PRIMARY KEY"
 						} else if *(columnSchema.B("primary_key")) == false {
@@ -195,7 +195,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 							errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.B("primary_key")))
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool", column))
+						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
 					}		
 				}
 
