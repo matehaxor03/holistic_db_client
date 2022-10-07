@@ -513,6 +513,9 @@ func (m Map) Clone() Map {
 			break
 		case "bool": 
 			clone[key] = current.(bool)	
+		case "*bool": 
+			bool_value := *(current.(*bool))
+			clone[key] = bool_value
 		case "*time.Time": 
 			clone[key] = current.(*time.Time)	
 		case "int": 
