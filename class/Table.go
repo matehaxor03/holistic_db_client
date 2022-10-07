@@ -162,6 +162,10 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					if columnSchema.GetType("unsigned") == "*bool" {
 						if *(columnSchema.B("unsigned")) == true {
 							sql_command += " UNSIGNED"
+						} else if *(columnSchema.B("unsigned")) == false {
+
+						} else {
+							errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool: %s", column, columnSchema.B("unsigned")))
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool", column))
@@ -169,27 +173,31 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				}
 
 				if columnSchema.HasKey("auto_increment") {
-					if columnSchema.HasKey("auto_increment") {
-						if columnSchema.GetType("auto_increment") == "*bool" {
-							if *(columnSchema.B("auto_increment")) == true {
-								sql_command += " AUTO_INCREMENT"
-							}
+					if columnSchema.GetType("auto_increment") == "*bool" {
+						if *(columnSchema.B("auto_increment")) == true {
+							sql_command += " AUTO_INCREMENT"
+						} else if *(columnSchema.B("auto_increment")) == false {
+
 						} else {
-							errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool", column))
+							errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.B("auto_increment")))
 						}
+					} else {
+						errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool", column))
 					}
 				}
 
 				if columnSchema.HasKey("primary_key") {
-					if columnSchema.HasKey("primary_key") {
-						if columnSchema.GetType("primary_key") == "*bool" {
-							if *(columnSchema.B("primary_key")) == true {
-								sql_command += " PRIMARY KEY"
-							}
+					if columnSchema.GetType("primary_key") == "*bool" {
+						if *(columnSchema.B("primary_key")) == true {
+							sql_command += " PRIMARY KEY"
+						} else if *(columnSchema.B("primary_key")) == false {
+
 						} else {
-							errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool", column))
+							errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.B("primary_key")))
 						}
-					}					
+					} else {
+						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool", column))
+					}		
 				}
 
 				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
