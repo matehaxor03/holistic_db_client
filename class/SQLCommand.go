@@ -99,7 +99,7 @@ func newSQLCommand() (*SQLCommand) {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
 
-			fmt.Sprintf(sql)
+			fmt.Println(sql)
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
