@@ -44,6 +44,7 @@ type Table struct {
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
 	GetTableName func() (string)
+	Count func() (*uint64, []error)
 }
 
 func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
@@ -287,6 +288,36 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 
 			return result, nil
+		},
+		Count: func() (*uint64, []error) {
+			errors := validate()
+			if errors != nil {
+				return nil, errors
+			}
+
+			sql :=  fmt.Sprintf("SELECT COUNT(*) from %s", (getTableName()))
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, false)
+			
+			
+			if *stderr != "" {
+				if strings.Contains(*stderr, " table exists") {
+					errors = append(errors, fmt.Errorf("create table failed most likely the table already exists"))
+				} else {
+					errors = append(errors, fmt.Errorf(*stderr))
+				}
+			}
+		
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			count, count_err := strconv.ParseUint(string(*stdout), 10, 64)
+			if count_err != nil {
+				errors = append(errors, count_err)
+				return nil, errors
+			}
+
+			return &count, nil
 		},
 		GetTableName: func() (string) {
 			return getTableName()
