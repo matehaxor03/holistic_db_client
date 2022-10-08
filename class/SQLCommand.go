@@ -9,13 +9,13 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client *Client, sql_command *string, sql_command_use_file bool) (*string, *string, []error)
+	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*string, *string, []error)
 }
 
 func newSQLCommand() (*SQLCommand) {			    
 	bashCommand := newBashCommand()
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client *Client, sql_command *string, sql_command_use_file bool) (*string, *string, []error) {
+		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*string, *string, []error) {
 			var errors []error 
 
 			if client == nil {
@@ -85,6 +85,16 @@ func newSQLCommand() (*SQLCommand) {
 			}
 
 			sql += " " + *sql_command
+
+			sql_command_use_file := true
+			if options.HasKey("use_file") && options.GetType("use_file") == "bool" && *(options.B("use_file")) == false {
+				sql_command_use_file = false
+			}
+
+			if options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == true {
+				sql_header_command += " -N"
+			}
+
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)

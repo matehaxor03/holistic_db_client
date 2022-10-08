@@ -130,7 +130,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			return nil, sql_command_errors
 		}
 
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
@@ -205,7 +205,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 
 				sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, *host_name, new_password)
 
-				_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, true)
+				_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
 		
 				if *stderr != "" {
 					if strings.Contains(*stderr, "Operation CREATE USER failed for") {

@@ -243,7 +243,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			return nil, sql_command_errors
 		}
 	
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": false})
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " table exists") {
@@ -296,10 +296,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 
 			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", (getTableName()))
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, false)
-			
-			fmt.Println(*stdout)
-			
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, Map{"use_file": false, "no_column_headers": true})
+						
 			if *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
 					errors = append(errors, fmt.Errorf("create table failed most likely the table already exists"))
@@ -311,6 +309,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			if len(errors) > 0 {
 				return nil, errors
 			}
+
+
 
 			count, count_err := strconv.ParseUint(string(*stdout), 10, 64)
 			if count_err != nil {

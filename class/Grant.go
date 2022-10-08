@@ -103,7 +103,7 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 			return nil, sql_command_errors
 		}
 
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {

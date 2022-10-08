@@ -161,7 +161,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			return nil, sql_command_errors
 		}
 	
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, true)
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " database exists") {
