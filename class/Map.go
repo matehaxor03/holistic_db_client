@@ -287,6 +287,37 @@ func (m Map) GetInt64(s string) *int64 {
 	return nil
 }
 
+func (m Map) GetUInt64(s string) *uint64 {
+	if m[s] == nil {
+		return nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "*int64":
+		value := *(m[s].(*int64))
+		if value >= 0 {
+			temp := uint64(value)
+			return &temp
+		} else {
+			return nil
+		}
+	case "*uint64":
+		value := *(m[s].(*uint64))
+		return &value
+	case "int":
+		value := uint64(m[s].(int))
+		return &value
+	case "*int":
+		value := uint64(*(m[s].(*int)))
+		return &value
+	default:
+		panic(fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
+	}
+
+	return nil
+}
+
 func (m Map) GetTime(s string) *time.Time {
 	if m[s] == nil {
 		return nil
