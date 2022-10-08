@@ -95,6 +95,9 @@ func newSQLCommand() (*SQLCommand) {
 				sql_header_command += " -N"
 			}
 
+			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
+				sql += " SELECT LAST_INSERT_ID();"
+			}
 
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)

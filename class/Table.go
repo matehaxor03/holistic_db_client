@@ -45,6 +45,7 @@ type Table struct {
 	Create func() (*string, []error)
 	GetTableName func() (string)
 	Count func() (*uint64, []error)
+	CreateRecord func(record Map) (*uint64, []error)
 }
 
 func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
@@ -91,6 +92,19 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		return data.Clone()
 	}
 
+	getTableColumns := func() ([]string) {
+		columns := data.Keys() 
+		var valid_columns []string
+		for _, column := range columns {
+			if strings.HasPrefix(column, "[") && strings.HasSuffix(column, "]") {
+				continue
+			}
+
+			valid_columns = append(valid_columns, column)
+		}
+		return valid_columns
+	}
+
 	getSQL := func(command string) (*string, []error) {
 		errors := validate()
 
@@ -126,15 +140,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		
 		sql_command += fmt.Sprintf("%s ", getTableName())
 
-		columns := data.Keys() 
-		var valid_columns []string
-		for _, column := range columns {
-			if strings.HasPrefix(column, "[") && strings.HasSuffix(column, "]") {
-				continue
-			}
-
-			valid_columns = append(valid_columns, column)
-		}
+		valid_columns := getTableColumns()
 
 		sql_command += "("
 		for index, column := range valid_columns {
@@ -301,6 +307,98 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			if *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
 					errors = append(errors, fmt.Errorf("create table failed most likely the table already exists"))
+				} else {
+					errors = append(errors, fmt.Errorf(*stderr))
+				}
+			}
+		
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
+			if count_err != nil {
+				errors = append(errors, count_err)
+				return nil, errors
+			}
+
+			return &count, nil
+		},
+		CreateRecord: func(record Map) (*uint64, []error) {
+			options := Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
+
+			errors := validate()
+
+			if record != nil {
+				record_errors := ValidateGenericSpecial(record, "Record")
+				if record_errors != nil {
+					errors = append(errors, record_errors...)
+				}
+			} else {
+				errors = append(errors, fmt.Errorf("record is nil"))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			valid_columns := getTableColumns()
+			record_columns := record.Keys()
+			for _, record_column := range record_columns {
+				if !Contains(valid_columns, record_column) {
+					errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, getTableName(), valid_columns))
+				} else {
+					if strings.HasPrefix(record_column, "credential_") {
+						options["use_file"] = true
+					}
+
+					column_definition := data.M(record_column)
+					if column_definition.HasKey("primary") &&
+					   column_definition.HasKey("auto_increment") && 
+					   column_definition.GetType("auto_increment") == "bool" &&
+					   *(column_definition.B("auto_increment")) {
+						options["get_last_insert_id"] = true
+					}
+				}
+				//check data type
+			}
+
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			sql := fmt.Sprintf("INSERT INTO %s ", getTableName())
+			sql += "("
+			for index, record_column := range record_columns {
+				sql += record_column
+				if index < (len(record_columns) - 1) {
+					sql += ", "
+				}
+			}
+			sql += ") VALUES ("
+			for index, record_column := range record_columns {
+				rep := record.GetType(record_column)
+				switch rep {
+				default:
+					errors = append(errors, fmt.Errorf("type: %s not supported for table please implement", rep))
+				}
+				
+				if index < (len(record_columns) - 1) {
+					sql += ", "
+				}
+			}
+			sql += ");"
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, options)
+						
+			if *stderr != "" {
+				if strings.Contains(*stderr, " some error") {
+					errors = append(errors, fmt.Errorf("insert record failed"))
 				} else {
 					errors = append(errors, fmt.Errorf(*stderr))
 				}

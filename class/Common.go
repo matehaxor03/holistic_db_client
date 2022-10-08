@@ -112,7 +112,6 @@ func ValidateCharacters(m Map) ([]error) {
 	label := (m.S("label"))
 	typeOf := (m.S("data_type"))
 
-
 	if str == nil {
 		errors = append(errors, fmt.Errorf("%s %s value is nil", *typeOf, *label))
 		return errors
@@ -509,3 +508,12 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 
 	return nil
 }
+
+func Contains(sl []string, name string) bool {
+	for _, value := range sl {
+	   if value == name {
+		  return true
+	   }
+	}
+	return false
+ }
