@@ -295,9 +295,10 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			sql :=  fmt.Sprintf("SELECT COUNT(*) from %s;", (getTableName()))
+			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", (getTableName()))
 			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, false)
 			
+			fmt.Println(*stdout)
 			
 			if *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
