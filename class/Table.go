@@ -410,6 +410,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
+			fmt.Sprintf(*stdout)
+
 			count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
 			if count_err != nil {
 				errors = append(errors, count_err)
