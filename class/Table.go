@@ -45,7 +45,7 @@ type Table struct {
 	Create func() (*string, []error)
 	GetTableName func() (string)
 	Count func() (*uint64, []error)
-	CreateRecord func(record Map) (*uint64, []error)
+	CreateRecord func(record Map) (*Map, []error)
 }
 
 func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
@@ -324,7 +324,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 			return &count, nil
 		},
-		CreateRecord: func(record Map) (*uint64, []error) {
+		CreateRecord: func(record Map) (*Map, []error) {
 			options := Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
 
 			errors := validate()
@@ -342,6 +342,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
+			auto_increment_column_name := ""
 			valid_columns := getTableColumns()
 			record_columns := record.Keys()
 			for _, record_column := range record_columns {
@@ -358,6 +359,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					   column_definition.GetType("auto_increment") == "bool" &&
 					   *(column_definition.B("auto_increment")) {
 						options["get_last_insert_id"] = true
+						auto_increment_column_name = record_column
 					}
 				}
 				//check data type
@@ -414,7 +416,11 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			return &count, nil
+			if auto_increment_column_name != "" {
+				record[auto_increment_column_name] = count
+			}
+
+			return &record, nil
 		},
 		GetTableName: func() (string) {
 			return getTableName()
