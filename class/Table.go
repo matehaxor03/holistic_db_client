@@ -359,6 +359,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			auto_increment_columns := 0
 			for _, valid_column := range valid_columns {
 				column_definition := data.M(valid_column)
+				fmt.Println(column_definition.GetType("primary"))
+				fmt.Println(column_definition.GetType("auto_increment"))
 				if column_definition.HasKey("primary") &&
 				   column_definition.GetType("primary") == "bool" &&
 				   *(column_definition.B("primary")) &&
