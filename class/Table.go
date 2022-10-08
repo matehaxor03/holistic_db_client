@@ -342,7 +342,6 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			auto_increment_column_name := ""
 			valid_columns := getTableColumns()
 			record_columns := record.Keys()
 			for _, record_column := range record_columns {
@@ -352,19 +351,29 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 					if strings.HasPrefix(record_column, "credential_") {
 						options["use_file"] = true
 					}
-
-					column_definition := data.M(record_column)
-					if column_definition.HasKey("primary") &&
-					   column_definition.HasKey("auto_increment") && 
-					   column_definition.GetType("auto_increment") == "bool" &&
-					   *(column_definition.B("auto_increment")) {
-						options["get_last_insert_id"] = true
-						auto_increment_column_name = record_column
-					}
 				}
 				//check data type
 			}
 
+			auto_increment_column_name := ""
+			auto_increment_columns := 0
+			for _, valid_column := range valid_columns {
+				column_definition := data.M(valid_column)
+				if column_definition.HasKey("primary") &&
+				   column_definition.GetType("primary") == "bool" &&
+				   *(column_definition.B("primary")) &&
+				   column_definition.HasKey("auto_increment") && 
+			       column_definition.GetType("auto_increment") == "bool" &&
+				   *(column_definition.B("auto_increment")) {
+					options["get_last_insert_id"] = true
+					auto_increment_column_name = valid_column
+					auto_increment_columns += 1
+				}
+			}
+
+			if auto_increment_columns > 1 {
+				errors = append(errors, fmt.Errorf("table: %s can only have 1 auto increment primary key found %s", getTableName(), auto_increment_columns))
+			}
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -410,18 +419,17 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			fmt.Sprintf(*stdout)
+			if options["get_last_insert_id"].(bool) && auto_increment_column_name != "" {
+				count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
+				if count_err != nil {
+					errors = append(errors, count_err)
+					return nil, errors
+				}
 
-			count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
-			if count_err != nil {
-				errors = append(errors, count_err)
-				return nil, errors
+				if auto_increment_column_name != "" {
+					record[auto_increment_column_name] = count
+				}
 			}
-
-			if auto_increment_column_name != "" {
-				record[auto_increment_column_name] = count
-			}
-
 			return &record, nil
 		},
 		GetTableName: func() (string) {
