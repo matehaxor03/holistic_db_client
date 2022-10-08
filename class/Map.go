@@ -305,6 +305,9 @@ func (m Map) GetUInt64(s string) *uint64 {
 	case "*uint64":
 		value := *(m[s].(*uint64))
 		return &value
+	case "uint64":
+		value := (m[s].(uint64))
+		return &value
 	case "int":
 		value := uint64(m[s].(int))
 		return &value
