@@ -161,21 +161,12 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			case "*string":
 
 
-			case "*int64", "int64", "int", "*int":
+			case "*uint64", "*int64", "int64", "int", "*int":
 				sql_command += column + " BIGINT"
 				
-				if columnSchema.HasKey("unsigned") {
-					if columnSchema.GetType("unsigned") == "bool" {
-						if *(columnSchema.B("unsigned")) == true {
-							sql_command += " UNSIGNED"
-						} else if *(columnSchema.B("unsigned")) == false {
 
-						} else {
-							errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool: %s", column, columnSchema.B("unsigned")))
-						}
-					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: unsigned contained a value which is not a bool: %s", column, columnSchema.GetType("unsigned")))
-					}
+				if *typeOf == "*uint64" {
+					sql_command += " UNSIGNED"
 				}
 
 				if columnSchema.HasKey("auto_increment") {
