@@ -103,6 +103,8 @@ func newSQLCommand() (*SQLCommand) {
 			sql = strings.ReplaceAll(sql, "\\", "\\\\")
 			sql = strings.ReplaceAll(sql, "'", "\\'")
 
+			fmt.Println(sql)
+
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
