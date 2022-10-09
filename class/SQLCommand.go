@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"strings"
 )
 
 type SQLCommand struct {
@@ -103,7 +104,7 @@ func newSQLCommand() (*SQLCommand) {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
-				command = sql_header_command + " -e '" + strings.ReplaceAll(sql, "'", "\'") + "'"
+				command = sql_header_command + " -e '" + strings.ReplaceAll(sql, "'", "\\'") + "'"
 			}
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
