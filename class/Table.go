@@ -78,7 +78,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	}
 
 	getTableName := func() (*string) {
-		return CloneString(data.M("[table_name]").S("value"))
+		return CloneString(data.M("table_name").S("value"))
 	}
 
 	data["client"] = Map{"value":CloneClient(client),"mandatory":true}
