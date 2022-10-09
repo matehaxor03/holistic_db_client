@@ -25,8 +25,13 @@ func GET_TABLE_OPTIONS() (map[string]map[string][][]string) {
 	return root
 }
 
-func GetTableValidCharacters() *string {
+func GetTableNameValidCharacters() *string {
 	values :=  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._"
+	return &values
+}
+
+func GetColumnNameValidCharacters() *string {
+	values :=  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 	return &values
 }
 
@@ -43,7 +48,7 @@ type Table struct {
 	Clone func() (*Table)
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
-	GetTableName func() (string)
+	GetTableName func() (*string)
 	Count func() (*uint64, []error)
 	CreateRecord func(record Map) (*Map, []error)
 }
@@ -63,40 +68,17 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	} else {
 		boolean_value := true
 		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
-		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableValidCharacters(),"function":getWhitelistCharactersFunc()}}
+		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
 	}
 
 	data := schema.Clone()
-	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
-	data["[options]"] = Map{"value":options,"mandatory":false}
-
-	// add validations to fields here
-
-	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
-	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
-
-	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Table")
-	}
-
-	getClient := func() (*Client) {
-		return CloneClient(data.M("[client]").GetObject("value").(*Client))
-	}
-
-	getTableName := func() (string) {
-		return *(CloneString(data.M("[table_name]").S("value")))
-	}
-
-	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
-	}
 
 	getData := func() (Map) {
 		return data.Clone()
 	}
 
 	getTableColumns := func() ([]string) {
-		columns := data.Keys() 
+		columns := getData().Keys() 
 		var valid_columns []string
 		for _, column := range columns {
 			if strings.HasPrefix(column, "[") && strings.HasSuffix(column, "]") {
@@ -106,6 +88,41 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			valid_columns = append(valid_columns, column)
 		}
 		return valid_columns
+	}
+
+	getTableName := func() (*string) {
+		return CloneString(data.M("[table_name]").S("value"))
+	}
+
+	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
+	data["[options]"] = Map{"value":options,"mandatory":false}
+	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+
+	{
+		for _, column_name := range getTableColumns() {
+			params := Map{"values": GetColumnNameValidCharacters(), "value":column_name, "label": column_name, "data_type": getTableName() }
+			column_name_errors := WhitelistCharacters(params)
+			if column_name_errors != nil {
+				errors = append(errors, column_name_errors...)
+			}
+
+			if data.GetType(column_name) != "class.Map" {
+				errors = append(errors, fmt.Errorf("column: %s for table: %s is not of type class.Map", column_name, *getTableName()))
+			}
+		}
+	}
+
+	validate := func() ([]error) {
+		return ValidateGenericSpecial(data.Clone(), "Table")
+	}
+
+	getClient := func() (*Client) {
+		return CloneClient(data.M("[client]").GetObject("value").(*Client))
+	}
+
+	getOptions := func() (map[string]map[string][][]string) {
+		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	getSQL := func(command string) (*string, []error) {
@@ -141,7 +158,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("%s ", getTableName())
+		sql_command += fmt.Sprintf("%s ", *getTableName())
 
 		valid_columns := getTableColumns()
 
@@ -161,11 +178,14 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 			
 			switch *typeOf {
-			case "*uint64", "*int64", "int64", "int", "*int":
+			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
 				sql_command += column + " BIGINT"
 				
 
-				if *typeOf == "*uint64" {
+				if *typeOf == "*uint64" || 
+				   *typeOf == "*uint" ||
+				   *typeOf == "uint64" ||
+				   *typeOf == "uint"  {
 					sql_command += " UNSIGNED"
 				}
 
@@ -292,7 +312,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", (getTableName()))
+			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", (*getTableName()))
 			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, Map{"use_file": false, "no_column_headers": true})
 						
 			if *stderr != "" {
@@ -340,7 +360,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			record_columns := record.Keys()
 			for _, record_column := range record_columns {
 				if !Contains(valid_columns, record_column) {
-					errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, getTableName(), valid_columns))
+					errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, *getTableName(), valid_columns))
 				} else {
 					if strings.HasPrefix(record_column, "credential_") {
 						options["use_file"] = true
@@ -372,14 +392,14 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 
 			if auto_increment_columns > 1 {
-				errors = append(errors, fmt.Errorf("table: %s can only have 1 auto_increment primary_key column, found: %s", getTableName(), auto_increment_columns))
+				errors = append(errors, fmt.Errorf("table: %s can only have 1 auto_increment primary_key column, found: %s", *getTableName(), auto_increment_columns))
 			}
 
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("INSERT INTO %s ", getTableName())
+			sql := fmt.Sprintf("INSERT INTO %s ", *getTableName())
 			sql += "("
 			for index, record_column := range record_columns {
 				sql += record_column
@@ -432,7 +452,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 			return &record, nil
 		},
-		GetTableName: func() (string) {
+		GetTableName: func() (*string) {
 			return getTableName()
 		},
     }
