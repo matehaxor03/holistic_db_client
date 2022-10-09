@@ -61,14 +61,14 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		errors = append(errors, fmt.Errorf("schema is nil"))
 	}
 
-	if !schema.HasKey("[table_name]") {
-		errors = append(errors, fmt.Errorf("[table_name] field is nil"))
-	} else if schema.GetType("[table_name]") != "class.Map" {
-		errors = append(errors, fmt.Errorf("[table_name] field is not a map"))
+	if !schema.HasKey("table_name") {
+		errors = append(errors, fmt.Errorf("table_name field is nil"))
+	} else if schema.GetType("table_name") != "class.Map" {
+		errors = append(errors, fmt.Errorf("table_name field is not a map"))
 	} else {
 		boolean_value := true
-		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
-		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
+		schema.M("table_name").SetBool("mandatory", &boolean_value)
+		schema.M("table_name")[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
 	}
 
 	data := schema.Clone()
@@ -77,41 +77,14 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		return data.Clone()
 	}
 
-	getTableColumns := func() ([]string) {
-		columns := getData().Keys() 
-		var valid_columns []string
-		for _, column := range columns {
-			if strings.HasPrefix(column, "[") && strings.HasSuffix(column, "]") {
-				continue
-			}
-
-			valid_columns = append(valid_columns, column)
-		}
-		return valid_columns
-	}
-
 	getTableName := func() (*string) {
 		return CloneString(data.M("[table_name]").S("value"))
 	}
 
-	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
-	data["[options]"] = Map{"value":options,"mandatory":false}
+	data["client"] = Map{"value":CloneClient(client),"mandatory":true}
+	data["options"] = Map{"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
-
-	{
-		for _, column_name := range getTableColumns() {
-			params := Map{"values": GetColumnNameValidCharacters(), "value":column_name, "label": column_name, "data_type": getTableName() }
-			column_name_errors := WhitelistCharacters(params)
-			if column_name_errors != nil {
-				errors = append(errors, column_name_errors...)
-			}
-
-			if data.GetType(column_name) != "class.Map" {
-				errors = append(errors, fmt.Errorf("column: %s for table: %s is not of type class.Map", column_name, *getTableName()))
-			}
-		}
-	}
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(data.Clone(), "Table")
@@ -160,7 +133,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		
 		sql_command += fmt.Sprintf("%s ", EscapeString(*getTableName()))
 
-		valid_columns := getTableColumns()
+		valid_columns := getData().Keys()
 
 		sql_command += "("
 		for index, column := range valid_columns {
@@ -341,9 +314,6 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			errors := validate()
 
 			if record != nil {
-				// add custom validation to fields
-
-
 				record_errors := ValidateGenericSpecial(record, "Record")
 				if record_errors != nil {
 					errors = append(errors, record_errors...)
@@ -356,7 +326,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			valid_columns := getTableColumns()
+			valid_columns := getData().Keys()
 			record_columns := record.Keys()
 			for _, record_column := range record_columns {
 				if !Contains(valid_columns, record_column) {
