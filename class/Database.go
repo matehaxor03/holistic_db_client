@@ -53,7 +53,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	data := Map {
 		"client":Map{"value":CloneClient(client),"mandatory":true},
 		"database_name":Map{"value":CloneString(database_name),"mandatory":true,
-		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getValidateCharacters() }}},
+		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
 		"database_create_options":Map{"value":database_create_options,"mandatory":false},
 		"options":Map{"value":options,"mandatory":false},
 	}
@@ -93,7 +93,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		someValue :=  "dsfdf"
 		m.SetString("data_type", &someValue)
 
-		command_errs := ContainsExactMatch(m)
+		command_errs := WhiteListString(m)
 
 
 		if command_errs != nil {

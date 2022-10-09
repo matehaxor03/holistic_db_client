@@ -46,9 +46,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	
 	data := Map {
 		"character_set":Map{"value":CloneString(character_set),"mandatory":false,
-		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":getContainsExactMatch() } }},
+		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":getWhitelistStringFunc() } }},
 		"collate":Map{"value":CloneString(collate),"mandatory":false,
-		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":getContainsExactMatch()}}},
+		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":getWhitelistStringFunc()}}},
 	}
 
 	validate := func() ([]error) {

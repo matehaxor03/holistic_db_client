@@ -30,9 +30,9 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 	
 	data := Map {
 		"username":Map{"value":CloneString(username),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getValidateCharacters() }}},
+		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 		"password":Map{"value":CloneString(password),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
+		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 	}
 
 	validate := func() ([]error) {

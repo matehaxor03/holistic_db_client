@@ -12,6 +12,14 @@ func CloneDomainName(domain_name *DomainName) *DomainName {
 	return domain_name.Clone()
 }
 
+func LOCALHOST_IP() string {
+	return "127.0.0.1"
+}
+
+func GET_ALLOWED_DOMAIN_NAMES() Array {
+	return Array{LOCALHOST_IP()}
+}
+
 type DomainName struct {
 	Clone func() (*DomainName)
 	Validate func() ([]error)
@@ -20,17 +28,9 @@ type DomainName struct {
 
 func NewDomainName(domain_name *string) (*DomainName, []error) {
 	
-	LOCALHOST_IP := func() string {
-		return "127.0.0.1"
-	}
-	
-	GET_ALLOWED_DOMAIN_NAMES := func() Array {
-		return Array{LOCALHOST_IP()}
-	}
-	
 	data := Map {
 		"domain_name":Map{"value":CloneString(domain_name),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GET_ALLOWED_DOMAIN_NAMES(),"function":getContainsExactMatch()}}},
+		FILTERS(): Array{ Map {"values":GET_ALLOWED_DOMAIN_NAMES(),"function":getWhitelistStringFunc()}}},
 	}
 
 	validate := func() ([]error) {

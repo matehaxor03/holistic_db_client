@@ -25,12 +25,12 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
-func getContainsExactMatch() (*func(m Map) []error) {
-	function := ContainsExactMatch
+func getWhitelistStringFunc() (*func(m Map) []error) {
+	function := WhiteListString
 	return &function
 }
 
-func ContainsExactMatch(m Map) []error {
+func WhiteListString(m Map) []error {
 	array := m.A("values")
 	str := m.S("value")
 	label := m.S("label")
@@ -99,12 +99,12 @@ func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeo
 	return nil
 }
 
-func getValidateCharacters() (*func(m Map) []error) {
-	funcValue := ValidateCharacters
+func getWhitelistCharactersFunc() (*func(m Map) []error) {
+	funcValue := WhitelistCharacters
 	return &funcValue
 }
 
-func ValidateCharacters(m Map) ([]error) {
+func WhitelistCharacters(m Map) ([]error) {
 	var errors []error 
 
 	whitelist := m.S("values")
@@ -185,9 +185,9 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 	var errors []error 
 	var VALID_CHARACTERS = GetConstantValueAllowedCharacters()
 	for key, value := range extra_options {
-		filters1 := Map{"whitelist":VALID_CHARACTERS, "str":&key, "label":fmt.Sprintf("extra_options root key %s", key), "typeOf":fmt.Sprintf("%T", reflect_value) }
+		filters1 := Map{"values":VALID_CHARACTERS, "value":&key, "label":fmt.Sprintf("extra_options root key %s", key), "typeOf":fmt.Sprintf("%T", reflect_value) }
 		
-		key_extra_options_errors := ValidateCharacters(filters1)
+		key_extra_options_errors := WhitelistCharacters(filters1)
 		//key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), fmt.Sprintf("%T", reflect_value))
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
@@ -199,9 +199,9 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 				combined += strings.Join(array_value, "")
 			}
 
-			filters2 := Map{"whitelist":VALID_CHARACTERS, "str":&combined, "label":fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), "typeOf":fmt.Sprintf("%T", reflect_value) }
+			filters2 := Map{"values":VALID_CHARACTERS, "value":&combined, "label":fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), "typeOf":fmt.Sprintf("%T", reflect_value) }
 
-			value_extra_options_errors := ValidateCharacters(filters2)
+			value_extra_options_errors := WhitelistCharacters(filters2)
 			//value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), fmt.Sprintf("%T", reflect_value))
 			if value_extra_options_errors != nil {
 				errors = append(errors, value_extra_options_errors...)	
@@ -340,7 +340,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			default_allowed_valuesAddress := &default_allowed_values
 			default_filter_params := Map{"values":default_allowed_valuesAddress, "value":valueOf, "label": &parameter, "data_type":&structType }
 
-			default_errors_filter := ValidateCharacters(default_filter_params)
+			default_errors_filter := WhitelistCharacters(default_filter_params)
 
 			if default_errors_filter != nil {
 				errors = append(errors, default_errors_filter...)

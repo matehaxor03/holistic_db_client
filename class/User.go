@@ -86,7 +86,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		m.SetString("data_type", &dataTypeTemp)
 
 
-		command_errs := ContainsExactMatch(m)
+		command_errs := WhiteListString(m)
 
 		if command_errs != nil {
 			errors = append(errors, command_errs...)	
@@ -184,7 +184,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 				
 				data := Map {
 					"password":Map{"value":CloneString(&new_password),"mandatory":true,
-					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getValidateCharacters() }}},
+					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 				}
 
 				validate_password_errors := ValidateGenericSpecial(data.Clone(), "NewUserPassword")

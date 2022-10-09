@@ -63,12 +63,15 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	} else {
 		boolean_value := true
 		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
-		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableValidCharacters(),"function":getValidateCharacters()}}
+		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableValidCharacters(),"function":getWhitelistCharactersFunc()}}
 	}
 
 	data := schema.Clone()
 	data["[client]"] = Map{"value":CloneClient(client),"mandatory":true}
 	data["[options]"] = Map{"value":options,"mandatory":false}
+
+	// add validations to fields here
+
 	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 
@@ -116,7 +119,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		someValue :=  "Table"
 		m.SetString("data_type", &someValue)
 
-		command_errs := ContainsExactMatch(m)
+		command_errs := WhiteListString(m)
 
 
 		if command_errs != nil {
@@ -158,9 +161,6 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 			
 			switch *typeOf {
-			case "*string":
-
-
 			case "*uint64", "*int64", "int64", "int", "*int":
 				sql_command += column + " BIGINT"
 				
@@ -321,6 +321,9 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			errors := validate()
 
 			if record != nil {
+				// add custom validation to fields
+
+
 				record_errors := ValidateGenericSpecial(record, "Record")
 				if record_errors != nil {
 					errors = append(errors, record_errors...)
