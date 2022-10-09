@@ -343,7 +343,12 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 						options["use_file"] = true
 					}
 				}
-				//check data type
+
+				type_of_schema_column := *((data.M(record_column)).S("type"))
+				type_of_record_column := record.GetType(record_column)
+				if type_of_record_column != type_of_schema_column {
+					errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
+				}
 			}
 
 			auto_increment_column_name := ""
