@@ -158,7 +158,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("%s ", *getTableName())
+		sql_command += fmt.Sprintf("%s ", EscapeString(*getTableName()))
 
 		valid_columns := getTableColumns()
 
@@ -179,7 +179,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
-				sql_command += column + " BIGINT"
+				sql_command += EscapeString(column) + " BIGINT"
 				
 
 				if *typeOf == "*uint64" || 
@@ -312,7 +312,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", (*getTableName()))
+			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
 			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, Map{"use_file": false, "no_column_headers": true})
 						
 			if *stderr != "" {
@@ -399,7 +399,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("INSERT INTO %s ", *getTableName())
+			sql := fmt.Sprintf("INSERT INTO %s ", EscapeString(*getTableName()))
 			sql += "("
 			for index, record_column := range record_columns {
 				sql += record_column
@@ -412,6 +412,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				rep := record.GetType(record_column)
 				switch rep {
 				default:
+					//EscapeString
 					errors = append(errors, fmt.Errorf("type: %s not supported for table please implement", rep))
 				}
 				

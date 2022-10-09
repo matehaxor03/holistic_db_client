@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
-	"strings"
 )
 
 type SQLCommand struct {
@@ -99,9 +98,6 @@ func newSQLCommand() (*SQLCommand) {
 			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
-
-			sql = strings.ReplaceAll(sql, "\\", "\\\\")
-			sql = strings.ReplaceAll(sql, "'", "\\'")
 
 			fmt.Println(sql)
 

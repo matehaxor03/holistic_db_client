@@ -8,6 +8,12 @@ import (
 	"strings"
 )
 
+func EscapeString(value string) (string) { 
+	value = strings.ReplaceAll(value, "\\", "\\\\")
+    value = strings.ReplaceAll(value, "'", "\\'")
+	return value
+}
+
 func CloneString(value *string) (*string) {
 	if value == nil {
 		return nil

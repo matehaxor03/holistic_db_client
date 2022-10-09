@@ -113,10 +113,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s'", *(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername())
-		sql_command += fmt.Sprintf("@'%s' ",*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName())
+		sql_command += fmt.Sprintf("'%s'", EscapeString(*(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername()))
+		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName()))
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'",  *(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword())
+		sql_command += fmt.Sprintf("'%s'",  EscapeString(*(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword()))
 
 		sql_command += ";"
 		return &sql_command, nil
