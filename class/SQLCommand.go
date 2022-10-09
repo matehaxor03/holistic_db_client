@@ -100,11 +100,14 @@ func newSQLCommand() (*SQLCommand) {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
 
+			sql = strings.ReplaceAll(sql, "\\", "\\\\")
+			sql = strings.ReplaceAll(sql, "'", "\\'")
+
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
-				command = sql_header_command + " -e '" + strings.ReplaceAll(sql, "'", "\\'") + "'"
+				command = sql_header_command + " -e '" + sql + "'"
 			}
 
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
