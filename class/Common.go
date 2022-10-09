@@ -272,6 +272,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 	var errors []error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
+		if fields.GetType(parameter) != "class.Map" {
+			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
+			continue
+		}
+		
 		value_is_mandatory := true
 		value_is_null := false
 
@@ -299,58 +304,58 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		case "string":
 		case "*string":
 			valueOf := parameter_fields.S("value")
+			if parameter_fields.GetType(FILTERS()) != "class.Array" {
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: %s that's class.Array", structType, parameter, FILTERS()))
+				continue
+			}
 
 			filters := parameter_fields.A(FILTERS())
-			if filters != nil {
-				for filter_index, filter := range filters {
-					filter_map := filter.(Map)
+			if len(filters) == 0 {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is empty", structType, parameter, FILTERS()))
+				continue
+			}
 
-					if !filter_map.HasKey("function") {
-						panic(fmt.Sprintf("parameter: %s does not have function parameter for filter index: %d " + filter_map.ToJSONString(), parameter, filter_index))
-					}
+			for filter_index, filter := range filters {
+				filter_map := filter.(Map)
 
-					function := filter_map.Func("function")	
-					if function == nil {
-						panic(fmt.Sprintf("parameter: %s has function parameter for filter index: %d but it has nil value " + filter_map.ToJSONString(), parameter, filter_index))
-					}
-										
-					filter_map.SetString("value", valueOf)
-					filter_map.SetString("data_type", &structType)
-					temp := "ValidateGenericSpecial"
-					filter_map.SetString("label", &temp)
-
-				
-					function_errors := function(filter.(Map))
-					if function_errors != nil {
-						errors = append(errors, function_errors...)
-					}	
-					/*
-					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
-
-					var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
-
-					validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
-					outer_array_length := len(validation_errors)
-					for i := 0; i < outer_array_length; i++ {
-						validation_error := validation_errors[i]
-						error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
-						if error_value == "[]" {
-							continue
-						}
-						errors = append(errors, fmt.Errorf(error_value))
-					}*/
+				if !filter_map.HasKey("function") {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", structType, parameter, FILTERS(), filter_index))
+					continue			
 				}
+
+				function := filter_map.Func("function")	
+				if function == nil {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is nil", structType, parameter, FILTERS(), filter_index))
+					continue				
+				}
+									
+				filter_map.SetString("value", valueOf)
+				filter_map.SetString("data_type", &structType)
+				temp := "ValidateGenericSpecial"
+				filter_map.SetString("label", &temp)
+
+			
+				function_errors := function(filter.(Map))
+				if function_errors != nil {
+					errors = append(errors, function_errors...)
+				}	
+				/*
+				var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
+
+				var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
+
+				validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
+				outer_array_length := len(validation_errors)
+				for i := 0; i < outer_array_length; i++ {
+					validation_error := validation_errors[i]
+					error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
+					if error_value == "[]" {
+						continue
+					}
+					errors = append(errors, fmt.Errorf(error_value))
+				}*/
 			}
-
-			default_allowed_values := GetAllowedStringValues()
-			default_allowed_valuesAddress := &default_allowed_values
-			default_filter_params := Map{"values":default_allowed_valuesAddress, "value":valueOf, "label": &parameter, "data_type":&structType }
-
-			default_errors_filter := WhitelistCharacters(default_filter_params)
-
-			if default_errors_filter != nil {
-				errors = append(errors, default_errors_filter...)
-			}
+			
 			break
 		case "*int64":
 			valueOf := parameter_fields.GetInt64("value")
