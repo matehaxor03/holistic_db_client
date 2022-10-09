@@ -30,7 +30,8 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	
 	data := Map {
 		"host":Map{"value":CloneHost(host),"mandatory":false},
-		"database_username":Map{"value":CloneString(database_username),"mandatory":false},
+		"database_username":Map{"value":CloneString(database_username),"mandatory":false, 
+		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getWhitelistCharactersFunc()}}},
 		"database":Map{"value":CloneDatabase(database),"mandatory":false},
 	}
 

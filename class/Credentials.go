@@ -17,7 +17,7 @@ type Credentials struct {
 }
 
 func GetCredentialsUsernameValidCharacters() *string {
-	temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890._"
+	temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"
 	return &temp
 }
 
