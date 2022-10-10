@@ -49,11 +49,15 @@ type Table struct {
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
 	GetTableName func() (*string)
+	GetTableColumns func() ([]string)
 	Count func() (*uint64, []error)
-	CreateRecord func(record Map) (*Map, []error)
+	GetData func() (Map)
+	CreateRecord func(record Map) (*Record, []error)
+	GetDatabase func() (*Database)
 }
 
 func NewTable(database *Database, schema Map, options map[string]map[string][][]string) (*Table, []error) {
+	var this_table *Table
 	SQLCommand := newSQLCommand()
 	var errors []error
 
@@ -123,6 +127,14 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 	getOptions := func() (map[string]map[string][][]string) {
 		return data.M("options").GetObject("value").(map[string]map[string][][]string)
+	}
+
+	setTable := func(table *Table) {
+		this_table = table
+	}
+
+	getTable := func() *Table{
+		return this_table
 	}
 
 	getSQL := func(command string) (*string, []error) {
@@ -294,9 +306,15 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		GetSQL: func(action string) (*string, []error) {
 			return getSQL(action)
 		},
+		GetDatabase: func() (*Database) {
+			return getDatabase()
+		},
 		Clone: func() (*Table) {
 			clone_value, _ := NewTable(getDatabase(), getData(), getOptions())
 			return clone_value
+		},
+		GetTableColumns: func() ([]string) {
+			return getTableColumns()
 		},
 		Create: func() (*string, []error) {
 			result, errors := createTable()
@@ -335,8 +353,25 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			return &count, nil
 		},
-		CreateRecord: func(record Map) (*Map, []error) {
-			options := Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
+		CreateRecord: func(data Map) (*Record, []error) {
+			errors := validate()
+			if errors != nil {
+				return nil, errors
+			}
+
+			record, record_errors := NewRecord(getTable(), data)
+			if record_errors != nil {
+				return nil, record_errors
+			}
+
+			_, create_record_errors := record.Create()
+			if create_record_errors != nil {
+				return nil, create_record_errors
+			}
+
+			return record, nil
+			
+			/*options := Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
 
 			errors := validate()
 
@@ -353,7 +388,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, errors
 			}
 
-			valid_columns := getData().Keys()
+			valid_columns := getTableColumns()
 			record_columns := record.Keys()
 			for _, record_column := range record_columns {
 				if !Contains(valid_columns, record_column) {
@@ -448,12 +483,16 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					record[auto_increment_column_name] = count
 				}
 			}
-			return &record, nil
+			return &record, nil*/
+		},
+		GetData: func() (Map) {
+			return getData()
 		},
 		GetTableName: func() (*string) {
 			return getTableName()
 		},
     }
+	setTable(&x)
 
 	return &x, nil
 }
