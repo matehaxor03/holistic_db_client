@@ -91,11 +91,11 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 	}
 
 	getClient := func() (*Client) {
-		return CloneClient(data.M("[client]").GetObject("value").(*Client))
+		return CloneClient(data.M("client").GetObject("value").(*Client))
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
+		return data.M("options").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	getSQL := func(command string) (*string, []error) {
