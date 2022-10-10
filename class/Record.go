@@ -103,7 +103,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		auto_increment_columns := 0
 		for _, valid_column := range valid_columns {
-			column_definition := data.M(valid_column)
+			column_definition := table_schema.M(valid_column)
 			
 			if column_definition.HasKey("primary_key") &&
 				column_definition.GetType("primary_key") == "bool" &&
