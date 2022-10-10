@@ -45,6 +45,7 @@ type Database struct {
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error)
+	GetTable func(table_name *string) (*Table, *string, []error)
 }
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
@@ -227,6 +228,57 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 
 			return table, stdout, nil
+		},
+		GetTable: func(table_name *string) (*Table, *string, []error) {
+			var errors []error
+			database := getDatabase()
+			if database == nil {
+				errors = append(errors, fmt.Errorf("database is nil"))
+			} else {
+				database_errors := database.Validate()
+				if database_errors != nil {
+					errors = append(errors, database_errors...)
+				}
+			}
+
+			if table_name == nil {
+				errors = append(errors, fmt.Errorf("table_name is nil"))
+			}
+
+			if len(errors) > 0 {
+				return nil, nil, errors
+			}
+
+			data_type := "Table"
+			params := Map{"values": GetTableNameValidCharacters(), "value": table_name, "data_type": &data_type, "label": table_name}
+			table_name_errors := WhitelistCharacters(params)
+			if table_name_errors != nil {
+				errors = append(errors, table_name_errors...)
+				return nil, nil, errors 
+			}
+			
+			sql_command := "USE INFORMATION_SCHEMA; "
+			sql_command += "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME "
+			sql_command += "FROM KEY_COLUMN_USAGE "
+			sql_command += "WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s';"
+
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+	
+			if *stderr != "" {
+				if strings.Contains(*stderr, " database exists") {
+					errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
+				} else {
+					errors = append(errors, fmt.Errorf(*stderr))
+				}
+			}
+		
+			if len(errors) > 0 {
+				return nil, stdout, errors
+			}
+
+			fmt.Println(*stdout)
+		
+			return nil, stdout, nil
 		},
 		SetClient: func(client *Client) ([]error) {
 			var errors []error
