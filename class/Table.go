@@ -103,20 +103,22 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			columnSchema := data[column].(Map)
 
-			if columnSchema.HasKey("type") && columnSchema.S("type") != nil {
-				rep := *(columnSchema.S("type"))
-				switch rep {
-					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
-					default:
-					continue
-				}
+			if !columnSchema.HasKey("type") ||
+			    columnSchema.S("type") == nil {
+				continue
 			}
+			
+			rep := *(columnSchema.S("type"))
+			switch rep {
+				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
+				default:
+				continue
+			}
+			
 			columns = append(columns, column)
 		}
 		return columns
 	}
-
-	
 
 	validate := func() ([]error) {
 		return ValidateGenericSpecial(getData(), "Table")
@@ -178,18 +180,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		sql_command += "("
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
-			
-			if !columnSchema.HasKey("type") {
-				errors = append(errors, fmt.Errorf("type field not found for column: " + column))
-				continue
-			}
-			
 			typeOf := columnSchema.S("type")
-			if typeOf == nil {
-				errors = append(errors, fmt.Errorf("type field had nil value for column: " + column))
-				continue
-			}
-			
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
 				sql_command += EscapeString(column) + " BIGINT"
