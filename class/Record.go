@@ -19,6 +19,7 @@ type Record struct {
 	Clone func() (*Record)
 	GetSQL func(action string) (*string, []error)
 	Create func() (*string, []error)
+	GetData func() (Map)
 }
 
 func NewRecord(table *Table, record_data Map) (*Record, []error) {
@@ -206,6 +207,9 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 
 			return stdout, nil
+		},
+		GetData: func() (Map) {
+			return getData()
 		},
     }
 
