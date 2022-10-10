@@ -103,8 +103,8 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			columnSchema := data[column].(Map)
 
-			if columnSchema.HasKey("value") {
-				rep := columnSchema.GetType("value")
+			if columnSchema.HasKey("type") && columnSchema.S("type") != nil {
+				rep := *(columnSchema.S("type"))
 				switch rep {
 					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
 					default:

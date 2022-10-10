@@ -51,13 +51,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 			columnSchema := data[column].(Map)
 
-			if columnSchema.HasKey("value") {
-				rep := columnSchema.GetType("value")
-				switch rep {
-					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
-					default:
-					continue
-				}
+			rep := fmt.Sprintf("%T", columnSchema["value"])
+			switch rep {
+				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
+				default:
+				continue
 			}
 			columns = append(columns, column)
 		}

@@ -313,16 +313,13 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		case "*string":
 			valueOf := parameter_fields.S("value")
 			if parameter_fields.GetType(FILTERS()) != "class.Array" {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: %s that's class.Array", structType, parameter, FILTERS()))
-				continue
+				parameter_fields[FILTERS()] = Array{}
 			}
 
+			default_filter := Map{"values": GetAllowedStringValues(), "function": getWhitelistCharactersFunc() }
 			filters := parameter_fields.A(FILTERS())
-			if len(filters) == 0 {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is empty", structType, parameter, FILTERS()))
-				continue
-			}
-
+			filters = append(filters, default_filter)
+			
 			for filter_index, filter := range filters {
 				filter_map := filter.(Map)
 
@@ -336,11 +333,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is nil", structType, parameter, FILTERS(), filter_index))
 					continue				
 				}
+
+				values := filter_map.A("values")	
+				if values == nil {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d values is nil", structType, parameter, FILTERS(), filter_index))
+					continue				
+				}
 									
 				filter_map.SetString("value", valueOf)
+				filter_map.SetArray("values", values)
 				filter_map.SetString("data_type", &structType)
-				temp := "ValidateGenericSpecial"
-				filter_map.SetString("label", &temp)
+				filter_map.SetString("label", &parameter)
 
 			
 				function_errors := function(filter.(Map))
