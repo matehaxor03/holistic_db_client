@@ -77,6 +77,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	}
 
 	data := schema.Clone()
+	data["database"] = Map{"value":CloneDatabase(database),"mandatory":true}
+	data["options"] = Map{"value":options,"mandatory":false}
+	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 
 	getData := func() (Map) {
 		return data.Clone()
@@ -112,13 +116,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		return columns
 	}
 
-	data["database"] = Map{"value":CloneDatabase(database),"mandatory":true}
-	data["options"] = Map{"value":options,"mandatory":false}
-	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
-	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
+	
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Table")
+		return ValidateGenericSpecial(getData(), "Table")
 	}
 
 	getDatabase := func() (*Database) {
