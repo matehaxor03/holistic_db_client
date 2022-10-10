@@ -334,14 +334,12 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					continue				
 				}
 
-				values := filter_map.A("values")	
-				if values == nil {
+				if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
 					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d values is nil", structType, parameter, FILTERS(), filter_index))
-					continue				
-				}
+					continue		
+				} 
 									
 				filter_map.SetString("value", valueOf)
-				filter_map.SetArray("values", values)
 				filter_map.SetString("data_type", &structType)
 				filter_map.SetString("label", &parameter)
 
