@@ -137,8 +137,21 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 
 		sql_command += "("
 		for index, column := range valid_columns {
+			if column == "table_name" {
+				continue
+			}
+
 			columnSchema := data[column].(Map)
 
+			if columnSchema.HasKey("value") {
+				rep := columnSchema.GetType("value")
+				switch rep {
+					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
+					default:
+					continue
+				}
+			}
+			
 			if !columnSchema.HasKey("type") {
 				errors = append(errors, fmt.Errorf("type field not found for column: " + column))
 				continue
