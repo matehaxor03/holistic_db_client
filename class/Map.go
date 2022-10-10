@@ -399,6 +399,9 @@ func (m Map) Clone() Map {
 		case "*class.DomainName":
 			clone[key] = (*(current.(*DomainName))).Clone()
 			break
+		case "*class.Table":
+			clone[key] = (*(current.(*Table))).Clone()
+			break
 		case "bool": 
 			clone[key] = current.(bool)	
 		case "*bool": 
