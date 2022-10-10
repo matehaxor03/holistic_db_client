@@ -261,6 +261,8 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			sql_command += "SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME "
 			sql_command += "FROM KEY_COLUMN_USAGE "
 			sql_command += "WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s';"
+			
+			sql_command = fmt.Sprintf(sql_command, (*getDatabaseName()), table_name)
 
 			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
 	
