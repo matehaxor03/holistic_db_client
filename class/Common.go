@@ -194,7 +194,6 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 		filters1 := Map{"values":VALID_CHARACTERS, "value":&key, "label":fmt.Sprintf("extra_options root key %s", key), "typeOf":fmt.Sprintf("%T", reflect_value) }
 		
 		key_extra_options_errors := WhitelistCharacters(filters1)
-		//key_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &key, fmt.Sprintf("extra_options root key %s", key), fmt.Sprintf("%T", reflect_value))
 		if key_extra_options_errors != nil {
 			errors = append(errors, key_extra_options_errors...)	
 		}
@@ -208,7 +207,6 @@ func ValidateOptions(extra_options map[string]map[string][][]string, reflect_val
 			filters2 := Map{"values":VALID_CHARACTERS, "value":&combined, "label":fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), "typeOf":fmt.Sprintf("%T", reflect_value) }
 
 			value_extra_options_errors := WhitelistCharacters(filters2)
-			//value_extra_options_errors := ValidateCharacters(VALID_CHARACTERS, &combined, fmt.Sprintf("extra_options sub key: %s value %s", key2, value2), fmt.Sprintf("%T", reflect_value))
 			if value_extra_options_errors != nil {
 				errors = append(errors, value_extra_options_errors...)	
 			}
@@ -511,11 +509,10 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					default:
 						errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil with type: %s please implement default for %s", parameter, *typeOf, type_of_default))
 					}
-				case "*int64":
+				case "*int64", "int64":
 					type_of_default := parameter_fields.GetType("default")
 					switch type_of_default {
-					case "*int":
-					case "int":
+					case "*int", "int", "*int64", "int64":
 						type_of_default_value := parameter_fields.GetInt64("default")
 						if type_of_default_value == nil {
 							errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil with type: %s and had default: %s please implement default value: %s", parameter, *typeOf, type_of_default, "nil"))
