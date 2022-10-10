@@ -53,12 +53,13 @@ type Table struct {
 	CreateRecord func(record Map) (*Map, []error)
 }
 
-func NewTable(client *Client, schema Map, options map[string]map[string][][]string) (*Table, []error) {
+func NewTable(database *Database, schema Map, options map[string]map[string][][]string) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 
 	if schema == nil {
 		errors = append(errors, fmt.Errorf("schema is nil"))
+		return nil, errors
 	}
 
 	if !schema.HasKey("table_name") {
@@ -107,7 +108,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		return columns
 	}
 
-	data["client"] = Map{"value":CloneClient(client),"mandatory":true}
+	data["database"] = Map{"value":CloneDatabase(database),"mandatory":true}
 	data["options"] = Map{"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
@@ -116,8 +117,8 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		return ValidateGenericSpecial(data.Clone(), "Table")
 	}
 
-	getClient := func() (*Client) {
-		return CloneClient(data.M("client").GetObject("value").(*Client))
+	getDatabase := func() (*Database) {
+		return CloneDatabase(data.M("database").GetObject("value").(*Database))
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
@@ -259,7 +260,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			return nil, sql_command_errors
 		}
 	
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": false})
+		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), sql_command, Map{"use_file": false})
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " table exists") {
@@ -294,7 +295,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			return getSQL(action)
 		},
 		Clone: func() (*Table) {
-			clone_value, _ := NewTable(getClient(), getData(), getOptions())
+			clone_value, _ := NewTable(getDatabase(), getData(), getOptions())
 			return clone_value
 		},
 		Create: func() (*string, []error) {
@@ -312,7 +313,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 			}
 
 			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, Map{"use_file": false, "no_column_headers": true})
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false, "no_column_headers": true})
 						
 			if *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
@@ -422,7 +423,7 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 				return nil, errors
 			}
 
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql, options)
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, options)
 						
 			if *stderr != "" {
 				if strings.Contains(*stderr, " some error") {

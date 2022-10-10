@@ -43,10 +43,13 @@ type Database struct {
 	Create func() (*string, []error)
 	GetDatabaseName func() (*string)
 	SetClient func(client *Client) ([]error)
+	GetClient func() (*Client)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error)
 }
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
+	var this_database *Database
+
 	SQLCommand := newSQLCommand()
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
@@ -80,6 +83,14 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 	getOptions := func() (map[string]map[string][][]string) {
 		return data.M("options").GetObject("value").(map[string]map[string][][]string)
+	}
+
+	setDatabase := func(database *Database) {
+		this_database = database
+	}
+
+	getDatabase := func() *Database {
+		return this_database
 	}
 
 	getSQL := func(command string) (*string, []error) {
@@ -204,7 +215,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			return result, nil
 		},
 		CreateTable: func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error) {
-			table, new_table_errors := NewTable(getClient(), schema, options)
+			table, new_table_errors := NewTable(getDatabase(), schema, options)
 			
 			if new_table_errors != nil {
 				return nil, nil, new_table_errors
@@ -236,10 +247,14 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			setClient(client)
 			return nil
 		},
+		GetClient: func() (*Client) {
+			return getClient()
+		},
 		GetDatabaseName: func() (*string) {
 			return getDatabaseName()
 		},
     }
+	setDatabase(&x)
 
 	return &x, nil
 }
