@@ -45,7 +45,7 @@ type Database struct {
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error)
-	GetTable func(table_name *string) (*Table, *string, []error)
+	GetTable func(table_name string) (*Table, *string, []error)
 }
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
@@ -229,7 +229,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 			return table, stdout, nil
 		},
-		GetTable: func(table_name *string) (*Table, *string, []error) {
+		GetTable: func(table_name string) (*Table, *string, []error) {
 			var errors []error
 			database := getDatabase()
 			if database == nil {
@@ -241,8 +241,8 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				}
 			}
 
-			if table_name == nil {
-				errors = append(errors, fmt.Errorf("table_name is nil"))
+			if table_name == "" {
+				errors = append(errors, fmt.Errorf("table_name is empty"))
 			}
 
 			if len(errors) > 0 {
@@ -250,7 +250,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 
 			data_type := "Table"
-			params := Map{"values": GetTableNameValidCharacters(), "value": table_name, "data_type": &data_type, "label": table_name}
+			params := Map{"values": GetTableNameValidCharacters(), "value": &table_name, "data_type": &data_type, "label": table_name}
 			table_name_errors := WhitelistCharacters(params)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
