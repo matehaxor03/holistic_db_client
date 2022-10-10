@@ -25,7 +25,7 @@ func (m Map) M(s string) Map {
 	case "class.Map":
 		return m[s].(Map)
 	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement", rep))
+		panic(fmt.Errorf("Map.M: type %s is not supported please implement for key %s", rep, s))
 	}
 
 	return nil
