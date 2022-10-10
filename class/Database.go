@@ -259,7 +259,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			
 			sql_command := "SELECT * "
 			sql_command += "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
-			sql_command += "WHERE REFERENCED_TABLE_SCHEMA = '%s' AND REFERENCED_TABLE_NAME = '%s';"
+			sql_command += "WHERE REFERENCED_TABLE_SCHEMA = \"%s\" AND REFERENCED_TABLE_NAME = \"%s\";"
 			
 			sql_command = fmt.Sprintf(sql_command, (*getDatabaseName()), table_name)
 
