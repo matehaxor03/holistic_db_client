@@ -477,6 +477,17 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
 			}
 			break
+		case "*class.Table":
+			table := parameter_fields.GetObject("value").(*Table)
+			if table != nil {
+				errors_for_table := table.Validate()
+				if errors_for_table != nil {
+					errors = append(errors, errors_for_table...)
+				}
+			} else if value_is_mandatory {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			}
+			break
 		case "<nil>":
 			if !parameter_fields.HasKey("default") {
 				if value_is_null && value_is_mandatory {
