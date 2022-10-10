@@ -411,6 +411,19 @@ func (m Map) Clone() Map {
 			clone[key] = current.(*time.Time)	
 		case "int": 
 			clone[key] = current.(int)	
+		case "uint64": 
+			clone[key] = current.(uint64)	
+		case "int64": 
+			clone[key] = current.(int64)	
+		case "*int64": 
+			int64_value := *(current.(*int64))	
+			clone[key] = &int64_value
+		case "*int": 
+			int_value := *(current.(*int))	
+			clone[key] = &int_value
+		case "*uint64": 
+			uint64_value := *(current.(*uint64))	
+			clone[key] = &uint64_value
 		case "<nil>":
 			clone[key] = nil
 		default:
