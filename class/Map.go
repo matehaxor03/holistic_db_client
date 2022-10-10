@@ -381,6 +381,9 @@ func (m Map) Clone() Map {
 		case "*class.DatabaseCreateOptions":
 			clone[key] = (*(current.(*DatabaseCreateOptions))).Clone()
 			break
+		case "*class.Database":
+			clone[key] = (*(current.(*Database))).Clone()
+			break
 		case "*class.Host":
 			clone[key] = (*(current.(*Host))).Clone()
 			break
