@@ -15,6 +15,7 @@ func CloneClient(client *Client) *Client {
 type Client struct {
 	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
 	UseDatabase func(database *Database) []error
+	UseDatabaseByName func(database_name *string) []error 
 	UseDatabaseUsername func(database_username *string) []error
 	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
 	GetDatabaseUsername func() (*string)
@@ -134,6 +135,15 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			
 			setDatabase(database)
 			database.SetClient(this_client)
+			return nil
+		},
+		UseDatabaseByName: func(database_name *string) []error {			
+			database, database_errors := NewDatabase(getClient(), database_name, nil, nil)
+			if database_errors != nil {
+				return database_errors
+			}
+
+			setDatabase(database)
 			return nil
 		},
 		UseDatabaseUsername: func(database_username *string) []error {
