@@ -81,6 +81,32 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		return CloneString(data.M("table_name").S("value"))
 	}
 
+	getTableColumns := func() ([]string) {
+		var columns []string
+		for _, column := range getData().Keys() {
+			if column == "table_name" {
+				continue
+			}
+
+			if data.GetType(column) != "class.Map" {
+				continue
+			}
+
+			columnSchema := data[column].(Map)
+
+			if columnSchema.HasKey("value") {
+				rep := columnSchema.GetType("value")
+				switch rep {
+					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
+					default:
+					continue
+				}
+			}
+			columns = append(columns, column)
+		}
+		return columns
+	}
+
 	data["client"] = Map{"value":CloneClient(client),"mandatory":true}
 	data["options"] = Map{"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*time.Time","value":nil,"mandatory":true, "default":"now"}
@@ -133,24 +159,11 @@ func NewTable(client *Client, schema Map, options map[string]map[string][][]stri
 		
 		sql_command += fmt.Sprintf("%s ", EscapeString(*getTableName()))
 
-		valid_columns := getData().Keys()
+		valid_columns := getTableColumns()
 
 		sql_command += "("
 		for index, column := range valid_columns {
-			if column == "table_name" {
-				continue
-			}
-
 			columnSchema := data[column].(Map)
-
-			if columnSchema.HasKey("value") {
-				rep := columnSchema.GetType("value")
-				switch rep {
-					case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
-					default:
-					continue
-				}
-			}
 			
 			if !columnSchema.HasKey("type") {
 				errors = append(errors, fmt.Errorf("type field not found for column: " + column))
