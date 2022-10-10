@@ -257,11 +257,13 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				return nil, nil, errors 
 			}
 			
+			/*
 			sql_command := "SELECT * "
 			sql_command += "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE "
-			sql_command += "WHERE REFERENCED_TABLE_SCHEMA = \"%s\" AND REFERENCED_TABLE_NAME = \"%s\";"
+			sql_command += "WHERE REFERENCED_TABLE_SCHEMA = \"%s\" AND REFERENCED_TABLE_NAME = \"%s\";"*/
+			sql_command := fmt.Sprintf("DESCRIBE %s;", EscapeString(table_name))
 			
-			sql_command = fmt.Sprintf(sql_command, (*getDatabaseName()), table_name)
+			//sql_command = fmt.Sprintf(sql_command, (*getDatabaseName()), table_name)
 
 			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
 	
