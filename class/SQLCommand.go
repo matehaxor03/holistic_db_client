@@ -80,7 +80,7 @@ func newSQLCommand() (*SQLCommand) {
 			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
-			sql := ""
+			sql := "\\option resultFormat json/array\n"
 			if database != nil {
 				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
@@ -109,6 +109,8 @@ func newSQLCommand() (*SQLCommand) {
 			if sql_command_use_file {
 				os.Remove(filename)
 			}
+
+			fmt.Println(*shell_output)
 			
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)	
