@@ -257,9 +257,9 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				return nil, nil, errors 
 			}
 			
-			sql_command := fmt.Sprintf("JSON_ARRAYAGG(JSON_OBJECT(SHOW COLUMNS FROM %s));", EscapeString(table_name))
+			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(table_name))
 			
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
 	
 			if *stderr != "" {
 				if strings.Contains(*stderr, " database exists") {
