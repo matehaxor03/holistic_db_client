@@ -80,7 +80,7 @@ func newSQLCommand() (*SQLCommand) {
 			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
-			sql := "\\option resultFormat json/array\n"
+			sql := ""
 			if database != nil {
 				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
@@ -139,6 +139,7 @@ func newSQLCommand() (*SQLCommand) {
 						columns = append(columns, CloneString(&value))
 						value = ""
 						reading_columns = false
+						fmt.Println(columns.ToJSONString())
 					} else if current_value == " " {
 						columns = append(columns, CloneString(&value))
 						value = ""
