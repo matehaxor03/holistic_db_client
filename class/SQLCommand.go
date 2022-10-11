@@ -91,16 +91,16 @@ func newSQLCommand() (*SQLCommand) {
 				sql_command_use_file = false
 			}
 
-			if options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true {
-				sql_header_command += " --result-format=json/array"
-			}
-
 			if options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == true {
 				sql_header_command += " -N"
 			}
 
 			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
 				sql += " SELECT LAST_INSERT_ID();"
+			}
+
+			if options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true {
+				sql_header_command += " option resultFormat json/array"
 			}
 
 			if sql_command_use_file {
