@@ -137,29 +137,33 @@ func newSQLCommand() (*SQLCommand) {
 				fmt.Println(current_value)
 				if reading_columns {
 					if current_value == "\n" {
-						columns = append(columns, CloneString(&value))
+						column_name := CloneString(&value)
+						columns = append(columns, *column_name)
 						value = ""
 						reading_columns = false
 						fmt.Println(columns.ToJSONString())
 					} else if current_value == " " {
-						columns = append(columns, CloneString(&value))
+						column_name := CloneString(&value)
+						columns = append(columns, *column_name)
 						value = ""
 					} else {
-						value += current_value
+						value = value + current_value
 					} 
 				} else {
 					if current_value == "\n" {
-						record.SetString(*(columns[columns_count].(*string)), CloneString(&value))
+						column_value := CloneString(&value)
+						record.SetString(columns[columns_count].(string), column_value)
 						records = append(records, record.Clone())
 						record = Map{}
 						value = ""
 						columns_count = 0
 					} else if current_value == " " {
-						record.SetString(*(columns[columns_count].(*string)), CloneString(&value))
+						column_value := CloneString(&value)
+						record.SetString(columns[columns_count].(string), column_value)
 						columns_count += 1
 						value = ""
 					} else {
-						value += current_value
+						value = value + current_value
 					} 
 				}
 			}
