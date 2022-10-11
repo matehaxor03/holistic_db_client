@@ -356,24 +356,28 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				}
 
 				if default_value != "" {
-					if default_value == "CURRENT_TIMESTAMP" && extra_value == "DEFAULT_GENERATED" {
-						column_schema["default"] = "now"
-					} else if (column_schema["type"] == "uint64") {
-						number, err := strconv.ParseUint(default_value, 10, 64)
-						if err != nil {
-							errors = append(errors, err)
-						} else {
-							column_schema.SetUInt64("default", &number)
-						}
-					} else if (column_schema["type"] == "int64") {
-						number, err := strconv.ParseInt(default_value, 10, 64)
-						if err != nil {
-							errors = append(errors, err)
-						} else {
-							column_schema.SetInt64("default", &number)
-						}
+					if default_value == "NULL" {
+					} else if default_value == "CURRENT_TIMESTAMP" && extra_value == "DEFAULT_GENERATED" {
+						now := "now"
+						column_schema.SetString("default", &now)
 					} else {
-						errors = append(errors, fmt.Errorf("default value not supported please implement: %s", default_value))
+						if (column_schema["type"] == "uint64") {
+							number, err := strconv.ParseUint(default_value, 10, 64)
+							if err != nil {
+								errors = append(errors, err)
+							} else {
+								column_schema.SetUInt64("default", &number)
+							}
+						} else if (column_schema["type"] == "int64") {
+							number, err := strconv.ParseInt(default_value, 10, 64)
+							if err != nil {
+								errors = append(errors, err)
+							} else {
+								column_schema.SetInt64("default", &number)
+							}
+						} else {
+							errors = append(errors, fmt.Errorf("default value not supported please implement: %s", default_value))
+						}
 					}
 				}
 
