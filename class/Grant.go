@@ -104,7 +104,7 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 
 		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 		
-		if *stderr != "" {
+		if stderr != nil && *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
 				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
 			} else {

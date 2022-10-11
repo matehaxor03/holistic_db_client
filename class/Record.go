@@ -179,7 +179,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
 						
-			if *stderr != "" {
+			if stderr != nil && *stderr != "" {
 				if strings.Contains(*stderr, " some error") {
 					errors = append(errors, fmt.Errorf("insert record failed"))
 				} else {

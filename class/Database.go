@@ -175,7 +175,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	
 		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 	
-		if *stderr != "" {
+		if stderr != nil && *stderr != "" {
 			if strings.Contains(*stderr, " database exists") {
 				errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
 			} else {
@@ -261,7 +261,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			
 			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
 	
-			if *stderr != "" {
+			if stderr != nil && *stderr != "" {
 				if strings.Contains(*stderr, " database exists") {
 					errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
 				} else {
