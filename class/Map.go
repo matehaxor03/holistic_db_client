@@ -287,6 +287,10 @@ func (m Map) GetInt64(s string) *int64 {
 	return nil
 }
 
+func (m Map) SetInt64(s string, v *int64) {
+	m[s] = v
+}
+
 func (m Map) GetUInt64(s string) *uint64 {
 	if m[s] == nil {
 		return nil
@@ -319,6 +323,10 @@ func (m Map) GetUInt64(s string) *uint64 {
 	}
 
 	return nil
+}
+
+func (m Map) SetUInt64(s string, v *uint64) {
+	m[s] = v
 }
 
 func (m Map) GetTime(s string) *time.Time {

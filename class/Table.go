@@ -210,7 +210,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				if columnSchema.HasKey("primary_key") {
 					if columnSchema.GetType("primary_key") == "bool" {
 						if *(columnSchema.B("primary_key")) == true {
-							sql_command += " PRIMARY KEY"
+							sql_command += " PRIMARY KEY NOT NULL"
 						} else if *(columnSchema.B("primary_key")) == false {
 
 						} else {
@@ -219,6 +219,8 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					} else {
 						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
 					}		
+				} else if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {

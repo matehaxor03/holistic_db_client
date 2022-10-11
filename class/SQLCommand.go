@@ -134,14 +134,12 @@ func newSQLCommand() (*SQLCommand) {
 			record := Map{}
 			for i := 0; i < len(rune_array); i++ {
 				current_value := string(rune_array[i])
-				fmt.Println(current_value)
 				if reading_columns {
 					if current_value == "\n" {
 						column_name := CloneString(&value)
 						columns = append(columns, *column_name)
 						value = ""
 						reading_columns = false
-						fmt.Println(columns.ToJSONString())
 					} else if current_value == "\t" {
 						column_name := CloneString(&value)
 						columns = append(columns, *column_name)
