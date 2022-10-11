@@ -142,7 +142,7 @@ func newSQLCommand() (*SQLCommand) {
 						value = ""
 						reading_columns = false
 						fmt.Println(columns.ToJSONString())
-					} else if current_value == " " {
+					} else if current_value == "\t" {
 						column_name := CloneString(&value)
 						columns = append(columns, *column_name)
 						value = ""
@@ -157,7 +157,7 @@ func newSQLCommand() (*SQLCommand) {
 						record = Map{}
 						value = ""
 						columns_count = 0
-					} else if current_value == " " {
+					} else if current_value == "\t" {
 						column_value := CloneString(&value)
 						record.SetString(columns[columns_count].(string), column_value)
 						columns_count += 1
