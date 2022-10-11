@@ -99,10 +99,6 @@ func newSQLCommand() (*SQLCommand) {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
 
-			if options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true {
-				sql_header_command += " option resultFormat json/array"
-			}
-
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
@@ -120,6 +116,14 @@ func newSQLCommand() (*SQLCommand) {
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)	
 				return shell_output, shell_output_errs, errors
+			}
+
+			if (!options.HasKey("no_column_headers") || (options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == false)) && 
+			   (options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true) {
+				runeSample := []rune(*shell_output)
+				for i := 0; i < len(runeSample); i++ {
+					fmt.Println(string(runeSample[i]))
+				}
 			}
 
 			return shell_output, shell_output_errs, nil
