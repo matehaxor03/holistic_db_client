@@ -323,7 +323,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 
 			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
-			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+			json_array, stderr, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+
+			if sql_errors != nil {
+				errors = append(errors, sql_errors...)
+			}
 						
 			if stderr != nil && *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
