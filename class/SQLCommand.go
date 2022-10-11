@@ -115,7 +115,7 @@ func newSQLCommand() (*SQLCommand) {
 				return nil, shell_output_errs, errors
 			}
 
-			if shell_output_errs != nil || *shell_output_errs != "" {
+			if shell_output_errs != nil && *shell_output_errs != "" {
 				return nil, shell_output_errs, errors
 			}
 
