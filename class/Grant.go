@@ -18,7 +18,7 @@ type Grant struct {
 	Validate func() ([]error)
 	GetGrantValue func() (*string)
 	GetFilter func() (*string)
-	Grant func() (*string, []error) 
+	Grant func() ([]error) 
 }
 
 func NewGrant(client *Client, user *User, grant_value *string, filter *string) (*Grant, []error) {
@@ -94,15 +94,15 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 		return &sql, nil
 	}
 
-	grant := func () (*string, []error) {
+	grant := func () ([]error) {
 		var errors []error 
 		sql_command, sql_command_errors := getSQL()
 	
 		if sql_command_errors != nil {
-			return nil, sql_command_errors
+			return sql_command_errors
 		}
 
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
@@ -113,10 +113,10 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 		}
 
 		if len(errors) > 0 {
-			return stdout, errors
+			return errors
 		}
 
-		return stdout, nil
+		return nil
 	}	
 
 	errors := validate()
@@ -139,7 +139,7 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 			cloned, _ := NewGrant(getClient(), getUser(), getGrantValue(), getFilter())
 			return cloned
 		},
-		Grant: func() (*string, []error) {
+		Grant: func() ([]error) {
 			return grant()
 		},
     }

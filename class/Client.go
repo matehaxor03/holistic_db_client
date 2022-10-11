@@ -13,17 +13,17 @@ func CloneClient(client *Client) *Client {
 }
 
 type Client struct {
-	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error)
+	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error)
 	UseDatabase func(database *Database) []error
 	UseDatabaseByName func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username *string) []error
-	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error)
+	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error)
 	GetDatabaseUsername func() (*string)
 	GetHost func() *Host 
 	GetDatabase func() *Database 
 	Clone func() (*Client)
 	Validate func() []error
-	Grant func(user *User, grant string, filter string) (*Grant, *string, []error)
+	Grant func(user *User, grant string, filter string) (*Grant, []error)
 }
 
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
@@ -76,41 +76,41 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			cloned, _ := NewClient(getHost(), getDatabaseUsername(), getDatabase())
 			return cloned
 		},
-		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, *string, []error) {
+		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
 			database, errs := NewDatabase(getClient(), database_name, database_create_options, options)
 			if errs != nil {
-				return nil, nil, errs
+				return nil, errs
 			}
 
-			stdout, errors := database.Create()
+			errors := database.Create()
 			if errors != nil {
-				return nil, stdout, errors
+				return nil, errors
 			}
 			
-			return database, stdout, nil
+			return database, nil
 		},
-		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, *string, []error) {
+		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
 			if credentail_errors != nil {
-				return nil, nil, credentail_errors
+				return nil, credentail_errors
 			}
 
 			domain, domain_errors := NewDomainName(domain_name)
 			if domain_errors != nil {
-				return nil, nil, domain_errors
+				return nil, domain_errors
 			}
 
 			user, user_errors := NewUser(getClient(), credentials, domain, options)
 			if user_errors != nil {
-				return nil, nil, user_errors
+				return nil, user_errors
 			}
 
-			sql_output, create_errors := user.Create()
+			create_errors := user.Create()
 			if create_errors != nil {
-				return nil, sql_output, create_errors
+				return nil, create_errors
 			}
 
-			return user, sql_output, nil
+			return user, nil
 		},
 		GetHost: func() *Host {
 			return getHost()
@@ -157,20 +157,20 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			setDatabaseUsername(database_username)
 			return nil
 		},
-		Grant: func(user *User, grant string, filter string) (*Grant, *string, []error) {
+		Grant: func(user *User, grant string, filter string) (*Grant, []error) {
 			client := getClient()
 			grant_obj, grant_errors := NewGrant(client, user, &grant, &filter)
 
 			if grant_errors != nil {
-				return nil, nil, grant_errors
+				return nil, grant_errors
 			}
 
-			stdout, grant_errs := (*grant_obj).Grant()
+			grant_errs := (*grant_obj).Grant()
 			if grant_errs != nil {
-				return nil, stdout, grant_errs
+				return nil, grant_errs
 			}
 
-			return grant_obj, stdout, nil
+			return grant_obj, nil
 		},
     }
 	setClient(&x)

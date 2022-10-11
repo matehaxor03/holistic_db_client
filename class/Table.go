@@ -47,7 +47,7 @@ type Table struct {
 	Validate func() ([]error)
 	Clone func() (*Table)
 	GetSQL func(action string) (*string, []error)
-	Create func() (*string, []error)
+	Create func() ([]error)
 	GetTableName func() (*string)
 	GetTableColumns func() ([]string)
 	Count func() (*uint64, []error)
@@ -256,15 +256,15 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		return &sql_command, nil
 	}
 
-	createTable := func() (*string, []error) {
+	createTable := func() ([]error) {
 		var errors []error 
 		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if sql_command_errors != nil {
-			return nil, sql_command_errors
+			return sql_command_errors
 		}
 	
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), sql_command, Map{"use_file": false})
+		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), sql_command, Map{"use_file": false})
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " table exists") {
@@ -275,10 +275,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		}
 	
 		if len(errors) > 0 {
-			return stdout, errors
+			return errors
 		}
 	
-		return stdout, nil
+		return nil
 	}
 
 	validate_errors := validate()
@@ -308,13 +308,13 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		GetTableColumns: func() ([]string) {
 			return getTableColumns()
 		},
-		Create: func() (*string, []error) {
-			result, errors := createTable()
+		Create: func() ([]error) {
+			errors := createTable()
 			if errors != nil {
-				return result, errors
+				return errors
 			}
 
-			return result, nil
+			return nil
 		},
 		Count: func() (*uint64, []error) {
 			errors := validate()
@@ -323,7 +323,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 
 			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false, "no_column_headers": true})
+			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
 						
 			if *stderr != "" {
 				if strings.Contains(*stderr, " table exists") {
@@ -337,7 +337,12 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, errors
 			}
 
-			count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
+			if len(*json_array) != 1 {
+				errors = append(errors, fmt.Errorf("count record does not exist"))
+				return nil, errors
+			}
+
+			count, count_err := strconv.ParseUint(*((*json_array)[0].(Map).S("COUNT(*)")), 10, 64)
 			if count_err != nil {
 				errors = append(errors, count_err)
 				return nil, errors
@@ -356,9 +361,9 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, record_errors
 			}
 
-			_, create_record_errors := record.Create()
+			create_record_errors := record.Create()
 			if create_record_errors != nil {
-				return nil, create_record_errors
+				return  nil, create_record_errors
 			}
 
 			return record, nil

@@ -40,12 +40,12 @@ type Database struct {
 	Validate func() ([]error)
 	Clone func() (*Database)
 	GetSQL func(action string) (*string, []error)
-	Create func() (*string, []error)
+	Create func() ([]error)
 	GetDatabaseName func() (*string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
-	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error)
-	GetTable func(table_name string) (*Table, *string, []error)
+	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, []error)
+	GetTable func(table_name string) (*Table, []error)
 }
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
@@ -165,15 +165,15 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		return &sql_command, nil
 	}
 
-	createDatabase := func() (*string, []error) {
+	createDatabase := func() ([]error) {
 		var errors []error 
 		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if sql_command_errors != nil {
-			return nil, sql_command_errors
+			return sql_command_errors
 		}
 	
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 	
 		if *stderr != "" {
 			if strings.Contains(*stderr, " database exists") {
@@ -184,10 +184,10 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		}
 	
 		if len(errors) > 0 {
-			return stdout, errors
+			return errors
 		}
 	
-		return stdout, nil
+		return nil
 	}
 
 	errors := validate()
@@ -207,29 +207,29 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
 			return clone_value
 		},
-		Create: func() (*string, []error) {
-			result, errors := createDatabase()
+		Create: func() ([]error) {
+			errors := createDatabase()
 			if errors != nil {
-				return result, errors
+				return errors
 			}
 
-			return result, nil
+			return nil
 		},
-		CreateTable: func(schema Map, options map[string]map[string][][]string) (*Table, *string, []error) {
+		CreateTable: func(schema Map, options map[string]map[string][][]string) (*Table, []error) {
 			table, new_table_errors := NewTable(getDatabase(), schema, options)
 			
 			if new_table_errors != nil {
-				return nil, nil, new_table_errors
+				return nil, new_table_errors
 			}
 
-			stdout, create_table_errors := table.Create()
+			create_table_errors := table.Create()
 			if create_table_errors != nil {
-				return nil, stdout, create_table_errors
+				return nil, create_table_errors
 			}
 
-			return table, stdout, nil
+			return table, nil
 		},
-		GetTable: func(table_name string) (*Table, *string, []error) {
+		GetTable: func(table_name string) (*Table, []error) {
 			var errors []error
 			database := getDatabase()
 			if database == nil {
@@ -246,7 +246,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 
 			if len(errors) > 0 {
-				return nil, nil, errors
+				return nil, errors
 			}
 
 			data_type := "Table"
@@ -254,12 +254,12 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			table_name_errors := WhitelistCharacters(params)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
-				return nil, nil, errors 
+				return nil, errors 
 			}
 			
 			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(table_name))
 			
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
+			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
 	
 			if *stderr != "" {
 				if strings.Contains(*stderr, " database exists") {
@@ -270,12 +270,12 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 		
 			if len(errors) > 0 {
-				return nil, stdout, errors
+				return nil, errors
 			}
 
-			fmt.Println(*stdout)
+			fmt.Println((*json_array).ToJSONString())
 		
-			return nil, stdout, nil
+			return nil, nil
 		},
 		SetClient: func(client *Client) ([]error) {
 			var errors []error

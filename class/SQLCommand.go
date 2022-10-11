@@ -6,16 +6,17 @@ import (
 	"io/ioutil"
 	"os"
 	"time"
+	"strings"
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*string, *string, []error)
+	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, *string, []error)
 }
 
 func newSQLCommand() (*SQLCommand) {			    
 	bashCommand := newBashCommand()
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*string, *string, []error) {
+		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, *string, []error) {
 			var errors []error 
 
 			if client == nil {
@@ -91,10 +92,6 @@ func newSQLCommand() (*SQLCommand) {
 				sql_command_use_file = false
 			}
 
-			if options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == true {
-				sql_header_command += " -N"
-			}
-
 			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
@@ -115,18 +112,50 @@ func newSQLCommand() (*SQLCommand) {
 			
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)	
-				return shell_output, shell_output_errs, errors
+				return nil, shell_output_errs, errors
 			}
 
-			if (!options.HasKey("no_column_headers") || (options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == false)) && 
-			   (options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true) {
-				runeSample := []rune(*shell_output)
-				for i := 0; i < len(runeSample); i++ {
-					fmt.Println(string(runeSample[i]))
+			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
+				return nil, nil, nil
+			}
+			
+			rune_array := []rune(*shell_output)
+			reading_columns := true
+			value := ""
+			columns_count := 0
+			columns := Array{}
+			records := Array{}
+			record := Map{}
+			for i := 0; i < len(rune_array); i++ {
+				current_value := string(rune_array[i])
+				if reading_columns {
+					if current_value == "\n" {
+						columns = append(columns, CloneString(&value))
+						value = ""
+						reading_columns = false
+					} else if current_value == " " {
+						columns = append(columns, CloneString(&value))
+						value = ""
+					} else {
+						value += current_value
+					} 
+				} else {
+					if current_value == "\n" {
+						record.SetString(*(columns[columns_count].(*string)), CloneString(&value))
+						records = append(records, record.Clone())
+						record = Map{}
+						value = ""
+						columns_count = 0
+					} else if current_value == " " {
+						record.SetString(*(columns[columns_count].(*string)), CloneString(&value))
+						columns_count += 1
+						value = ""
+					} else {
+						value += current_value
+					} 
 				}
 			}
-
-			return shell_output, shell_output_errs, nil
+			return &records, shell_output_errs, nil
 		},
     }
 

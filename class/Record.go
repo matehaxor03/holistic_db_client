@@ -18,7 +18,7 @@ type Record struct {
 	Validate func() ([]error)
 	Clone func() (*Record)
 	GetSQL func(action string) (*string, []error)
-	Create func() (*string, []error)
+	Create func() ([]error)
 	GetData func() (Map)
 }
 
@@ -171,13 +171,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			clone_value, _ := NewRecord(getTable(), getData())
 			return clone_value
 		},
-		Create: func() (*string, []error) {
+		Create: func() ([]error) {
 			sql, options, errors := getInsertSQL()
 			if errors != nil {
-				return nil, errors
+				return errors
 			}
 
-			stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
+			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
 						
 			if *stderr != "" {
 				if strings.Contains(*stderr, " some error") {
@@ -188,14 +188,19 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 		
 			if len(errors) > 0 {
-				return nil, errors
+				return errors
 			}
 
 			if options["get_last_insert_id"].(bool) && options["auto_increment_column_name"] != "" {
-				count, count_err := strconv.ParseUint(string(strings.TrimSuffix(*stdout, "\n")), 10, 64)
+				if len(*json_array) != 1 {
+					errors = append(errors, fmt.Errorf("get_last_insert_id not found "))
+					return errors
+				}
+				
+				count, count_err := strconv.ParseUint(*((*json_array)[0].(Map).S("LAST_INSERT_ID()")), 10, 64)
 				if count_err != nil {
 					errors = append(errors, count_err)
-					return nil, errors
+					return errors
 				}
 
 				if options.S("auto_increment_column_name") != nil && *(options.S("auto_increment_column_name")) != "" {
@@ -204,7 +209,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 
-			return stdout, nil
+			return nil
 		},
 		GetData: func() (Map) {
 			return getData()

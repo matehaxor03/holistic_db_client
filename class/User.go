@@ -34,7 +34,7 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 
 type User struct {
 	Validate func() ([]error)
-	Create func() (*string, []error)
+	Create func() ([]error)
 	GetCredentials func() (*Credentials)
 	GetDomainName func() (*DomainName)
 	Clone func() (*User)
@@ -122,15 +122,15 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		return &sql_command, nil
 	}
 
-	create := func () (*string, []error) {
+	create := func () ([]error) {
 		var errors []error 
 		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 
 		if sql_command_errors != nil {
-			return nil, sql_command_errors
+			return sql_command_errors
 		}
 
-		stdout, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 		
 		if *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
@@ -141,10 +141,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		}
 
 		if len(errors) > 0 {
-			return stdout, errors
+			return errors
 		}
 
-		return stdout, nil
+		return nil
 	}	
 
 	errors := validate()
@@ -157,7 +157,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			Validate: func() ([]error) {
 				return validate()
 			},
-			Create: func() (*string, []error) {
+			Create: func() ([]error) {
 				return create()
 			},
 			Clone: func() *User {

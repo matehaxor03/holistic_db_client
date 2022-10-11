@@ -124,30 +124,17 @@ func main() {
 		if class_value == DATABASE_CLASS {
 
 			database_create_options := class.NewDatabaseCreateOptions(character_set, collate)
-			_, shell_output, database_errors := client.CreateDatabase(database_name, database_create_options, options)
+			_, database_errors := client.CreateDatabase(database_name, database_create_options, options)
 			
 			if database_errors != nil {
 				context.LogErrors(database_errors)
-
-				if shell_output != nil {
-					fmt.Println(*shell_output)
-				}
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			_, shell_output, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
+			_, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
 
-			if shell_output != nil {
-				fmt.Println(*shell_output)
-			}
-			
 			if user_errors != nil {
 				context.LogErrors(user_errors)
-
-
-				if shell_output != nil {
-					fmt.Println(*shell_output)
-				}
 				os.Exit(1)
 			}
 		} else {
