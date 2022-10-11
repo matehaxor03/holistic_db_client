@@ -361,14 +361,14 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
-						if (column_schema["type"] == "uint64") {
+						if (*(column_schema.S("type")) == "uint64") {
 							number, err := strconv.ParseUint(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
 							} else {
 								column_schema.SetUInt64("default", &number)
 							}
-						} else if (column_schema["type"] == "int64") {
+						} else if (*(column_schema.S("type")) == "int64") {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
@@ -376,7 +376,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 								column_schema.SetInt64("default", &number)
 							}
 						} else {
-							errors = append(errors, fmt.Errorf("default value not supported please implement: %s", default_value))
+							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *(column_schema.S("type"))))
 						}
 					}
 				}
