@@ -91,10 +91,6 @@ func newSQLCommand() (*SQLCommand) {
 				sql_command_use_file = false
 			}
 
-			if options.HasKey("json_output") && options.GetType("json_output") == "bool" && *(options.B("json_output")) == true {
-				sql_header_command += " --json"
-			}
-
 			if options.HasKey("no_column_headers") && options.GetType("no_column_headers") == "bool" && *(options.B("no_column_headers")) == true {
 				sql_header_command += " -N"
 			}
