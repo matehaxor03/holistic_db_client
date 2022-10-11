@@ -134,6 +134,7 @@ func newSQLCommand() (*SQLCommand) {
 			record := Map{}
 			for i := 0; i < len(rune_array); i++ {
 				current_value := string(rune_array[i])
+				fmt.Println(current_value)
 				if reading_columns {
 					if current_value == "\n" {
 						columns = append(columns, CloneString(&value))
