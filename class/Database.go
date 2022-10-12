@@ -389,6 +389,9 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				schema[field_name] = column_schema
 			}
 
+			table_name_schema := Map{"type":"*string", "value": &table_name}
+			schema["table_name"] = table_name_schema
+
 			if len(errors) > 0 {
 				return nil, errors
 			}
