@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 	"strconv"
@@ -106,17 +105,6 @@ func (m Map) ToJSONString() string {
 				json += "]"	
 			case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
 				json = json + fmt.Sprintf("\"%s\"", rep)
-			case "bool": 
-				boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
-				if boolValue  == "%!B(bool=false)" {
-					json = json + fmt.Sprintf("false")
-				} else if boolValue == "%!B(bool=true)" {
-					json = json + fmt.Sprintf("true")
-				} else if boolValue == "%!B(bool=nil)" {
-					json = json + fmt.Sprintf("null")
-				} else {
-					panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s %s", rep, key, boolValue))
-				}
 			case "*class.Host":
 				json += (*(value.(*Host))).ToJSONString()
 			case "*class.Credentials":
