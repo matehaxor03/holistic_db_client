@@ -47,6 +47,7 @@ type Database struct {
 	GetClient func() (*Client)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, []error)
 	GetTable func(table_name string) (*Table, []error)
+	ToJSONString func() string
 }
 
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
@@ -61,6 +62,10 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
 		"database_create_options":Map{"value":database_create_options,"mandatory":false},
 		"options":Map{"value":options,"mandatory":false},
+	}
+
+	getData := func() (Map) {
+		return data.Clone()
 	}
 
 	validate := func() ([]error) {
@@ -428,6 +433,9 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		},
 		GetDatabaseName: func() (*string) {
 			return getDatabaseName()
+		},
+		ToJSONString: func() string {
+			return getData().ToJSONString()
 		},
     }
 	setDatabase(&x)

@@ -92,6 +92,8 @@ func (m Map) ToJSONString() string {
 			json += (*(value.(*Credentials))).ToJSONString()
 		case "*class.DatabaseCreateOptions":
 			json += (*(value.(*DatabaseCreateOptions))).ToJSONString()
+		case "*class.Database":
+			json += (*(value.(*Database))).ToJSONString()
 		case "map[string]map[string][][]string":
 			json = json + "\"map[string]map[string][][]string\""
 		default:
