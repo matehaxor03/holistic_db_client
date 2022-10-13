@@ -53,6 +53,7 @@ type Table struct {
 	Count func() (*uint64, []error)
 	GetData func() (Map)
 	CreateRecord func(record Map) (*Record, []error)
+	SelectRecords func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase func() (*Database)
 }
 
@@ -373,6 +374,103 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 
 			return record, nil
+		},
+		SelectRecords: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+			var errors []error
+			validate_errors := validate()
+			if errors != nil {
+				errors = append(errors, validate_errors...)
+				return nil, errors
+			}
+
+			filter_errors := ValidateGenericSpecial(filters, "SelectRecords")
+			if filter_errors != nil {
+				errors = append(errors, filter_errors...)
+				return nil, errors
+			}
+
+			table_columns := getTableColumns()
+			filter_columns := filters.Keys()
+			for _, filter_column := range filter_columns {
+				if Contains(table_columns, filter_column) {
+					errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s", filter_column, *getTableName()))
+				}
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			table_schema := getData()
+			for _, filter_column := range filter_columns {
+				filter_column_type := filters.GetType(filter_column)
+				table_column_type := *((table_schema.M(filter_column)).S("type"))
+				if table_column_type != filter_column_type {
+					errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), table_column_type))
+
+					//todo ignore if filter data_type is nil and table column allows nil
+				}
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(*getTableName()))
+
+			// todo add where clause
+
+			if limit != nil {
+				limit_value := strconv.FormatUint(*limit, 10)
+				sql += fmt.Sprintf("LIMIT %s ", limit_value)
+			}
+
+			if offset != nil {
+				offset_value := strconv.FormatUint(*offset, 10)
+				sql += fmt.Sprintf("OFFSET %s ", offset_value)
+			}
+			sql += ";"
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			json_array, stderr, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+
+			if sql_errors != nil {
+				errors = append(errors, sql_errors...)
+			}
+						
+			if stderr != nil && *stderr != "" {
+				if strings.Contains(*stderr, " table exists") {
+					errors = append(errors, fmt.Errorf("SelectRecords: create table failed most likely the table already exists"))
+				} else {
+					errors = append(errors, fmt.Errorf(*stderr))
+				}
+			}
+		
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			var mapped_records []Record
+			for _, json := range (*json_array) {
+				columns := json.(Map).Keys()
+				for _, column := range columns {
+					table_data_type := *((table_schema.M(column)).S("type"))
+					switch table_data_type {
+
+					default:
+						errors = append(errors, fmt.Errorf("SelectRecords: mapping of data type not supported: %s", column))
+					}
+				}
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return &mapped_records, nil
 		},
 		GetData: func() (Map) {
 			return getData()

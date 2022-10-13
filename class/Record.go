@@ -126,7 +126,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		sql_command := fmt.Sprintf("INSERT INTO %s ", EscapeString(*getTable().GetTableName()))
 		sql_command += "("
 		for index, record_column := range record_columns {
-			sql_command += record_column
+			sql_command += EscapeString(record_column)
 			if index < (len(record_columns) - 1) {
 				sql_command += ", "
 			}
