@@ -478,9 +478,9 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				mapped_record_obj, mapped_record_obj_errors := NewRecord(getTable(), mapped_record)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
+				} else {
+					mapped_records = append(mapped_records, *mapped_record_obj)
 				}
-
-				mapped_records = append(mapped_records, *mapped_record_obj)
 			}
 
 			if len(errors) > 0 {
