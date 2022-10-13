@@ -65,7 +65,6 @@ func (m Map) ToJSONString() string {
 			json = json + "null"
 		} else {
 			value := m[key]
-			fmt.Println(value)
 			rep := fmt.Sprintf("%T", value)
 			switch rep {
 			case "string":
@@ -116,6 +115,18 @@ func (m Map) ToJSONString() string {
 				json += (*(value.(*Client))).ToJSONString()
 			case "map[string]map[string][][]string":
 				json = json + "\"map[string]map[string][][]string\""
+			case "*uint64":
+				json = json + strconv.FormatUint(*(value.(*uint64)), 10)
+			case "uint64":
+				json = json + strconv.FormatUint(value.(uint64), 10)
+			case "*int64":
+				json = json + strconv.FormatInt(*(value.(*int64)), 10)
+			case "int64":
+				json = json + strconv.FormatInt(value.(int64), 10)
+			case "*int":
+				json = json + strconv.FormatInt(int64(*(value.(*int))), 10)
+			case "int":
+				json = json + strconv.FormatInt(int64(value.(int)), 10)
 			default:
 				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 			}
