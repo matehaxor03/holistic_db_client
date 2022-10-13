@@ -76,6 +76,20 @@ func (m Map) ToJSONString() string {
 				} else {
 					json = json + "\"" + (*string_pt) + "\""
 				}
+			case "bool":
+				temp := value.(bool)
+				if temp {
+					json = json + "true"
+				} else {
+					json = json + "false"
+				}
+			case "*bool":
+				temp := *(value.(*bool))
+				if temp {
+					json = json + "true"
+				} else {
+					json = json + "false"
+				}
 			case "class.Map":
 				json += value.(Map).ToJSONString()
 			case "class.Array":
