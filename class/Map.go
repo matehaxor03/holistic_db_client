@@ -48,6 +48,7 @@ func (m Map) ToJSONString() string {
 			json = json + "null"
 		} else {
 			value := m[key]
+			fmt.Println(value)
 			rep := fmt.Sprintf("%T", value)
 			switch rep {
 			case "string":
