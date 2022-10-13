@@ -225,7 +225,12 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				}
 
 				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
-					sql_command += " DEFAULT " + strconv.FormatInt(*(columnSchema.GetInt64("default")), 10)
+					default_value, default_value_errors := columnSchema.GetInt64("default")
+					if default_value_errors != nil {
+						errors = append(errors, default_value_errors...)
+					} else {
+						sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
+					}
 				}
 			case "*time.Time":
 				sql_command += column + " TIMESTAMP"
@@ -469,6 +474,13 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetUInt64(column, value)
+						}
+					case "*int64":
+						value, value_errors := current_record.GetInt64(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetInt64(column, value)
 						}
 					default:
 						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))

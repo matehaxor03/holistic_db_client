@@ -266,26 +266,40 @@ func (m Map) HasKey(key string) bool {
 	return false
 }
 
-func (m Map) GetInt64(s string) *int64 {
+func (m Map) GetInt64(s string) (*int64, []error) {
+	var errors []error
+	var result *int64
+
 	if m[s] == nil {
-		return nil
+		return nil, nil
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "*int64":
-		return m[s].(*int64)
+		result = m[s].(*int64)
 	case "int":
 		value := int64(m[s].(int))
-		return &value
+		result = &value
 	case "*int":
 		value := int64(*(m[s].(*int)))
-		return &value
+		result = &value
+	case "*string":
+		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 64)
+		if value_error != nil {
+			errors = append(errors,fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
+		} else {
+			result = &value
+		}
 	default:
-		panic(fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
 	}
 
-	return nil
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
 }
 
 func (m Map) SetInt64(s string, v *int64) {

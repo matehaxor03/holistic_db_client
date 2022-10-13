@@ -367,7 +367,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			
 			break
 		case "*int64":
-			valueOf := parameter_fields.GetInt64("value")
+			valueOf, value_of_errors := parameter_fields.GetInt64("value")
+			if value_of_errors != nil {
+				errors = append(errors, value_of_errors...)
+				continue
+			}
 			
 			if valueOf == nil {
 				value_is_null = true
@@ -514,8 +518,10 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					type_of_default := parameter_fields.GetType("default")
 					switch type_of_default {
 					case "*int", "int", "*int64", "int64":
-						type_of_default_value := parameter_fields.GetInt64("default")
-						if type_of_default_value == nil {
+						type_of_default_value, type_of_default_value_errors := parameter_fields.GetInt64("default")
+						if type_of_default_value_errors != nil {
+							errors = append(errors, type_of_default_value_errors...)
+						} else if type_of_default_value == nil {
 							errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil with type: %s and had default: %s please implement default value: %s", parameter, *typeOf, type_of_default, "nil"))
 						}
 					default:
