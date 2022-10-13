@@ -40,6 +40,7 @@ func (m Map) IsNil(s string) (bool) {
 	}
 
 	string_value := fmt.Sprintf("%s", m[s])
+	fmt.Println(string_value)
 	if string_value == "<nil>" {
 		return true
 	}
