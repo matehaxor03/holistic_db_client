@@ -295,11 +295,29 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			value_is_mandatory = *mandatory_field
 		}
 
-		fmt.Println(parameter_fields.ToJSONString())
-
 		attribute_to_validate := "value"
 		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
-			errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+			
+			if parameter_fields.GetType("primary_key") != "bool" {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+				continue
+			} 
+			
+			if *(parameter_fields.B("primary_key")) == false {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+				continue
+			} 
+
+			if parameter_fields.GetType("auto_increment") != "bool" {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+				continue
+			}
+
+			if *(parameter_fields.B("auto_increment")) == false {
+				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+				continue
+			} 
+
 			continue
 		} else if value_is_null && value_is_mandatory && !parameter_fields.IsNil("default") {
 			attribute_to_validate = "default"
