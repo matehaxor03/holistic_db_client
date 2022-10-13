@@ -19,8 +19,8 @@ type Record struct {
 	Clone func() (*Record)
 	GetSQL func(action string) (*string, []error)
 	Create func() ([]error)
-	GetData func() (Map)
 	GetInt64 func(field string) (*int64, []error)
+	GetUInt64 func(field string) (*uint64, []error)
 }
 
 func NewRecord(table *Table, record_data Map) (*Record, []error) {
@@ -212,11 +212,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 			return nil
 		},
-		GetData: func() (Map) {
-			return getData()
-		},
 		GetInt64: func(field string) (*int64, []error) {
 			return getData().M(field).GetInt64("value")
+		},
+		GetUInt64: func(field string) (*uint64, []error) {
+			return getData().M(field).GetUInt64("value")
 		},
     }
 
