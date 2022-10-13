@@ -10,15 +10,6 @@ import (
 
 type Map map[string]interface{}
 
-func KeysForMap(m map[string]interface{}) []string {
-	var keys []string
-	for a, _ := range m {
-		keys = append(keys, a)
-	}
-	return keys
-}
-
-
 func (m Map) M(s string) Map {
 	rep := fmt.Sprintf("%T", m[s])
 	
@@ -41,6 +32,10 @@ func (m Map) SetMap(s string, zap Map) {
 	default:
 		panic(fmt.Errorf("Map.SetMap: type %s is not supported please implement for %s", rep, s))
 	}
+}
+
+func (m Map) IsNil(s string) (bool) {
+	return m[s] == nil
 }
 
 func (m Map) ToJSONString() string {
@@ -293,6 +288,42 @@ func (m Map) GetInt64(s string) (*int64, []error) {
 		}
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
+}
+
+func (m Map) GetInt(s string) (*int, []error) {
+	var errors []error
+	var result *int
+
+	if m[s] == nil {
+		return nil, nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "int":
+		value := m[s].(int)
+		result = &value
+	case "*int":
+		value := *(m[s].(*int))
+		result = &value
+	case "*string":
+		bit_size := strconv.IntSize
+		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, bit_size)
+		if value_error != nil {
+			errors = append(errors,fmt.Errorf("Map.GetInt: cannot convert *string value to int"))
+		} else {
+			temp := int(value)
+			result = &temp
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetInt: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {

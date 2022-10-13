@@ -284,26 +284,28 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
 			continue
 		}
-		
-		value_is_mandatory := true
-		value_is_null := false
 
 		parameter_fields := fields.M(parameter)
-
-		typeOf := fmt.Sprintf("%T", parameter_fields["value"])
-		if typeOf == "nil" {
-			value_is_null = true
-		}
-
+		
+		value_is_mandatory := true
+		value_is_null := parameter_fields.IsNil("value")
 		mandatory_field := parameter_fields.B("mandatory")
 		
 		if mandatory_field != nil {
 			value_is_mandatory = *mandatory_field
 		}
 
-		if value_is_null && !value_is_mandatory {
+		attribute_to_validate := "value"
+		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
+			errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+			continue
+		} else if value_is_null && value_is_mandatory && !parameter_fields.IsNil("default") {
+			attribute_to_validate = "default"
+		} else if value_is_null && !value_is_mandatory && parameter_fields.IsNil("default") {
 			continue
 		}
+
+		typeOf := fmt.Sprintf("%T", parameter_fields[attribute_to_validate])
 		
 		switch typeOf {
 		case "map[string]map[string][][]string":
@@ -311,7 +313,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			break
 		case "string":
 		case "*string":
-			valueOf := parameter_fields.S("value")
+			string_value := parameter_fields.S(attribute_to_validate)
 			if parameter_fields.GetType(FILTERS()) != "class.Array" {
 				parameter_fields[FILTERS()] = Array{}
 			}
@@ -339,7 +341,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					continue		
 				} 
 									
-				filter_map.SetString("value", valueOf)
+				filter_map.SetString("value", string_value)
 				filter_map.SetString("data_type", &structType)
 				filter_map.SetString("label", &parameter)
 
@@ -366,135 +368,110 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			}
 			
 			break
-		case "*int64":
-			valueOf, value_of_errors := parameter_fields.GetInt64("value")
+		case "*int", "int":
+			_, value_of_errors := parameter_fields.GetInt(attribute_to_validate)
 			if value_of_errors != nil {
 				errors = append(errors, value_of_errors...)
 				continue
 			}
-			
-			if valueOf == nil {
-				value_is_null = true
-			}
-
-			if value_is_null && !value_is_mandatory {
+		case "*int64", "int64":
+			_, value_of_errors := parameter_fields.GetInt64(attribute_to_validate)
+			if value_of_errors != nil {
+				errors = append(errors, value_of_errors...)
 				continue
 			}
-
-
+		case "*uint64", "uint64":
+			_, value_of_errors := parameter_fields.GetUInt64(attribute_to_validate)
+			if value_of_errors != nil {
+				errors = append(errors, value_of_errors...)
+				continue
+			}
 		case "*time.Time":
-			valueOf, value_of_errors := parameter_fields.GetTime("value")
+			_, value_of_errors := parameter_fields.GetTime(attribute_to_validate)
 			if value_of_errors != nil {
 				errors = append(errors, value_of_errors...)
-				continue
-			}
-
-			if valueOf == nil {
-				value_is_null = true
-			}
-
-			if value_is_null && !value_is_mandatory {
 				continue
 			}
 		case "*class.Database":
-			database := parameter_fields.GetObject("value").(*Database)
-			if database != nil {
-				errors_for_database := database.Validate()
-				if errors_for_database != nil {
-					errors = append(errors, errors_for_database...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			database := parameter_fields.GetObject(attribute_to_validate).(*Database)
+			
+			errors_for_database := database.Validate()
+			if errors_for_database != nil {
+				errors = append(errors, errors_for_database...)
 			}
 			break
 		case "*class.DomainName":
-			domain_name := parameter_fields.GetObject("value").(*DomainName)
-			if domain_name != nil {
-				errors_for_domain_name := domain_name.Validate()
-				if errors_for_domain_name != nil {
-					errors = append(errors, errors_for_domain_name...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			domain_name := parameter_fields.GetObject(attribute_to_validate).(*DomainName)
+			
+			errors_for_domain_name := domain_name.Validate()
+			if errors_for_domain_name != nil {
+				errors = append(errors, errors_for_domain_name...)
 			}
 			break
 		case "*class.Host":
-			host := parameter_fields.GetObject("value").(*Host)
-			if host != nil {
-				errors_for_host := host.Validate()
-				if errors_for_host != nil {
-					errors = append(errors, errors_for_host...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			host := parameter_fields.GetObject(attribute_to_validate).(*Host)
+
+			errors_for_host := host.Validate()
+			if errors_for_host != nil {
+				errors = append(errors, errors_for_host...)
 			}
+			
 			break
 		case "*class.Credentials":
-			credentials := parameter_fields.GetObject("value").(*Credentials)
-			if credentials != nil {
-				errors_for_credentaials := credentials.Validate()
-				if errors_for_credentaials != nil {
-					errors = append(errors, errors_for_credentaials...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			credentials := parameter_fields.GetObject(attribute_to_validate).(*Credentials)
+			
+			errors_for_credentaials := credentials.Validate()
+			if errors_for_credentaials != nil {
+				errors = append(errors, errors_for_credentaials...)
 			}
+			
 			break
 		case "*class.DatabaseCreateOptions":
-			database_create_options := parameter_fields.GetObject("value").(*DatabaseCreateOptions)
-			if database_create_options != nil {
-				errors_for_database_create_options := database_create_options.Validate()
-				if errors_for_database_create_options != nil {
-					errors = append(errors, errors_for_database_create_options...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			database_create_options := parameter_fields.GetObject(attribute_to_validate).(*DatabaseCreateOptions)
+			
+			errors_for_database_create_options := database_create_options.Validate()
+			if errors_for_database_create_options != nil {
+				errors = append(errors, errors_for_database_create_options...)
 			}
+			
 			break
 		case "*class.Client":
-			client := parameter_fields.GetObject("value").(*Client)
-			if client != nil {
-				errors_for_client := client.Validate()
-				if errors_for_client != nil {
-					errors = append(errors, errors_for_client...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			client := parameter_fields.GetObject(attribute_to_validate).(*Client)
+			
+			errors_for_client := client.Validate()
+			if errors_for_client != nil {
+				errors = append(errors, errors_for_client...)
 			}
+			
 			break
 		case "*class.Grant":
-			grant := parameter_fields.GetObject("value").(*Grant)
-			if grant != nil {
-				errors_for_grant := grant.Validate()
-				if errors_for_grant != nil {
-					errors = append(errors, errors_for_grant...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			grant := parameter_fields.GetObject(attribute_to_validate).(*Grant)
+			
+			errors_for_grant := grant.Validate()
+			if errors_for_grant != nil {
+				errors = append(errors, errors_for_grant...)
 			}
+			
 			break
 		case "*class.User":
-			user := parameter_fields.GetObject("value").(*User)
-			if user != nil {
-				errors_for_user := user.Validate()
-				if errors_for_user != nil {
-					errors = append(errors, errors_for_user...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			user := parameter_fields.GetObject(attribute_to_validate).(*User)
+		
+			errors_for_user := user.Validate()
+			if errors_for_user != nil {
+				errors = append(errors, errors_for_user...)
 			}
+			
 			break
 		case "*class.Table":
-			table := parameter_fields.GetObject("value").(*Table)
-			if table != nil {
-				errors_for_table := table.Validate()
-				if errors_for_table != nil {
-					errors = append(errors, errors_for_table...)
-				}
-			} else if value_is_mandatory {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil", parameter))
+			table := parameter_fields.GetObject(attribute_to_validate).(*Table)
+	
+			errors_for_table := table.Validate()
+			if errors_for_table != nil {
+				errors = append(errors, errors_for_table...)
 			}
+		
 			break
+		/*
 		case "<nil>":
 			if !parameter_fields.HasKey("default") {
 				if value_is_null && value_is_mandatory {
@@ -535,6 +512,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil please implement for type: %s", parameter, *typeOf))
 				}
 			}
+		*/
 		default:
 			panic(fmt.Sprintf("please implement type %s", typeOf))
 		}
