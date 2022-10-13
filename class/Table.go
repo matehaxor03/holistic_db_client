@@ -463,7 +463,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					switch table_data_type {
 
 					default:
-						errors = append(errors, fmt.Errorf("SelectRecords: mapping of data type not supported: %s", column))
+						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))
 					}
 				}
 			}
