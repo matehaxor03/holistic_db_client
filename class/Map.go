@@ -389,7 +389,7 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 		result = &value
 	case "*string": 
 		//todo: parse for null
-		value, value_errors := time.Parse("2022-10-11 00:00:00", *(m[s].(*string)))
+		value, value_errors := time.Parse("2022-10-11 14:45:45", *(m[s].(*string)))
 		if value_errors != nil {
 			errors = append(errors, fmt.Errorf("Map.GetTime: error when parsing time with data type: %s", rep))
 		} else {
