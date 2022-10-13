@@ -2,6 +2,10 @@ package class
 
 import (
 	"fmt"
+	"strings"
+	"io/ioutil"
+	"bufio"
+	"os"
 )
 
 func CloneClient(client *Client) *Client {
@@ -187,3 +191,90 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 	return &x, nil
 }
+
+func GetCredentialDetails(label string) (string, string, string, string, string, []error) {
+	var errors []error
+
+	files, err := ioutil.ReadDir("./")
+    if err != nil {
+		errors = append(errors, err)
+		return "", "", "", "", "", errors
+    }
+
+	filename := ""
+    for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		currentFileName := file.Name()
+
+		if !strings.HasPrefix(currentFileName, "holistic_db_config:") {
+			continue
+		}
+
+		if !strings.HasSuffix(currentFileName, label + ".config") {
+			continue
+		}		
+		filename = currentFileName
+    }
+
+	if filename == "" {
+		errors = append(errors, fmt.Errorf("database config for %s not found ust be in the format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
+		return "", "", "", "", "", errors
+	}
+
+	parts := strings.Split(filename, ":")
+	if len(parts) != 5 {
+		errors = append(errors, fmt.Errorf("database config for %s not found ust be in the format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
+		return "", "", "", "", "", errors
+	}
+
+	ip_address := parts[1]
+	port_number := parts[2]
+	database_name := parts[3]
+
+	password := ""
+	username := ""
+	
+	file, err_file := os.Open(filename)
+
+    if err_file != nil {
+        errors = append(errors, err_file)
+		return "", "", "", "", "", errors
+    }
+
+    defer file.Close()
+
+    scanner := bufio.NewScanner(file)
+
+    for scanner.Scan() {
+		currentText := scanner.Text()
+		if strings.HasPrefix(currentText, "password=") {
+			password = currentText[9:len(currentText)]
+		}
+
+		if strings.HasPrefix(currentText, "user=") {
+			username = currentText[5:len(currentText)]
+		}
+    }
+
+    if file_errs := scanner.Err(); err != nil {
+        errors = append(errors, file_errs)
+    }
+
+	if password == "" {
+		errors = append(errors, fmt.Errorf("password not found for file: %s", filename))
+	}
+
+	if username == "" {
+		errors = append(errors, fmt.Errorf("user not found for file: %s", filename))
+	}
+
+	if len(errors) > 0 {
+		return "", "", "", "", "", errors
+	}
+
+	return ip_address, port_number, database_name, username, password, errors
+}
+

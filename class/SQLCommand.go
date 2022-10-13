@@ -13,7 +13,7 @@ type SQLCommand struct {
 	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, *string, []error)
 }
 
-func newSQLCommand() (*SQLCommand) {			    
+func NewSQLCommand() (*SQLCommand) {			    
 	bashCommand := newBashCommand()
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, *string, []error) {

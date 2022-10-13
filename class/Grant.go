@@ -22,7 +22,7 @@ type Grant struct {
 }
 
 func NewGrant(client *Client, user *User, grant_value *string, filter *string) (*Grant, []error) {
-	SQLCommand := newSQLCommand()
+	SQLCommand := NewSQLCommand()
 
 	ALL := func() string {
 		return "ALL"

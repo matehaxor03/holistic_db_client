@@ -59,7 +59,7 @@ type Table struct {
 
 func NewTable(database *Database, schema Map, options map[string]map[string][][]string) (*Table, []error) {
 	var this_table *Table
-	SQLCommand := newSQLCommand()
+	SQLCommand := NewSQLCommand()
 	var errors []error
 
 	if schema == nil {

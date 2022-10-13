@@ -53,7 +53,7 @@ type Database struct {
 func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
 	var this_database *Database
 
-	SQLCommand := newSQLCommand()
+	SQLCommand := NewSQLCommand()
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {

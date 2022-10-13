@@ -42,7 +42,7 @@ type User struct {
 }
 
 func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
-	SQLCommand := newSQLCommand()
+	SQLCommand := NewSQLCommand()
 	
 	data := Map {
 		"client":Map{"value":CloneClient(client),"mandatory":true},
