@@ -38,10 +38,10 @@ func (m Map) IsNil(s string) (bool) {
 	if m[s] == nil {
 		return true
 	}
-
+	
+	rep := fmt.Sprintf("%T", m[s])
 	string_value := fmt.Sprintf("%s", m[s])
-	fmt.Println(string_value)
-	if string_value == "<nil>" {
+	if string_value == "%!s(" + rep + "=<nil>)" {
 		return true
 	}
 
