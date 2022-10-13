@@ -35,7 +35,16 @@ func (m Map) SetMap(s string, zap Map) {
 }
 
 func (m Map) IsNil(s string) (bool) {
-	return m[s] == nil || fmt.Sprintf(m[s]) == "<nil>"
+	if m[s] == nil {
+		return true
+	}
+
+	string_value := fmt.Sprintf("%s", m[s])
+	if string_value == "<nil>" {
+		return true
+	}
+
+	return false
 }
 
 func (m Map) ToJSONString() string {
