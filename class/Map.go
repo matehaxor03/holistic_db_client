@@ -473,6 +473,11 @@ func (m Map) Clone() Map {
 	keys := m.Keys()
 
 	for _, key := range keys {
+		if m.IsNil(key) {
+			clone[key] = nil
+			continue
+		}
+
 		current := m[key] 
 		rep := fmt.Sprintf("%T", current)
 
