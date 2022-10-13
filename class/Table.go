@@ -243,7 +243,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 						continue
 					}
 					
-					sql_command += " DEFAULT CURRENT_TIMESTAMP"
+					sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 				} 
 			default:
 				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
