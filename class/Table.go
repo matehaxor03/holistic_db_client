@@ -233,7 +233,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					}
 				}
 			case "*time.Time":
-				sql_command += column + " TIMESTAMP"
+				sql_command += column + " TIMESTAMP(6)"
 				if columnSchema.HasKey("default") {
 					if columnSchema.S("default") == nil {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
