@@ -53,7 +53,7 @@ type Table struct {
 	Count func() (*uint64, []error)
 	GetData func() (Map)
 	CreateRecord func(record Map) (*Record, []error)
-	SelectRecords func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
+	Select func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase func() (*Database)
 }
 
@@ -375,7 +375,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			return record, nil
 		},
-		SelectRecords: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+		Select: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
 			var errors []error
 			validate_errors := validate()
 			if errors != nil {
