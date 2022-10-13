@@ -20,6 +20,7 @@ type Record struct {
 	GetSQL func(action string) (*string, []error)
 	Create func() ([]error)
 	GetData func() (Map)
+	GetInt64 func(field string) (*int64, []error)
 }
 
 func NewRecord(table *Table, record_data Map) (*Record, []error) {
@@ -213,6 +214,9 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		},
 		GetData: func() (Map) {
 			return getData()
+		},
+		GetInt64: func(field string) (*int64, []error) {
+			return getData().GetInt64(field)
 		},
     }
 
