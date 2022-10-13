@@ -295,6 +295,8 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			value_is_mandatory = *mandatory_field
 		}
 
+		fmt.Println(parameter_fields.ToJSONString())
+
 		attribute_to_validate := "value"
 		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
 			errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
