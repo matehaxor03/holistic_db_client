@@ -367,21 +367,44 @@ func (m Map) SetUInt64(s string, v *uint64) {
 	m[s] = v
 }
 
-func (m Map) GetTime(s string) *time.Time {
+func (m Map) SetTime(s string, value *time.Time) {
+	m[s] = value
+}
+
+func (m Map) GetTime(s string) (*time.Time, []error) {
+	var errors []error
+	var result *time.Time
+	
 	if m[s] == nil {
-		return nil
+		return nil, nil
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "*time.Time":
-		return m[s].(*time.Time)
+		value := *(m[s].(*time.Time))
+		result = &value
+	case "time.Time":
+		value :=  m[s].(time.Time)
+		result = &value
+	case "*string": 
+		//todo: parse for null
+		value, value_errors := time.Parse("2022-10-11 00:00:00", *(m[s].(*string)))
+		if value_errors != nil {
+			errors = append(errors, fmt.Errorf("Map.GetTime: error when parsing time with data type: %s", rep))
+		} else {
+			result = &value
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetTime: type %s is not supported please implement", rep))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
 	}
 	
-	return nil
+	return result, nil
 }
-
-
 
 func (m Map) Values() Array {
 	array := Array{}

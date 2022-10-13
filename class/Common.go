@@ -383,8 +383,12 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 
 
 		case "*time.Time":
-			valueOf := parameter_fields.GetTime("value")
-			
+			valueOf, value_of_errors := parameter_fields.GetTime("value")
+			if value_of_errors != nil {
+				errors = append(errors, value_of_errors...)
+				continue
+			}
+
 			if valueOf == nil {
 				value_is_null = true
 			}

@@ -482,6 +482,13 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 						} else {
 							mapped_record.SetInt64(column, value)
 						}
+					case "*time.Time":
+						value, value_errors := current_record.GetTime(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetTime(column, value)
+						}
 					default:
 						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))
 					}
