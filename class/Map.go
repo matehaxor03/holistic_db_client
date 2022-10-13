@@ -44,60 +44,61 @@ func (m Map) ToJSONString() string {
 	length := len(keys)
 	for i, key := range keys {
 		json = json + "\"" + key + "\":"
-
-		value := m[key]
-		rep := fmt.Sprintf("%T", value)
-		switch rep {
-		case "<nil>":
+		if m.IsNil(key) {
 			json = json + "null"
-		case "string":
-			json = json + "\"" + value.(string) + "\""
-		case "*string":
-			string_pt := (value).(*string)
-			if string_pt == nil {
-				json = json + "null"
-			} else {
-				json = json + "\"" + (*string_pt) + "\""
-			}
-		case "class.Map":
-			json += value.(Map).ToJSONString()
-		case "class.Array":
-			json += value.(Array).ToJSONString()
-		case "[]string":
-			json += "["
-			array_length := len(m[key].([]string))
-			for array_index, array_value := range m[key].([]string) {
-				json += "\"" + array_value + "\""
-				if array_index < array_length {
-					json += ","
+		} else {
+			value := m[key]
+			rep := fmt.Sprintf("%T", value)
+			switch rep {
+			case "string":
+				json = json + "\"" + value.(string) + "\""
+			case "*string":
+				string_pt := (value).(*string)
+				if string_pt == nil {
+					json = json + "null"
+				} else {
+					json = json + "\"" + (*string_pt) + "\""
 				}
+			case "class.Map":
+				json += value.(Map).ToJSONString()
+			case "class.Array":
+				json += value.(Array).ToJSONString()
+			case "[]string":
+				json += "["
+				array_length := len(m[key].([]string))
+				for array_index, array_value := range m[key].([]string) {
+					json += "\"" + array_value + "\""
+					if array_index < array_length {
+						json += ","
+					}
+				}
+				json += "]"	
+			case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
+				json = json + fmt.Sprintf("\"%s\"", rep)
+			case "bool": 
+				boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
+				if boolValue  == "%!B(bool=false)" {
+					json = json + fmt.Sprintf("false")
+				} else if boolValue == "%!B(bool=true)" {
+					json = json + fmt.Sprintf("true")
+				} else if boolValue == "%!B(bool=nil)" {
+					json = json + fmt.Sprintf("null")
+				} else {
+					panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s %s", rep, key, boolValue))
+				}
+			case "*class.Host":
+				json += (*(value.(*Host))).ToJSONString()
+			case "*class.Credentials":
+				json += (*(value.(*Credentials))).ToJSONString()
+			case "*class.DatabaseCreateOptions":
+				json += (*(value.(*DatabaseCreateOptions))).ToJSONString()
+			case "*class.Database":
+				json += (*(value.(*Database))).ToJSONString()
+			case "map[string]map[string][][]string":
+				json = json + "\"map[string]map[string][][]string\""
+			default:
+				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 			}
-			json += "]"	
-		case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
-			json = json + fmt.Sprintf("\"%s\"", rep)
-		case "bool": 
-			boolValue := fmt.Sprintf("%B", reflect.ValueOf(value).Interface())
-			if boolValue  == "%!B(bool=false)" {
-				json = json + fmt.Sprintf("false")
-			} else if boolValue == "%!B(bool=true)" {
-				json = json + fmt.Sprintf("true")
-			} else if boolValue == "%!B(bool=nil)" {
-				json = json + fmt.Sprintf("null")
-			} else {
-				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s %s", rep, key, boolValue))
-			}
-		case "*class.Host":
-			json += (*(value.(*Host))).ToJSONString()
-		case "*class.Credentials":
-			json += (*(value.(*Credentials))).ToJSONString()
-		case "*class.DatabaseCreateOptions":
-			json += (*(value.(*DatabaseCreateOptions))).ToJSONString()
-		case "*class.Database":
-			json += (*(value.(*Database))).ToJSONString()
-		case "map[string]map[string][][]string":
-			json = json + "\"map[string]map[string][][]string\""
-		default:
-			panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 		}
 
 		if i < length {
