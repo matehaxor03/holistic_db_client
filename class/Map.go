@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"time"
+	"strconv"
 )
 
 type Map map[string]interface{}
@@ -293,6 +294,7 @@ func (m Map) SetInt64(s string, v *int64) {
 
 func (m Map) GetUInt64(s string) (*uint64, []error) {
 	var errors []error
+	var result *uint64
 	if m[s] == nil {
 		return nil, nil
 	}
@@ -303,23 +305,39 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		value := *(m[s].(*int64))
 		if value >= 0 {
 			temp := uint64(value)
-			return &temp, nil
+			result = &temp
 		} else {
 			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
-			return nil, errors
+		}
+	case "int":
+		value := (m[s].(int))
+		if value >= 0 {
+			temp := uint64(value)
+			result = &temp
+		} else {
+			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "*int":
+		value := *(m[s].(*int))
+		if value >= 0 {
+			temp := uint64(value)
+			result = &temp
+		} else {
+			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*uint64":
 		value := *(m[s].(*uint64))
-		return &value, nil
+		result = &value
 	case "uint64":
 		value := (m[s].(uint64))
-		return &value, nil
-	case "int":
-		value := uint64(m[s].(int))
-		return &value, nil
-	case "*int":
-		value := uint64(*(m[s].(*int)))
-		return &value, nil
+		result = &value
+	case "*string":
+		value, value_error := strconv.ParseUint((*(m[s].(*string))), 10, 64)
+		if value_error != nil {
+			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
+		} else {
+			result = &value
+		}
 	default:
 		errors = append(errors,fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
 	}
@@ -328,7 +346,7 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		return nil, errors
 	}
 
-	return nil, nil
+	return result, nil
 }
 
 func (m Map) SetUInt64(s string, v *uint64) {
