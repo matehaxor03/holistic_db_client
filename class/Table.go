@@ -383,35 +383,37 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, errors
 			}
 
-			filter_errors := ValidateGenericSpecial(filters, "SelectRecords")
-			if filter_errors != nil {
-				errors = append(errors, filter_errors...)
-				return nil, errors
-			}
-
-			table_columns := getTableColumns()
-			filter_columns := filters.Keys()
-			for _, filter_column := range filter_columns {
-				if Contains(table_columns, filter_column) {
-					errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s", filter_column, *getTableName()))
-				}
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
 			table_schema := getData()
-			for _, filter_column := range filter_columns {
-				filter_column_type := filters.GetType(filter_column)
-				table_column_type := *((table_schema.M(filter_column)).S("type"))
-				if table_column_type != filter_column_type {
-					errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), table_column_type))
+			if filters != nil {
+				filter_errors := ValidateGenericSpecial(filters, "SelectRecords")
+				if filter_errors != nil {
+					errors = append(errors, filter_errors...)
+					return nil, errors
+				}
 
-					//todo ignore if filter data_type is nil and table column allows nil
+				table_columns := getTableColumns()
+				filter_columns := filters.Keys()
+				for _, filter_column := range filter_columns {
+					if Contains(table_columns, filter_column) {
+						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s", filter_column, *getTableName()))
+					}
+				}
+
+				if len(errors) > 0 {
+					return nil, errors
+				}
+
+				for _, filter_column := range filter_columns {
+					filter_column_type := filters.GetType(filter_column)
+					table_column_type := *((table_schema.M(filter_column)).S("type"))
+					if table_column_type != filter_column_type {
+						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), table_column_type))
+
+						//todo ignore if filter data_type is nil and table column allows nil
+					}
 				}
 			}
-
+			
 			if len(errors) > 0 {
 				return nil, errors
 			}
