@@ -321,7 +321,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 							case "bigint":
 								data_type := "int64"
 								column_schema.SetString("type", &data_type)
-							case "timestamp":
+							case "timestamp(6)":
 								data_type := "time.Time"
 								column_schema.SetString("type", &data_type)
 							default:
@@ -357,7 +357,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 				if default_value != "" {
 					if default_value == "NULL" {
-					} else if default_value == "CURRENT_TIMESTAMP" && extra_value == "DEFAULT_GENERATED" {
+					} else if default_value == "CURRENT_TIMESTAMP(6)" && extra_value == "DEFAULT_GENERATED" {
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
