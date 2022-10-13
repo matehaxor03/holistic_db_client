@@ -291,9 +291,10 @@ func (m Map) SetInt64(s string, v *int64) {
 	m[s] = v
 }
 
-func (m Map) GetUInt64(s string) *uint64 {
+func (m Map) GetUInt64(s string) (*uint64, []error) {
+	var errors []error
 	if m[s] == nil {
-		return nil
+		return nil, nil
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
@@ -302,27 +303,32 @@ func (m Map) GetUInt64(s string) *uint64 {
 		value := *(m[s].(*int64))
 		if value >= 0 {
 			temp := uint64(value)
-			return &temp
+			return &temp, nil
 		} else {
-			return nil
+			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			return nil, errors
 		}
 	case "*uint64":
 		value := *(m[s].(*uint64))
-		return &value
+		return &value, nil
 	case "uint64":
 		value := (m[s].(uint64))
-		return &value
+		return &value, nil
 	case "int":
 		value := uint64(m[s].(int))
-		return &value
+		return &value, nil
 	case "*int":
 		value := uint64(*(m[s].(*int)))
-		return &value
+		return &value, nil
 	default:
-		panic(fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
+		errors = append(errors,fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
 	}
 
-	return nil
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return nil, nil
 }
 
 func (m Map) SetUInt64(s string, v *uint64) {

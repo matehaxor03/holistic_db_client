@@ -457,15 +457,30 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			var mapped_records []Record
 			for _, json := range (*json_array) {
-				columns := json.(Map).Keys()
+				current_record := json.(Map)
+				columns := current_record.Keys()
+				mapped_record := Map{}
 				for _, column := range columns {
 					table_data_type := *((table_schema.M(column)).S("type"))
 					switch table_data_type {
-
+					case "uint64":
+						value, value_errors := current_record.GetUInt64(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetUInt64(column, value)
+						}
 					default:
 						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))
 					}
 				}
+
+				mapped_record_obj, mapped_record_obj_errors := NewRecord(getTable(), mapped_record)
+				if mapped_record_obj_errors != nil {
+					errors = append(errors, mapped_record_obj_errors...)
+				}
+
+				mapped_records = append(mapped_records, *mapped_record_obj)
 			}
 
 			if len(errors) > 0 {
