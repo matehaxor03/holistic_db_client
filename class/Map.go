@@ -54,6 +54,15 @@ func (m Map) IsNil(s string) (bool) {
 	return false
 }
 
+func (m Map) IsBool(s string) (bool) {
+	type_of := m.GetType(s)
+	if type_of == "bool" || type_of == "*bool" {
+		return true
+	}
+
+	return false
+}
+
 func (m Map) ToJSONString() string {
 	json := "{\n"
 	keys := m.Keys()

@@ -299,7 +299,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
 			fmt.Println(parameter_fields.ToJSONString())
 			
-			if parameter_fields.GetType("primary_key") != "bool" {
+			if !parameter_fields.IsBool("primary_key") {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
 				continue
 			} 
@@ -309,7 +309,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 				continue
 			} 
 
-			if parameter_fields.GetType("auto_increment") != "bool" {
+			if !parameter_fields.IsBool("auto_increment") {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
 				continue
 			}
