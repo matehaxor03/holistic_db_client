@@ -129,6 +129,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		for _, column := range getTableColumns() {
 			columnSchema := data[column].(Map)
 
+			if !columnSchema.HasKey("type") {
+				continue
+			}
+
 			if !columnSchema.IsBool("primary_key") ||
 				*(columnSchema.B("primary_key")) == false {
 				continue
@@ -152,11 +156,15 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			columnSchema := data[column].(Map)
 
+			if !columnSchema.HasKey("type") {
+				continue
+			}
+
 			if columnSchema.IsBool("primary_key") &&
 				*(columnSchema.B("primary_key")) == true {
 				continue
 			}
-			
+
 			rep := *(columnSchema.S("type"))
 			switch rep {
 				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string":
