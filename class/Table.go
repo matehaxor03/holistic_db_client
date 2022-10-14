@@ -152,12 +152,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			columnSchema := data[column].(Map)
 
-			if !columnSchema.HasKey("type") ||
-			    columnSchema.S("type") == nil {
-				continue
-			}
-
-			if columnSchema.GetType("primary_key") == "bool" &&
+			if columnSchema.IsBool("primary_key") &&
 				*(columnSchema.B("primary_key")) == true {
 				continue
 			}

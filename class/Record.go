@@ -105,11 +105,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getNonIdentityColumns := func() ([]string) {
-		non_identity_columns := getTable().GetNonIdentityColumns()
 		record_columns := getTableColumns()
+		non_identity_columns := getTable().GetNonIdentityColumns()
 		var record_non_identity_columns []string
-		for _, non_identity_column := range non_identity_columns {
-			for _, record_column := range record_columns {
+		for _, record_column := range record_columns {
+			for _, non_identity_column := range non_identity_columns {
 				if non_identity_column == record_column {
 					record_non_identity_columns = append(record_non_identity_columns, non_identity_column)
 					break
@@ -120,11 +120,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getIdentityColumns := func() ([]string) {
-		identity_columns := getTable().GetIdentityColumns()
 		record_columns := getTableColumns()
+		identity_columns := getTable().GetIdentityColumns()
 		var record_identity_columns []string
-		for _, identity_column := range identity_columns {
-			for _, record_column := range record_columns {
+		for _, record_column := range record_columns {
+			for _, identity_column := range identity_columns {
 				if identity_column == record_column {
 					record_identity_columns = append(record_identity_columns, identity_column)
 					break
