@@ -327,7 +327,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 			
-			if index < len(identity_column) - 1 {
+			if index < (len(identity_columns) - 1) {
 				sql_command += " AND "
 			}
 		}
