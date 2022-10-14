@@ -513,16 +513,16 @@ func (m Map) Clone() Map {
 
 		switch rep {
 		case "string":
-			cloneString := strings.Clone(*(m.S(key)))
-			clone.SetString(key, &cloneString)
+			cloneString := *(m.S(key))
+			clone[key] = cloneString
 			break	
 		case "*string":
 			if fmt.Sprintf("%s", m[key]) == "%!s(*string=<nil>)" {
 				clone[key] = nil
-				continue
+			} else {
+				cloneString := CloneString(m.S(key))
+				clone.SetString(key, cloneString)
 			}
-			cloneString := strings.Clone(*(m.S(key)))
-			clone.SetString(key, &cloneString)
 			break
 		case "class.Map":
 			clone[key] = current.(Map).Clone()
