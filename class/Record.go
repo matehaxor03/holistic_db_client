@@ -128,7 +128,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 
 			type_of_schema_column := *((table_schema.M(record_column)).S("type"))
-			type_of_record_column := record.GetType(record_column)
+			type_of_record_column := record.M(record_column).GetType("value")
 			if type_of_record_column != type_of_schema_column {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
@@ -168,7 +168,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 		sql_command += ") VALUES ("
 		for index, record_column := range record_columns {
-			rep := record.GetType(record_column)
+			rep := record.M(record_column).GetType("value")
 			switch rep {
 			default:
 				//EscapeString
@@ -251,16 +251,40 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		sql_command += "SET "
 
 		for index, record_non_identity_column := range record_non_identity_columns {
-			sql_command += EscapeString(record_non_identity_column) + " = " 
+			sql_command += EscapeString(record_non_identity_column) + "=" 
 			column_data := record.M(record_non_identity_column)
 			record_non_identity_column_type := column_data.GetType("value")
 
-			switch record_non_identity_column_type {
-
-			default:
-				errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
+			if column_data.IsNil("value") {
+				sql_command += "NULL"
+			} else {
+				switch record_non_identity_column_type {
+				case "uint64", "*uint64":
+					value, value_errors := column_data.GetUInt64("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatUint(*value, 10)
+					}
+				case "*int64", "int64":
+					value, value_errors := column_data.GetInt64("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatInt(*value, 10)
+					}
+				case "*int", "int":
+					value, value_errors := column_data.GetInt("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatInt(int64(*value), 10)
+					}
+				default:
+					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
+				}
 			}
-			
+
 			if index < len(record_non_identity_columns) - 1 {
 				sql_command += ", \n"
 			}
@@ -273,10 +297,34 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			column_data := record.M(identity_column)
 			record_identity_column_type := column_data.GetType("value")
 
-			switch record_identity_column_type {
-
-			default:
-				errors = append(errors, fmt.Errorf("update record type is not supported please implement for where clause: %s", identity_column))
+			if column_data.IsNil("value") {
+				errors = append(errors, fmt.Errorf("identity column is nil %s", identity_column))
+			} else {
+				switch record_identity_column_type {
+				case "uint64", "*uint64":
+					value, value_errors := column_data.GetUInt64("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatUint(*value, 10)
+					}
+				case "*int64", "int64":
+					value, value_errors := column_data.GetInt64("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatInt(*value, 10)
+					}
+				case "*int", "int":
+					value, value_errors := column_data.GetInt("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						sql_command += strconv.FormatInt(int64(*value), 10)
+					}
+				default:
+					errors = append(errors, fmt.Errorf("update record type is not supported please implement for where clause: %s", record_identity_column_type))
+				}
 			}
 			
 			if index < len(identity_column) - 1 {
