@@ -180,7 +180,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			if columnSchema.HasKey("primary_key") ||
 				columnSchema.GetType("primary_key") == "bool" ||
-				*columnSchema.B("primary_key") == true {
+				*(columnSchema.B("primary_key")) == true {
 				continue
 			}
 			
