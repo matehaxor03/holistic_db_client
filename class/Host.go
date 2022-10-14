@@ -61,7 +61,7 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Host {
-			cloned, _ := NewHost(data.M("host_name").S("value"), data.M("port_number").S("value"))
+			cloned, _ := NewHost(getHostName(), getPortNumber())
 			return cloned
 		},
 		GetHostName: func() (*string) {
