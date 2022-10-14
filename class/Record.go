@@ -374,7 +374,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return getData().M(field).GetInt64("value")
 		},
 		SetInt64: func(field string, value *int64) {
-			data.SetInt64("value", value)
+			data.M(field).SetInt64("value", value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
 			return getData().M(field).GetUInt64("value")
