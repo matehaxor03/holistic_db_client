@@ -126,26 +126,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 	getIdentityColumns := func() ([]string) {
 		var columns []string
-		for _, column := range getData().Keys() {
-			if column == "table_name" {
-				continue
-			}
-
-			if data.GetType(column) != "class.Map" {
-				continue
-			}
-
+		for _, column := range getTableColumns() {
 			columnSchema := data[column].(Map)
 
 			if !columnSchema.IsBool("primary_key") ||
 				*(columnSchema.B("primary_key")) == false {
-				continue
-			}
-			
-			rep := *(columnSchema.S("type"))
-			switch rep {
-				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string":
-				default:
 				continue
 			}
 			
@@ -245,6 +230,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		sql_command += fmt.Sprintf("%s ", EscapeString(*getTableName()))
 
 		valid_columns := getTableColumns()
+		primary_key_count := 0
 
 		sql_command += "("
 		for index, column := range valid_columns {
@@ -280,6 +266,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					if columnSchema.GetType("primary_key") == "bool" {
 						if *(columnSchema.B("primary_key")) == true {
 							sql_command += " PRIMARY KEY NOT NULL"
+							primary_key_count += 1
 						} else if *(columnSchema.B("primary_key")) == false {
 
 						} else {
@@ -322,6 +309,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 		}
 		sql_command += ")"
+
+		if primary_key_count == 0 {
+			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(*getTableName())))
+		}
 
 		if len(errors) > 0 {
 			return nil, errors
