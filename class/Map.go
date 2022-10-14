@@ -124,6 +124,8 @@ func (m Map) ToJSONString() string {
 				json += (*(value.(*Database))).ToJSONString()
 			case "*class.Client":
 				json += (*(value.(*Client))).ToJSONString()
+			case "*class.Table":
+				json += (*(value.(*Table))).ToJSONString()
 			case "map[string]map[string][][]string":
 				json = json + "\"map[string]map[string][][]string\""
 			case "*uint64":
