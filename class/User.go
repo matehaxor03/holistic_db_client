@@ -98,7 +98,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			errors = append(errors, database_errs...)	
 		}
 
-		logic_option, logic_option_errs := GetLogicCommand(action, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), data.M("options").GetObject("value").(map[string]map[string][][]string), "User")
+		logic_option, logic_option_errs := GetLogicCommand(action, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), data.M("[options]").GetObject("value").(map[string]map[string][][]string), "User")
 		if logic_option_errs != nil {
 			errors = append(errors, logic_option_errs...)	
 		}
@@ -113,10 +113,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s'", EscapeString(*(*(data.M("credentials").GetObject("value").(*Credentials))).GetUsername()))
-		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*(*(data.M("domain_name").GetObject("value").(*DomainName))).GetDomainName()))
+		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
+		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'",  EscapeString(*(*(data.M("credentials").GetObject("value").(*Credentials))).GetPassword()))
+		sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
 
 		sql_command += ";"
 		return &sql_command, nil
