@@ -6,6 +6,7 @@ import (
 	"unicode"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func EscapeString(value string) (string) { 
@@ -556,4 +557,17 @@ func Contains(sl []string, name string) bool {
 	   }
 	}
 	return false
+ }
+
+ func GetTimeNow() *time.Time {
+	now := time.Now()
+	return &now
+ }
+
+ func FormatTime(value time.Time) string {
+	return value.Format("2006-01-02 15:04:05.000000")
+ }
+
+ func GetTimeNowString() string {
+	return (*GetTimeNow()).Format("2006-01-02 15:04:05.000000")
  }

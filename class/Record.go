@@ -100,11 +100,33 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		return CloneTable(data.M("[table]").GetObject("value").(*Table))
 	}
 
+	/*
 	getNonIdentityColumns := func() ([]string) {
 		record_columns := getTableColumns()
 		non_identity_columns := getTable().GetNonIdentityColumns()
 		var record_non_identity_columns []string
 		for _, record_column := range record_columns {
+			for _, non_identity_column := range non_identity_columns {
+				if non_identity_column == record_column {
+					record_non_identity_columns = append(record_non_identity_columns, non_identity_column)
+					break
+				}
+			}
+		}
+		return record_non_identity_columns
+	}*/
+
+	getNonIdentityColumnsUpdate := func() ([]string) {
+		record_columns := getTableColumns()
+		non_identity_columns := getTable().GetNonIdentityColumns()
+		var record_non_identity_columns []string
+		for _, record_column := range record_columns {
+			if record_column == "created_date" || 
+			   record_column == "archieved_date" ||
+			   record_column == "active" {
+				continue
+			}
+
 			for _, non_identity_column := range non_identity_columns {
 				if non_identity_column == record_column {
 					record_non_identity_columns = append(record_non_identity_columns, non_identity_column)
@@ -261,7 +283,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 		}
 
-		record_non_identity_columns := getNonIdentityColumns()
+		record_non_identity_columns := getNonIdentityColumnsUpdate()
 
 		if len(record_non_identity_columns) == 0 {
 			errors = append(errors, fmt.Errorf("no non-identity columns detected in record to update"))
@@ -271,9 +293,15 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			errors = append(errors, fmt.Errorf("table schema has no identity columns"))
 		}
 
+		if !Contains(record_non_identity_columns, "last_modified_date") {
+			errors = append(errors, fmt.Errorf("table record does not have last_modified_date"))
+		}
+
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
+
+		record.M("last_modified_date")["value"] = GetTimeNow()
 
 		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(*getTable().GetTableName()))
 
