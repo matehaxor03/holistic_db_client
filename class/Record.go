@@ -70,7 +70,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	data := expanded_record.Clone()
-	data["table"] = Map{"value":CloneTable(table),"mandatory":true}
+	data["[table]"] = Map{"value":CloneTable(table),"mandatory":true}
 
 	getData := func() (Map) {
 		return data.Clone()
@@ -79,29 +79,25 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	getTableColumns := func() ([]string) {
 		var columns []string
 		for _, column := range getData().Keys() {
-			if column == "table_name" {
+			if strings.HasPrefix(column, "[") == false {
+				continue
+			}
+
+			if strings.HasSuffix(column, "]") == false {
 				continue
 			}
 
 			if data.GetType(column) != "class.Map" {
 				continue
 			}
-
-			columnSchema := data[column].(Map)
-
-			rep := fmt.Sprintf("%T", columnSchema["value"])
-			switch rep {
-				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
-				default:
-				continue
-			}
+			
 			columns = append(columns, column)
 		}
 		return columns
 	}
 
 	getTable := func() (*Table) {
-		return CloneTable(data.M("table").GetObject("value").(*Table))
+		return CloneTable(data.M("[table]").GetObject("value").(*Table))
 	}
 
 	getNonIdentityColumns := func() ([]string) {
