@@ -425,7 +425,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 				if options.S("auto_increment_column_name") != nil && *(options.S("auto_increment_column_name")) != "" {
 					auto_increment_column_name := options.S("auto_increment_column_name")
-					data[*auto_increment_column_name].(Map)["value"] = count
+					data.SetMap(*auto_increment_column_name, Map{"type":"uint64", "value":count, "auto_increment":true, "primary_key":true})
 				}
 			}
 			return nil
