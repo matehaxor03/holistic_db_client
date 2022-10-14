@@ -101,11 +101,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	getTableColumns := func() ([]string) {
 		var columns []string
 		for _, column := range getData().Keys() {
-			if strings.HasPrefix(column, "[") == false {
+			if strings.HasPrefix(column, "[") {
 				continue
 			}
 
-			if strings.HasSuffix(column, "]") == false {
+			if strings.HasSuffix(column, "]") {
 				continue
 			}
 

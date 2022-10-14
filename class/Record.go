@@ -79,18 +79,18 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	getTableColumns := func() ([]string) {
 		var columns []string
 		for _, column := range getData().Keys() {
-			if strings.HasPrefix(column, "[") == false {
+			if strings.HasPrefix(column, "[") {
 				continue
 			}
 
-			if strings.HasSuffix(column, "]") == false {
+			if strings.HasSuffix(column, "]") {
 				continue
 			}
 
 			if data.GetType(column) != "class.Map" {
 				continue
 			}
-			
+
 			columns = append(columns, column)
 		}
 		return columns
