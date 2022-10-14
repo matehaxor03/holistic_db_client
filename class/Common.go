@@ -280,7 +280,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		}
 		
 		if fields.GetType(parameter) != "class.Map" {
-			fmt.Println(fields.ToJSONString())
+			panic(fields.ToJSONString())
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
 			continue
 		}
