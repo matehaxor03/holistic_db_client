@@ -533,6 +533,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			}
 		*/
 		default:
+			fmt.Println(fields.ToJSONString())
 			panic(fmt.Sprintf("please implement type: %s for parameter: %s", typeOf, parameter))
 		}
 
