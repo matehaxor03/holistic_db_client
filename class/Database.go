@@ -141,7 +141,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		
 		sql_command += fmt.Sprintf("%s ", *database_name)
 
-		mapDatabaseCreateOptions := data.M("database_create_options")
+		mapDatabaseCreateOptions := data.M("[database_create_options]")
 		if mapDatabaseCreateOptions == nil {
 			errors = append(errors, fmt.Errorf("database_create_options field not found in data"))	
 		}
