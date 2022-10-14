@@ -447,6 +447,10 @@ func (m Map) SetUInt64(s string, v *uint64) {
 	m[s] = v
 }
 
+func (m Map) SetUInt64Value(s string, v uint64) {
+	m[s] = v
+}
+
 func (m Map) SetTime(s string, value *time.Time) {
 	m[s] = value
 }

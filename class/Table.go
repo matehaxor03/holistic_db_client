@@ -553,7 +553,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
 						} else {
-							column_record.SetUInt64("value", value)
+							column_record.SetUInt64Value("value", *value)
 						}
 					case "*int64":
 						value, value_errors := current_record.GetInt64(column)
