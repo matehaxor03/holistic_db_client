@@ -142,9 +142,8 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				continue
 			}
 
-			if !columnSchema.HasKey("primary_key") ||
-				columnSchema.GetType("primary_key") != "bool" ||
-				*columnSchema.B("primary_key") == false {
+			if columnSchema.GetType("primary_key") != "bool" ||
+				*(columnSchema.B("primary_key")) == false {
 				continue
 			}
 			
@@ -178,8 +177,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				continue
 			}
 
-			if columnSchema.HasKey("primary_key") ||
-				columnSchema.GetType("primary_key") == "bool" ||
+			if columnSchema.GetType("primary_key") == "bool" &&
 				*(columnSchema.B("primary_key")) == true {
 				continue
 			}
