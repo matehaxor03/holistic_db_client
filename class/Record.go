@@ -211,7 +211,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 
 			type_of_schema_column := *((table_schema.M(record_column)).S("type"))
-			type_of_record_column := record.GetType(record_column)
+			type_of_record_column := record.M(record_column).GetType("value")
 			if type_of_record_column != type_of_schema_column {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
@@ -252,8 +252,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		for index, record_non_identity_column := range record_non_identity_columns {
 			sql_command += EscapeString(record_non_identity_column) + " = " 
-
-			record_non_identity_column_type := record.GetType(record_non_identity_column)
+			column_data := record.M(record_non_identity_column)
+			record_non_identity_column_type := column_data.GetType("value")
 
 			switch record_non_identity_column_type {
 
@@ -270,7 +270,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		for index, identity_column := range identity_columns {
 			sql_command += EscapeString(identity_column) + " = " 
 
-			record_identity_column_type := record.GetType(identity_column)
+			column_data := record.M(identity_column)
+			record_identity_column_type := column_data.GetType("value")
 
 			switch record_identity_column_type {
 
