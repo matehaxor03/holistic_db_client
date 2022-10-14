@@ -308,6 +308,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 						switch key_value {
 							case "PRI":
 								primary_key := true
+								is_nullable = false
 								column_schema.SetBool("primary_key", &primary_key)
 							case "":
 							default:
