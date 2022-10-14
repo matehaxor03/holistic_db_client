@@ -126,6 +126,8 @@ func (m Map) ToJSONString() string {
 				json += (*(value.(*Client))).ToJSONString()
 			case "*class.Table":
 				json += (*(value.(*Table))).ToJSONString()
+			case "*time.Time":
+				json += "\"" + (*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000") + "\""
 			case "map[string]map[string][][]string":
 				json = json + "\"map[string]map[string][][]string\""
 			case "*uint64":
