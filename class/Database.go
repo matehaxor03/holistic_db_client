@@ -57,11 +57,11 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
-		"client":Map{"value":CloneClient(client),"mandatory":true},
-		"database_name":Map{"value":CloneString(database_name),"mandatory":true,
+		"[client]":Map{"value":CloneClient(client),"mandatory":true},
+		"[database_name]":Map{"value":CloneString(database_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
-		"database_create_options":Map{"value":database_create_options,"mandatory":false},
-		"options":Map{"value":options,"mandatory":false},
+		"[database_create_options]":Map{"value":database_create_options,"mandatory":false},
+		"[options]":Map{"value":options,"mandatory":false},
 	}
 
 	getData := func() (Map) {
@@ -73,7 +73,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	getClient := func() (*Client) {
-		return CloneClient(data.M("client").GetObject("value").(*Client))
+		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
 	setClient := func(client *Client) {
@@ -81,15 +81,15 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	getDatabaseName := func() (*string) {
-		return CloneString(data.M("database_name").S("value"))
+		return CloneString(data.M("[database_name]").S("value"))
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
-		return data.M("database_create_options").GetObject("value").(*DatabaseCreateOptions)
+		return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("options").GetObject("value").(map[string]map[string][][]string)
+		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	setDatabase := func(database *Database) {

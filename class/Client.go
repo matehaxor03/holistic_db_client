@@ -35,30 +35,30 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	var this_client *Client
 	
 	data := Map {
-		"host":Map{"value":CloneHost(host),"mandatory":false},
-		"database_username":Map{"value":CloneString(database_username),"mandatory":false, 
+		"[host]":Map{"value":CloneHost(host),"mandatory":false},
+		"[database_username]":Map{"value":CloneString(database_username),"mandatory":false, 
 		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getWhitelistCharactersFunc()}}},
-		"database":Map{"value":CloneDatabase(database),"mandatory":false},
+		"[database]":Map{"value":CloneDatabase(database),"mandatory":false},
 	}
 
 	getHost := func() *Host {
-		return CloneHost((data.M("host").GetObject("value").(*Host)))
+		return CloneHost((data.M("[host]").GetObject("value").(*Host)))
 	}
 
 	getDatabaseUsername := func() *string {
-		return CloneString(data.M("database_username").S("value"))
+		return CloneString(data.M("[database_username]").S("value"))
 	}
 
 	getDatabase := func() *Database {
-		return CloneDatabase(data.M("database").GetObject("value").(*Database))
+		return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
 	}
 
 	setDatabase := func(database *Database) {
-		(data.M("database"))["value"] = CloneDatabase(database)
+		(data.M("[database]"))["value"] = CloneDatabase(database)
 	}
 
 	setDatabaseUsername := func(database_username *string) {
-		(data.M("database_username"))["value"] = CloneString(database_username)
+		(data.M("[database_username]"))["value"] = CloneString(database_username)
 	}
 
 	validate := func() ([]error) {

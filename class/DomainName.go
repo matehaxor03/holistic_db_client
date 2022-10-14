@@ -29,7 +29,7 @@ type DomainName struct {
 func NewDomainName(domain_name *string) (*DomainName, []error) {
 	
 	data := Map {
-		"domain_name":Map{"value":CloneString(domain_name),"mandatory":true,
+		"[domain_name]":Map{"value":CloneString(domain_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GET_ALLOWED_DOMAIN_NAMES(),"function":getWhitelistStringFunc()}}},
 	}
 
@@ -38,7 +38,7 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 	}
 
 	getDomainName := func () (*string) {
-		ptr := data.M("domain_name").S("value")
+		ptr := data.M("[domain_name]").S("value")
 		if ptr == nil {
 			return nil
 		}

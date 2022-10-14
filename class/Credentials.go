@@ -29,9 +29,9 @@ func GetCredentialPasswordValidCharacters() *string {
 func NewCredentials(username *string, password *string) (*Credentials, []error) {
 	
 	data := Map {
-		"username":Map{"value":CloneString(username),"mandatory":true,
+		"[username]":Map{"value":CloneString(username),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getWhitelistCharactersFunc() }}},
-		"password":Map{"value":CloneString(password),"mandatory":true,
+		"[password]":Map{"value":CloneString(password),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 	}
 
@@ -40,11 +40,11 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 	}
 
 	getUsername := func () (*string) {
-		return CloneString(data.M("username").S("value"))
+		return CloneString(data.M("[username]").S("value"))
 	}
 
 	getPassword := func () (*string) {
-		return CloneString(data.M("password").S("value"))
+		return CloneString(data.M("[password]").S("value"))
 	}
 	
 	x := Credentials{

@@ -45,11 +45,11 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 	}
 	
 	data := Map {
-		"client":Map{"value":CloneClient(client),"mandatory":true},
-		"user":Map{"value":CloneUser(user),"mandatory":true},		
-		"grant":Map{"value":CloneString(grant_value),"mandatory":true,
+		"[client]":Map{"value":CloneClient(client),"mandatory":true},
+		"[user]":Map{"value":CloneUser(user),"mandatory":true},		
+		"[grant]":Map{"value":CloneString(grant_value),"mandatory":true,
 		FILTERS(): Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":getWhitelistStringFunc()}}},
-		"filter":Map{"value":CloneString(filter),"mandatory":true},
+		"[filter]":Map{"value":CloneString(filter),"mandatory":true},
 	}
 
 	validate := func() ([]error) {
@@ -57,19 +57,19 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 	}
 
 	getClient := func () (*Client) {
-		return CloneClient(data.M("client").GetObject("value").(*Client))
+		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
 	getUser := func () (*User) {
-		return CloneUser(data.M("user").GetObject("value").(*User))
+		return CloneUser(data.M("[user]").GetObject("value").(*User))
 	}
 
 	getGrantValue := func () (*string) {
-		return CloneString(data.M("grant").S("value"))
+		return CloneString(data.M("[grant]").S("value"))
 	}
 
 	getFilter := func () (*string) {
-		return CloneString(data.M("filter").S("value"))
+		return CloneString(data.M("[filter]").S("value"))
 	}
 
 	getSQL := func() (*string, []error) {

@@ -70,19 +70,23 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		return nil, errors
 	}
 
-	if !schema.HasKey("table_name") {
+	if !schema.HasKey("[table_name]") {
 		errors = append(errors, fmt.Errorf("table_name field is nil"))
-	} else if schema.GetType("table_name") != "class.Map" {
+	} else if schema.GetType("[table_name]") != "class.Map" {
 		errors = append(errors, fmt.Errorf("table_name field is not a map"))
 	} else {
 		boolean_value := true
-		schema.M("table_name").SetBool("mandatory", &boolean_value)
-		schema.M("table_name")[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
+		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
+		schema.M("[table_name]")[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
 	}
 
 	data := schema.Clone()
-	data["database"] = Map{"value":CloneDatabase(database),"mandatory":true}
-	data["options"] = Map{"value":options,"mandatory":false}
+	data["[database]"] = Map{"value":CloneDatabase(database),"mandatory":true}
+	data["[options]"] = Map{"value":options,"mandatory":false}
 	data["created_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 
@@ -91,31 +95,21 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	}
 
 	getTableName := func() (*string) {
-		return CloneString(data.M("table_name").S("value"))
+		return CloneString(data.M("[table_name]").S("value"))
 	}
 
 	getTableColumns := func() ([]string) {
 		var columns []string
 		for _, column := range getData().Keys() {
-			if column == "table_name" {
+			if !strings.HasPrefix(column, "[") {
+				continue
+			}
+
+			if !strings.HasSuffix(column, "]") {
 				continue
 			}
 
 			if data.GetType(column) != "class.Map" {
-				continue
-			}
-
-			columnSchema := data[column].(Map)
-
-			if !columnSchema.HasKey("type") ||
-			    columnSchema.S("type") == nil {
-				continue
-			}
-			
-			rep := *(columnSchema.S("type"))
-			switch rep {
-				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
-				default:
 				continue
 			}
 			
@@ -129,10 +123,6 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		for _, column := range getTableColumns() {
 			columnSchema := data[column].(Map)
 
-			if !columnSchema.HasKey("type") {
-				continue
-			}
-
 			if !columnSchema.IsBool("primary_key") ||
 				*(columnSchema.B("primary_key")) == false {
 				continue
@@ -145,30 +135,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 	getNonIdentityColumns := func() ([]string) {
 		var columns []string
-		for _, column := range getData().Keys() {
-			if column == "table_name" {
-				continue
-			}
-
-			if data.GetType(column) != "class.Map" {
-				continue
-			}
-
+		for _, column := range getTableColumns() {
 			columnSchema := data[column].(Map)
-
-			if !columnSchema.HasKey("type") {
-				continue
-			}
 
 			if columnSchema.IsBool("primary_key") &&
 				*(columnSchema.B("primary_key")) == true {
-				continue
-			}
-
-			rep := *(columnSchema.S("type"))
-			switch rep {
-				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string":
-				default:
 				continue
 			}
 			
@@ -182,11 +153,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	}
 
 	getDatabase := func() (*Database) {
-		return CloneDatabase(data.M("database").GetObject("value").(*Database))
+		return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("options").GetObject("value").(map[string]map[string][][]string)
+		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	setTable := func(table *Table) {

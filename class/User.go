@@ -45,10 +45,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	SQLCommand := NewSQLCommand()
 	
 	data := Map {
-		"client":Map{"value":CloneClient(client),"mandatory":true},
-		"credentials":Map{"value":CloneCredentials(credentials),"mandatory":true},
-		"domain_name":Map{"value":CloneDomainName(domain_name),"mandatory":true},
-		"options":Map{"value":options,"mandatory":false},
+		"[client]":Map{"value":CloneClient(client),"mandatory":true},
+		"[credentials]":Map{"value":CloneCredentials(credentials),"mandatory":true},
+		"[domain_name]":Map{"value":CloneDomainName(domain_name),"mandatory":true},
+		"[options]":Map{"value":options,"mandatory":false},
 	}
 
 	validate := func() ([]error) {
@@ -56,19 +56,19 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	}
 
 	getClient := func() (*Client) {
-		return CloneClient(data.M("client").GetObject("value").(*Client))
+		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
 	getCredentials := func() (*Credentials) {
-		return CloneCredentials(data.M("credentials").GetObject("value").(*Credentials))
+		return CloneCredentials(data.M("[credentials]").GetObject("value").(*Credentials))
 	}
 
 	getDomainName := func() (*DomainName) {
-		return CloneDomainName(data.M("domain_name").GetObject("value").(*DomainName))
+		return CloneDomainName(data.M("[domain_name]").GetObject("value").(*DomainName))
 	}
 
 	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("options").GetObject("value").(map[string]map[string][][]string)
+		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	getSQL := func(action string) (*string, []error) {

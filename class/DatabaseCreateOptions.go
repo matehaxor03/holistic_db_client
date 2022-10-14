@@ -45,9 +45,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 	
 	data := Map {
-		"character_set":Map{"value":CloneString(character_set),"mandatory":false,
+		"[character_set]":Map{"value":CloneString(character_set),"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_CHARACTER_SETS(),"function":getWhitelistStringFunc() } }},
-		"collate":Map{"value":CloneString(collate),"mandatory":false,
+		"[collate]":Map{"value":CloneString(collate),"mandatory":false,
 		FILTERS(): Array{ Map {"values":GET_COLLATES(),"function":getWhitelistStringFunc()}}},
 	}
 
@@ -63,12 +63,12 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		
 		sql_command := ""
 
-		character_set := data.M("character_set").S("value")
+		character_set := data.M("[character_set]").S("value")
 		if character_set != nil && *character_set != "" {
 			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 		
-		collate := data.M("collate").S("value")
+		collate := data.M("[collate]").S("value")
 		if collate != nil  && *collate != "" {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
@@ -84,7 +84,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *DatabaseCreateOptions {
-			return NewDatabaseCreateOptions(data.M("character_set").S("value"), data.M("collate").S("value"))
+			return NewDatabaseCreateOptions(data.M("[character_set]").S("value"), data.M("[collate]").S("value"))
 		},
 		Validate: func() ([]error) {
 			return validate()

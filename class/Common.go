@@ -271,11 +271,13 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
 		
-		{
-			params := Map{"values": GetColumnNameValidCharacters(), "value":parameter, "label": parameter, "data_type": structType }
-			column_name_errors := WhitelistCharacters(params)
-			if column_name_errors != nil {
-				errors = append(errors, column_name_errors...)
+		if !(strings.HasPrefix(parameter, "[") && strings.HasSuffix(parameter, "]")) {
+			{
+				params := Map{"values": GetColumnNameValidCharacters(), "value":parameter, "label": parameter, "data_type": structType }
+				column_name_errors := WhitelistCharacters(params)
+				if column_name_errors != nil {
+					errors = append(errors, column_name_errors...)
+				}
 			}
 		}
 		

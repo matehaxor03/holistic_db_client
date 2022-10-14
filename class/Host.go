@@ -29,18 +29,18 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	}
 	
 	data := Map {
-		"host_name":Map{"value":CloneString(host_name),"mandatory":true,
+		"[host_name]":Map{"value":CloneString(host_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":getHostNameValidCharacters(),"function":getWhitelistCharactersFunc() }}},
-		"port_number":Map{"value":CloneString(port_number),"mandatory":true,
+		"[port_number]":Map{"value":CloneString(port_number),"mandatory":true,
 		FILTERS(): Array{ Map {"values":getValidPortCharacters(),"function":getWhitelistCharactersFunc() }}},
 	}
 
 	getHostName := func() (*string) {
-		return CloneString(data.M("host_name").S("value"))
+		return CloneString(data.M("[host_name]").S("value"))
 	}
 
 	getPortNumber := func() (*string) {
-		return CloneString(data.M("port_number").S("value"))
+		return CloneString(data.M("[port_number]").S("value"))
 	}
 
 	validate := func() ([]error) {
