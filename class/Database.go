@@ -77,7 +77,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	setClient := func(client *Client) {
-		data.M("client")["value"] = client
+		data.M("[client]")["value"] = client
 	}
 
 	getDatabaseName := func() (*string) {
