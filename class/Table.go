@@ -433,32 +433,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, errors
 			}
 
-			expanded_record := Map{}
-			for _, column := range new_record_data.Keys() {
-				for _, schema_column := range getTableColumns() {
-					if column == schema_column {
-						column_data := Map{"value": new_record_data[column]}
-
-						if data.GetType(column) != "class.Map" {
-							errors = append(errors, fmt.Errorf("Table.CreateRecord column: %s is not a map", column))
-							continue
-						}
-
-						for _, schema_column_data := range data.M(column).Keys() {
-							switch schema_column_data {
-							case "type", "default", "filters": 
-								column_data[schema_column_data] = data.M(column)[schema_column_data]
-							case "value":
-							default:
-								errors = append(errors, fmt.Errorf("Table.CreateRecord attribute not supported please implement: %s", schema_column_data))
-							}
-						}
-						expanded_record[column] = column_data
-					}
-				}
-			}
-
-			record, record_errors := NewRecord(getTable(), expanded_record)
+			record, record_errors := NewRecord(getTable(), new_record_data)
 			if record_errors != nil {
 				return nil, record_errors
 			}

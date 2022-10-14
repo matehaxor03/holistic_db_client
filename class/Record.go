@@ -31,13 +31,46 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 	if record_data == nil {
 		errors = append(errors, fmt.Errorf("record_data is nil"))
+	}
+
+	if table == nil {
+		errors = append(errors, fmt.Errorf("table is nil"))
+	}
+
+	if len(errors) > 0 {
 		return nil, errors
 	}
 
-	data := record_data.Clone()
-	data["table"] = Map{"value":CloneTable(table),"mandatory":true}
+	table_data := table.GetData()
+	table_columns := (*table).GetTableColumns()
+	expanded_record := Map{}
+	for _, column := range record_data.Keys() {
+		for _, schema_column := range table_columns {
+			if column == schema_column {
+				column_data := Map{"value": record_data[column]}
 
-	//todo attach validations of table onto record
+				if table_data.GetType(column) != "class.Map" {
+					errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", column))
+					continue
+				}
+
+				for _, schema_column_data := range table_data.M(column).Keys() {
+					switch schema_column_data {
+					case "type", "default", "filters": 
+						column_data[schema_column_data] = table_data.M(column)[schema_column_data]
+					case "value":
+					default:
+						errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
+					}
+				}
+				expanded_record[column] = column_data
+				break
+			}
+		}
+	}
+
+	data := expanded_record.Clone()
+	data["table"] = Map{"value":CloneTable(table),"mandatory":true}
 
 	getData := func() (Map) {
 		return data.Clone()
