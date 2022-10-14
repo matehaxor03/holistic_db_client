@@ -1,11 +1,5 @@
 package class
 
-import (
-	"fmt"
-	//"reflect"
-	//"fmt"
-)
-
 type Context struct {
 	LogErrors func([]error)
 	LogError func(error)
@@ -22,7 +16,6 @@ func NewContext() (*Context) {
 	logError := func(err error) {
 		errors := getErrors()
 		errors = append(errors, err)
-		fmt.Println(err)
     }
 	
 	logErrors := func(errs []error) {

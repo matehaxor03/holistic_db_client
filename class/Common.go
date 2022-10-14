@@ -280,7 +280,6 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		}
 		
 		if fields.GetType(parameter) != "class.Map" {
-			fmt.Println(fields.ToJSONString())
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
 			continue
 		}
@@ -297,7 +296,6 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 
 		attribute_to_validate := "value"
 		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
-			fmt.Println(parameter_fields.ToJSONString())
 			
 			if !parameter_fields.IsBool("primary_key") {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))

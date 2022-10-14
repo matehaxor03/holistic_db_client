@@ -289,8 +289,6 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				return nil, errors
 			}
 
-			fmt.Println((*json_array).ToJSONString())
-
 			schema := Map{}
 			for _, column_details := range *json_array {
 				column_map := column_details.(Map)

@@ -25,7 +25,6 @@ func (a Array) ToJSONString() string {
 		case "class.Array":
 			json += value.(Array).ToJSONString()
 		case "reflect.Value":
-			fmt.Println("trying to draw refelect array")
 			json = json + fmt.Sprintf("\"%s\"", value)
 		case "func(class.Map) []error": 
 			json = json + fmt.Sprintf("\"func(class.Map) []error\"")
