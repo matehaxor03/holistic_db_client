@@ -209,6 +209,12 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		sql_command += "("
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
+
+			if !columnSchema.HasKey("type") {
+				errors = append(errors, fmt.Errorf("column: %s does not have type attribute", column))
+				continue
+			}
+
 			typeOf := columnSchema.S("type")
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
