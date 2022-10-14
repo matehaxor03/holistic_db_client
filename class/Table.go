@@ -50,6 +50,8 @@ type Table struct {
 	Create func() ([]error)
 	GetTableName func() (*string)
 	GetTableColumns func() ([]string)
+	GetIdentityColumns func() ([]string)
+	GetNonIdentityColumns func() ([]string)
 	Count func() (*uint64, []error)
 	GetData func() (Map)
 	CreateRecord func(record Map) (*Record, []error)
@@ -112,6 +114,78 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			rep := *(columnSchema.S("type"))
 			switch rep {
 				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string", "*time.Time", "time.Time", "*bool", "bool", "<nil>":
+				default:
+				continue
+			}
+			
+			columns = append(columns, column)
+		}
+		return columns
+	}
+
+	getIdentityColumns := func() ([]string) {
+		var columns []string
+		for _, column := range getData().Keys() {
+			if column == "table_name" {
+				continue
+			}
+
+			if data.GetType(column) != "class.Map" {
+				continue
+			}
+
+			columnSchema := data[column].(Map)
+
+			if !columnSchema.HasKey("type") ||
+			    columnSchema.S("type") == nil {
+				continue
+			}
+
+			if !columnSchema.HasKey("primary_key") ||
+				columnSchema.GetType("primary_key") != "bool" ||
+				*columnSchema.B("primary_key") == false {
+				continue
+			}
+			
+			rep := *(columnSchema.S("type"))
+			switch rep {
+				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string":
+				default:
+				continue
+			}
+			
+			columns = append(columns, column)
+		}
+		return columns
+	}
+
+	getNonIdentityColumns := func() ([]string) {
+		var columns []string
+		for _, column := range getData().Keys() {
+			if column == "table_name" {
+				continue
+			}
+
+			if data.GetType(column) != "class.Map" {
+				continue
+			}
+
+			columnSchema := data[column].(Map)
+
+			if !columnSchema.HasKey("type") ||
+			    columnSchema.S("type") == nil {
+				continue
+			}
+
+			if columnSchema.HasKey("primary_key") ||
+				columnSchema.GetType("primary_key") == "bool" ||
+				*columnSchema.B("primary_key") == true {
+				continue
+			}
+			
+			rep := *(columnSchema.S("type"))
+			switch rep {
+				case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int", "*string", "string":
 				default:
 				continue
 			}
@@ -315,6 +389,12 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		},
 		GetTableColumns: func() ([]string) {
 			return getTableColumns()
+		},
+		GetIdentityColumns: func() ([]string) {
+			return getIdentityColumns()
+		},
+		GetNonIdentityColumns: func() ([]string) {
+			return getNonIdentityColumns()
 		},
 		Create: func() ([]error) {
 			errors := createTable()

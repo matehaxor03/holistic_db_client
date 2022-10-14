@@ -81,6 +81,11 @@ func NewSQLCommand() (*SQLCommand) {
 			command := ""
 
 			sql := ""
+
+			if options.HasKey("transactional") && options.GetType("transactional") == "bool" && *(options.B("transactional")) == true {
+				sql += "START TRANSACTION;\n"
+			}
+
 			if database != nil {
 				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
 			}
@@ -94,6 +99,10 @@ func NewSQLCommand() (*SQLCommand) {
 
 			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
 				sql += " SELECT LAST_INSERT_ID();"
+			}
+
+			if options.HasKey("transactional") && options.GetType("transactional") == "bool" && *(options.B("transactional")) == true {
+				sql += "COMMIT;\n"
 			}
 
 			if sql_command_use_file {
