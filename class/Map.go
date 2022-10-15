@@ -415,6 +415,10 @@ func (m Map) GetInt(s string) (*int, []error) {
 	return result, nil
 }
 
+func (m Map) SetInt(s string, v *int) {
+	m[s] = v
+}
+
 func (m Map) SetInt64(s string, v *int64) {
 	m[s] = v
 }

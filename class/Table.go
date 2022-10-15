@@ -520,19 +520,26 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				for _, column := range columns {
 					table_data_type := *((table_schema.M(column)).S("type"))
 					switch table_data_type {
-					case "uint64":
+					case "*uint64", "uint64":
 						value, value_errors := current_record.GetUInt64(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetUInt64Value(column, *value)
 						}
-					case "*int64":
+					case "*int64", "int64":
 						value, value_errors := current_record.GetInt64(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetInt64(column, value)
+						}
+					case "*int", "int":
+						value, value_errors := current_record.GetInt(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetInt(column, value)
 						}
 					case "*time.Time":
 						value, value_errors := current_record.GetTime(column)
@@ -540,6 +547,13 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetTime(column, value)
+						}
+					case "*boolean", "boolean":
+						value, value_errors := current_record.GetBool(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetBool(column, value)
 						}
 					default:
 						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))
