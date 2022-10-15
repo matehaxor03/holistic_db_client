@@ -386,6 +386,21 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 							} else {
 								column_schema.SetInt64("default", &number)
 							}
+						} else if (*(column_schema.S("type")) == "boolean") {
+							number, err := strconv.ParseInt(default_value, 10, 64)
+							if err != nil {
+								errors = append(errors, err)
+							} else {
+								if number == 0 {
+									boolean_value := false
+									column_schema.SetBool("default", &boolean_value)
+								} else if number == 1 {
+									boolean_value := true
+									column_schema.SetBool("default", &boolean_value)
+								} else {
+									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *(column_schema.S("type"))))
+								}
+							}
 						} else {
 							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *(column_schema.S("type"))))
 						}
