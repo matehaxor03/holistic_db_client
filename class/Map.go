@@ -295,8 +295,37 @@ func (m Map) GetBool(s string) (*bool, []error) {
 			return nil, nil
 		}
 		break
+	case "*string":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
+			value := *((m[s]).(*string))
+			if value == "1" {
+				boolean_result := true
+				result = &boolean_result
+			} else if value == "0" {
+				boolean_result := false
+				result = &boolean_result
+			} else {
+				errors = append(errors, fmt.Errorf("Map.GetBool: unknown value for *string: %s", value))
+				result = nil
+			}
+		} else {
+			return nil, nil
+		}
+		break
+	case "string":
+		value := ((m[s]).(string))
+		if value == "1" {
+			boolean_result := true
+			result = &boolean_result
+		} else if value == "0" {
+			boolean_result := false
+			result = &boolean_result
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetBool: unknown value for string: %s", value))
+			result = nil
+		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.B: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("Map.GetBool: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
