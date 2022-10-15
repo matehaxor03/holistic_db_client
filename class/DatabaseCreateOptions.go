@@ -52,7 +52,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "DatabaseCreateOptions")
+		return ValidateData(data, "DatabaseCreateOptions")
 	}
 
 	getSQL := func() (*string, []error) {

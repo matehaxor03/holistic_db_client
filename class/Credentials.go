@@ -36,7 +36,7 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Credentials")
+		return ValidateData(data.Clone(), "Credentials")
 	}
 
 	getUsername := func () (*string) {

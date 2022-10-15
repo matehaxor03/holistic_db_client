@@ -153,7 +153,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Record")
+		return ValidateData(data.Clone(), "Record")
 	}
 
 	getInsertSQL := func() (*string, Map, []error) {

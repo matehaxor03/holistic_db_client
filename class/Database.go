@@ -68,7 +68,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "Database")
+		return ValidateData(data, "Database")
 	}
 
 	getClient := func() (*Client) {
@@ -117,7 +117,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			errors = append(errors, command_errs...)	
 		}
 
-		database_errs := ValidateGenericSpecial(data, "Database")
+		database_errs := ValidateData(data, "Database")
 
 		if database_errs != nil {
 			errors = append(errors, database_errs...)	

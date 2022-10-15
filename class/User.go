@@ -51,7 +51,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "User")
+		return ValidateData(data, "User")
 	}
 
 	getClient := func() (*Client) {
@@ -179,7 +179,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 				}
 
-				validate_password_errors := ValidateGenericSpecial(data.Clone(), "NewUserPassword")
+				validate_password_errors := ValidateData(data.Clone(), "NewUserPassword")
 				if validate_password_errors != nil {
 					errors = append(errors, validate_password_errors...)
 				}

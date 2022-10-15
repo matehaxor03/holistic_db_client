@@ -52,7 +52,7 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Grant")
+		return ValidateData(data.Clone(), "Grant")
 	}
 
 	getClient := func () (*Client) {

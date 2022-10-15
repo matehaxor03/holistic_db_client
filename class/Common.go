@@ -267,7 +267,7 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	return &logic_option, nil
 }
 
-func ValidateGenericSpecial(fields Map, structType string) []error {
+func ValidateData(fields Map, structType string) []error {
 	var errors []error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
@@ -330,7 +330,7 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 					continue
 				}
 			}
-			
+
 			continue
 		} else if value_is_null && value_is_mandatory && !parameter_fields.IsNil("default") {
 			attribute_to_validate = "default"

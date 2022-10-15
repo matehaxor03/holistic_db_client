@@ -44,7 +44,7 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data.Clone(), "Host")
+		return ValidateData(data.Clone(), "Host")
 	}
 
 	errors := validate()

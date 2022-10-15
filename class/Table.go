@@ -149,7 +149,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(getData(), "Table")
+		return ValidateData(getData(), "Table")
 	}
 
 	getDatabase := func() (*Database) {
@@ -425,7 +425,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 			table_schema := getData()
 			if filters != nil {
-				filter_errors := ValidateGenericSpecial(filters, "SelectRecords")
+				filter_errors := ValidateData(filters, "SelectRecords")
 				if filter_errors != nil {
 					errors = append(errors, filter_errors...)
 					return nil, errors

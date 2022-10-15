@@ -62,7 +62,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	}
 
 	validate := func() ([]error) {
-		return ValidateGenericSpecial(data, "Client")
+		return ValidateData(data, "Client")
 	}
 
 	setClient := func(client *Client) {
