@@ -112,7 +112,7 @@ func NewSQLCommand() (*SQLCommand) {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
-				command = sql_header_command + " -e '" + sql + "'"
+				command = sql_header_command + " <<[END]\n " + sql + "\n[END]"
 			}
 
 			fmt.Println(command)
