@@ -10,13 +10,13 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, *string, []error)
+	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, []error)
 }
 
 func NewSQLCommand() (*SQLCommand) {			    
 	bashCommand := newBashCommand()
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, *string, []error) {
+		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, []error) {
 			var errors []error 
 
 			if client == nil {
@@ -29,7 +29,7 @@ func NewSQLCommand() (*SQLCommand) {
 			}
 
 			if len(errors) > 0 {
-				return nil, nil, errors
+				return nil, errors
 			}
 
 			host := client.GetHost()
@@ -62,7 +62,7 @@ func NewSQLCommand() (*SQLCommand) {
 			}
 
 			if len(errors) > 0 {
-				return nil, nil, errors
+				return nil, errors
 			}
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(*(host)).GetHostName(), *(*(host)).GetPortNumber())
@@ -117,27 +117,27 @@ func NewSQLCommand() (*SQLCommand) {
 
 			fmt.Println(command)
 
-			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
 			
 			if sql_command_use_file {
 				os.Remove(filename)
 			}
-
-			fmt.Println(*shell_output)
-			fmt.Println(*shell_output_errs)
 			
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)	
-				return nil, shell_output_errs, errors
 			}
 
-			if shell_output_errs != nil && *shell_output_errs != "" {
-				return nil, shell_output_errs, errors
+			if len(errors) > 0 {
+				return nil, errors
 			}
 
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
-				return nil, nil, nil
+				return nil, nil
 			}
 			
 			rune_array := []rune(*shell_output)
@@ -180,7 +180,7 @@ func NewSQLCommand() (*SQLCommand) {
 					} 
 				}
 			}
-			return &records, shell_output_errs, nil
+			return &records, nil
 		},
     }
 

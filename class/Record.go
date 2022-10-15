@@ -445,15 +445,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return errors
 			}
 
-			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
-						
-			if stderr != nil && *stderr != "" {
-				if strings.Contains(*stderr, " some error") {
-					errors = append(errors, fmt.Errorf("insert record failed"))
-				} else {
-					errors = append(errors, fmt.Errorf(*stderr))
-				}
-			}
+			json_array, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
 		
 			if len(errors) > 0 {
 				return errors
@@ -479,23 +471,15 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil
 		},
 		Update: func() ([]error) {
-			sql, options, errors := getUpdateSQL()
-			if errors != nil {
-				return errors
+			sql, options, generate_sql_errors := getUpdateSQL()
+			if generate_sql_errors != nil {
+				return generate_sql_errors
 			}
 
-			_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
-						
-			if stderr != nil && *stderr != "" {
-				if strings.Contains(*stderr, " some error") {
-					errors = append(errors, fmt.Errorf("insert record failed"))
-				} else {
-					errors = append(errors, fmt.Errorf(*stderr))
-				}
-			}
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
 		
-			if len(errors) > 0 {
-				return errors
+			if execute_errors != nil {
+				return execute_errors
 			}
 
 			return nil

@@ -1,7 +1,6 @@
 package class
 
 import (
-	"strings"
 	"fmt"
 )
 
@@ -95,25 +94,16 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 	}
 
 	grant := func () ([]error) {
-		var errors []error 
 		sql_command, sql_command_errors := getSQL()
 	
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
 
-		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
-		
-		if stderr != nil && *stderr != "" {
-			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
-				errors = append(errors, fmt.Errorf("create user failed most likely the user already exists"))
-			} else {
-				errors = append(errors, fmt.Errorf(*stderr))
-			}
-		}
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
 
-		if len(errors) > 0 {
-			return errors
+		if execute_errors != nil {
+			return execute_errors
 		}
 
 		return nil

@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"strings"
 	"strconv"
 )
 
@@ -172,25 +171,16 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	createDatabase := func() ([]error) {
-		var errors []error 
-		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, generate_sql_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
-		if sql_command_errors != nil {
-			return sql_command_errors
+		if generate_sql_errors != nil {
+			return generate_sql_errors
 		}
 	
-		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
-	
-		if stderr != nil && *stderr != "" {
-			if strings.Contains(*stderr, " database exists") {
-				errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
-			} else {
-				errors = append(errors, fmt.Errorf(*stderr))
-			}
-		}
-	
-		if len(errors) > 0 {
-			return errors
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+
+		if execute_sql_command_errors != nil {
+			return execute_sql_command_errors
 		}
 	
 		return nil
@@ -265,15 +255,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			
 			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(table_name))
 			
-			json_array, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
-	
-			if stderr != nil && *stderr != "" {
-				if strings.Contains(*stderr, " database exists") {
-					errors = append(errors, fmt.Errorf("create database failed most likely the database already exists"))
-				} else {
-					errors = append(errors, fmt.Errorf(*stderr))
-				}
-			}
+			json_array, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
 		
 			if len(errors) > 0 {
 				return nil, errors

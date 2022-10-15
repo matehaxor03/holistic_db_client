@@ -311,25 +311,16 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	}
 
 	createTable := func() ([]error) {
-		var errors []error 
 		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 	
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
 	
-		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), sql_command, Map{"use_file": false})
 	
-		if stderr != nil && *stderr != "" {
-			if strings.Contains(*stderr, " table exists") {
-				errors = append(errors, fmt.Errorf("create table failed most likely the table already exists"))
-			} else {
-				errors = append(errors, fmt.Errorf(*stderr))
-			}
-		}
-	
-		if len(errors) > 0 {
-			return errors
+		if execute_errors != nil {
+			return execute_errors
 		}
 	
 		return nil
@@ -383,18 +374,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 
 			sql :=  fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
-			json_array, stderr, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
-			}
-						
-			if stderr != nil && *stderr != "" {
-				if strings.Contains(*stderr, " table exists") {
-					errors = append(errors, fmt.Errorf("create table failed most likely the table already exists"))
-				} else {
-					errors = append(errors, fmt.Errorf(*stderr))
-				}
 			}
 		
 			if len(errors) > 0 {
@@ -494,18 +477,10 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				return nil, errors
 			}
 
-			json_array, stderr, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
-			}
-						
-			if stderr != nil && *stderr != "" {
-				if strings.Contains(*stderr, " table exists") {
-					errors = append(errors, fmt.Errorf("SelectRecords: create table failed most likely the table already exists"))
-				} else {
-					errors = append(errors, fmt.Errorf(*stderr))
-				}
 			}
 		
 			if len(errors) > 0 {
