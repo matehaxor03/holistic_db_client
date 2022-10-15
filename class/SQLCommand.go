@@ -82,7 +82,8 @@ func NewSQLCommand() (*SQLCommand) {
 
 			sql := ""
 
-			if options.HasKey("transactional") && options.GetType("transactional") == "bool" && *(options.B("transactional")) == true {
+
+			if options.IsBoolTrue("transactional") {
 				sql += "START TRANSACTION;\n"
 			}
 
@@ -93,15 +94,15 @@ func NewSQLCommand() (*SQLCommand) {
 			sql += " " + *sql_command
 
 			sql_command_use_file := true
-			if options.HasKey("use_file") && options.GetType("use_file") == "bool" && *(options.B("use_file")) == false {
+			if options.IsBoolTrue("use_file") {
 				sql_command_use_file = false
 			}
 
-			if options.HasKey("get_last_insert_id") && options.GetType("get_last_insert_id") == "bool" && *(options.B("get_last_insert_id")) == true {
+			if options.IsBoolTrue("get_last_insert_id") {
 				sql += " SELECT LAST_INSERT_ID();"
 			}
 
-			if options.HasKey("transactional") && options.GetType("transactional") == "bool" && *(options.B("transactional")) == true {
+			if options.IsBoolTrue("transactional") {
 				sql += "COMMIT;\n"
 			}
 

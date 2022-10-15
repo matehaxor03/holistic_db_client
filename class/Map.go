@@ -63,6 +63,33 @@ func (m Map) IsBool(s string) (bool) {
 	return false
 }
 
+func (m Map) IsBoolTrue(s string) (bool) {
+	if m.IsNil(s) {
+		return false
+	}
+
+	if !m.IsBool(s) {
+		return false
+	}
+
+	value, _ := m.GetBool(s)
+	return *value == true
+}
+
+func (m Map) IsBoolFalse(s string) (bool) {
+	if m.IsNil(s) {
+		return true
+	}
+
+	if !m.IsBool(s) {
+		return true
+	}
+
+	value, _ := m.GetBool(s)
+	return *value == false
+}
+
+
 func (m Map) ToJSONString() string {
 	json := "{\n"
 	keys := m.Keys()
@@ -246,31 +273,37 @@ func (m Map) GetObject(s string) (interface{}) {
 	return m[s]
 }
 
-func (m Map) B(s string) (*bool) {
+func (m Map) GetBool(s string) (*bool, []error) {
 	if m[s] == nil {
-		return nil
+		return nil, nil
 	}
+
+	var result *bool
+	var errors []error
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "bool":
 		value := m[s].(bool)
-		newValue := value
-		return &newValue
+		result = &value
 		break
 	case "*bool":
 		if fmt.Sprintf("%s", m[s]) != "%!s(*bool=<nil>)" {
-			newValue := *((m[s]).(*bool))
-			return &newValue
+			value := *((m[s]).(*bool))
+			result = &value
 		} else {
-			return nil
+			return nil, nil
 		}
 		break
 	default:
-		panic(fmt.Errorf("Map.B: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("Map.B: type %s is not supported please implement", rep))
 	}
 
-	return nil
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
 }
 
 func (m Map) SetBool(s string, value *bool) {

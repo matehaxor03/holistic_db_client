@@ -188,17 +188,34 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		auto_increment_columns := 0
 		for _, valid_column := range valid_columns {
 			column_definition := table_schema.M(valid_column)
-			
-			if column_definition.HasKey("primary_key") &&
-				column_definition.GetType("primary_key") == "bool" &&
-				*(column_definition.B("primary_key")) &&
-				column_definition.HasKey("auto_increment") && 
-				column_definition.GetType("auto_increment") == "bool" &&
-				*(column_definition.B("auto_increment")) {
-				options["get_last_insert_id"] = true
-				options["auto_increment_column_name"] = valid_column
-				auto_increment_columns += 1
+
+			if !column_definition.IsBool("primary_key") || !column_definition.IsBool("auto_increment"){
+				continue
 			}
+
+			primary_key_value, primary_key_value_errors := column_definition.GetBool("primary_key")
+			if primary_key_value_errors != nil {
+				errors = append(errors, primary_key_value_errors...)
+				continue
+			}
+
+			if *primary_key_value == false {
+				continue
+			}
+
+			auto_increment_value, auto_increment_value_errors := column_definition.GetBool("auto_increment")
+			if auto_increment_value_errors != nil {
+				errors = append(errors, auto_increment_value_errors...)
+				continue
+			}
+
+			if *auto_increment_value == false {
+				continue
+			}
+				
+			options["get_last_insert_id"] = true
+			options["auto_increment_column_name"] = valid_column
+			auto_increment_columns += 1
 		}
 
 		if auto_increment_columns > 1 {

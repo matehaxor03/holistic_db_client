@@ -291,7 +291,11 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 		
 		value_is_mandatory := true
 		value_is_null := parameter_fields.IsNil("value")
-		mandatory_field := parameter_fields.B("mandatory")
+		mandatory_field, mandatory_field_errors := parameter_fields.GetBool("mandatory")
+
+		if mandatory_field_errors != nil {
+			errors = append(errors, mandatory_field_errors...)
+		}
 		
 		if mandatory_field != nil {
 			value_is_mandatory = *mandatory_field
@@ -303,24 +307,29 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			if !parameter_fields.IsBool("primary_key") {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
 				continue
-			} 
-			
-			if *(parameter_fields.B("primary_key")) == false {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
-				continue
-			} 
+			} else {
+				primary_key_value, primary_key_value_errors := parameter_fields.GetBool("primary_key")
+				if primary_key_value_errors != nil {
+					errors = append(errors, primary_key_value_errors...)
+					continue
+				} else if *primary_key_value == false {
+					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+					continue
+				}
+			}
 
 			if !parameter_fields.IsBool("auto_increment") {
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
-				continue
+			} else {
+				auto_increment_value, auto_increment_value_errors := parameter_fields.GetBool("auto_increment")
+				if auto_increment_value_errors != nil {
+					errors = append(errors, auto_increment_value_errors...)
+					continue
+				} else if *auto_increment_value == false {
+					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
+					continue
+				}
 			}
-
-			if *(parameter_fields.B("auto_increment")) == false {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but was nil and had no default value", parameter))
-				continue
-			} 
-
-			continue
 		} else if value_is_null && value_is_mandatory && !parameter_fields.IsNil("default") {
 			attribute_to_validate = "default"
 		} else if value_is_null && !value_is_mandatory && parameter_fields.IsNil("default") {
@@ -392,6 +401,12 @@ func ValidateGenericSpecial(fields Map, structType string) []error {
 			break
 		case "*int", "int":
 			_, value_of_errors := parameter_fields.GetInt(attribute_to_validate)
+			if value_of_errors != nil {
+				errors = append(errors, value_of_errors...)
+				continue
+			}
+		case "*bool", "bool":
+			_, value_of_errors := parameter_fields.GetBool(attribute_to_validate)
 			if value_of_errors != nil {
 				errors = append(errors, value_of_errors...)
 				continue
