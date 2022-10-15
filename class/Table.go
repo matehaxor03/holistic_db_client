@@ -260,7 +260,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					}
 				}
 			case "*time.Time":
-				sql_command += column + " TIMESTAMP(6)"
+				sql_command += EscapeString(column) + " TIMESTAMP(6)"
 				if columnSchema.HasKey("default") {
 					if columnSchema.S("default") == nil {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
@@ -271,6 +271,21 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					}
 					
 					sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
+				} 
+				case "*boolean", "boolean": 
+				sql_command += EscapeString(column) + " BOOLEAN"
+				if columnSchema.HasKey("default") {
+					if columnSchema.IsNil("default") {
+						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
+					} else if !columnSchema.IsBool("default") {
+						errors = append(errors, fmt.Errorf("column: %s had non-boolean default value", column))
+					} else if columnSchema.IsBoolTrue("default") {
+						sql_command += " DEFAULT 1"
+					} else if columnSchema.IsBoolFalse("default") {
+						sql_command += " DEFAULT 0"
+					} else {
+						errors = append(errors, fmt.Errorf("column: %s had unknown error for boolean default value", column))
+					}
 				} 
 			default:
 				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
