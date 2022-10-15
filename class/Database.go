@@ -329,7 +329,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 								data_type := "time.Time"
 								column_schema.SetString("type", &data_type)
 							case "tinyint(1)":
-								data_type := "boolean"
+								data_type := "bool"
 								column_schema.SetString("type", &data_type)
 							default:
 							errors = append(errors, fmt.Errorf("type not implement please implement: %s", type_of_value))
@@ -386,7 +386,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 							} else {
 								column_schema.SetInt64("default", &number)
 							}
-						} else if (*(column_schema.S("type")) == "boolean") {
+						} else if (*(column_schema.S("type")) == "bool") {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)

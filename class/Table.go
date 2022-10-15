@@ -87,7 +87,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 	data := schema.Clone()
 	data["[database]"] = Map{"value":CloneDatabase(database),"mandatory":true}
 	data["[options]"] = Map{"value":options,"mandatory":false}
-	data["active"] = Map{"type":"*boolean", "mandatory":true, "default":true}
+	data["active"] = Map{"type":"*bool", "mandatory":true, "default":true}
 	data["created_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 	data["archieved_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
@@ -272,7 +272,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 					
 					sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 				} 
-				case "*boolean", "boolean": 
+				case "*bool", "bool": 
 				sql_command += EscapeString(column) + " BOOLEAN"
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
@@ -548,7 +548,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 						} else {
 							mapped_record.SetTime(column, value)
 						}
-					case "*boolean", "boolean":
+					case "*bool", "bool":
 						value, value_errors := current_record.GetBool(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
