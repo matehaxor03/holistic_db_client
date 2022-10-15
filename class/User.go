@@ -71,10 +71,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
-	getSQL := func(action string) (*string, []error) {
+	getSQL := func(action string) (*string, Map, []error) {
+		options := Map{"use_file": true}
+
 		errors := validate()
 		if len(errors) > 0 {
-			return nil, errors
+			return nil, nil, errors
 		}
 
 		m := Map{}
@@ -104,7 +106,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return nil, nil, errors
 		}
 
 		sql_command := fmt.Sprintf("%s USER ", action)
@@ -113,24 +115,31 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
-		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
-		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
-
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
+			sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
+			sql_command += fmt.Sprintf("IDENTIFIED BY ")
+			sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
+		} else {
+			sql_command += fmt.Sprintf("\\'%s\\'", EscapeString(*((*getCredentials()).GetUsername())))
+			sql_command += fmt.Sprintf("@\\'%s\\' ", EscapeString(*((*getDomainName()).GetDomainName())))
+			sql_command += fmt.Sprintf("IDENTIFIED BY ")
+			sql_command += fmt.Sprintf("\\'%s\\'",  EscapeString(*((*getCredentials()).GetPassword())))
+		}
+		
 		sql_command += ";"
-		return &sql_command, nil
+		return &sql_command, options, nil
 	}
 
 	create := func () ([]error) {
 		var errors []error 
-		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, options, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
 
-		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		_, stderr, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, options)
 		
 		if stderr != nil && *stderr != "" {
 			if strings.Contains(*stderr, "Operation CREATE USER failed for") {
