@@ -328,6 +328,9 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 							case "timestamp(6)":
 								data_type := "time.Time"
 								column_schema.SetString("type", &data_type)
+							case "tinyint(1)":
+								data_type := "boolean"
+								column_schema.SetString("type", &data_type)
 							default:
 							errors = append(errors, fmt.Errorf("type not implement please implement: %s", type_of_value))
 						}
@@ -357,6 +360,10 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 					default:
 						errors = append(errors, fmt.Errorf("column attribute not supported please implement: %s", column_attribute))
 					}
+				}
+
+				if len(errors) > 0 {
+					continue
 				}
 
 				if default_value != "" {
