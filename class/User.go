@@ -115,17 +115,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
 		
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
-			sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
-			sql_command += fmt.Sprintf("IDENTIFIED BY ")
-			sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
-		} else {
-			sql_command += fmt.Sprintf("\\'%s\\'", EscapeString(*((*getCredentials()).GetUsername())))
-			sql_command += fmt.Sprintf("@\\'%s\\' ", EscapeString(*((*getDomainName()).GetDomainName())))
-			sql_command += fmt.Sprintf("IDENTIFIED BY ")
-			sql_command += fmt.Sprintf("\\'%s\\'",  EscapeString(*((*getCredentials()).GetPassword())))
-		}
+		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
+		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
+		sql_command += fmt.Sprintf("IDENTIFIED BY ")
+		sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
 		
 		sql_command += ";"
 		return &sql_command, options, nil
