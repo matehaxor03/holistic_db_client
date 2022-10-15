@@ -94,7 +94,7 @@ func NewSQLCommand() (*SQLCommand) {
 			sql += " " + *sql_command
 
 			sql_command_use_file := true
-			if options.IsBoolTrue("use_file") {
+			if options.IsBoolFalse("use_file") {
 				sql_command_use_file = false
 			}
 
@@ -123,6 +123,7 @@ func NewSQLCommand() (*SQLCommand) {
 			}
 
 			fmt.Println(*shell_output)
+			fmt.Println(*shell_output_errs)
 			
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)	
