@@ -122,12 +122,22 @@ func main() {
 
 	if command_value == CREATE_COMMAND {
 		if class_value == DATABASE_CLASS {
+			database_exists, database_exists_errors := client.DatabaseExists(database_name)
+			if database_exists_errors != nil {
+				context.LogErrors(database_exists_errors)
+				os.Exit(1)
+			}
 
-			database_create_options := class.NewDatabaseCreateOptions(character_set, collate)
-			_, database_errors := client.CreateDatabase(database_name, database_create_options, options)
-			
-			if database_errors != nil {
-				context.LogErrors(database_errors)
+			if if_not_exists && *database_exists == false {
+				database_create_options := class.NewDatabaseCreateOptions(character_set, collate)
+				_, database_errors := client.CreateDatabase(database_name, database_create_options)
+				
+				if database_errors != nil {
+					context.LogErrors(database_errors)
+					os.Exit(1)
+				}
+			} else {
+				context.LogError(fmt.Errorf("database: %s exists: %b", *database_name, database_exists))
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {

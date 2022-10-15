@@ -17,7 +17,8 @@ func CloneClient(client *Client) *Client {
 }
 
 type Client struct {
-	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error)
+	CreateDatabase func(database_name *string, database_create_options *DatabaseCreateOptions) (*Database, []error)
+	DatabaseExists func(database_name *string) (*bool, []error)
 	UseDatabase func(database *Database) []error
 	UseDatabaseByName func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username *string) []error
@@ -81,8 +82,8 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			cloned, _ := NewClient(getHost(), getDatabaseUsername(), getDatabase())
 			return cloned
 		},
-		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
-			database, errs := NewDatabase(getClient(), database_name, database_create_options, options)
+		CreateDatabase: func(database_name *string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
+			database, errs := NewDatabase(getClient(), database_name, database_create_options)
 			if errs != nil {
 				return nil, errs
 			}
@@ -93,6 +94,16 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			}
 			
 			return database, nil
+		},
+		DatabaseExists: func(database_name *string) (*bool, []error) {
+			database, database_errors := NewDatabase(getClient(), database_name, nil)
+			if database_errors != nil {
+				return nil, database_errors
+			}
+
+			exists, exists_errors := database.Exists()
+
+			return exists, exists_errors
 		},
 		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
@@ -143,7 +154,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil
 		},
 		UseDatabaseByName: func(database_name string) (*Database, []error) {			
-			database, database_errors := NewDatabase(getClient(), &database_name, nil, nil)
+			database, database_errors := NewDatabase(getClient(), &database_name, nil)
 			if database_errors != nil {
 				return nil, database_errors
 			}

@@ -39,8 +39,8 @@ func CloneDatabase(database *Database) (*Database) {
 type Database struct {
 	Validate func() ([]error)
 	Clone func() (*Database)
-	//GetSQL func(action string) (*string, []error)
 	Create func() ([]error)
+	Exists func() (*bool, []error)
 	GetDatabaseName func() (*string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
@@ -49,7 +49,7 @@ type Database struct {
 	ToJSONString func() string
 }
 
-func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions, options map[string]map[string][][]string) (*Database, []error) {
+func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 	var this_database *Database
 
 	SQLCommand := NewSQLCommand()
@@ -60,7 +60,6 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		"[database_name]":Map{"value":CloneString(database_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
 		"[database_create_options]":Map{"value":database_create_options,"mandatory":false},
-		"[options]":Map{"value":options,"mandatory":false},
 	}
 
 	getData := func() (Map) {
@@ -85,10 +84,6 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
 		return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
-	}
-
-	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
 	setDatabase := func(database *Database) {
@@ -165,7 +160,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			return validate()
 		},
 		Clone: func() (*Database) {
-			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
+			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions())
 			return clone_value
 		},
 		Create: func() ([]error) {
@@ -175,6 +170,30 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			}
 
 			return nil
+		},
+		Exists: func() (*bool, []error) {
+			errors := validate()
+		
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			sql_command := fmt.Sprintf("USE %s;", EscapeString(*getDatabaseName()))
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+			
+			if execute_errors != nil {
+				errors = append(errors, execute_errors...)
+			}
+
+			boolean_value := false
+			if len(errors) > 0 {
+				//todo: check error message e.g database does not exist
+				boolean_value = false
+				return &boolean_value, nil
+			}
+
+			boolean_value = true
+			return &boolean_value, nil
 		},
 		CreateTable: func(schema Map, options map[string]map[string][][]string) (*Table, []error) {
 			table, new_table_errors := NewTable(getDatabase(), schema, options)
