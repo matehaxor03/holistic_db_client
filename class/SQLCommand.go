@@ -69,7 +69,7 @@ func NewSQLCommand() (*SQLCommand) {
 			credentials_command := ""
 			
 			if database != nil {
-				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + ":" + *((*database).GetDatabaseName()) + ":" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + ":" + (*database).GetDatabaseName() + ":" + (*database_username) + ".config"
 			} else {
 				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + "::" + (*database_username) + ".config"
 			}
@@ -88,7 +88,7 @@ func NewSQLCommand() (*SQLCommand) {
 			}
 
 			if database != nil {
-				sql = fmt.Sprintf("USE %s;\n", (*(*database).GetDatabaseName()))
+				sql = fmt.Sprintf("USE %s;\n", (*database).GetDatabaseName())
 			}
 
 			sql += " " + *sql_command
@@ -106,16 +106,12 @@ func NewSQLCommand() (*SQLCommand) {
 				sql += "COMMIT;\n"
 			}
 
-			fmt.Println(sql)
-
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
 			} else {
 				command = sql_header_command + " <<[END]\n " + sql + "\n[END]"
 			}
-
-			fmt.Println(command)
 
 			if len(errors) > 0 {
 				return nil, errors

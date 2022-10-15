@@ -348,12 +348,16 @@ func ValidateData(fields Map, structType string) []error {
 		case "*string":
 			string_value := parameter_fields.S(attribute_to_validate)
 			if parameter_fields.GetType(FILTERS()) != "class.Array" {
-				parameter_fields[FILTERS()] = Array{}
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array", structType, parameter, FILTERS()))
+				continue
 			}
 
-			default_filter := Map{"values": GetAllowedStringValues(), "function": getWhitelistCharactersFunc() }
 			filters := parameter_fields.A(FILTERS())
-			filters = append(filters, default_filter)
+
+			if len(filters) == 0 {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s has no filters", structType, parameter, FILTERS()))
+				continue
+			}
 			
 			for filter_index, filter := range filters {
 				filter_map := filter.(Map)

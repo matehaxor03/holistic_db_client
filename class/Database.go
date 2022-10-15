@@ -40,8 +40,9 @@ type Database struct {
 	Validate func() ([]error)
 	Clone func() (*Database)
 	Create func() ([]error)
+	Delete func() ([]error)
 	Exists func() (*bool, []error)
-	GetDatabaseName func() (*string)
+	GetDatabaseName func() (string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
 	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, []error)
@@ -49,7 +50,7 @@ type Database struct {
 	ToJSONString func() string
 }
 
-func NewDatabase(client *Client, database_name *string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
+func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 	var this_database *Database
 
 	SQLCommand := NewSQLCommand()
@@ -57,7 +58,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 	data := Map {
 		"[client]":Map{"value":CloneClient(client),"mandatory":true},
-		"[database_name]":Map{"value":CloneString(database_name),"mandatory":true,
+		"[database_name]":Map{"value":CloneString(&database_name),"mandatory":true,
 		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
 		"[database_create_options]":Map{"value":database_create_options,"mandatory":false},
 	}
@@ -78,8 +79,9 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		data.M("[client]")["value"] = client
 	}
 
-	getDatabaseName := func() (*string) {
-		return CloneString(data.M("[database_name]").S("value"))
+	getDatabaseName := func() (string) {
+		n := CloneString(data.M("[database_name]").S("value"))
+		return *n
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
@@ -101,34 +103,22 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE DATABASE %s ", *getDatabaseName())
+		sql_command := fmt.Sprintf("CREATE DATABASE %s ", getDatabaseName())
 	
-		mapDatabaseCreateOptions := data.M("[database_create_options]")
-		if mapDatabaseCreateOptions == nil {
-			errors = append(errors, fmt.Errorf("database_create_options field not found in data"))	
+		databaseCreateOptions := getDatabaseCreateOptions()
+		if databaseCreateOptions != nil {
+			database_create_options_command, database_create_options_command_errs := (*databaseCreateOptions).GetSQL()
+			if database_create_options_command_errs != nil {
+				errors = append(errors, database_create_options_command_errs...)
+			} else {
+				sql_command += *database_create_options_command
+			}
 		}
-
-		databaseCreateOptions := mapDatabaseCreateOptions.GetObject("value").(*DatabaseCreateOptions)
-		if databaseCreateOptions == nil {
-			errors = append(errors, fmt.Errorf("database_create_options field is nil in data"))	
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-		
-		database_create_options_command, database_create_options_command_errs := (*databaseCreateOptions).GetSQL()
-		if database_create_options_command_errs != nil {
-			errors = append(errors, database_create_options_command_errs...)
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		sql_command += *database_create_options_command
-
 		sql_command += ";"
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
 
 		return &sql_command, nil
 	}
@@ -140,7 +130,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 			return generate_sql_errors
 		}
 	
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": false})
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -171,6 +161,26 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 
 			return nil
 		},
+		Delete: func() ([]error) {
+			errors := validate()
+		
+			if len(errors) > 0 {
+				return errors
+			}
+
+			sql_command := fmt.Sprintf("DROP DATABASE %s;", EscapeString(getDatabaseName()))
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+			
+			if execute_errors != nil {
+				errors = append(errors, execute_errors...)
+			}
+
+			if len(errors) > 0 {
+				return errors
+			}
+
+			return nil
+		},
 		Exists: func() (*bool, []error) {
 			errors := validate()
 		
@@ -178,7 +188,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 				return nil, errors
 			}
 
-			sql_command := fmt.Sprintf("USE %s;", EscapeString(*getDatabaseName()))
+			sql_command := fmt.Sprintf("USE %s;", EscapeString(getDatabaseName()))
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
 			
 			if execute_errors != nil {
@@ -418,7 +428,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		GetClient: func() (*Client) {
 			return getClient()
 		},
-		GetDatabaseName: func() (*string) {
+		GetDatabaseName: func() (string) {
 			return getDatabaseName()
 		},
 		ToJSONString: func() string {
