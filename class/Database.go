@@ -39,7 +39,7 @@ func CloneDatabase(database *Database) (*Database) {
 type Database struct {
 	Validate func() ([]error)
 	Clone func() (*Database)
-	GetSQL func(action string) (*string, []error)
+	//GetSQL func(action string) (*string, []error)
 	Create func() ([]error)
 	GetDatabaseName func() (*string)
 	SetClient func(client *Client) ([]error)
@@ -99,47 +99,15 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 		return this_database
 	}
 
-	getSQL := func(command string) (*string, []error) {
+	getCreateSQL := func() (*string, []error) {
 		errors := validate()
-
-		m := Map{}
-		m.SetArray("values", GET_DATABASE_DATA_DEFINITION_STATEMENTS())
-		m.SetString("value", &command)
-		commandTemp := "command"
-		m.SetString("label", &commandTemp)
-		someValue :=  "dsfdf"
-		m.SetString("data_type", &someValue)
-
-		command_errs := WhiteListString(m)
-
-
-		if command_errs != nil {
-			errors = append(errors, command_errs...)	
-		}
-
-		database_errs := ValidateData(data, "Database")
-
-		if database_errs != nil {
-			errors = append(errors, database_errs...)	
-		}
-
-		logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_DATABASE_OPTIONS(), options, "Database")
-		if logic_options_errs != nil {
-			errors = append(errors, logic_options_errs...)	
-		}
 		
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("%s DATABASE ", command)
-		
-		if *logic_option != "" {
-			sql_command += fmt.Sprintf("%s ", *logic_option)
-		}
-		
-		sql_command += fmt.Sprintf("%s ", *database_name)
-
+		sql_command := fmt.Sprintf("CREATE DATABASE %s ", *getDatabaseName())
+	
 		mapDatabaseCreateOptions := data.M("[database_create_options]")
 		if mapDatabaseCreateOptions == nil {
 			errors = append(errors, fmt.Errorf("database_create_options field not found in data"))	
@@ -171,7 +139,7 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	}
 
 	createDatabase := func() ([]error) {
-		sql_command, generate_sql_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, generate_sql_errors := getCreateSQL()
 	
 		if generate_sql_errors != nil {
 			return generate_sql_errors
@@ -195,9 +163,6 @@ func NewDatabase(client *Client, database_name *string, database_create_options 
 	x := Database{
 		Validate: func() ([]error) {
 			return validate()
-		},
-		GetSQL: func(action string) (*string, []error) {
-			return getSQL(action)
 		},
 		Clone: func() (*Database) {
 			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions(), getOptions())
