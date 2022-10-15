@@ -354,6 +354,17 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 					} else {
 						sql_command += strconv.FormatInt(int64(*value), 10)
 					}
+				case "*time.Time", "time.Time":
+					value, value_errors := column_data.GetTime("value")
+					if value_errors != nil {
+						errors = append(errors, value_errors...)
+					} else {
+						if options.IsBoolTrue("use_file") {
+							sql_command += "'" + FormatTime(*value) + "'"
+						} else {
+							sql_command += "\\'" + FormatTime(*value) + "\\'"
+						}
+					}
 				default:
 					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
