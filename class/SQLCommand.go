@@ -115,6 +115,8 @@ func NewSQLCommand() (*SQLCommand) {
 				command = sql_header_command + " -e '" + sql + "'"
 			}
 
+			fmt.Println(command)
+
 			shell_output, shell_output_errs, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
 			
