@@ -12,8 +12,8 @@ func CloneUser(user *User) *User {
 	return user.Clone()
 }
 
-func GET_USER_DATA_DEFINITION_STATEMENTS() Array {
-	return Array{GET_DATA_DEFINTION_STATEMENT_CREATE()}
+func GET_USER_DATA_DEFINITION_STATEMENTS() Map {
+	return Map{GET_DATA_DEFINTION_STATEMENT_CREATE():nil}
 }
 
 func GET_USER_LOGIC_OPTIONS_CREATE() ([][]string){
@@ -79,7 +79,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		}
 
 		m := Map{}
-		m.SetArray("values", GET_USER_DATA_DEFINITION_STATEMENTS())
+		m.SetMap("values", GET_USER_DATA_DEFINITION_STATEMENTS())
 		m.SetString("value", &action)
 		commandTemp := "command"
 		m.SetString("label", &commandTemp)
