@@ -6,8 +6,8 @@ import (
 	"strconv"
 )
 
-func GET_TABLE_DATA_DEFINITION_STATEMENTS() Array {
-	return Array {GET_DATA_DEFINTION_STATEMENT_CREATE()}
+func GET_TABLE_DATA_DEFINITION_STATEMENTS() Map {
+	return Map {GET_DATA_DEFINTION_STATEMENT_CREATE():nil}
 }
 
 func GET_TABLE_LOGIC_OPTIONS_CREATE() ([][]string){
@@ -299,7 +299,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		errors := validate()
 
 		m := Map{}
-		m.SetArray("values", GET_TABLE_DATA_DEFINITION_STATEMENTS())
+		m.SetMap("values", GET_TABLE_DATA_DEFINITION_STATEMENTS())
 		m.SetString("value", &command)
 		commandTemp := "command"
 		m.SetString("label", &commandTemp)
