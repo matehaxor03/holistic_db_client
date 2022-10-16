@@ -32,6 +32,10 @@ func GET_ALLOWED_GRANTS() Map {
 	return Map{GRANT_ALL():nil, GRANT_INSERT():nil, GRANT_UPDATE():nil, GRANT_SELECT():nil}
 }
 
+func GET_ALLOWED_FILTERS() Map {
+	return Map{"*":nil}
+}
+
 type Grant struct {
 	Clone func() (*Grant)
 	Validate func() ([]error)
@@ -47,8 +51,9 @@ func NewGrant(client *Client, user *User, grant_value *string, filter *string) (
 		"[client]":Map{"value":CloneClient(client),"mandatory":true},
 		"[user]":Map{"value":CloneUser(user),"mandatory":true},		
 		"[grant]":Map{"value":CloneString(grant_value),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":getWhitelistStringFunc()}}},
-		"[filter]":Map{"value":CloneString(filter),"mandatory":true},
+		FILTERS():Array{ Map {"values":GET_ALLOWED_GRANTS(),"function":getWhitelistStringFunc()}}},
+		"[filter]":Map{"value":CloneString(filter),"mandatory":true, 
+	    FILTERS():Array{ Map {"values":GET_ALLOWED_FILTERS(),"function":getWhitelistCharactersFunc()}}},
 	}
 
 	validate := func() ([]error) {
