@@ -93,7 +93,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			if errors != nil {
 				return nil, errors
 			}
-			
+
 			return database, nil
 		},
 		DeleteDatabase: func(database_name string) ([]error) {

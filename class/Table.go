@@ -6,75 +6,6 @@ import (
 	"strconv"
 )
 
-func GetTableNameValidCharacters() Map {
-	temp := Map{"a":nil,
-				"b":nil,
-				"c":nil,
-				"d":nil,
-				"e":nil,
-				"f":nil,
-				"g":nil,
-				"h":nil,
-				"i":nil,
-				"j":nil,
-				"k":nil,
-				"l":nil,
-				"m":nil,
-				"n":nil,
-				"o":nil,
-				"p":nil,
-				"q":nil,
-				"r":nil,
-				"s":nil,
-				"t":nil,
-				"u":nil,
-				"v":nil,
-				"w":nil,
-				"x":nil,
-				"y":nil,
-				"z":nil,
-				"A":nil,
-				"B":nil,
-				"C":nil,
-				"D":nil,
-				"E":nil,
-				"F":nil,
-				"G":nil,
-				"H":nil,
-				"I":nil,
-				"J":nil,
-				"K":nil,
-				"L":nil,
-				"M":nil,
-				"N":nil,
-				"O":nil,
-				"P":nil,
-				"Q":nil,
-				"R":nil,
-				"S":nil,
-				"T":nil,
-				"U":nil,
-				"V":nil,
-				"W":nil,
-				"X":nil,
-				"Y":nil,
-				"Z":nil,
-				"0":nil,
-				"1":nil,
-				"2":nil,
-				"3":nil,
-				"4":nil,
-				"5":nil,
-				"6":nil,
-				"7":nil,
-				"8":nil,
-				"9":nil,
-				"-":nil,
-				"_":nil,
-				".":nil}
-	return temp
-}
-
 func GetColumnNameValidCharacters() Map {
 	temp := Map{"a":nil,
 				"b":nil,
@@ -156,6 +87,7 @@ type Table struct {
 	Clone func() (*Table)
 	Exists func() (*bool, []error) 
 	Create func() ([]error)
+	Delete func() ([]error)
 	GetTableName func() (*string)
 	GetTableColumns func() ([]string)
 	GetIdentityColumns func() ([]string)
@@ -468,6 +400,25 @@ func NewTable(database *Database, schema Map) (*Table, []error) {
 			}
 
 			return &count, nil
+		},
+		Delete: func() ([]error) {
+			errors := validate()
+			if errors != nil {
+				return errors
+			}
+
+			sql :=  fmt.Sprintf("DROP TABLE %s;", EscapeString((*getTableName())))
+			_, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+
+			if sql_errors != nil {
+				errors = append(errors, sql_errors...)
+			}
+		
+			if len(errors) > 0 {
+				return errors
+			}
+
+			return nil
 		},
 		CreateRecord: func(new_record_data Map) (*Record, []error) {
 			errors := validate()

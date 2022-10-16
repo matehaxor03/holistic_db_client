@@ -386,7 +386,7 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	return &logic_option, nil
 }
 
-func ValidateData(fields Map, structType string) []error {	
+func ValidateData(fields Map, structType string) []error {			
 	var errors []error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
