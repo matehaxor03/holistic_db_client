@@ -38,6 +38,7 @@ type Database struct {
 	Create func() ([]error)
 	Delete func() ([]error)
 	Exists func() (*bool, []error)
+	TableExists func(table_name string) (*bool, []error)
 	GetDatabaseName func() (string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
@@ -198,6 +199,17 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 
 			boolean_value = true
 			return &boolean_value, nil
+		},
+		TableExists: func(table_name string) (*bool, []error) {
+			schema := Map{"[table_name]": Map{"type":"*string", "value":CloneString(&table_name)}}
+			
+			table, table_errors := NewTable(getDatabase(), schema)
+			
+			if table_errors != nil {
+				return nil, table_errors
+			}
+
+			return table.Exists()
 		},
 		CreateTable: func(schema Map) (*Table, []error) {
 			table, new_table_errors := NewTable(getDatabase(), schema)
