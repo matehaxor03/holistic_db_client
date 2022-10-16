@@ -6,25 +6,6 @@ import (
 	"strconv"
 )
 
-func GET_TABLE_DATA_DEFINITION_STATEMENTS() Map {
-	return Map {GET_DATA_DEFINTION_STATEMENT_CREATE():nil}
-}
-
-func GET_TABLE_LOGIC_OPTIONS_CREATE() ([][]string){
-	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
-}
-
-func GET_TABLE_OPTIONS() (map[string]map[string][][]string) {
-	var root = make(map[string]map[string][][]string)
-	
-	var logic_options = make(map[string][][]string)
-	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_TABLE_LOGIC_OPTIONS_CREATE()
-
-	root[GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
-
-	return root
-}
-
 func GetTableNameValidCharacters() Map {
 	temp := Map{"a":nil,
 				"b":nil,
@@ -173,7 +154,7 @@ func CloneTable(table *Table) (*Table) {
 type Table struct {
 	Validate func() ([]error)
 	Clone func() (*Table)
-	GetSQL func(action string) (*string, []error)
+	Exists func() (*bool, []error) 
 	Create func() ([]error)
 	GetTableName func() (*string)
 	GetTableColumns func() ([]string)
@@ -187,7 +168,7 @@ type Table struct {
 	ToJSONString func() string
 }
 
-func NewTable(database *Database, schema Map, options map[string]map[string][][]string) (*Table, []error) {
+func NewTable(database *Database, schema Map) (*Table, []error) {
 	var this_table *Table
 	SQLCommand := NewSQLCommand()
 	var errors []error
@@ -213,7 +194,6 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 
 	data := schema.Clone()
 	data["[database]"] = Map{"value":CloneDatabase(database),"mandatory":true}
-	data["[options]"] = Map{"value":options,"mandatory":false}
 	data["active"] = Map{"type":"*bool", "mandatory":true, "default":true}
 	data["created_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
@@ -283,10 +263,6 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
 	}
 
-	getOptions := func() (map[string]map[string][][]string) {
-		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
-	}
-
 	setTable := func(table *Table) {
 		this_table = table
 	}
@@ -295,40 +271,14 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		return this_table
 	}
 
-	getSQL := func(command string) (*string, []error) {
+	getCreateSQL := func() (*string, []error) {
 		errors := validate()
 
-		m := Map{}
-		m.SetMap("values", GET_TABLE_DATA_DEFINITION_STATEMENTS())
-		m.SetString("value", &command)
-		commandTemp := "command"
-		m.SetString("label", &commandTemp)
-		someValue :=  "Table"
-		m.SetString("data_type", &someValue)
-
-		command_errs := WhiteListString(m)
-
-
-		if command_errs != nil {
-			errors = append(errors, command_errs...)	
-		}
-
-		logic_option, logic_options_errs := GetLogicCommand(command, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_TABLE_OPTIONS(), options, "Table")
-		if logic_options_errs != nil {
-			errors = append(errors, logic_options_errs...)	
-		}
-		
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("%s TABLE ", command)
-		
-		if *logic_option != "" {
-			sql_command += fmt.Sprintf("%s ", *logic_option)
-		}
-		
-		sql_command += fmt.Sprintf("%s ", EscapeString(*getTableName()))
+		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(*getTableName()))
 
 		valid_columns := getTableColumns()
 		primary_key_count := 0
@@ -422,7 +372,7 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 				sql_command += ", "
 			}
 		}
-		sql_command += ")"
+		sql_command += ");"
 
 		if primary_key_count == 0 {
 			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(*getTableName())))
@@ -432,13 +382,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			return nil, errors
 		}
 
-		sql_command += ";"
-
 		return &sql_command, nil
 	}
 
 	createTable := func() ([]error) {
-		sql_command, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
+		sql_command, sql_command_errors := getCreateSQL()
 	
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -467,14 +415,11 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 		Validate: func() ([]error) {
 			return validate()
 		},
-		GetSQL: func(action string) (*string, []error) {
-			return getSQL(action)
-		},
 		GetDatabase: func() (*Database) {
 			return getDatabase()
 		},
 		Clone: func() (*Table) {
-			clone_value, _ := NewTable(getDatabase(), getData(), getOptions())
+			clone_value, _ := NewTable(getDatabase(), getData())
 			return clone_value
 		},
 		GetTableColumns: func() ([]string) {
@@ -675,6 +620,31 @@ func NewTable(database *Database, schema Map, options map[string]map[string][][]
 			}
 
 			return &mapped_records, nil
+		},
+		Exists: func() (*bool, []error) {
+			var errors []error
+			validate_errors := validate()
+			if errors != nil {
+				errors = append(errors, validate_errors...)
+				return nil, errors
+			}
+
+			sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(*getTableName()))
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql_command, Map{"use_file": false})
+			
+			if execute_errors != nil {
+				errors = append(errors, execute_errors...)
+			}
+
+			boolean_value := false
+			if len(errors) > 0 {
+				//todo: check error message e.g database does not exist
+				boolean_value = false
+				return &boolean_value, nil
+			}
+
+			boolean_value = true
+			return &boolean_value, nil
 		},
 		GetData: func() (Map) {
 			return getData()

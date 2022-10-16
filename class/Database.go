@@ -41,7 +41,7 @@ type Database struct {
 	GetDatabaseName func() (string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
-	CreateTable func(schema Map, options map[string]map[string][][]string) (*Table, []error)
+	CreateTable func(schema Map) (*Table, []error)
 	GetTable func(table_name string) (*Table, []error)
 	ToJSONString func() string
 }
@@ -199,8 +199,8 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			boolean_value = true
 			return &boolean_value, nil
 		},
-		CreateTable: func(schema Map, options map[string]map[string][][]string) (*Table, []error) {
-			table, new_table_errors := NewTable(getDatabase(), schema, options)
+		CreateTable: func(schema Map) (*Table, []error) {
+			table, new_table_errors := NewTable(getDatabase(), schema)
 			
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -392,7 +392,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, new_table_errors := NewTable(getDatabase(), schema, nil)
+			table, new_table_errors := NewTable(getDatabase(), schema)
 			
 			if new_table_errors != nil {
 				return nil, new_table_errors
