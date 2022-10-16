@@ -38,44 +38,39 @@ func getWhitelistStringFunc() (*func(m Map) []error) {
 }
 
 func WhiteListString(m Map) []error {
-	array := m.A("values")
+	var errors []error 
+	map_values := m.M("values")
 	str := m.S("value")
 	label := m.S("label")
 	data_type := m.S("data_type")
 		
-	var errors []error 
-	if array == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: has nil array", *data_type, *label))
-	}
-
-	if len(array) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: has empty array", *data_type, *label))
-	}
-
-	for _, value := range array {
-		if value == "" {
-			errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: array has empty value", *data_type, *label))
-		}
+	if map_values == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
+	} else if len(*map_values) == 0 {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: ContainsExactMatch: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
 		return errors
 	}
-	
-	for _, value := range array {
-		if value == *str {
-			return nil
-		}
-	}
 
-    errors = append(errors, fmt.Errorf("%s: %s has value '%s' expected to have value in %s", *data_type, *label, *str , array))
-	return errors
+	_, found := (*map_values)[*str]
+
+	if !found {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: did not find value", *data_type, *label))
+	}
+	
+	if len(errors) > 0 {
+		return errors
+	}
+	
+	return nil
 }
 
 func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeof string) []error {
@@ -113,51 +108,45 @@ func getWhitelistCharactersFunc() (*func(m Map) []error) {
 
 func WhitelistCharacters(m Map) ([]error) {
 	var errors []error 
-
-	whitelist := m.S("values")
-	str := (m.S("value"))
-	label := (m.S("label"))
-	typeOf := (m.S("data_type"))
+	map_values := m.M("values")
+	str := m.S("value")
+	label := m.S("label")
+	data_type := m.S("data_type")
+		
+	if map_values == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has nil map", *data_type, *label))
+	} else if len(*map_values) == 0 {
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has empty array", *data_type, *label))
+	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s %s value is nil", *typeOf, *label))
-		return errors
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: compare value is nil", *data_type, *label))
+	} else if *str == "" {
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: compare value is empty", *data_type, *label))
 	}
 
-	if *str == "" {
-		errors = append(errors, fmt.Errorf("%s %s value is empty", *typeOf, *label))
-		return errors
-	}
-
-	if whitelist == nil {
-		errors = append(errors, fmt.Errorf("%s %s values is nil", *typeOf, *label))
-		return errors
-	}
-
-	if *whitelist == "" {
-		errors = append(errors, fmt.Errorf("%s %s values is empty", *typeOf, *label))
-		return errors
-	}
-
-	for _, letter := range *str {
-		found := false
-
-		for _, check := range *whitelist {
-			if check == letter {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			errors = append(errors, fmt.Errorf("%s invalid letter %s for %s please use %s", *typeOf, string(letter), *label, *whitelist))
-		}
-	}
-	
 	if len(errors) > 0 {
 		return errors
 	}
 
+	var invalid_letters []string
+	for _, letter_rune := range *str  {
+		letter_string := string(letter_rune)
+		_, found := (*map_values)[letter_string]
+
+		if !found {
+			invalid_letters = append(invalid_letters, letter_string)
+		}
+	}
+
+	if len(invalid_letters) > 0 {
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has invalid character(s): %s", *data_type, *label, invalid_letters))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+	
 	return nil
  }
 
@@ -179,14 +168,144 @@ func IsLower(s string) bool {
     return true
 }
 
-func GetConstantValueAllowedCharacters() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_=.*"
+func GetConstantValueAllowedCharacters() (Map) {
+	temp := Map{"a":nil,
+				"b":nil,
+				"c":nil,
+				"d":nil,
+				"e":nil,
+				"f":nil,
+				"g":nil,
+				"h":nil,
+				"i":nil,
+				"j":nil,
+				"k":nil,
+				"l":nil,
+				"m":nil,
+				"n":nil,
+				"o":nil,
+				"p":nil,
+				"q":nil,
+				"r":nil,
+				"s":nil,
+				"t":nil,
+				"u":nil,
+				"v":nil,
+				"w":nil,
+				"x":nil,
+				"y":nil,
+				"z":nil,
+				"A":nil,
+				"B":nil,
+				"C":nil,
+				"D":nil,
+				"E":nil,
+				"F":nil,
+				"G":nil,
+				"H":nil,
+				"I":nil,
+				"J":nil,
+				"K":nil,
+				"L":nil,
+				"M":nil,
+				"N":nil,
+				"O":nil,
+				"P":nil,
+				"Q":nil,
+				"R":nil,
+				"S":nil,
+				"T":nil,
+				"U":nil,
+				"V":nil,
+				"W":nil,
+				"X":nil,
+				"Y":nil,
+				"Z":nil,
+				"0":nil,
+				"1":nil,
+				"2":nil,
+				"3":nil,
+				"4":nil,
+				"5":nil,
+				"6":nil,
+				"7":nil,
+				"8":nil,
+				"9":nil,
+				"-":nil,
+				"_":nil,
+				".":nil}
+	return temp
 }
 
-func GetAllowedStringValues() (string) {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_=.*"
+func GetAllowedStringValues() (Map) {
+	temp := Map{"a":nil,
+				"b":nil,
+				"c":nil,
+				"d":nil,
+				"e":nil,
+				"f":nil,
+				"g":nil,
+				"h":nil,
+				"i":nil,
+				"j":nil,
+				"k":nil,
+				"l":nil,
+				"m":nil,
+				"n":nil,
+				"o":nil,
+				"p":nil,
+				"q":nil,
+				"r":nil,
+				"s":nil,
+				"t":nil,
+				"u":nil,
+				"v":nil,
+				"w":nil,
+				"x":nil,
+				"y":nil,
+				"z":nil,
+				"A":nil,
+				"B":nil,
+				"C":nil,
+				"D":nil,
+				"E":nil,
+				"F":nil,
+				"G":nil,
+				"H":nil,
+				"I":nil,
+				"J":nil,
+				"K":nil,
+				"L":nil,
+				"M":nil,
+				"N":nil,
+				"O":nil,
+				"P":nil,
+				"Q":nil,
+				"R":nil,
+				"S":nil,
+				"T":nil,
+				"U":nil,
+				"V":nil,
+				"W":nil,
+				"X":nil,
+				"Y":nil,
+				"Z":nil,
+				"0":nil,
+				"1":nil,
+				"2":nil,
+				"3":nil,
+				"4":nil,
+				"5":nil,
+				"6":nil,
+				"7":nil,
+				"8":nil,
+				"9":nil,
+				"-":nil,
+				"_":nil,
+				".":nil,
+			    "*":nil}
+	return temp
 }
-
 
 func ValidateOptions(extra_options map[string]map[string][][]string, reflect_value reflect.Value) ([]error) {
 	var errors []error 
@@ -267,7 +386,7 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 	return &logic_option, nil
 }
 
-func ValidateData(fields Map, structType string) []error {
+func ValidateData(fields Map, structType string) []error {	
 	var errors []error 
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
@@ -338,7 +457,7 @@ func ValidateData(fields Map, structType string) []error {
 			continue
 		}
 
-		typeOf := fmt.Sprintf("%T", parameter_fields[attribute_to_validate])
+		typeOf := fmt.Sprintf("%T", (*parameter_fields)[attribute_to_validate])
 		
 		switch typeOf {
 		case "map[string]map[string][][]string":

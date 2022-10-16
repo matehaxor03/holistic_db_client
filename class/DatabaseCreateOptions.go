@@ -28,8 +28,8 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return "utf8mb4"
 	}
 	
-	GET_CHARACTER_SETS := func() Array {
-		return Array{GET_CHARACTER_SET_UTF8(), GET_CHARACTER_SET_UTF8MB4()}
+	GET_CHARACTER_SETS := func() Map {
+		return Map{GET_CHARACTER_SET_UTF8():nil, GET_CHARACTER_SET_UTF8MB4():nil}
 	}
 	
 	GET_COLLATE_UTF8_GENERAL_CI := func() string {
@@ -40,8 +40,8 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return "utf8mb4_0900_ai_ci"
 	}
 	
-	GET_COLLATES := func() Array {
-		return Array{GET_COLLATE_UTF8_GENERAL_CI(), GET_COLLATE_UTF8MB4_0900_AI_CI()}
+	GET_COLLATES := func() Map {
+		return Map{GET_COLLATE_UTF8_GENERAL_CI():nil, GET_COLLATE_UTF8MB4_0900_AI_CI():nil}
 	}
 	
 	data := Map {

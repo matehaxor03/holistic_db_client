@@ -24,10 +24,6 @@ func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
 	return root
 }
 
-func GetDatabasenameValidCharacters() string {
-	return "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890.="
-}
-
 func CloneDatabase(database *Database) (*Database) {
 	if database == nil {
 		return nil
@@ -52,14 +48,12 @@ type Database struct {
 
 func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 	var this_database *Database
-
 	SQLCommand := NewSQLCommand()
-	database_name_whitelist := GetDatabasenameValidCharacters()
 
 	data := Map {
 		"[client]":Map{"value":CloneClient(client),"mandatory":true},
 		"[database_name]":Map{"value":CloneString(&database_name),"mandatory":true,
-		FILTERS(): Array{ Map {"values":&database_name_whitelist,"function":getWhitelistCharactersFunc() }}},
+		FILTERS(): Array{ Map {"values":GetDatabaseNameValidCharacters(),"function":getWhitelistCharactersFunc() }}},
 		"[database_create_options]":Map{"value":database_create_options,"mandatory":false},
 	}
 
@@ -76,7 +70,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setClient := func(client *Client) {
-		data.M("[client]")["value"] = client
+		(*(data.M("[client]")))["value"] = client
 	}
 
 	getDatabaseName := func() (string) {

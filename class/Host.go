@@ -18,14 +18,60 @@ func CloneHost(host *Host) *Host {
 
 func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	
-	getHostNameValidCharacters := func() (*string) {
-		temp := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890."
-		return &temp
+	getHostNameValidCharacters := func() Map {
+		temp := Map{"a":nil,
+		            "b":nil,
+					"c":nil,
+					"d":nil,
+					"e":nil,
+					"f":nil,
+					"g":nil,
+					"h":nil,
+					"i":nil,
+					"j":nil,
+					"k":nil,
+					"l":nil,
+					"m":nil,
+					"n":nil,
+					"o":nil,
+					"p":nil,
+					"q":nil,
+					"r":nil,
+					"s":nil,
+					"t":nil,
+					"u":nil,
+					"v":nil,
+					"w":nil,
+					"x":nil,
+					"y":nil,
+					"z":nil,
+					"0":nil,
+					"1":nil,
+					"2":nil,
+					"3":nil,
+					"4":nil,
+					"5":nil,
+					"6":nil,
+					"7":nil,
+					"8":nil,
+					"9":nil,
+					"-":nil,
+				    ".":nil}
+		return temp
 	}
 	
-	getValidPortCharacters := func() (*string) {
-		temp := "1234567890"
-		return &temp
+	getValidPortCharacters := func() (Map) {
+		temp := Map{"0":nil,
+					"1":nil,
+					"2":nil,
+					"3":nil,
+					"4":nil,
+					"5":nil,
+					"6":nil,
+					"7":nil,
+					"8":nil,
+					"9":nil}
+		return temp
 	}
 	
 	data := Map {

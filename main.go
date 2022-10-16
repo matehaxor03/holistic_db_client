@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sort"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -153,48 +154,10 @@ func main() {
 			os.Exit(1)
 		}
 	} else if command_value == TEST_DATABASE_NAME_WHITELIST_COMMAND {
-		invalid_runes := map[uint64]bool{}
-		var percent_completed float64
-		var current_value uint64 
-		var max_value uint64
-
-		current_value = 0
-		max_value = 4294967295
-		
-		for current_value <= max_value {
-			percent_completed = (float64(current_value) / float64(max_value)) * 100.0
-			percent_completed_string_value := fmt.Sprintf("%.2f", percent_completed) + "%"
-			current_rune := rune(current_value)
-			string_value := string(current_rune)
-
-			database_exists, database_exists_errors := client.DatabaseExists(string_value)
-			if database_exists_errors != nil {
-				fmt.Println(fmt.Sprintf("invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-				invalid_runes[current_value] = true
-				current_value += 1
-				continue
-			}
-			
-			if *database_exists {
-				database_deleted_errors := client.DeleteDatabase(string_value)
-				if database_deleted_errors != nil {
-					errors = append(errors, database_deleted_errors...)
-				}
-			}
-
-			_, database_errors := client.CreateDatabase(string_value, nil)
-			if database_errors != nil {
-				fmt.Println(fmt.Sprintf("invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-				invalid_runes[current_value] = true
-			} else {
-				fmt.Println(fmt.Sprintf("valid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-				database_deleted_errors := client.DeleteDatabase(string_value)
-				if database_deleted_errors != nil {
-					errors = append(errors, database_deleted_errors...)
-				}
-			}
-			current_value += 1
-		}	
+		test_database_name_errors := testDatabaseName(client)
+		if test_database_name_errors != nil {
+			errors = append(errors, test_database_name_errors...)
+		}
 	} else {
 		fmt.Printf("command: %s is not supported", command_value)
 		os.Exit(1)
@@ -206,6 +169,115 @@ func main() {
 	}	
 	
 	os.Exit(0)
+}
+
+func testDatabaseName(client *class.Client) []error {
+	var errors []error
+	valid_runes := map[uint64]bool{}
+	var percent_completed float64
+	var current_value uint64 
+	var max_value uint64
+
+	current_value = 0
+	max_value = 127
+
+	filename := "./class/DatabaseNameWhitelist.go"
+
+	for current_value <= max_value {
+		percent_completed = (float64(current_value) / float64(max_value)) * 100.0
+		percent_completed_string_value := fmt.Sprintf("%.2f", percent_completed) + "%"
+		current_rune := rune(current_value)
+		string_value := string(current_rune)
+
+		if len(string_value) != 1 {
+			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+
+		if strings.TrimSpace(string_value) == "" {
+			fmt.Println(fmt.Sprintf("value is empty invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+
+		// double it due to defect in mysql with database names i or I
+		string_value += string_value
+
+		database_exists, database_exists_errors := client.DatabaseExists(string_value)
+		if database_exists_errors != nil {
+			fmt.Println(fmt.Sprintf("client.DatabaseExists: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+		
+		if *database_exists {
+			database_deleted_errors := client.DeleteDatabase(string_value)
+			if database_deleted_errors != nil {
+				fmt.Println(fmt.Sprintf("client.DeleteDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+				errors = append(errors, database_deleted_errors...)
+			}
+		}
+
+		_, database_errors := client.CreateDatabase(string_value, nil)
+		if database_errors != nil {
+			fmt.Println(fmt.Sprintf("client.CreateDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+		} else {
+			fmt.Println(fmt.Sprintf("valid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			valid_runes[current_value] = true
+			database_deleted_errors := client.DeleteDatabase(string_value)
+			if database_deleted_errors != nil {
+				errors = append(errors, database_deleted_errors...)
+			}
+		}
+		current_value += 1
+	}	
+	
+	if len(errors) > 0 {
+		return errors
+	}
+
+	valid_rune_file, valid_rune_file_error := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if valid_rune_file_error != nil {
+		errors = append(errors, valid_rune_file_error)
+	}
+	defer valid_rune_file.Close()
+
+
+	if _, valid_error := valid_rune_file.WriteString("package class\nfunc GetDatabaseNameValidCharacters() Map {\nreturn Map{\n"); valid_error != nil {
+		errors = append(errors, valid_error)
+		return errors
+	}
+
+	sorted_keys := make([]uint64, 0, len(valid_runes))
+    for k := range valid_runes {
+        sorted_keys = append(sorted_keys, k)
+    }
+	sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
+
+
+	length := len(valid_runes)
+	for index, key := range sorted_keys {
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("\t\"%s\":nil", string(key))); valid_error != nil {
+			errors = append(errors, valid_error)
+			return errors
+		}
+
+		if uint64(index) < uint64(length - 1) {
+			if _, valid_error := valid_rune_file.WriteString(",\n"); valid_error != nil {
+				errors = append(errors, valid_error)
+				return errors
+			}
+		}
+	}
+
+
+	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
+		errors = append(errors, valid_error)
+		return errors
+	}
+	
+	return nil
 }
 
 func getParams(params []string) (map[string]*string, []error) {

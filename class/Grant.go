@@ -12,6 +12,26 @@ func CloneGrant(grant *Grant) *Grant {
 	return grant.Clone()
 }
 
+func GRANT_ALL() string {
+	return "ALL"
+}
+
+func GRANT_INSERT() string {
+	return "INSERT"
+}
+
+func GRANT_UPDATE() string {
+	return "UPDATE"
+}
+
+func GRANT_SELECT() string {
+	return "SELECT"
+}
+
+func GET_ALLOWED_GRANTS() Map {
+	return Map{GRANT_ALL():nil, GRANT_INSERT():nil, GRANT_UPDATE():nil, GRANT_SELECT():nil}
+}
+
 type Grant struct {
 	Clone func() (*Grant)
 	Validate func() ([]error)
@@ -22,26 +42,6 @@ type Grant struct {
 
 func NewGrant(client *Client, user *User, grant_value *string, filter *string) (*Grant, []error) {
 	SQLCommand := NewSQLCommand()
-
-	ALL := func() string {
-		return "ALL"
-	}
-
-	INSERT := func() string {
-		return "INSERT"
-	}
-
-	UPDATE := func() string {
-		return "UPDATE"
-	}
-
-	SELECT := func() string {
-		return "SELECT"
-	}
-	
-	GET_ALLOWED_GRANTS := func() Array {
-		return Array{ALL(), INSERT(), UPDATE(), SELECT()}
-	}
 	
 	data := Map {
 		"[client]":Map{"value":CloneClient(client),"mandatory":true},

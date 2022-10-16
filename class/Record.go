@@ -57,7 +57,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				for _, schema_column_data := range table_data.M(column).Keys() {
 					switch schema_column_data {
 					case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned": 
-						column_data[schema_column_data] = table_data.M(column)[schema_column_data]
+						column_data[schema_column_data] = (*(table_data).M(column))[schema_column_data]
 					case "value":
 					default:
 						errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
@@ -318,7 +318,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, errors
 		}
 
-		record.M("last_modified_date")["value"] = GetTimeNow()
+		(*(record.M("last_modified_date")))["value"] = GetTimeNow()
 
 		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(*getTable().GetTableName()))
 

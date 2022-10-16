@@ -9,17 +9,30 @@ import (
 
 type Map map[string]interface{}
 
-func (m Map) M(s string) Map {
-	rep := fmt.Sprintf("%T", m[s])
-	
-	switch rep {
-	case "class.Map":
-		return m[s].(Map)
-	default:
-		panic(fmt.Errorf("Map.M: type %s is not supported please implement for key %s", rep, s))
+func (m Map) M(s string) *Map {
+	var errors []error
+	if m.IsNil(s) {
+		return nil
 	}
 
-	return nil
+	var result *Map
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "class.Map":
+		value := m[s].(Map)
+		result = &value 
+	case "*class.Map":
+		value := *(m[s].(*Map))
+		result = &value
+	default:
+		errors = append(errors, fmt.Errorf("Map.M: type %s is not supported please implement for key %s", rep, s))
+	}
+
+	if len(errors) > 0 {
+		return nil
+	}
+
+	return result
 }
 
 func (m Map) SetMap(s string, zap Map) {

@@ -56,13 +56,13 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	}
 
 	setDatabase := func(database *Database) {
-		(data.M("[database]"))["value"] = CloneDatabase(database)
+		(*(data.M("[database]")))["value"] = CloneDatabase(database)
 	}
 
 	setDatabaseUsername := func(database_username string) {
-		(data.M("[database_username]"))["value"] = CloneString(&database_username)
+		(*(data.M("[database_username]")))["value"] = CloneString(&database_username)
 	}
-
+ 
 	validate := func() ([]error) {
 		return ValidateData(data, "Client")
 	}

@@ -16,8 +16,8 @@ func LOCALHOST_IP() string {
 	return "127.0.0.1"
 }
 
-func GET_ALLOWED_DOMAIN_NAMES() Array {
-	return Array{LOCALHOST_IP()}
+func GET_ALLOWED_DOMAIN_NAMES() Map {
+	return Map{LOCALHOST_IP():nil}
 }
 
 type DomainName struct {
