@@ -26,7 +26,7 @@ func (a Array) ToJSONString() string {
 			json += value.(Array).ToJSONString()
 		case "reflect.Value":
 			json = json + fmt.Sprintf("\"%s\"", value)
-		case "func(class.Map) []error": 
+		case "func(class.Map) []error":
 			json = json + fmt.Sprintf("\"func(class.Map) []error\"")
 		case "<nil>":
 			json = json + fmt.Sprintf("null")
@@ -36,7 +36,7 @@ func (a Array) ToJSONString() string {
 
 		if i < length {
 			json += ","
-		} 
+		}
 
 		json += "\n"
 	}
@@ -45,7 +45,7 @@ func (a Array) ToJSONString() string {
 }
 
 func (a Array) ToPrimativeArray() []string {
-	var results []string 
+	var results []string
 	for _, value := range a {
 		rep := fmt.Sprintf("%T", value)
 		switch rep {
@@ -66,7 +66,7 @@ func (a Array) Clone() Array {
 		switch rep {
 		case "string":
 			clone = append(clone, current)
-			break	
+			break
 		case "class.Map":
 			clone = append(clone, current.(Map).Clone())
 			break

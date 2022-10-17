@@ -6,16 +6,16 @@ import (
 )
 
 func GET_DATABASE_DATA_DEFINITION_STATEMENTS() Array {
-	return Array {GET_DATA_DEFINTION_STATEMENT_CREATE()}
+	return Array{GET_DATA_DEFINTION_STATEMENT_CREATE()}
 }
 
-func GET_DATABASE_LOGIC_OPTIONS_CREATE() ([][]string){
+func GET_DATABASE_LOGIC_OPTIONS_CREATE() [][]string {
 	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
 }
 
-func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
+func GET_DATABASE_OPTIONS() map[string]map[string][][]string {
 	var root = make(map[string]map[string][][]string)
-	
+
 	var logic_options = make(map[string][][]string)
 	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_DATABASE_LOGIC_OPTIONS_CREATE()
 
@@ -24,7 +24,7 @@ func GET_DATABASE_OPTIONS() (map[string]map[string][][]string) {
 	return root
 }
 
-func CloneDatabase(database *Database) (*Database) {
+func CloneDatabase(database *Database) *Database {
 	if database == nil {
 		return nil
 	}
@@ -33,40 +33,40 @@ func CloneDatabase(database *Database) (*Database) {
 }
 
 type Database struct {
-	Validate func() ([]error)
-	Clone func() (*Database)
-	Create func() ([]error)
-	Delete func() ([]error)
-	Exists func() (*bool, []error)
-	TableExists func(table_name string) (*bool, []error)
-	GetDatabaseName func() (string)
-	SetClient func(client *Client) ([]error)
-	GetClient func() (*Client)
-	CreateTable func(table_name string, schema Map) (*Table, []error)
-	GetTable func(table_name string) (*Table, []error)
-	ToJSONString func() string
+	Validate        func() []error
+	Clone           func() *Database
+	Create          func() []error
+	Delete          func() []error
+	Exists          func() (*bool, []error)
+	TableExists     func(table_name string) (*bool, []error)
+	GetDatabaseName func() string
+	SetClient       func(client *Client) []error
+	GetClient       func() *Client
+	CreateTable     func(table_name string, schema Map) (*Table, []error)
+	GetTable        func(table_name string) (*Table, []error)
+	ToJSONString    func() string
 }
 
 func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 	var this_database *Database
 	SQLCommand := NewSQLCommand()
 
-	data := Map {
-		"[client]":Map{"value":CloneClient(client),"mandatory":true},
-		"[database_name]":Map{"value":CloneString(&database_name),"mandatory":true,
-		FILTERS(): Array{ Map {"values":GetDatabaseNameValidCharacters(),"function":getWhitelistCharactersFunc() }}},
-		"[database_create_options]":Map{"value":database_create_options,"mandatory":false},
+	data := Map{
+		"[client]": Map{"value": CloneClient(client), "mandatory": true},
+		"[database_name]": Map{"value": CloneString(&database_name), "mandatory": true,
+			FILTERS(): Array{Map{"values": GetDatabaseNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
 	}
 
-	getData := func() (Map) {
+	getData := func() Map {
 		return data.Clone()
 	}
 
-	validate := func() ([]error) {
+	validate := func() []error {
 		return ValidateData(data, "Database")
 	}
 
-	getClient := func() (*Client) {
+	getClient := func() *Client {
 		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
@@ -74,12 +74,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		(*(data.M("[client]")))["value"] = client
 	}
 
-	getDatabaseName := func() (string) {
+	getDatabaseName := func() string {
 		n := CloneString(data.M("[database_name]").S("value"))
 		return *n
 	}
 
-	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
+	getDatabaseCreateOptions := func() *DatabaseCreateOptions {
 		return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
 	}
 
@@ -93,13 +93,13 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 
 	getCreateSQL := func() (*string, []error) {
 		errors := validate()
-		
+
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
 		sql_command := fmt.Sprintf("CREATE DATABASE %s ", getDatabaseName())
-	
+
 		databaseCreateOptions := getDatabaseCreateOptions()
 		if databaseCreateOptions != nil {
 			database_create_options_command, database_create_options_command_errs := (*databaseCreateOptions).GetSQL()
@@ -118,19 +118,19 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return &sql_command, nil
 	}
 
-	createDatabase := func() ([]error) {
+	createDatabase := func() []error {
 		sql_command, generate_sql_errors := getCreateSQL()
-	
+
 		if generate_sql_errors != nil {
 			return generate_sql_errors
 		}
-	
+
 		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": false})
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
 		}
-	
+
 		return nil
 	}
 
@@ -139,16 +139,16 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	if errors != nil {
 		return nil, errors
 	}
-	
+
 	x := Database{
-		Validate: func() ([]error) {
+		Validate: func() []error {
 			return validate()
 		},
-		Clone: func() (*Database) {
+		Clone: func() *Database {
 			clone_value, _ := NewDatabase(getClient(), getDatabaseName(), getDatabaseCreateOptions())
 			return clone_value
 		},
-		Create: func() ([]error) {
+		Create: func() []error {
 			errors := createDatabase()
 			if errors != nil {
 				return errors
@@ -156,16 +156,16 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 
 			return nil
 		},
-		Delete: func() ([]error) {
+		Delete: func() []error {
 			errors := validate()
-		
+
 			if len(errors) > 0 {
 				return errors
 			}
 
 			sql_command := fmt.Sprintf("DROP DATABASE %s;", EscapeString(getDatabaseName()))
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
-			
+
 			if execute_errors != nil {
 				errors = append(errors, execute_errors...)
 			}
@@ -178,14 +178,14 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		},
 		Exists: func() (*bool, []error) {
 			errors := validate()
-		
+
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
 			sql_command := fmt.Sprintf("USE %s;", EscapeString(getDatabaseName()))
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
-			
+
 			if execute_errors != nil {
 				errors = append(errors, execute_errors...)
 			}
@@ -202,7 +202,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		},
 		TableExists: func(table_name string) (*bool, []error) {
 			table, table_errors := NewTable(getDatabase(), table_name, nil)
-			
+
 			if table_errors != nil {
 				return nil, table_errors
 			}
@@ -211,7 +211,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		},
 		CreateTable: func(table_name string, schema Map) (*Table, []error) {
 			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
-			
+
 			if new_table_errors != nil {
 				return nil, new_table_errors
 			}
@@ -248,13 +248,13 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			table_name_errors := WhitelistCharacters(params)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
-				return nil, errors 
+				return nil, errors
 			}
-			
+
 			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(table_name))
-			
+
 			json_array, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
-		
+
 			if len(errors) > 0 {
 				return nil, errors
 			}
@@ -284,59 +284,59 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 					case "Key":
 						key_value := *(column_map.S("Key"))
 						switch key_value {
-							case "PRI":
-								primary_key := true
-								is_nullable = false
-								column_schema.SetBool("primary_key", &primary_key)
-							case "":
-							default:
-								errors = append(errors, fmt.Errorf("Key not implemented please implement: %s", key_value))
+						case "PRI":
+							primary_key := true
+							is_nullable = false
+							column_schema.SetBool("primary_key", &primary_key)
+						case "":
+						default:
+							errors = append(errors, fmt.Errorf("Key not implemented please implement: %s", key_value))
 						}
-					case "Field": 
+					case "Field":
 						field_name = (*column_map.S("Field"))
 					case "Type":
 						type_of_value := (*column_map.S("Type"))
 						switch type_of_value {
-							case "bigint unsigned":
-								data_type := "uint64"
-								unsigned := true
-								column_schema.SetString("type", &data_type)
-								column_schema.SetBool("unsigned", &unsigned)
-							case "bigint":
-								data_type := "int64"
-								column_schema.SetString("type", &data_type)
-							case "timestamp(6)":
-								data_type := "time.Time"
-								column_schema.SetString("type", &data_type)
-							case "tinyint(1)":
-								data_type := "bool"
-								column_schema.SetString("type", &data_type)
-							default:
+						case "bigint unsigned":
+							data_type := "uint64"
+							unsigned := true
+							column_schema.SetString("type", &data_type)
+							column_schema.SetBool("unsigned", &unsigned)
+						case "bigint":
+							data_type := "int64"
+							column_schema.SetString("type", &data_type)
+						case "timestamp(6)":
+							data_type := "time.Time"
+							column_schema.SetString("type", &data_type)
+						case "tinyint(1)":
+							data_type := "bool"
+							column_schema.SetString("type", &data_type)
+						default:
 							errors = append(errors, fmt.Errorf("type not implement please implement: %s", type_of_value))
 						}
 					case "Null":
 						null_value := *(column_map.S("Null"))
 						switch null_value {
-							case "YES":
-								is_nullable = true
-							case "NO":
-								is_nullable = false
-							default:
-								errors = append(errors, fmt.Errorf("Null value not supported please implement: %s", null_value))
+						case "YES":
+							is_nullable = true
+						case "NO":
+							is_nullable = false
+						default:
+							errors = append(errors, fmt.Errorf("Null value not supported please implement: %s", null_value))
 						}
 					case "Default":
 						default_value = *(column_map.S("Default"))
 					case "Extra":
 						extra_value = *(column_map.S("Extra"))
 						switch extra_value {
-							case "auto_increment":
-								auto_increment := true
-								column_schema.SetBool("auto_increment", &auto_increment)
-							case "DEFAULT_GENERATED":
-							case "":
-							default:
-								errors = append(errors, fmt.Errorf("Extra value not supported please implement: %s", extra_value))
-						}	
+						case "auto_increment":
+							auto_increment := true
+							column_schema.SetBool("auto_increment", &auto_increment)
+						case "DEFAULT_GENERATED":
+						case "":
+						default:
+							errors = append(errors, fmt.Errorf("Extra value not supported please implement: %s", extra_value))
+						}
 					default:
 						errors = append(errors, fmt.Errorf("column attribute not supported please implement: %s", column_attribute))
 					}
@@ -352,21 +352,21 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
-						if (*(column_schema.S("type")) == "uint64") {
+						if *(column_schema.S("type")) == "uint64" {
 							number, err := strconv.ParseUint(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
 							} else {
 								column_schema.SetUInt64("default", &number)
 							}
-						} else if (*(column_schema.S("type")) == "int64") {
+						} else if *(column_schema.S("type")) == "int64" {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
 							} else {
 								column_schema.SetInt64("default", &number)
 							}
-						} else if (*(column_schema.S("type")) == "bool") {
+						} else if *(column_schema.S("type")) == "bool" {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
@@ -395,7 +395,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 				schema[field_name] = column_schema
 			}
 
-			table_name_schema := Map{"type":"*string", "value": &table_name}
+			table_name_schema := Map{"type": "*string", "value": &table_name}
 			schema["[table_name]"] = table_name_schema
 
 			if len(errors) > 0 {
@@ -403,14 +403,14 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			}
 
 			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
-			
+
 			if new_table_errors != nil {
 				return nil, new_table_errors
 			}
 
-			return table, nil			
+			return table, nil
 		},
-		SetClient: func(client *Client) ([]error) {
+		SetClient: func(client *Client) []error {
 			var errors []error
 			if client == nil {
 				errors = append(errors, fmt.Errorf("client is nil"))
@@ -429,16 +429,16 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			setClient(client)
 			return nil
 		},
-		GetClient: func() (*Client) {
+		GetClient: func() *Client {
 			return getClient()
 		},
-		GetDatabaseName: func() (string) {
+		GetDatabaseName: func() string {
 			return getDatabaseName()
 		},
 		ToJSONString: func() string {
 			return getData().ToJSONString()
 		},
-    }
+	}
 	setDatabase(&x)
 
 	return &x, nil

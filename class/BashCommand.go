@@ -1,10 +1,9 @@
 package class
 
-
 import (
 	"bytes"
-	"os/exec"
 	"fmt"
+	"os/exec"
 	"strings"
 )
 
@@ -12,14 +11,14 @@ type BashCommand struct {
 	ExecuteUnsafeCommand func(command *string) (*string, []error)
 }
 
-func newBashCommand() (*BashCommand) {			    
+func newBashCommand() *BashCommand {
 	x := BashCommand{
 		ExecuteUnsafeCommand: func(command *string) (*string, []error) {
-			var errors []error 
+			var errors []error
 
 			if command == nil {
 				errors = append(errors, fmt.Errorf("bash command is nil"))
-			}	
+			}
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -34,10 +33,10 @@ func newBashCommand() (*BashCommand) {
 			command_err := cmd.Run()
 
 			shell_output := stdout.String()
-			shell_output_errs := stderr.String()	
-			
+			shell_output_errs := stderr.String()
+
 			if command_err != nil {
-				errors = append(errors, command_err)	
+				errors = append(errors, command_err)
 			}
 
 			if strings.TrimSpace(shell_output_errs) != "" {
@@ -50,7 +49,7 @@ func newBashCommand() (*BashCommand) {
 
 			return &shell_output, nil
 		},
-    }
+	}
 
 	return &x
 }

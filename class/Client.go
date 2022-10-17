@@ -1,11 +1,11 @@
 package class
 
 import (
-	"fmt"
-	"strings"
-	"io/ioutil"
 	"bufio"
+	"fmt"
+	"io/ioutil"
 	"os"
+	"strings"
 )
 
 func CloneClient(client *Client) *Client {
@@ -17,30 +17,30 @@ func CloneClient(client *Client) *Client {
 }
 
 type Client struct {
-	CreateDatabase func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error)
-	DeleteDatabase func(database_name string) ([]error)
-	DatabaseExists func(database_name string) (*bool, []error)
-	UseDatabase func(database *Database) []error
-	UseDatabaseByName func(database_name string) (*Database, []error)
+	CreateDatabase      func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error)
+	DeleteDatabase      func(database_name string) []error
+	DatabaseExists      func(database_name string) (*bool, []error)
+	UseDatabase         func(database *Database) []error
+	UseDatabaseByName   func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username string) []error
-	CreateUser func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error)
-	GetDatabaseUsername func() (*string)
-	GetHost func() *Host 
-	GetDatabase func() *Database 
-	Clone func() (*Client)
-	Validate func() []error
-	Grant func(user *User, grant string, filter string) (*Grant, []error)
-	ToJSONString func() string
+	CreateUser          func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error)
+	GetDatabaseUsername func() *string
+	GetHost             func() *Host
+	GetDatabase         func() *Database
+	Clone               func() *Client
+	Validate            func() []error
+	Grant               func(user *User, grant string, filter string) (*Grant, []error)
+	ToJSONString        func() string
 }
 
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
-	
-	data := Map {
-		"[host]":Map{"value":CloneHost(host),"mandatory":false},
-		"[database_username]":Map{"value":CloneString(database_username),"mandatory":false, 
-		FILTERS(): Array{ Map {"values":GetCredentialsUsernameValidCharacters(),"function":getWhitelistCharactersFunc()}}},
-		"[database]":Map{"value":CloneDatabase(database),"mandatory":false},
+
+	data := Map{
+		"[host]": Map{"value": CloneHost(host), "mandatory": false},
+		"[database_username]": Map{"value": CloneString(database_username), "mandatory": false,
+			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+		"[database]": Map{"value": CloneDatabase(database), "mandatory": false},
 	}
 
 	getHost := func() *Host {
@@ -62,8 +62,8 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	setDatabaseUsername := func(database_username string) {
 		(*(data.M("[database_username]")))["value"] = CloneString(&database_username)
 	}
- 
-	validate := func() ([]error) {
+
+	validate := func() []error {
 		return ValidateData(data, "Client")
 	}
 
@@ -74,12 +74,12 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	getClient := func() *Client {
 		return this_client
 	}
-			    
+
 	x := Client{
-		Validate: func() ([]error) {
+		Validate: func() []error {
 			return validate()
 		},
-		Clone: func() (*Client) {
+		Clone: func() *Client {
 			cloned, _ := NewClient(getHost(), getDatabaseUsername(), getDatabase())
 			return cloned
 		},
@@ -96,7 +96,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 			return database, nil
 		},
-		DeleteDatabase: func(database_name string) ([]error) {
+		DeleteDatabase: func(database_name string) []error {
 			database, database_errors := NewDatabase(getClient(), database_name, nil)
 			if database_errors != nil {
 				return database_errors
@@ -106,7 +106,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			if errors != nil {
 				return errors
 			}
-			
+
 			return nil
 		},
 		DatabaseExists: func(database_name string) (*bool, []error) {
@@ -154,7 +154,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		UseDatabase: func(database *Database) []error {
 			var errors []error
 			if database == nil {
-				errors = append(errors,  fmt.Errorf("database is nil"))
+				errors = append(errors, fmt.Errorf("database is nil"))
 				return errors
 			}
 
@@ -162,12 +162,12 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			if database_errors != nil {
 				return database_errors
 			}
-			
+
 			setDatabase(database)
 			database.SetClient(this_client)
 			return nil
 		},
-		UseDatabaseByName: func(database_name string) (*Database, []error) {			
+		UseDatabaseByName: func(database_name string) (*Database, []error) {
 			database, database_errors := NewDatabase(getClient(), database_name, nil)
 			if database_errors != nil {
 				return nil, database_errors
@@ -199,7 +199,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		ToJSONString: func() string {
 			return data.Clone().ToJSONString()
 		},
-    }
+	}
 	setClient(&x)
 
 	errors := validate()
@@ -215,13 +215,13 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 	var errors []error
 
 	files, err := ioutil.ReadDir("./")
-    if err != nil {
+	if err != nil {
 		errors = append(errors, err)
 		return "", "", "", "", "", errors
-    }
+	}
 
 	filename := ""
-    for _, file := range files {
+	for _, file := range files {
 		if file.IsDir() {
 			continue
 		}
@@ -232,11 +232,11 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 			continue
 		}
 
-		if !strings.HasSuffix(currentFileName, label + ".config") {
+		if !strings.HasSuffix(currentFileName, label+".config") {
 			continue
-		}		
+		}
 		filename = currentFileName
-    }
+	}
 
 	if filename == "" {
 		errors = append(errors, fmt.Errorf("database config for %s not found ust be in the format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
@@ -255,19 +255,19 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 
 	password := ""
 	username := ""
-	
+
 	file, err_file := os.Open(filename)
 
-    if err_file != nil {
-        errors = append(errors, err_file)
+	if err_file != nil {
+		errors = append(errors, err_file)
 		return "", "", "", "", "", errors
-    }
+	}
 
-    defer file.Close()
+	defer file.Close()
 
-    scanner := bufio.NewScanner(file)
+	scanner := bufio.NewScanner(file)
 
-    for scanner.Scan() {
+	for scanner.Scan() {
 		currentText := scanner.Text()
 		if strings.HasPrefix(currentText, "password=") {
 			password = currentText[9:len(currentText)]
@@ -276,11 +276,11 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 		if strings.HasPrefix(currentText, "user=") {
 			username = currentText[5:len(currentText)]
 		}
-    }
+	}
 
-    if file_errs := scanner.Err(); err != nil {
-        errors = append(errors, file_errs)
-    }
+	if file_errs := scanner.Err(); err != nil {
+		errors = append(errors, file_errs)
+	}
 
 	if password == "" {
 		errors = append(errors, fmt.Errorf("password not found for file: %s", filename))
@@ -296,4 +296,3 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 
 	return ip_address, port_number, database_name, username, password, errors
 }
-

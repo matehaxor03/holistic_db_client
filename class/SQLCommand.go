@@ -1,23 +1,22 @@
 package class
 
-
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"time"
 	"strings"
+	"time"
 )
 
 type SQLCommand struct {
 	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, []error)
 }
 
-func NewSQLCommand() (*SQLCommand) {			    
+func NewSQLCommand() *SQLCommand {
 	bashCommand := newBashCommand()
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, []error) {
-			var errors []error 
+			var errors []error
 
 			if client == nil {
 				errors = append(errors, fmt.Errorf("client is nil"))
@@ -45,8 +44,8 @@ func NewSQLCommand() (*SQLCommand) {
 			database_username := client.GetDatabaseUsername()
 			if database_username == nil {
 				errors = append(errors, fmt.Errorf("database_username is nil"))
-			} 
-			
+			}
+
 			database := client.GetDatabase()
 			if database != nil {
 				database_errs := database.Validate()
@@ -54,7 +53,7 @@ func NewSQLCommand() (*SQLCommand) {
 					errors = append(errors, database_errs...)
 				}
 			}
-			
+
 			if sql_command == nil {
 				errors = append(errors, fmt.Errorf("sql command is nil"))
 			} else if *sql_command == "" {
@@ -67,21 +66,20 @@ func NewSQLCommand() (*SQLCommand) {
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", *(*(host)).GetHostName(), *(*(host)).GetPortNumber())
 			credentials_command := ""
-			
+
 			if database != nil {
-				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + ":" + (*database).GetDatabaseName() + ":" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=./holistic_db_config:" + *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + ":" + (*database).GetDatabaseName() + ":" + (*database_username) + ".config"
 			} else {
-				credentials_command = "--defaults-extra-file=./holistic_db_config:" +  *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + "::" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=./holistic_db_config:" + *((*host).GetHostName()) + ":" + *((*host).GetPortNumber()) + "::" + (*database_username) + ".config"
 			}
-			
-			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command) 
+
+			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command)
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
 			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
 			sql := ""
-
 
 			if options.IsBoolTrue("transactional") {
 				sql += "START TRANSACTION;\n"
@@ -119,13 +117,12 @@ func NewSQLCommand() (*SQLCommand) {
 
 			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
 
-			
 			if sql_command_use_file {
 				os.Remove(filename)
 			}
-			
+
 			if bash_errors != nil {
-				errors = append(errors, bash_errors...)	
+				errors = append(errors, bash_errors...)
 			}
 
 			if len(errors) > 0 {
@@ -135,7 +132,7 @@ func NewSQLCommand() (*SQLCommand) {
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
 				return nil, nil
 			}
-			
+
 			rune_array := []rune(*shell_output)
 			reading_columns := true
 			value := ""
@@ -157,7 +154,7 @@ func NewSQLCommand() (*SQLCommand) {
 						value = ""
 					} else {
 						value = value + current_value
-					} 
+					}
 				} else {
 					if current_value == "\n" {
 						column_value := CloneString(&value)
@@ -173,12 +170,12 @@ func NewSQLCommand() (*SQLCommand) {
 						value = ""
 					} else {
 						value = value + current_value
-					} 
+					}
 				}
 			}
 			return &records, nil
 		},
-    }
+	}
 
 	return &x
 }

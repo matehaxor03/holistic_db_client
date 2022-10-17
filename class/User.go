@@ -13,16 +13,16 @@ func CloneUser(user *User) *User {
 }
 
 func GET_USER_DATA_DEFINITION_STATEMENTS() Map {
-	return Map{GET_DATA_DEFINTION_STATEMENT_CREATE():nil}
+	return Map{GET_DATA_DEFINTION_STATEMENT_CREATE(): nil}
 }
 
-func GET_USER_LOGIC_OPTIONS_CREATE() ([][]string){
+func GET_USER_LOGIC_OPTIONS_CREATE() [][]string {
 	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
 }
 
-func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
+func GET_USER_EXTRA_OPTIONS() map[string]map[string][][]string {
 	var root = make(map[string]map[string][][]string)
-	
+
 	var logic_options = make(map[string][][]string)
 	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_USER_LOGIC_OPTIONS_CREATE()
 
@@ -32,41 +32,41 @@ func GET_USER_EXTRA_OPTIONS() (map[string]map[string][][]string) {
 }
 
 type User struct {
-	Validate func() ([]error)
-	Create func() ([]error)
-	GetCredentials func() (*Credentials)
-	GetDomainName func() (*DomainName)
-	Clone func() (*User)
-	UpdatePassword func(new_password string) ([]error)
+	Validate       func() []error
+	Create         func() []error
+	GetCredentials func() *Credentials
+	GetDomainName  func() *DomainName
+	Clone          func() *User
+	UpdatePassword func(new_password string) []error
 }
 
 func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, options map[string]map[string][][]string) (*User, []error) {
 	SQLCommand := NewSQLCommand()
-	
-	data := Map {
-		"[client]":Map{"value":CloneClient(client),"mandatory":true},
-		"[credentials]":Map{"value":CloneCredentials(credentials),"mandatory":true},
-		"[domain_name]":Map{"value":CloneDomainName(domain_name),"mandatory":true},
-		"[options]":Map{"value":options,"mandatory":false},
+
+	data := Map{
+		"[client]":      Map{"value": CloneClient(client), "mandatory": true},
+		"[credentials]": Map{"value": CloneCredentials(credentials), "mandatory": true},
+		"[domain_name]": Map{"value": CloneDomainName(domain_name), "mandatory": true},
+		"[options]":     Map{"value": options, "mandatory": false},
 	}
 
-	validate := func() ([]error) {
+	validate := func() []error {
 		return ValidateData(data, "User")
 	}
 
-	getClient := func() (*Client) {
+	getClient := func() *Client {
 		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
-	getCredentials := func() (*Credentials) {
+	getCredentials := func() *Credentials {
 		return CloneCredentials(data.M("[credentials]").GetObject("value").(*Credentials))
 	}
 
-	getDomainName := func() (*DomainName) {
+	getDomainName := func() *DomainName {
 		return CloneDomainName(data.M("[domain_name]").GetObject("value").(*DomainName))
 	}
 
-	getOptions := func() (map[string]map[string][][]string) {
+	getOptions := func() map[string]map[string][][]string {
 		return data.M("[options]").GetObject("value").(map[string]map[string][][]string)
 	}
 
@@ -86,22 +86,21 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		dataTypeTemp := "User"
 		m.SetString("data_type", &dataTypeTemp)
 
-
 		command_errs := WhiteListString(m)
 
 		if command_errs != nil {
-			errors = append(errors, command_errs...)	
+			errors = append(errors, command_errs...)
 		}
 
 		database_errs := validate()
 
 		if database_errs != nil {
-			errors = append(errors, database_errs...)	
+			errors = append(errors, database_errs...)
 		}
 
 		logic_option, logic_option_errs := GetLogicCommand(action, GET_LOGIC_STATEMENT_FIELD_NAME(), GET_USER_EXTRA_OPTIONS(), data.M("[options]").GetObject("value").(map[string]map[string][][]string), "User")
 		if logic_option_errs != nil {
-			errors = append(errors, logic_option_errs...)	
+			errors = append(errors, logic_option_errs...)
 		}
 
 		if len(errors) > 0 {
@@ -109,21 +108,21 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		}
 
 		sql_command := fmt.Sprintf("%s USER ", action)
-		
+
 		if *logic_option != "" {
 			sql_command += fmt.Sprintf("%s ", *logic_option)
 		}
-		
+
 		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
 		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'",  EscapeString(*((*getCredentials()).GetPassword())))
-		
+		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetPassword())))
+
 		sql_command += ";"
 		return &sql_command, options, nil
 	}
 
-	create := func () ([]error) {
+	create := func() []error {
 		sql_command, options, sql_command_errors := getSQL(GET_DATA_DEFINTION_STATEMENT_CREATE())
 
 		if sql_command_errors != nil {
@@ -137,73 +136,72 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName, 
 		}
 
 		return nil
-	}	
+	}
 
 	errors := validate()
 
 	if errors != nil {
 		return nil, errors
 	}
-		
+
 	return &User{
-			Validate: func() ([]error) {
-				return validate()
-			},
-			Create: func() ([]error) {
-				return create()
-			},
-			Clone: func() *User {
-				cloned, _ := NewUser(getClient(), getCredentials(), getDomainName(), getOptions())
-				return cloned
-			},
-			GetCredentials: func() *Credentials {
-				return getCredentials()
-			},
-			GetDomainName: func() *DomainName {
-				return getDomainName()
-			},
-			UpdatePassword: func(new_password string) ([]error) {
-				var errors []error
+		Validate: func() []error {
+			return validate()
+		},
+		Create: func() []error {
+			return create()
+		},
+		Clone: func() *User {
+			cloned, _ := NewUser(getClient(), getCredentials(), getDomainName(), getOptions())
+			return cloned
+		},
+		GetCredentials: func() *Credentials {
+			return getCredentials()
+		},
+		GetDomainName: func() *DomainName {
+			return getDomainName()
+		},
+		UpdatePassword: func(new_password string) []error {
+			var errors []error
 
-				if new_password == "" {
-					errors = append(errors, fmt.Errorf("new password is empty"))
-				}
-				
-				validate_errors := validate()
-				if validate_errors != nil {
-					errors = append(errors, validate_errors...)
-				}
-				
-				data := Map {
-					"password":Map{"value":CloneString(&new_password),"mandatory":true,
-					FILTERS(): Array{ Map {"values":GetCredentialPasswordValidCharacters(),"function":getWhitelistCharactersFunc() }}},
-				}
+			if new_password == "" {
+				errors = append(errors, fmt.Errorf("new password is empty"))
+			}
 
-				validate_password_errors := ValidateData(data.Clone(), "NewUserPassword")
-				if validate_password_errors != nil {
-					errors = append(errors, validate_password_errors...)
-				}
+			validate_errors := validate()
+			if validate_errors != nil {
+				errors = append(errors, validate_errors...)
+			}
 
-				if len(errors) > 0 {
-					return errors
-				}
+			data := Map{
+				"password": Map{"value": CloneString(&new_password), "mandatory": true,
+					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+			}
 
-				client := getClient()
-				host := client.GetHost()
-				host_name := host.GetHostName()
-				credentials := getCredentials()
-				username := credentials.GetUsername()
+			validate_password_errors := ValidateData(data.Clone(), "NewUserPassword")
+			if validate_password_errors != nil {
+				errors = append(errors, validate_password_errors...)
+			}
 
+			if len(errors) > 0 {
+				return errors
+			}
 
-				sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, *host_name, new_password)
+			client := getClient()
+			host := client.GetHost()
+			host_name := host.GetHostName()
+			credentials := getCredentials()
+			username := credentials.GetUsername()
 
-				_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
+			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, *host_name, new_password)
 
-				if execute_errors != nil {
-					return execute_errors
-				}
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
 
-				return nil
-			},
-		}, nil
+			if execute_errors != nil {
+				return execute_errors
+			}
+
+			return nil
+		},
+	}, nil
 }

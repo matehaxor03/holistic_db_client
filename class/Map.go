@@ -2,9 +2,9 @@ package class
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
-	"strconv"
 )
 
 type Map map[string]interface{}
@@ -20,7 +20,7 @@ func (m Map) M(s string) *Map {
 	switch rep {
 	case "class.Map":
 		value := m[s].(Map)
-		result = &value 
+		result = &value
 	case "*class.Map":
 		value := *(m[s].(*Map))
 		result = &value
@@ -37,7 +37,7 @@ func (m Map) M(s string) *Map {
 
 func (m Map) SetMap(s string, zap Map) {
 	rep := fmt.Sprintf("%T", zap)
-	
+
 	switch rep {
 	case "class.Map":
 		m[s] = zap
@@ -46,28 +46,27 @@ func (m Map) SetMap(s string, zap Map) {
 	}
 }
 
-func (m Map) IsNil(s string) (bool) {
+func (m Map) IsNil(s string) bool {
 	if m[s] == nil {
 		return true
 	}
 
 	string_value := fmt.Sprintf("%s", m[s])
-	
+
 	if string_value == "<nil>" {
 		return true
 	}
 
-	rep := fmt.Sprintf("%T", m[s])	
-	
-	if string_value == "%!s(" + rep + "=<nil>)" {
+	rep := fmt.Sprintf("%T", m[s])
+
+	if string_value == "%!s("+rep+"=<nil>)" {
 		return true
 	}
 
-	
 	return false
 }
 
-func (m Map) IsBool(s string) (bool) {
+func (m Map) IsBool(s string) bool {
 	type_of := m.GetType(s)
 	if type_of == "bool" || type_of == "*bool" {
 		return true
@@ -76,7 +75,7 @@ func (m Map) IsBool(s string) (bool) {
 	return false
 }
 
-func (m Map) IsBoolTrue(s string) (bool) {
+func (m Map) IsBoolTrue(s string) bool {
 	if m.IsNil(s) {
 		return false
 	}
@@ -89,7 +88,7 @@ func (m Map) IsBoolTrue(s string) (bool) {
 	return *value == true
 }
 
-func (m Map) IsBoolFalse(s string) (bool) {
+func (m Map) IsBoolFalse(s string) bool {
 	if m.IsNil(s) {
 		return true
 	}
@@ -101,7 +100,6 @@ func (m Map) IsBoolFalse(s string) (bool) {
 	value, _ := m.GetBool(s)
 	return *value == false
 }
-
 
 func (m Map) ToJSONString() string {
 	json := "{\n"
@@ -151,7 +149,7 @@ func (m Map) ToJSONString() string {
 						json += ","
 					}
 				}
-				json += "]"	
+				json += "]"
 			case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
 				json = json + fmt.Sprintf("\"%s\"", rep)
 			case "*class.Host":
@@ -189,28 +187,28 @@ func (m Map) ToJSONString() string {
 
 		if i < length {
 			json += ","
-		} 
+		}
 		json += "\n"
 	}
 	json += "}"
 	return json
 }
 
-func (m Map) A(s string) (Array) {
+func (m Map) A(s string) Array {
 	if m[s] == nil {
 		return nil
 	}
-	
+
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
-		case "class.Array":
-			return m[s].(Array)
-		case "[]string":
-			newArray := Array{}
-			for _, v := range m[s].([]string) {
-				newArray = append(newArray, v)
-			}
-			return newArray
+	case "class.Array":
+		return m[s].(Array)
+	case "[]string":
+		newArray := Array{}
+		for _, v := range m[s].([]string) {
+			newArray = append(newArray, v)
+		}
+		return newArray
 	default:
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
 	}
@@ -219,37 +217,37 @@ func (m Map) A(s string) (Array) {
 func (m Map) SetArray(s string, array Array) {
 	rep := fmt.Sprintf("%T", array)
 	switch rep {
-		case "class.Array":
-		 m[s] = array
+	case "class.Array":
+		m[s] = array
 	default:
 		panic(fmt.Errorf("Map.SetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
 }
 
-func (m Map) GetType(s string) (string) {
+func (m Map) GetType(s string) string {
 	return fmt.Sprintf("%T", m[s])
 }
 
-func (m Map) Func(s string) (func(Map) []error) {
+func (m Map) Func(s string) func(Map) []error {
 	if m[s] == nil {
 		return nil
 	}
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
-		case "func(class.Map) []error":
-			return m[s].(func(Map) []error)
-		case "*func(class.Map) []error":
-			value :=  m[s].(*func(Map) []error)
-			return *value
+	case "func(class.Map) []error":
+		return m[s].(func(Map) []error)
+	case "*func(class.Map) []error":
+		value := m[s].(*func(Map) []error)
+		return *value
 	default:
 		panic(fmt.Errorf("Map.Func: type %s is not supported please implement for field: %s", rep, s))
 	}
-	
+
 	return nil
 }
 
-func (m Map) SetFunc(s string, function func(Map) ([]error)) {
+func (m Map) SetFunc(s string, function func(Map) []error) {
 	m[s] = function
 }
 
@@ -257,7 +255,7 @@ func (m Map) Array(s string) []interface{} {
 	return m[s].([]interface{})
 }
 
-func (m Map) S(s string) (*string) {
+func (m Map) S(s string) *string {
 	if m[s] == nil {
 		return nil
 	}
@@ -282,7 +280,7 @@ func (m Map) S(s string) (*string) {
 	return nil
 }
 
-func (m Map) GetObject(s string) (interface{}) {
+func (m Map) GetObject(s string) interface{} {
 	return m[s]
 }
 
@@ -354,7 +352,7 @@ func (m Map) SetBool(s string, value *bool) {
 
 func (m Map) SetString(s string, value *string) {
 	rep := fmt.Sprintf("%T", value)
-	
+
 	switch rep {
 	case "string":
 		m[s] = value
@@ -406,7 +404,7 @@ func (m Map) GetInt64(s string) (*int64, []error) {
 	case "*string":
 		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 64)
 		if value_error != nil {
-			errors = append(errors,fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
+			errors = append(errors, fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
 		} else {
 			result = &value
 		}
@@ -441,7 +439,7 @@ func (m Map) GetInt(s string) (*int, []error) {
 		bit_size := strconv.IntSize
 		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, bit_size)
 		if value_error != nil {
-			errors = append(errors,fmt.Errorf("Map.GetInt: cannot convert *string value to int"))
+			errors = append(errors, fmt.Errorf("Map.GetInt: cannot convert *string value to int"))
 		} else {
 			temp := int(value)
 			result = &temp
@@ -480,7 +478,7 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 			temp := uint64(value)
 			result = &temp
 		} else {
-			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int":
 		value := (m[s].(int))
@@ -488,7 +486,7 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 			temp := uint64(value)
 			result = &temp
 		} else {
-			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int":
 		value := *(m[s].(*int))
@@ -496,7 +494,7 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 			temp := uint64(value)
 			result = &temp
 		} else {
-			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*uint64":
 		value := *(m[s].(*uint64))
@@ -507,12 +505,12 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 	case "*string":
 		value, value_error := strconv.ParseUint((*(m[s].(*string))), 10, 64)
 		if value_error != nil {
-			errors = append(errors,fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
 		} else {
 			result = &value
 		}
 	default:
-		errors = append(errors,fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -537,7 +535,7 @@ func (m Map) SetTime(s string, value *time.Time) {
 func (m Map) GetTime(s string) (*time.Time, []error) {
 	var errors []error
 	var result *time.Time
-	
+
 	if m[s] == nil {
 		return nil, nil
 	}
@@ -548,9 +546,9 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 		value := *(m[s].(*time.Time))
 		result = &value
 	case "time.Time":
-		value :=  m[s].(time.Time)
+		value := m[s].(time.Time)
 		result = &value
-	case "*string": 
+	case "*string":
 		//todo: parse for null
 		value, value_errors := time.Parse("2006-01-02 15:04:05.000000", *(m[s].(*string)))
 		if value_errors != nil {
@@ -565,7 +563,7 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 	if len(errors) > 0 {
 		return nil, errors
 	}
-	
+
 	return result, nil
 }
 
@@ -587,14 +585,14 @@ func (m Map) Clone() Map {
 			continue
 		}
 
-		current := m[key] 
+		current := m[key]
 		rep := fmt.Sprintf("%T", current)
 
 		switch rep {
 		case "string":
 			cloneString := *(m.S(key))
 			clone[key] = cloneString
-			break	
+			break
 		case "*string":
 			if fmt.Sprintf("%s", m[key]) == "%!s(*string=<nil>)" {
 				clone[key] = nil
@@ -611,7 +609,7 @@ func (m Map) Clone() Map {
 			break
 		case "func(class.Map) []error", "map[string]map[string][][]string", "*func(class.Map) []error":
 			clone[key] = current
-			break	
+			break
 		case "*class.Credentials":
 			clone[key] = (*(current.(*Credentials))).Clone()
 			break
@@ -639,27 +637,27 @@ func (m Map) Clone() Map {
 		case "*class.Table":
 			clone[key] = (*(current.(*Table))).Clone()
 			break
-		case "bool": 
-			clone[key] = current.(bool)	
-		case "*bool": 
+		case "bool":
+			clone[key] = current.(bool)
+		case "*bool":
 			bool_value := *(current.(*bool))
 			clone[key] = &bool_value
-		case "*time.Time": 
-			clone[key] = current.(*time.Time)	
-		case "int": 
-			clone[key] = current.(int)	
-		case "uint64": 
-			clone[key] = current.(uint64)	
-		case "int64": 
-			clone[key] = current.(int64)	
-		case "*int64": 
-			int64_value := *(current.(*int64))	
+		case "*time.Time":
+			clone[key] = current.(*time.Time)
+		case "int":
+			clone[key] = current.(int)
+		case "uint64":
+			clone[key] = current.(uint64)
+		case "int64":
+			clone[key] = current.(int64)
+		case "*int64":
+			int64_value := *(current.(*int64))
 			clone[key] = &int64_value
-		case "*int": 
-			int_value := *(current.(*int))	
+		case "*int":
+			int_value := *(current.(*int))
 			clone[key] = &int_value
-		case "*uint64": 
-			uint64_value := *(current.(*uint64))	
+		case "*uint64":
+			uint64_value := *(current.(*uint64))
 			clone[key] = &uint64_value
 		case "<nil>":
 			clone[key] = nil
@@ -670,5 +668,3 @@ func (m Map) Clone() Map {
 
 	return clone
 }
-
-
