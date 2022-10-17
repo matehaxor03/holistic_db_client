@@ -6,74 +6,6 @@ import (
 	"strings"
 )
 
-func GetColumnNameValidCharacters() Map {
-	temp := Map{"a": nil,
-		"b": nil,
-		"c": nil,
-		"d": nil,
-		"e": nil,
-		"f": nil,
-		"g": nil,
-		"h": nil,
-		"i": nil,
-		"j": nil,
-		"k": nil,
-		"l": nil,
-		"m": nil,
-		"n": nil,
-		"o": nil,
-		"p": nil,
-		"q": nil,
-		"r": nil,
-		"s": nil,
-		"t": nil,
-		"u": nil,
-		"v": nil,
-		"w": nil,
-		"x": nil,
-		"y": nil,
-		"z": nil,
-		"A": nil,
-		"B": nil,
-		"C": nil,
-		"D": nil,
-		"E": nil,
-		"F": nil,
-		"G": nil,
-		"H": nil,
-		"I": nil,
-		"J": nil,
-		"K": nil,
-		"L": nil,
-		"M": nil,
-		"N": nil,
-		"O": nil,
-		"P": nil,
-		"Q": nil,
-		"R": nil,
-		"S": nil,
-		"T": nil,
-		"U": nil,
-		"V": nil,
-		"W": nil,
-		"X": nil,
-		"Y": nil,
-		"Z": nil,
-		"0": nil,
-		"1": nil,
-		"2": nil,
-		"3": nil,
-		"4": nil,
-		"5": nil,
-		"6": nil,
-		"7": nil,
-		"8": nil,
-		"9": nil,
-		"-": nil,
-		"_": nil}
-	return temp
-}
-
 func CloneTable(table *Table) *Table {
 	if table == nil {
 		return nil
@@ -112,6 +44,15 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	if table_name == "" {
 		errors = append(errors, fmt.Errorf("table_name is empty"))
+	}
+
+	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
+	for _, column_name := range schema.Keys() {
+		column_name_params.SetString("value", &column_name)
+		column_name_errors := WhitelistCharacters(column_name_params)
+		if column_name_errors != nil {
+			errors = append(errors, column_name_errors...)
+		}	
 	}
 
 	if len(errors) > 0 {

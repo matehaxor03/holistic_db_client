@@ -26,9 +26,10 @@ func main() {
 	const CLS_USER_PASSWORD string = "user_password"
 	const CLS_USER_DOMAIN_NAME string = "user_domain_name"
 
-	var CREATE_COMMAND = "CREATE"
-	var TEST_DATABASE_NAME_WHITELIST_COMMAND = "TEST_DATABASE_NAME_WHITELIST"
-	var TEST_TABLE_NAME_WHITELIST_COMMAND = "TEST_TABLE_NAME_WHITELIST"
+	var COMMAND_CREATE = "CREATE"
+	var COMMAND_TEST_DATABASE_NAME_WHITELIST = "TEST_DATABASE_NAME_WHITELIST"
+	var COMMAND_TEST_TABLE_NAME_WHITELIST = "TEST_TABLE_NAME_WHITELIST"
+	var COMMAND_TEST_COLUMN_NAME_WHITELIST = "TEST_COLUMN_NAME_WHITELIST"
 
 	var DATABASE_CLASS = "DATABASE"
 	var USER_CLASS = "USER"
@@ -121,7 +122,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if command_value == CREATE_COMMAND {
+	if command_value == COMMAND_CREATE {
 		if class_value == DATABASE_CLASS {
 			database_exists, database_exists_errors := client.DatabaseExists(*database_name)
 			if database_exists_errors != nil {
@@ -152,19 +153,23 @@ func main() {
 			fmt.Printf("class: %s is not supported", class_value)
 			os.Exit(1)
 		}
-	} else if command_value == TEST_DATABASE_NAME_WHITELIST_COMMAND {
+	} else if command_value == COMMAND_TEST_DATABASE_NAME_WHITELIST {
 		test_database_name_errors := testDatabaseName(client)
 		if test_database_name_errors != nil {
 			errors = append(errors, test_database_name_errors...)
 		}
-	} else if command_value == TEST_TABLE_NAME_WHITELIST_COMMAND {
+	} else if command_value == COMMAND_TEST_TABLE_NAME_WHITELIST {
 		test_table_name_errors := testTableName(client)
 		if test_table_name_errors != nil {
 			errors = append(errors, test_table_name_errors...)
 		}
+	} else if command_value == COMMAND_TEST_COLUMN_NAME_WHITELIST {
+		test_column_name_errors := testColumnName(client)
+		if test_column_name_errors != nil {
+			errors = append(errors, test_column_name_errors...)
+		}
 	} else {
-		fmt.Printf("command: %s is not supported", command_value)
-		os.Exit(1)
+		errors = append(errors, fmt.Errorf("command: %s is not supported", command_value))
 	}
 
 	if len(errors) > 0 {
@@ -173,6 +178,84 @@ func main() {
 	}
 
 	os.Exit(0)
+}
+
+func testDatabaseName(client *class.Client) []error {
+	var errors []error
+	valid_runes := map[uint64]bool{}
+	var percent_completed float64
+	var current_value uint64
+	var max_value uint64
+
+	current_value = 0
+	max_value = 127
+
+	package_name := "class"
+	filename := fmt.Sprintf("./%s/DatabaseNameWhitelist.go", package_name)
+	method_name := "GetDatabaseNameValidCharacters()"
+
+
+	for current_value <= max_value {
+		percent_completed = (float64(current_value) / float64(max_value)) * 100.0
+		percent_completed_string_value := fmt.Sprintf("%.2f", percent_completed) + "%"
+		current_rune := rune(current_value)
+		string_value := string(current_rune)
+
+		if len(string_value) != 1 {
+			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+
+		if strings.TrimSpace(string_value) == "" {
+			fmt.Println(fmt.Sprintf("value is empty invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+
+		// double it due to defect in mysql with database names i or I
+		string_value += string_value
+
+		database_exists, database_exists_errors := client.DatabaseExists(string_value)
+		if database_exists_errors != nil {
+			fmt.Println(fmt.Sprintf("client.DatabaseExists: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			current_value += 1
+			continue
+		}
+
+		if *database_exists {
+			database_deleted_errors := client.DeleteDatabase(string_value)
+			if database_deleted_errors != nil {
+				fmt.Println(fmt.Sprintf("client.DeleteDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+				errors = append(errors, database_deleted_errors...)
+			}
+		}
+
+		_, database_errors := client.CreateDatabase(string_value, nil)
+		if database_errors != nil {
+			fmt.Println(fmt.Sprintf("client.CreateDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			fmt.Println(database_errors)
+		} else {
+			fmt.Println(fmt.Sprintf("valid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			valid_runes[current_value] = true
+			database_deleted_errors := client.DeleteDatabase(string_value)
+			if database_deleted_errors != nil {
+				errors = append(errors, database_deleted_errors...)
+			}
+		}
+		current_value += 1
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	validation_map_errors := createMapValidationKeys(filename, package_name, method_name, valid_runes)
+	if validation_map_errors != nil {
+		return validation_map_errors
+	}
+	
+	return nil
 }
 
 func testTableName(client *class.Client) []error {
@@ -187,6 +270,7 @@ func testTableName(client *class.Client) []error {
 
 	package_name := "class"
 	filename := fmt.Sprintf("./%s/TableNameWhitelist.go", package_name)
+	method_name := "GetTableNameValidCharacters()"
 	database_name := "holistic_test"
 
 	database_exists, database_exists_errors := client.DatabaseExists(database_name)
@@ -258,7 +342,7 @@ func testTableName(client *class.Client) []error {
 	}
 
 
-	validation_map_errors := createMapValidationKeys(filename, package_name, "GetTableNameValidCharacters()", valid_runes)
+	validation_map_errors := createMapValidationKeys(filename, package_name, method_name, valid_runes)
 	if validation_map_errors != nil {
 		return validation_map_errors
 	}
@@ -266,7 +350,7 @@ func testTableName(client *class.Client) []error {
 	return nil
 }
 
-func testDatabaseName(client *class.Client) []error {
+func testColumnName(client *class.Client) []error {
 	var errors []error
 	valid_runes := map[uint64]bool{}
 	var percent_completed float64
@@ -277,7 +361,31 @@ func testDatabaseName(client *class.Client) []error {
 	max_value = 127
 
 	package_name := "class"
-	filename := fmt.Sprintf("./%s/DatabaseNameWhitelist.go", package_name)
+	filename := fmt.Sprintf("./%s/ColumnNameWhitelist.go", package_name)
+	method_name := "GetColumnNameValidCharacters()"
+	database_name := "holistic_test"
+
+	database_exists, database_exists_errors := client.DatabaseExists(database_name)
+	if database_exists_errors != nil {
+		return database_exists_errors
+	}
+
+	if *database_exists {
+		database_deleted_errors := client.DeleteDatabase(database_name)
+		if database_deleted_errors != nil {
+			return database_deleted_errors
+		}
+	}
+
+	_, database_errors := client.CreateDatabase(database_name, nil)
+	if database_errors != nil {
+		return database_errors
+	}
+
+	database, use_database_errors := client.UseDatabaseByName(database_name)
+	if use_database_errors != nil {
+		return use_database_errors
+	}
 
 	for current_value <= max_value {
 		percent_completed = (float64(current_value) / float64(max_value)) * 100.0
@@ -286,59 +394,52 @@ func testDatabaseName(client *class.Client) []error {
 		string_value := string(current_rune)
 
 		if len(string_value) != 1 {
-			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			current_value += 1
 			continue
 		}
 
 		if strings.TrimSpace(string_value) == "" {
-			fmt.Println(fmt.Sprintf("value is empty invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			fmt.Println(fmt.Sprintf("value is empty invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			current_value += 1
 			continue
 		}
 
 		// double it due to defect in mysql with database names i or I
 		string_value += string_value
+		schema := class.Map{string_value: class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
+		table_name := class.GenerateRandomLetters(10, nil)
 
-		database_exists, database_exists_errors := client.DatabaseExists(string_value)
-		if database_exists_errors != nil {
-			fmt.Println(fmt.Sprintf("client.DatabaseExists: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-			current_value += 1
-			continue
-		}
-
-		if *database_exists {
-			database_deleted_errors := client.DeleteDatabase(string_value)
-			if database_deleted_errors != nil {
-				fmt.Println(fmt.Sprintf("client.DeleteDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-				errors = append(errors, database_deleted_errors...)
-			}
-		}
-
-		_, database_errors := client.CreateDatabase(string_value, nil)
-		if database_errors != nil {
-			fmt.Println(fmt.Sprintf("client.CreateDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-			fmt.Println(database_errors)
+		table, table_errors := database.CreateTable(*table_name, schema)
+		if table_errors != nil {
+			fmt.Println(fmt.Sprintf("invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			fmt.Println(table_errors)
 		} else {
-			fmt.Println(fmt.Sprintf("valid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+			fmt.Println(fmt.Sprintf("valid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			valid_runes[current_value] = true
-			database_deleted_errors := client.DeleteDatabase(string_value)
-			if database_deleted_errors != nil {
-				errors = append(errors, database_deleted_errors...)
+			table_deleted_errors := table.Delete()
+			if table_deleted_errors != nil {
+				errors = append(errors, table_deleted_errors...)
 			}
 		}
 		current_value += 1
+	}
+
+	database_deleted_errors := client.DeleteDatabase(database_name)
+	if database_deleted_errors != nil {
+		errors = append(errors, database_deleted_errors...)
 	}
 
 	if len(errors) > 0 {
 		return errors
 	}
 
-	validation_map_errors := createMapValidationKeys(filename, package_name, "GetDatabaseNameValidCharacters()", valid_runes)
+
+	validation_map_errors := createMapValidationKeys(filename, package_name, method_name, valid_runes)
 	if validation_map_errors != nil {
 		return validation_map_errors
 	}
-	
+
 	return nil
 }
 

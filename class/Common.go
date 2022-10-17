@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"math/rand"
 )
 
 func EscapeString(value string) string {
@@ -384,22 +385,15 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 }
 
 func ValidateData(fields Map, structType string) []error {	
-	var errors []error
+		var errors []error
 	var parameters = fields.Keys()
 	for _, parameter := range parameters {
 
-		if !(strings.HasPrefix(parameter, "[") && strings.HasSuffix(parameter, "]")) {
-			{
-				params := Map{"values": GetColumnNameValidCharacters(), "value": parameter, "label": parameter, "data_type": structType}
-				column_name_errors := WhitelistCharacters(params)
-				if column_name_errors != nil {
-					errors = append(errors, column_name_errors...)
-				}
-			}
-		}
-
 		if fields.GetType(parameter) != "class.Map" {
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
+		}
+
+		if len(errors) > 0 {
 			continue
 		}
 
@@ -705,4 +699,32 @@ func FormatTime(value time.Time) string {
 
 func GetTimeNowString() string {
 	return (*GetTimeNow()).Format("2006-01-02 15:04:05.000000")
+}
+
+func GenerateRandomLetters(length uint64, upper_case *bool) (*string) {
+	rand.Seed(time.Now().UnixNano())
+	
+	var letters_to_use string
+	uppercase_letters :=  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	lowercase_letters := "abcdefghijklmnopqrstuvwxyz"
+
+	if upper_case == nil {
+		letters_to_use = uppercase_letters + lowercase_letters
+	} else if *upper_case {
+		letters_to_use = uppercase_letters
+	} else {
+		letters_to_use = lowercase_letters
+	}
+
+	var sb strings.Builder
+
+	l := len(letters_to_use)
+
+	for i := uint64(0); i < length; i++ {
+		c := letters_to_use[rand.Intn(l)]
+		sb.WriteByte(c)
+	}
+
+	value := sb.String()
+	return &value
 }
