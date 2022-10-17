@@ -53,6 +53,22 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		if column_name_errors != nil {
 			errors = append(errors, column_name_errors...)
 		}	
+
+		if schema.GetType(column_name) != "class.Map" {
+			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", table_name, column_name))
+			continue
+		}
+
+		column_map := schema.M(column_name)
+
+		if !column_map.HasKey("type") {
+			errors = append(errors, fmt.Errorf("column: %s does not have type attribute", column_name))
+			continue
+		}
+
+		if !column_map.IsString("type") {
+			errors = append(errors, fmt.Errorf("column: %s type does not have a string value", column_name))
+		}
 	}
 
 	if len(errors) > 0 {
@@ -155,11 +171,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		sql_command += "("
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
-
-			if !columnSchema.HasKey("type") {
-				errors = append(errors, fmt.Errorf("column: %s does not have type attribute", column))
-				continue
-			}
 
 			typeOf := columnSchema.S("type")
 			switch *typeOf {

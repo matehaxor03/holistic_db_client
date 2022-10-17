@@ -75,6 +75,15 @@ func (m Map) IsBool(s string) bool {
 	return false
 }
 
+func (m Map) IsString(s string) bool {
+	type_of := m.GetType(s)
+	if type_of == "string" || type_of == "*string" {
+		return true
+	}
+
+	return false
+}
+
 func (m Map) IsBoolTrue(s string) bool {
 	if m.IsNil(s) {
 		return false
