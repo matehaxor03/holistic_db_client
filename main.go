@@ -185,7 +185,8 @@ func testTableName(client *class.Client) []error {
 	current_value = 0
 	max_value = 127
 
-	filename := "./class/TableNameWhitelist.go"
+	package_name := "class"
+	filename := fmt.Sprintf("./%s/TableNameWhitelist.go", package_name)
 	database_name := "holistic_test"
 
 	database_exists, database_exists_errors := client.DatabaseExists(database_name)
@@ -257,7 +258,7 @@ func testTableName(client *class.Client) []error {
 	}
 
 
-	validation_map_errors := createMapValidationKeys(filename, " GetTableNameValidCharacters()", valid_runes)
+	validation_map_errors := createMapValidationKeys(filename, package_name, "GetTableNameValidCharacters()", valid_runes)
 	if validation_map_errors != nil {
 		return validation_map_errors
 	}
@@ -275,7 +276,8 @@ func testDatabaseName(client *class.Client) []error {
 	current_value = 0
 	max_value = 127
 
-	filename := "./class/DatabaseNameWhitelist.go"
+	package_name := "class"
+	filename := fmt.Sprintf("./%s/DatabaseNameWhitelist.go", package_name)
 
 	for current_value <= max_value {
 		percent_completed = (float64(current_value) / float64(max_value)) * 100.0
@@ -332,7 +334,7 @@ func testDatabaseName(client *class.Client) []error {
 		return errors
 	}
 
-	validation_map_errors := createMapValidationKeys(filename, "GetDatabaseNameValidCharacters()", valid_runes)
+	validation_map_errors := createMapValidationKeys(filename, package_name, "GetDatabaseNameValidCharacters()", valid_runes)
 	if validation_map_errors != nil {
 		return validation_map_errors
 	}
@@ -340,7 +342,7 @@ func testDatabaseName(client *class.Client) []error {
 	return nil
 }
 
-func createMapValidationKeys(filename string, method_name string, valid_runes map[uint64]bool) []error{
+func createMapValidationKeys(filename string, package_name string, method_name string, valid_runes map[uint64]bool) []error{
 	var errors []error
 	valid_rune_file, valid_rune_file_error := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if valid_rune_file_error != nil {
@@ -348,7 +350,7 @@ func createMapValidationKeys(filename string, method_name string, valid_runes ma
 	}
 	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package class\nfunc %s Map {\nreturn Map{\n", method_name)); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nfunc %s Map {\nreturn Map{\n", package_name, method_name)); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
@@ -374,7 +376,7 @@ func createMapValidationKeys(filename string, method_name string, valid_runes ma
 		}
 	}
 
-	if _, valid_error := valid_rune_file.WriteString("    }\n}"); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}

@@ -2,7 +2,6 @@ package class
 
 import (
 	"fmt"
-	"strconv"
 )
 
 func GET_DATABASE_DATA_DEFINITION_STATEMENTS() Array {
@@ -235,180 +234,36 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 				}
 			}
 
-			if table_name == "" {
-				errors = append(errors, fmt.Errorf("table_name is empty"))
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			table, table_errors := NewTable(getDatabase(), table_name, nil)
+			if table_errors != nil {
+				errors = append(errors, table_errors...)
 			}
 
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
-			data_type := "Table"
-			params := Map{"values": GetTableNameValidCharacters(), "value": &table_name, "data_type": &data_type, "label": table_name}
-			table_name_errors := WhitelistCharacters(params)
-			if table_name_errors != nil {
-				errors = append(errors, table_name_errors...)
-				return nil, errors
+			table_schema, schema_errors := table.GetSchema()
+
+			if schema_errors != nil {
+				errors = append(errors, schema_errors...)
 			}
-
-			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(table_name))
-
-			json_array, errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false, "json_output": true})
 
 			if len(errors) > 0 {
 				return nil, errors
+			}		
+
+			get_table, get_table_errors := NewTable(getDatabase(), table_name, *table_schema)
+
+			if get_table_errors != nil {
+				return nil, get_table_errors
 			}
 
-			if json_array == nil {
-				errors = append(errors, fmt.Errorf("show columns returned nil records"))
-				return nil, errors
-			}
-
-			if len(*json_array) == 0 {
-				errors = append(errors, fmt.Errorf("show columns did not return any records"))
-				return nil, errors
-			}
-
-			schema := Map{}
-			for _, column_details := range *json_array {
-				column_map := column_details.(Map)
-				column_attributes := column_map.Keys()
-
-				column_schema := Map{}
-				default_value := ""
-				field_name := ""
-				is_nullable := true
-				extra_value := ""
-				for _, column_attribute := range column_attributes {
-					switch column_attribute {
-					case "Key":
-						key_value := *(column_map.S("Key"))
-						switch key_value {
-						case "PRI":
-							primary_key := true
-							is_nullable = false
-							column_schema.SetBool("primary_key", &primary_key)
-						case "":
-						default:
-							errors = append(errors, fmt.Errorf("Key not implemented please implement: %s", key_value))
-						}
-					case "Field":
-						field_name = (*column_map.S("Field"))
-					case "Type":
-						type_of_value := (*column_map.S("Type"))
-						switch type_of_value {
-						case "bigint unsigned":
-							data_type := "uint64"
-							unsigned := true
-							column_schema.SetString("type", &data_type)
-							column_schema.SetBool("unsigned", &unsigned)
-						case "bigint":
-							data_type := "int64"
-							column_schema.SetString("type", &data_type)
-						case "timestamp(6)":
-							data_type := "time.Time"
-							column_schema.SetString("type", &data_type)
-						case "tinyint(1)":
-							data_type := "bool"
-							column_schema.SetString("type", &data_type)
-						default:
-							errors = append(errors, fmt.Errorf("type not implement please implement: %s", type_of_value))
-						}
-					case "Null":
-						null_value := *(column_map.S("Null"))
-						switch null_value {
-						case "YES":
-							is_nullable = true
-						case "NO":
-							is_nullable = false
-						default:
-							errors = append(errors, fmt.Errorf("Null value not supported please implement: %s", null_value))
-						}
-					case "Default":
-						default_value = *(column_map.S("Default"))
-					case "Extra":
-						extra_value = *(column_map.S("Extra"))
-						switch extra_value {
-						case "auto_increment":
-							auto_increment := true
-							column_schema.SetBool("auto_increment", &auto_increment)
-						case "DEFAULT_GENERATED":
-						case "":
-						default:
-							errors = append(errors, fmt.Errorf("Extra value not supported please implement: %s", extra_value))
-						}
-					default:
-						errors = append(errors, fmt.Errorf("column attribute not supported please implement: %s", column_attribute))
-					}
-				}
-
-				if len(errors) > 0 {
-					continue
-				}
-
-				if default_value != "" {
-					if default_value == "NULL" {
-					} else if default_value == "CURRENT_TIMESTAMP(6)" && extra_value == "DEFAULT_GENERATED" {
-						now := "now"
-						column_schema.SetString("default", &now)
-					} else {
-						if *(column_schema.S("type")) == "uint64" {
-							number, err := strconv.ParseUint(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								column_schema.SetUInt64("default", &number)
-							}
-						} else if *(column_schema.S("type")) == "int64" {
-							number, err := strconv.ParseInt(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								column_schema.SetInt64("default", &number)
-							}
-						} else if *(column_schema.S("type")) == "bool" {
-							number, err := strconv.ParseInt(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								if number == 0 {
-									boolean_value := false
-									column_schema.SetBool("default", &boolean_value)
-								} else if number == 1 {
-									boolean_value := true
-									column_schema.SetBool("default", &boolean_value)
-								} else {
-									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *(column_schema.S("type"))))
-								}
-							}
-						} else {
-							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *(column_schema.S("type"))))
-						}
-					}
-				}
-
-				if is_nullable {
-					adjusted_type := "*" + *(column_schema.S("type"))
-					column_schema.SetString("type", &adjusted_type)
-				}
-
-				schema[field_name] = column_schema
-			}
-
-			table_name_schema := Map{"type": "*string", "value": &table_name}
-			schema["[table_name]"] = table_name_schema
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
-			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
-
-			if new_table_errors != nil {
-				return nil, new_table_errors
-			}
-
-			return table, nil
+			return get_table, nil
 		},
 		SetClient: func(client *Client) []error {
 			var errors []error

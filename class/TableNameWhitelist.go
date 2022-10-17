@@ -1,5 +1,5 @@
 package class
-func  GetTableNameValidCharacters() Map {
+func GetTableNameValidCharacters() Map {
 return Map{
     "A": nil,
     "B": nil,
@@ -53,5 +53,5 @@ return Map{
     "w": nil,
     "x": nil,
     "y": nil,
-    "z": nil    }
+    "z": nil}
 }

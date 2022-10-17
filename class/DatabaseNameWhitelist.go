@@ -53,5 +53,5 @@ return Map{
     "w": nil,
     "x": nil,
     "y": nil,
-    "z": nil    }
+    "z": nil}
 }
