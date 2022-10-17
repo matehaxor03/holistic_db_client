@@ -256,41 +256,10 @@ func testTableName(client *class.Client) []error {
 		return errors
 	}
 
-	valid_rune_file, valid_rune_file_error := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if valid_rune_file_error != nil {
-		errors = append(errors, valid_rune_file_error)
-	}
-	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString("package class\nfunc GetTableNameValidCharacters() Map {\nreturn Map{\n"); valid_error != nil {
-		errors = append(errors, valid_error)
-		return errors
-	}
-
-	sorted_keys := make([]uint64, 0, len(valid_runes))
-	for k := range valid_runes {
-		sorted_keys = append(sorted_keys, k)
-	}
-	sort.Slice(sorted_keys, func(i, j int) bool { return sorted_keys[i] < sorted_keys[j] })
-
-	length := len(valid_runes)
-	for index, key := range sorted_keys {
-		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("\t\"%s\":nil", string(key))); valid_error != nil {
-			errors = append(errors, valid_error)
-			return errors
-		}
-
-		if uint64(index) < uint64(length-1) {
-			if _, valid_error := valid_rune_file.WriteString(",\n"); valid_error != nil {
-				errors = append(errors, valid_error)
-				return errors
-			}
-		}
-	}
-
-	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
-		errors = append(errors, valid_error)
-		return errors
+	validation_map_errors := createMapValidationKeys(filename, " GetTableNameValidCharacters()", valid_runes)
+	if validation_map_errors != nil {
+		return validation_map_errors
 	}
 
 	return nil
@@ -363,13 +332,23 @@ func testDatabaseName(client *class.Client) []error {
 		return errors
 	}
 
+	validation_map_errors := createMapValidationKeys(filename, "GetDatabaseNameValidCharacters()", valid_runes)
+	if validation_map_errors != nil {
+		return validation_map_errors
+	}
+	
+	return nil
+}
+
+func createMapValidationKeys(filename string, method_name string, valid_runes map[uint64]bool) []error{
+	var errors []error
 	valid_rune_file, valid_rune_file_error := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if valid_rune_file_error != nil {
 		errors = append(errors, valid_rune_file_error)
 	}
 	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString("package class\nfunc GetDatabaseNameValidCharacters() Map {\nreturn Map{\n"); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package class\nfunc %s Map {\nreturn Map{\n", method_name)); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
@@ -382,7 +361,7 @@ func testDatabaseName(client *class.Client) []error {
 
 	length := len(valid_runes)
 	for index, key := range sorted_keys {
-		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("\t\"%s\":nil", string(key))); valid_error != nil {
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", string(key))); valid_error != nil {
 			errors = append(errors, valid_error)
 			return errors
 		}
@@ -395,10 +374,11 @@ func testDatabaseName(client *class.Client) []error {
 		}
 	}
 
-	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString("    }\n}"); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
+
 
 	return nil
 }
