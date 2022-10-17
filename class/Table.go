@@ -100,24 +100,13 @@ type Table struct {
 	ToJSONString func() string
 }
 
-func NewTable(database *Database, schema Map) (*Table, []error) {
+func NewTable(database *Database, table_name string, schema Map) (*Table, []error) {
 	var this_table *Table
 	SQLCommand := NewSQLCommand()
 	var errors []error
 
 	if schema == nil {
-		errors = append(errors, fmt.Errorf("schema is nil"))
-		return nil, errors
-	}
-
-	if !schema.HasKey("[table_name]") {
-		errors = append(errors, fmt.Errorf("table_name field is nil"))
-	} else if schema.GetType("[table_name]") != "class.Map" {
-		errors = append(errors, fmt.Errorf("table_name field is not a map"))
-	} else {
-		boolean_value := true
-		schema.M("[table_name]").SetBool("mandatory", &boolean_value)
-		(*(schema.M("[table_name]")))[FILTERS()] = Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}
+		schema = Map{}
 	}
 
 	if len(errors) > 0 {
@@ -126,6 +115,8 @@ func NewTable(database *Database, schema Map) (*Table, []error) {
 
 	data := schema.Clone()
 	data["[database]"] = Map{"value":CloneDatabase(database),"mandatory":true}
+	data["[table_name]"] = Map{"type":"*string", "value":&table_name, "mandatory":true,
+	FILTERS(): Array{ Map {"values":GetTableNameValidCharacters(),"function":getWhitelistCharactersFunc()}}}
 	data["active"] = Map{"type":"*bool", "mandatory":true, "default":true}
 	data["created_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
 	data["last_modified_date"] = Map{"type":"*time.Time", "mandatory":true, "default":"now"}
@@ -351,7 +342,7 @@ func NewTable(database *Database, schema Map) (*Table, []error) {
 			return getDatabase()
 		},
 		Clone: func() (*Table) {
-			clone_value, _ := NewTable(getDatabase(), getData())
+			clone_value, _ := NewTable(getDatabase(), *getTableName(), getData())
 			return clone_value
 		},
 		GetTableColumns: func() ([]string) {

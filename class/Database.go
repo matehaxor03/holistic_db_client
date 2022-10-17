@@ -42,7 +42,7 @@ type Database struct {
 	GetDatabaseName func() (string)
 	SetClient func(client *Client) ([]error)
 	GetClient func() (*Client)
-	CreateTable func(schema Map) (*Table, []error)
+	CreateTable func(table_name string, schema Map) (*Table, []error)
 	GetTable func(table_name string) (*Table, []error)
 	ToJSONString func() string
 }
@@ -201,9 +201,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return &boolean_value, nil
 		},
 		TableExists: func(table_name string) (*bool, []error) {
-			schema := Map{"[table_name]": Map{"type":"*string", "value":CloneString(&table_name)}}
-			
-			table, table_errors := NewTable(getDatabase(), schema)
+			table, table_errors := NewTable(getDatabase(), table_name, nil)
 			
 			if table_errors != nil {
 				return nil, table_errors
@@ -211,8 +209,8 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 
 			return table.Exists()
 		},
-		CreateTable: func(schema Map) (*Table, []error) {
-			table, new_table_errors := NewTable(getDatabase(), schema)
+		CreateTable: func(table_name string, schema Map) (*Table, []error) {
+			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
 			
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -404,7 +402,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, new_table_errors := NewTable(getDatabase(), schema)
+			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
 			
 			if new_table_errors != nil {
 				return nil, new_table_errors

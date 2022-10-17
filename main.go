@@ -233,10 +233,9 @@ func testTableName(client *class.Client) []error {
 
 		// double it due to defect in mysql with database names i or I
 		string_value += string_value
-		schema := class.Map{"[table_name]":class.Map{"type":"*string", "value":string_value},
-							"id":class.Map{"type":"uint64", "primary_key":true, "auto_increment": true}}
+		schema := class.Map{"id":class.Map{"type":"uint64", "primary_key":true, "auto_increment":true}}
 		
-		table, table_errors := database.CreateTable(schema)
+		table, table_errors := database.CreateTable(string_value, schema)
 		if table_errors != nil {
 			fmt.Println(fmt.Sprintf("invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			fmt.Println(table_errors)
