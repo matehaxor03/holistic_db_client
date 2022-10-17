@@ -4,25 +4,6 @@ import (
 	"fmt"
 )
 
-func GET_DATABASE_DATA_DEFINITION_STATEMENTS() Array {
-	return Array{GET_DATA_DEFINTION_STATEMENT_CREATE()}
-}
-
-func GET_DATABASE_LOGIC_OPTIONS_CREATE() [][]string {
-	return [][]string{GET_LOGIC_STATEMENT_IF_NOT_EXISTS()}
-}
-
-func GET_DATABASE_OPTIONS() map[string]map[string][][]string {
-	var root = make(map[string]map[string][][]string)
-
-	var logic_options = make(map[string][][]string)
-	logic_options[GET_DATA_DEFINTION_STATEMENT_CREATE()] = GET_DATABASE_LOGIC_OPTIONS_CREATE()
-
-	root[GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
-
-	return root
-}
-
 func CloneDatabase(database *Database) *Database {
 	if database == nil {
 		return nil

@@ -385,8 +385,9 @@ func GetLogicCommand(command string, field_name string, allowed_options map[stri
 }
 
 func ValidateData(fields Map, structType string) []error {	
-		var errors []error
+	var errors []error
 	var parameters = fields.Keys()
+
 	for _, parameter := range parameters {
 
 		if fields.GetType(parameter) != "class.Map" {
