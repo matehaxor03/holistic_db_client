@@ -77,19 +77,19 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getTableColumns := func() []string {
+		column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Record"}
 		var columns []string
 		for _, column := range getData().Keys() {
-			if strings.HasPrefix(column, "[") {
-				continue
-			}
-
-			if strings.HasSuffix(column, "]") {
-				continue
-			}
-
+			
 			if data.GetType(column) != "class.Map" {
 				continue
 			}
+
+			column_name_params.SetString("value", &column)
+			column_name_errors := WhitelistCharacters(column_name_params)
+			if column_name_errors != nil {
+				continue
+			}	
 
 			columns = append(columns, column)
 		}
