@@ -754,12 +754,12 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 				}
 
-				if is_nullable {
-					adjusted_type := "*" + *(column_schema.S("type"))
-					column_schema.SetString("type", &adjusted_type)
-				}
-
 				if !ignore_column {
+					if is_nullable {
+						adjusted_type := "*" + *(column_schema.S("type"))
+						column_schema.SetString("type", &adjusted_type)
+					}
+
 					schema[field_name] = column_schema
 				}
 			}
