@@ -55,6 +55,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}	
 
 		if schema.GetType(column_name) != "class.Map" {
+			panic(schema.ToJSONString())
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", table_name, column_name))
 			continue
 		}
