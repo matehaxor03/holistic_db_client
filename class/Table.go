@@ -279,16 +279,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return nil
 	}
 
-	validate_errors := validate()
-
-	if validate_errors != nil {
-		errors = append(errors, validate_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
 	x := Table{
 		Validate: func() []error {
 			return validate()
@@ -713,6 +703,16 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		},
 	}
 	setTable(&x)
+
+	validate_errors := validate()
+
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
 	return &x, nil
 }

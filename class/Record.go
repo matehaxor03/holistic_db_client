@@ -100,22 +100,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		return CloneTable(data.M("[table]").GetObject("value").(*Table))
 	}
 
-	/*
-		getNonIdentityColumns := func() ([]string) {
-			record_columns := getTableColumns()
-			non_identity_columns := getTable().GetNonIdentityColumns()
-			var record_non_identity_columns []string
-			for _, record_column := range record_columns {
-				for _, non_identity_column := range non_identity_columns {
-					if non_identity_column == record_column {
-						record_non_identity_columns = append(record_non_identity_columns, non_identity_column)
-						break
-					}
-				}
-			}
-			return record_non_identity_columns
-		}*/
-
 	getNonIdentityColumnsUpdate := func() []string {
 		record_columns := getTableColumns()
 		non_identity_columns := getTable().GetNonIdentityColumns()
@@ -421,16 +405,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		return &sql_command, options, nil
 	}
 
-	validate_errors := validate()
-
-	if validate_errors != nil {
-		errors = append(errors, validate_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
 	x := Record{
 		Validate: func() []error {
 			return validate()
@@ -493,6 +467,16 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		GetUInt64: func(field string) (*uint64, []error) {
 			return getData().M(field).GetUInt64("value")
 		},
+	}
+
+	validate_errors := validate()
+
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
 	}
 
 	return &x, nil
