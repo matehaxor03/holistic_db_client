@@ -599,6 +599,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				default_value := ""
 				field_name := ""
 				is_nullable := true
+				is_primary_key := false
+				is_mandatory := false
 				extra_value := ""
 				for _, column_attribute := range column_attributes {
 					switch column_attribute {
@@ -606,9 +608,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						key_value := *(column_map.S("Key"))
 						switch key_value {
 						case "PRI":
-							primary_key := true
+							is_primary_key = true
+							is_mandatory = true
 							is_nullable = false
-							column_schema.SetBool("primary_key", &primary_key)
+							column_schema.SetBool("primary_key", &is_primary_key)
+							column_schema.SetBool("mandatory", &is_mandatory)
 						case "":
 						default:
 							errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", key_value))
@@ -658,9 +662,15 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						null_value := *(column_map.S("Null"))
 						switch null_value {
 						case "YES":
-							is_nullable = true
+							if !is_primary_key {
+								is_mandatory = false
+								is_nullable = true
+								column_schema.SetBool("mandatory", &is_mandatory)
+							}
 						case "NO":
 							is_nullable = false
+							is_mandatory = true
+							column_schema.SetBool("mandatory", &is_mandatory)
 						default:
 							errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", null_value))
 						}
