@@ -458,6 +458,7 @@ func ValidateData(fields Map, structType string) []error {
 		case "*string":
 			string_value := parameter_fields.S(attribute_to_validate)
 			if parameter_fields.GetType(FILTERS()) != "class.Array" {
+				panic(parameter.ToJSONString())
 				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array", structType, parameter, FILTERS()))
 				continue
 			}
