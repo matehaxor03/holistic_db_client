@@ -386,12 +386,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 			table_schema := getData()
 			if filters != nil {
-				filter_errors := ValidateData(filters, "SelectRecords")
-				if filter_errors != nil {
-					errors = append(errors, filter_errors...)
-					return nil, errors
-				}
-
 				table_columns := getTableColumns()
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
