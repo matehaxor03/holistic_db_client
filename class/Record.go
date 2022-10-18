@@ -70,6 +70,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	data := expanded_record.Clone()
+	fmt.Println((*table).ToJSONString())
 	data["[table]"] = Map{"value": CloneTable(table), "mandatory": true}
 
 	getData := func() Map {
