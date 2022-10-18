@@ -447,11 +447,11 @@ func ValidateData(fields Map, structType string) []error {
 			}
 
 			continue
-		} else if value_is_null && value_is_mandatory && !parameter_fields.IsNil("default") {
-			attribute_to_validate = "default"
 		} else if value_is_null && !value_is_mandatory && parameter_fields.IsNil("default") {
 			continue
-		}
+		} else if value_is_null && !parameter_fields.IsNil("default") {
+			attribute_to_validate = "default"
+		} 
 
 		typeOf := fmt.Sprintf("%T", (*parameter_fields)[attribute_to_validate])
 
