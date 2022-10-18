@@ -390,7 +390,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if Contains(table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s", filter_column, *getTableName()))
+						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *getTableName(), table_columns))
 					}
 				}
 
