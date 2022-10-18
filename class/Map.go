@@ -75,6 +75,16 @@ func (m Map) IsBool(s string) bool {
 	return false
 }
 
+func (m Map) IsNumber(s string) bool {
+	type_of := m.GetType(s)
+	switch type_of {
+	case "*int", "*int64", "*uint64","int", "int64", "uint64":
+		return true
+	default: 
+		return false
+	}
+}
+
 func (m Map) IsString(s string) bool {
 	type_of := m.GetType(s)
 	if type_of == "string" || type_of == "*string" {

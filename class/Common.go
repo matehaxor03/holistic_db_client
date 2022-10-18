@@ -427,6 +427,10 @@ func ValidateData(fields Map, structType string) []error {
 					continue
 				}
 			}
+			
+			if !parameter_fields.IsNumber("type") {
+				continue
+			}
 
 			if parameter_fields.IsBoolFalse("auto_increment") {
 				panic(parameter_fields.ToJSONString())
