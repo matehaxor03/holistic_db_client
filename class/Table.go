@@ -400,6 +400,10 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 				for _, filter_column := range filter_columns {
 					filter_column_type := filters.GetType(filter_column)
+
+					if !filters.IsNil(filter_column) && !strings.Contains(filter_column_type, "*") {
+						filter_column_type = "*" + filter_column_type
+					}
 					 
 					if table_schema.IsNil(filter_column) {
 						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, *getTableName(), table_schema.Keys()))
@@ -416,7 +420,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 					table_column_type := (*table_schema_column).S("type")
 					if *table_column_type != filter_column_type {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), table_column_type))
+						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
