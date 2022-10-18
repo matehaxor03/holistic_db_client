@@ -113,16 +113,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil, user_errors
 		}
 
-		user_exists, user_exists_errors := user.Exists()
-		if user_exists_errors != nil {
-			return nil, user_exists_errors
-		}
-
-		if *user_exists {
-			return user, nil
-		} else {
-			return nil, nil
-		}
+		return user, nil
 	}
 
 	x := Client{
