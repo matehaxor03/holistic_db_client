@@ -457,8 +457,12 @@ func ValidateData(fields Map, structType string) []error {
 		case "string":
 		case "*string":
 			string_value := parameter_fields.S(attribute_to_validate)
+
+			if parameter_fields.IsNil(FILTERS()) {
+				continue
+			}
+			
 			if parameter_fields.GetType(FILTERS()) != "class.Array" {
-				panic(parameter_fields.ToJSONString())
 				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array", structType, parameter, FILTERS()))
 				continue
 			}
@@ -497,21 +501,6 @@ func ValidateData(fields Map, structType string) []error {
 				if function_errors != nil {
 					errors = append(errors, function_errors...)
 				}
-				/*
-					var vargsConvert = []reflect.Value{reflect.ValueOf(filter)}
-
-					var output_array_map_result = reflect.ValueOf(function).Call(vargsConvert)
-
-					validation_errors := ConvertPrimitiveReflectValueArrayToArray(output_array_map_result)
-					outer_array_length := len(validation_errors)
-					for i := 0; i < outer_array_length; i++ {
-						validation_error := validation_errors[i]
-						error_value := fmt.Sprintf("%s", reflect.ValueOf(validation_error).Interface())
-						if error_value == "[]" {
-							continue
-						}
-						errors = append(errors, fmt.Errorf(error_value))
-					}*/
 			}
 
 			break
