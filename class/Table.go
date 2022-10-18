@@ -611,6 +611,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				is_primary_key := false
 				is_mandatory := false
 				extra_value := ""
+				ignore_column := false
 				for _, column_attribute := range column_attributes {
 					switch column_attribute {
 					case "Key":
@@ -631,12 +632,12 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					case "Type":
 						type_of_value := (*column_map.S("Type"))
 						switch type_of_value {
-						case "bigint unsigned":
+						case "bigint unsigned", "int unsigned", "smallint unsigned":
 							data_type := "uint64"
 							unsigned := true
 							column_schema.SetString("type", &data_type)
 							column_schema.SetBool("unsigned", &unsigned)
-						case "bigint":
+						case "bigint", "int", "smallint":
 							data_type := "int64"
 							column_schema.SetString("type", &data_type)
 						case "timestamp(6)":
@@ -645,6 +646,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						case "tinyint(1)":
 							data_type := "bool"
 							column_schema.SetString("type", &data_type)
+						case "blob", "json":
+							ignore_column = true
 						default:
 							if strings.HasPrefix(type_of_value, "char(") && strings.HasSuffix(type_of_value, ")") {
 								data_type := "*string"
@@ -753,7 +756,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					column_schema.SetString("type", &adjusted_type)
 				}
 
-				schema[field_name] = column_schema
+				if !ignore_column {
+					schema[field_name] = column_schema
+				}
 			}
 
 			if len(errors) > 0 {
