@@ -287,7 +287,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return getDatabase()
 		},
 		Clone: func() *Table {
-			clone_value, clone_errors := NewTable(getDatabase(), *getTableName(), getData())
+			clone_value, clone_errors := NewTable(getDatabase(), *getTableName(), schema)
 			fmt.Println(clone_errors)
 			return clone_value
 		},
