@@ -692,7 +692,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
-						if *(column_schema.S("type")) == "uint64" {
+						if *(column_schema.S("type")) == "*string" || *(column_schema.S("type")) == "string" {
+							column_schema.SetString("default", &default_value)
+						} else if *(column_schema.S("type")) == "uint64" {
 							number, err := strconv.ParseUint(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
