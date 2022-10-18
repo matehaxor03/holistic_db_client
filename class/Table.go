@@ -401,7 +401,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				for _, filter_column := range filter_columns {
 					filter_column_type := filters.GetType(filter_column)
 
-					if !filters.IsNil(filter_column) && !strings.Contains(filter_column_type, "*") {
+					if !filters.IsNil(filter_column) && !strings.HasPrefix(filter_column_type, "*") {
 						filter_column_type = "*" + filter_column_type
 					}
 					 
