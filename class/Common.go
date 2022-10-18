@@ -414,8 +414,9 @@ func ValidateData(fields Map, structType string) []error {
 
 		attribute_to_validate := "value"
 		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
-			fmt.Println(fields.ToJSONString())
 			if parameter_fields.IsBoolFalse("primary_key") {
+				fmt.Println(fields.ToJSONString())
+
 				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but primary key is nil and default is nil", parameter))
 				continue
 			} else if parameter_fields.IsBoolTrue("primary_key") {
