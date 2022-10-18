@@ -29,7 +29,7 @@ type Client struct {
 	GetDatabase         func() *Database
 	Clone               func() *Client
 	Validate            func() []error
-	Grant               func(user *User, grant string, filter string) (*Grant, []error)
+	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ToJSONString        func() string
 }
 
@@ -181,9 +181,9 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			setDatabaseUsername(database_username)
 			return nil
 		},
-		Grant: func(user *User, grant string, filter string) (*Grant, []error) {
+		Grant: func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 			client := getClient()
-			grant_obj, grant_errors := NewGrant(client, user, &grant, &filter)
+			grant_obj, grant_errors := NewGrant(client, user, grant, database_filter, table_filter)
 
 			if grant_errors != nil {
 				return nil, grant_errors
