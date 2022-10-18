@@ -429,6 +429,7 @@ func ValidateData(fields Map, structType string) []error {
 			}
 
 			if parameter_fields.IsBoolFalse("auto_increment") {
+				panic(parameter_fields.M(parameter).ToJSONString())
 				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but auto_increment was nil and default is nil", structType, parameter))
 			} else if parameter_fields.IsBoolTrue("auto_increment") {
 				auto_increment_value, auto_increment_value_errors := parameter_fields.GetBool("auto_increment")
