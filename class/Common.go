@@ -417,7 +417,7 @@ func ValidateData(fields Map, structType string) []error {
 			if parameter_fields.IsBoolFalse("primary_key") {
 				fmt.Println(fields.ToJSONString())
 
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but primary key is nil and default is nil", parameter))
+				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but primary key is nil and default is nil", structType, parameter))
 				continue
 			} else if parameter_fields.IsBoolTrue("primary_key") {
 				primary_key_value, primary_key_value_errors := parameter_fields.GetBool("primary_key")
@@ -425,20 +425,20 @@ func ValidateData(fields Map, structType string) []error {
 					errors = append(errors, primary_key_value_errors...)
 					continue
 				} else if *primary_key_value == false {
-					errors = append(errors, fmt.Errorf("parameter: %s is mandatory has primary key but it was false default is nil", parameter))
+					errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory has primary key but it was false default is nil", structType, parameter))
 					continue
 				}
 			}
 
 			if parameter_fields.IsBoolFalse("auto_increment") {
-				errors = append(errors, fmt.Errorf("parameter: %s is mandatory but auto_increment was nil and default is nil", parameter))
+				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but auto_increment was nil and default is nil", structType, parameter))
 			} else if parameter_fields.IsBoolTrue("auto_increment") {
 				auto_increment_value, auto_increment_value_errors := parameter_fields.GetBool("auto_increment")
 				if auto_increment_value_errors != nil {
 					errors = append(errors, auto_increment_value_errors...)
 					continue
 				} else if *auto_increment_value == false {
-					errors = append(errors, fmt.Errorf("parameter: %s is mandatory but auto_increment was false and default is nil", parameter))
+					errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but auto_increment was false and default is nil",structType, parameter))
 					continue
 				}
 			}
