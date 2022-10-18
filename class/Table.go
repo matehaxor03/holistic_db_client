@@ -640,11 +640,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						case "bigint", "int", "smallint":
 							data_type := "int64"
 							column_schema.SetString("type", &data_type)
-						case "timestamp(6)":
+						case "timestamp(6)", "timestamp":
 							data_type := "time.Time"
 							column_schema.SetString("type", &data_type)
 						case "tinyint(1)":
 							data_type := "bool"
+							column_schema.SetString("type", &data_type)
+						case "text":
+							data_type := "string"
 							column_schema.SetString("type", &data_type)
 						case "blob", "json":
 							ignore_column = true
