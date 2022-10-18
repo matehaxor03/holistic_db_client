@@ -16,9 +16,11 @@ type User struct {
 	Validate       func() []error
 	Create         func() []error
 	GetCredentials func() *Credentials
+	GetClient func() *Client
 	GetDomainName  func() *DomainName
 	Clone          func() *User
 	UpdatePassword func(new_password string) []error
+	Exists 		   func() (*bool, []error)
 }
 
 func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
@@ -96,8 +98,14 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		GetCredentials: func() *Credentials {
 			return getCredentials()
 		},
+		GetClient: func() *Client {
+			return getClient()
+		},
 		GetDomainName: func() *DomainName {
 			return getDomainName()
+		},
+		Exists: func() (*bool, []error) {
+			return getClient().UserExists(*(getCredentials().GetUsername()))
 		},
 		UpdatePassword: func(new_password string) []error {
 			var errors []error

@@ -23,6 +23,7 @@ type Client struct {
 	UseDatabase         func(database *Database) []error
 	UseDatabaseByName   func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username string) []error
+	GetUser             func(username string) (*User, []error)
 	CreateUser          func(username *string, password *string, domain_name *string) (*User, []error)
 	UserExists          func(username string) (*bool, []error)
 	GetDatabaseUsername func() *string
@@ -32,8 +33,6 @@ type Client struct {
 	Validate            func() []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ToJSONString        func() string
-	GetUser			    func(username string) (*User, []error)
-
 }
 
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
@@ -76,6 +75,54 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 	getClient := func() *Client {
 		return this_client
+	}
+
+	getUser := func(username string) (*User, []error) {
+		db_hostname, db_port_number, db_name, db_username, db_password, details_errors := GetCredentialDetails(username)
+		if details_errors != nil {
+			return nil, details_errors
+		}
+
+		host, host_errors := NewHost(&db_hostname, &db_port_number)
+		if host_errors != nil {
+			return nil, host_errors
+		}
+
+		client, client_errors := NewClient(host, &db_username, nil)
+		if client_errors != nil {
+			return nil, client_errors
+		}
+
+		credentials, credentials_errors := NewCredentials(&db_username, &db_password)
+		if credentials_errors != nil {
+			return nil, credentials_errors
+		}
+
+		_, use_database_errors := client.UseDatabaseByName(db_name)
+		if use_database_errors != nil {
+			return nil, use_database_errors
+		}
+
+		domain_name, domain_name_errors := NewDomainName(&db_hostname)
+		if domain_name_errors != nil {
+			return nil, domain_name_errors
+		}
+
+		user, user_errors := NewUser(client, credentials, domain_name)
+		if user_errors != nil {
+			return nil, user_errors
+		}
+
+		user_exists, user_exists_errors := user.Exists()
+		if user_exists_errors != nil {
+			return nil, user_exists_errors
+		}
+
+		if *user_exists {
+			return user, nil
+		} else {
+			return nil, nil
+		}
 	}
 
 	x := Client{
@@ -121,6 +168,9 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			exists, exists_errors := database.Exists()
 
 			return exists, exists_errors
+		},
+		GetUser: func(username string) (*User, []error) {
+			return getUser(username)
 		},
 		CreateUser: func(username *string, password *string, domain_name *string) (*User, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
@@ -208,7 +258,13 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 				return nil, errors
 			}
 
-			client := getClient()
+			user, user_errors := getUser("root") 
+			if user_errors != nil {
+				errors = append(errors, user_errors...)
+				return nil, errors
+			}
+
+			client := user.GetClient()
 
 			database, use_database_errors := client.UseDatabaseByName("mysql")
 			if use_database_errors != nil {
@@ -242,7 +298,6 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			}
 
 			return &exists, nil
-
 		},
 	}
 	setClient(&x)
