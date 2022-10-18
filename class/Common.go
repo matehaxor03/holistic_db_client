@@ -403,6 +403,11 @@ func ValidateData(fields Map, structType string) []error {
 		value_is_mandatory := true
 		value_is_null := parameter_fields.IsNil("value")
 		mandatory_field, mandatory_field_errors := parameter_fields.GetBool("mandatory")
+		default_is_null := parameter_fields.IsNil("default")
+
+		if value_is_null && default_is_null && !parameter_fields.HasKey("value") {
+			continue
+		}
 
 		if mandatory_field_errors != nil {
 			errors = append(errors, mandatory_field_errors...)
@@ -413,7 +418,9 @@ func ValidateData(fields Map, structType string) []error {
 		}
 
 		attribute_to_validate := "value"
-		if value_is_null && value_is_mandatory && parameter_fields.IsNil("default") {
+		if value_is_null && value_is_mandatory && default_is_null {
+			
+			
 			if parameter_fields.IsBoolFalse("primary_key") {
 				panic(parameter_fields.ToJSONString())
 				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but primary key is nil and default is nil", structType, parameter))
@@ -428,7 +435,7 @@ func ValidateData(fields Map, structType string) []error {
 					continue
 				}
 			}
-			
+
 			if !parameter_fields.IsNumber("type") {
 				continue
 			}
@@ -448,9 +455,9 @@ func ValidateData(fields Map, structType string) []error {
 			}
 
 			continue
-		} else if value_is_null && !value_is_mandatory && parameter_fields.IsNil("default") {
+		} else if value_is_null && !value_is_mandatory && default_is_null {
 			continue
-		} else if value_is_null && !parameter_fields.IsNil("default") {
+		} else if value_is_null && !default_is_null {
 			attribute_to_validate = "default"
 		} 
 
