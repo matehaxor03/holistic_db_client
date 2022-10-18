@@ -611,7 +611,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							column_schema.SetBool("primary_key", &primary_key)
 						case "":
 						default:
-							errors = append(errors, fmt.Errorf("Key not implemented please implement: %s", key_value))
+							errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", key_value))
 						}
 					case "Field":
 						field_name = (*column_map.S("Field"))
@@ -633,7 +633,26 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							data_type := "bool"
 							column_schema.SetString("type", &data_type)
 						default:
-							errors = append(errors, fmt.Errorf("type not implement please implement: %s", type_of_value))
+							if strings.HasPrefix(type_of_value, "char(") && strings.HasSuffix(type_of_value, ")") {
+								data_type := "*string"
+								column_schema.SetString("type", &data_type)
+							} else if strings.HasPrefix(type_of_value, "enum(")  && strings.HasSuffix(type_of_value, ")") {
+								type_of_value_values := type_of_value[5:len(type_of_value)-1]
+								parts := strings.Split(type_of_value_values, ",")
+								if len(parts) == 0 {
+									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", type_of_value))
+								} else {
+									part := parts[0]
+									if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
+										data_type := "*string"
+										column_schema.SetString("type", &data_type)
+									} else {
+										errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", type_of_value))
+									}
+								}
+							} else {
+								errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", type_of_value))
+							}
 						}
 					case "Null":
 						null_value := *(column_map.S("Null"))
@@ -643,7 +662,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						case "NO":
 							is_nullable = false
 						default:
-							errors = append(errors, fmt.Errorf("Null value not supported please implement: %s", null_value))
+							errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", null_value))
 						}
 					case "Default":
 						default_value = *(column_map.S("Default"))
@@ -656,10 +675,10 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						case "DEFAULT_GENERATED":
 						case "":
 						default:
-							errors = append(errors, fmt.Errorf("Extra value not supported please implement: %s", extra_value))
+							errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
 						}
 					default:
-						errors = append(errors, fmt.Errorf("column attribute not supported please implement: %s", column_attribute))
+						errors = append(errors, fmt.Errorf("Table: GetSchema: column attribute not supported please implement: %s", column_attribute))
 					}
 				}
 
