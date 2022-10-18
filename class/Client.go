@@ -263,7 +263,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 				return nil, errors
 			}
 
-			table, table_errors := database.GetTable("db")
+			table, table_errors := database.GetTable("user")
 			if table_errors != nil {
 				errors = append(errors, table_errors...)
 				return nil, errors
