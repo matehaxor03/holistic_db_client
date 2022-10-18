@@ -269,7 +269,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 				return nil, errors
 			}
 
-			records, records_errors := table.Select(Map{"user": EscapeString(username)}, nil, nil)
+			records, records_errors := table.Select(Map{"User": EscapeString(username)}, nil, nil)
 
 			if records_errors != nil {
 				return nil, records_errors
