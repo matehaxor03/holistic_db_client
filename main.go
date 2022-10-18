@@ -143,7 +143,7 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			_, user_errors := client.CreateUser(user_username, user_password, user_domain_name, options)
+			_, user_errors := client.CreateUser(user_username, user_password, user_domain_name)
 
 			if user_errors != nil {
 				context.LogErrors(user_errors)

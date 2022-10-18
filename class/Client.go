@@ -23,7 +23,8 @@ type Client struct {
 	UseDatabase         func(database *Database) []error
 	UseDatabaseByName   func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username string) []error
-	CreateUser          func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error)
+	CreateUser          func(username *string, password *string, domain_name *string) (*User, []error)
+	UserExists          func(username string) (*bool, []error)
 	GetDatabaseUsername func() *string
 	GetHost             func() *Host
 	GetDatabase         func() *Database
@@ -31,6 +32,8 @@ type Client struct {
 	Validate            func() []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ToJSONString        func() string
+	GetUser			    func(username string) (*User, []error)
+
 }
 
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
@@ -119,7 +122,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 			return exists, exists_errors
 		},
-		CreateUser: func(username *string, password *string, domain_name *string, options map[string]map[string][][]string) (*User, []error) {
+		CreateUser: func(username *string, password *string, domain_name *string) (*User, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
 			if credentail_errors != nil {
 				return nil, credentail_errors
@@ -130,7 +133,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 				return nil, domain_errors
 			}
 
-			user, user_errors := NewUser(getClient(), credentials, domain, options)
+			user, user_errors := NewUser(getClient(), credentials, domain)
 			if user_errors != nil {
 				return nil, user_errors
 			}
@@ -198,6 +201,48 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		},
 		ToJSONString: func() string {
 			return data.Clone().ToJSONString()
+		},
+		UserExists: func(username string) (*bool, []error) {
+			errors := validate()
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			client := getClient()
+
+			database, use_database_errors := client.UseDatabaseByName("mysql")
+			if use_database_errors != nil {
+				errors = append(errors, use_database_errors...)
+				return nil, errors
+			}
+
+			table, table_errors := database.GetTable("db")
+			if table_errors != nil {
+				errors = append(errors, table_errors...)
+				return nil, errors
+			}
+
+			records, records_errors := table.Select(Map{"user": EscapeString(username)}, nil, nil)
+
+			if records_errors != nil {
+				return nil, records_errors
+			}
+
+			var exists bool
+			if len(*records) == 0 {
+				exists = false
+			} else if (len(*records) == 1) {
+				exists = true
+			} else {
+				errors = append(errors, fmt.Errorf("User: Exists: %d records found with username %s", len(*records), EscapeString(username)))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return &exists, nil
+
 		},
 	}
 	setClient(&x)

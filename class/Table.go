@@ -287,7 +287,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return getDatabase()
 		},
 		Clone: func() *Table {
-			clone_value, clone_errors := NewTable(getDatabase(), *getTableName(), schema)
+			clone_value, clone_errors := NewTable(getDatabase(), *getTableName(), schema.Clone())
 			fmt.Println(clone_errors)
 			return clone_value
 		},
@@ -419,8 +419,37 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			}
 
 			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(*getTableName()))
+			if filters != nil {
+				if len(filters.Keys()) > 0 {
+					sql += "WHERE "
+				}
 
-			// todo add where clause
+				column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
+				for index, column_filter := range filters.Keys() {
+					column_name_params.SetString("value", &column_filter)
+					column_name_errors := WhitelistCharacters(column_name_params)
+					if column_name_errors != nil {
+						errors = append(errors, column_name_errors...)
+					}	
+
+					sql += EscapeString(column_filter) + " = "
+
+					//todo check data type with schema
+					type_of := filters.GetType(column_filter)
+					switch type_of {
+
+
+					case "*string", "string":
+						sql += fmt.Sprintf("'%s' ", EscapeString(*(filters.S(column_filter))))
+					default:
+						errors = append(errors, fmt.Errorf("Table: Select: filter type not supported please implement: %s", type_of))
+					}
+
+					if index < len(filters.Keys()) - 1 {
+						sql += "AND "
+					}
+				}
+			}
 
 			if limit != nil {
 				limit_value := strconv.FormatUint(*limit, 10)
