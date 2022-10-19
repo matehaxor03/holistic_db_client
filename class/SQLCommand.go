@@ -129,8 +129,10 @@ func NewSQLCommand() *SQLCommand {
 				return nil, errors
 			}
 
+			records := Array{}
+
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
-				return nil, nil
+				return &records, nil
 			}
 
 			rune_array := []rune(*shell_output)
@@ -138,7 +140,6 @@ func NewSQLCommand() *SQLCommand {
 			value := ""
 			columns_count := 0
 			columns := Array{}
-			records := Array{}
 			record := Map{}
 			for i := 0; i < len(rune_array); i++ {
 				current_value := string(rune_array[i])
