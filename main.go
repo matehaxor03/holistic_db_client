@@ -214,7 +214,7 @@ func testDatabaseName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value += string_value
+		string_value = "a" + string_value
 
 		database_exists, database_exists_errors := client.DatabaseExists(string_value)
 		if database_exists_errors != nil {
@@ -314,7 +314,7 @@ func testTableName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value += string_value
+		string_value = "a" + string_value
 		schema := class.Map{"id": class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 
 		table, table_errors := database.CreateTable(string_value, schema)
@@ -406,7 +406,7 @@ func testColumnName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value += string_value
+		string_value = "a" + string_value
 		schema := class.Map{string_value: class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 		table_name := class.GenerateRandomLetters(10, nil)
 

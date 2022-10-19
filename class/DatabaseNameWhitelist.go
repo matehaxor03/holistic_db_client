@@ -1,6 +1,16 @@
 package class
 func GetDatabaseNameValidCharacters() Map {
 return Map{
+    "0": nil,
+    "1": nil,
+    "2": nil,
+    "3": nil,
+    "4": nil,
+    "5": nil,
+    "6": nil,
+    "7": nil,
+    "8": nil,
+    "9": nil,
     "A": nil,
     "B": nil,
     "C": nil,
@@ -19,7 +29,6 @@ return Map{
     "P": nil,
     "Q": nil,
     "R": nil,
-    "S": nil,
     "T": nil,
     "U": nil,
     "V": nil,
@@ -46,7 +55,6 @@ return Map{
     "p": nil,
     "q": nil,
     "r": nil,
-    "s": nil,
     "t": nil,
     "u": nil,
     "v": nil,
