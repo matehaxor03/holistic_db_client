@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"bufio"
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 	var COMMAND_TEST_DATABASE_NAME_WHITELIST = "TEST_DATABASE_NAME_WHITELIST"
 	var COMMAND_TEST_TABLE_NAME_WHITELIST = "TEST_TABLE_NAME_WHITELIST"
 	var COMMAND_TEST_COLUMN_NAME_WHITELIST = "TEST_COLUMN_NAME_WHITELIST"
+	var COMMAND_GENERATE_KEYWORD_AND_RESERVED_WORDS_BLACKLIST = "GENERATE_KEYWORD_AND_RESERVED_WORDS_BLACKLIST"
 
 	var DATABASE_CLASS = "DATABASE"
 	var USER_CLASS = "USER"
@@ -79,14 +81,6 @@ func main() {
 		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
-	if class_pt == nil || !class_found {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
-	}
-
-	if database_name == nil || *database_name == "" {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
-	}
-
 	if len(errors) > 0 {
 		context.LogErrors(errors)
 		os.Exit(1)
@@ -108,7 +102,16 @@ func main() {
 	}
 
 	if command_value == COMMAND_CREATE {
+		if class_pt == nil || !class_found {
+			context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
+		}
+		
 		if class_value == DATABASE_CLASS {
+			if database_name == nil || *database_name == "" {
+				context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
+				os.Exit(1)
+			}
+
 			database_exists, database_exists_errors := client.DatabaseExists(*database_name)
 			if database_exists_errors != nil {
 				context.LogErrors(database_exists_errors)
@@ -153,6 +156,11 @@ func main() {
 		if test_column_name_errors != nil {
 			errors = append(errors, test_column_name_errors...)
 		}
+	} else if command_value == COMMAND_GENERATE_KEYWORD_AND_RESERVED_WORDS_BLACKLIST {
+		generate_errors := generateKeywordAndReservedWordsBlacklist(client)
+		if generate_errors != nil {
+			errors = append(errors, generate_errors...)
+		}
 	} else {
 		errors = append(errors, fmt.Errorf("command: %s is not supported", command_value))
 	}
@@ -163,6 +171,57 @@ func main() {
 	}
 
 	os.Exit(0)
+}
+
+func generateKeywordAndReservedWordsBlacklist(client *class.Client) []error {
+	var errors []error
+	invalid_strings := map[string]bool{}
+	
+	package_name := "class"
+	filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.go", package_name)
+	raw_text_filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.txt", package_name)
+	method_name := "GetMySQLKeywordsAndReservedWordsInvalidWords()"
+
+	text_file, text_file_error := os.OpenFile(raw_text_filename, os.O_RDWR, 0600)
+	if text_file_error != nil {
+		errors = append(errors, text_file_error)
+	}
+	defer text_file.Close()
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	scanner := bufio.NewScanner(text_file)
+
+	for scanner.Scan() {
+		current_value := scanner.Text()
+		current_value = strings.TrimSpace(current_value)
+		if current_value != "" {
+			parts := strings.Split(current_value, " ")
+			invalid_string := parts[0]
+			invalid_strings[invalid_string] = true
+
+			if strings.HasSuffix(invalid_string, ";") {
+				invalid_strings[invalid_string[:len(invalid_string)-1]] = true
+			}
+		}
+    }
+
+    if scanner_error := scanner.Err(); scanner_error != nil {
+        errors = append(errors, scanner_error)
+    }
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	validation_map_errors := createMapValidationKeysStrings(filename, package_name, method_name, invalid_strings)
+	if validation_map_errors != nil {
+		return validation_map_errors
+	}
+	
+	return nil
 }
 
 func testDatabaseName(client *class.Client) []error {
@@ -199,7 +258,7 @@ func testDatabaseName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "a" + string_value
+		string_value = "aaaaaaaaaaaaaaaa" + string_value
 
 		database_exists, database_exists_errors := client.DatabaseExists(string_value)
 		if database_exists_errors != nil {
@@ -299,7 +358,7 @@ func testTableName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "a" + string_value
+		string_value = "aaaaaaaaaaaaaaaa" + string_value
 		schema := class.Map{"id": class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 
 		table, table_errors := database.CreateTable(string_value, schema)
@@ -391,7 +450,7 @@ func testColumnName(client *class.Client) []error {
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "a" + string_value
+		string_value = "aaaaaaaaaaaaaaaa" + string_value
 		schema := class.Map{string_value: class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 		table_name := class.GenerateRandomLetters(10, nil)
 
@@ -450,6 +509,50 @@ func createMapValidationKeys(filename string, package_name string, method_name s
 	length := len(valid_runes)
 	for index, key := range sorted_keys {
 		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", string(key))); valid_error != nil {
+			errors = append(errors, valid_error)
+			return errors
+		}
+
+		if uint64(index) < uint64(length-1) {
+			if _, valid_error := valid_rune_file.WriteString(",\n"); valid_error != nil {
+				errors = append(errors, valid_error)
+				return errors
+			}
+		}
+	}
+
+	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
+		errors = append(errors, valid_error)
+		return errors
+	}
+
+
+	return nil
+}
+
+func createMapValidationKeysStrings(filename string, package_name string, method_name string, valid_runes map[string]bool) []error{
+	var errors []error
+	valid_rune_file, valid_rune_file_error := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if valid_rune_file_error != nil {
+		errors = append(errors, valid_rune_file_error)
+	}
+	defer valid_rune_file.Close()
+
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nfunc %s Map {\nreturn Map{\n", package_name, method_name)); valid_error != nil {
+		errors = append(errors, valid_error)
+		return errors
+	}
+
+	sorted_keys := make([]string, 0, len(valid_runes))
+	for k := range valid_runes {
+		sorted_keys = append(sorted_keys, k)
+	}
+	sort.Strings(sorted_keys)
+
+
+	length := len(valid_runes)
+	for index, key := range sorted_keys {
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", key)); valid_error != nil {
 			errors = append(errors, valid_error)
 			return errors
 		}

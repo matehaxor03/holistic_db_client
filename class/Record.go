@@ -77,17 +77,24 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getTableColumns := func() []string {
-		column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Record"}
 		var columns []string
+		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
+		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
+
 		for _, column := range getData().Keys() {
-			
 			if data.GetType(column) != "class.Map" {
 				continue
 			}
 
-			column_name_params.SetString("value", &column)
-			column_name_errors := WhitelistCharacters(column_name_params)
-			if column_name_errors != nil {
+			column_name_whitelist_params.SetString("value", &column)
+			column_name_whiltelist_errors := WhitelistCharacters(column_name_whitelist_params)
+			if column_name_whiltelist_errors != nil {
+				continue
+			}
+			
+			column_name_blacklist_params.SetString("value", &column)
+			column_name_blacklist_errors := BlackListString(column_name_blacklist_params)
+			if column_name_blacklist_errors != nil {
 				continue
 			}	
 

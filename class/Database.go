@@ -34,7 +34,8 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	data := Map{
 		"[client]": Map{"value": CloneClient(client), "mandatory": true},
 		"[database_name]": Map{"value": CloneString(&database_name), "mandatory": true,
-			FILTERS(): Array{Map{"values": GetDatabaseNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+			FILTERS(): Array{Map{"values": GetDatabaseNameValidCharacters(), "function": getWhitelistCharactersFunc()},
+							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringFunc()}}},
 		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
 	}
 

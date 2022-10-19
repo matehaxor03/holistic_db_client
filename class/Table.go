@@ -79,7 +79,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	data := schema.Clone()
 	data["[database]"] = Map{"value": CloneDatabase(database), "mandatory": true}
 	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true,
-		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()}}}
+		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
+						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringFunc()}}}
+						 
 	data["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
 	data["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	data["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
@@ -96,15 +98,23 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	getTableColumns := func() []string {
 		var columns []string
-		column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Record"}
+		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
+		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
+
 		for _, column := range getData().Keys() {
 			if data.GetType(column) != "class.Map" {
 				continue
 			}
 
-			column_name_params.SetString("value", &column)
-			column_name_errors := WhitelistCharacters(column_name_params)
-			if column_name_errors != nil {
+			column_name_whitelist_params.SetString("value", &column)
+			column_name_whiltelist_errors := WhitelistCharacters(column_name_whitelist_params)
+			if column_name_whiltelist_errors != nil {
+				continue
+			}
+			
+			column_name_blacklist_params.SetString("value", &column)
+			column_name_blacklist_errors := BlackListString(column_name_blacklist_params)
+			if column_name_blacklist_errors != nil {
 				continue
 			}	
 

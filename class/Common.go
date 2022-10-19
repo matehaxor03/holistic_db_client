@@ -36,6 +36,11 @@ func getWhitelistStringFunc() *func(m Map) []error {
 	return &function
 }
 
+func getBlacklistStringFunc() *func(m Map) []error {
+	function := BlackListString
+	return &function
+}
+
 func WhiteListString(m Map) []error {
 	var errors []error
 	map_values := m.M("values")
@@ -62,6 +67,42 @@ func WhiteListString(m Map) []error {
 	_, found := (*map_values)[*str]
 
 	if !found {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: did not find value", *data_type, *label))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+func BlackListString(m Map) []error {
+	var errors []error
+	map_values := m.M("values")
+	str, _ := m.GetString("value")
+	label, _ := m.GetString("label")
+	data_type, _ := m.GetString("data_type")
+
+	if map_values == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
+	} else if len(*map_values) == 0 {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has empty array", *data_type, *label))
+	}
+
+	if str == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is nil", *data_type, *label))
+	} else if *str == "" {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is empty", *data_type, *label))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	_, found := (*map_values)[*str]
+
+	if found {
 		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: did not find value", *data_type, *label))
 	}
 
@@ -166,7 +207,7 @@ func IsLower(s string) bool {
 	return true
 }
 
-func ValidateData(fields Map, structType string) []error {		
+func ValidateData(fields Map, structType string) []error {			
 	var errors []error
 	var parameters = fields.Keys()
 
