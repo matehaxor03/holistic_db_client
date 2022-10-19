@@ -542,11 +542,16 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		value := (m[s].(uint64))
 		result = &value
 	case "*string":
-		value, value_error := strconv.ParseUint((*(m[s].(*string))), 10, 64)
-		if value_error != nil {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64 %s", value_error))
+		string_value := (m[s].(*string))
+		if string_value == nil || *string_value == "NULL" {
+			result = nil
 		} else {
-			result = &value
+			value, value_error := strconv.ParseUint(*string_value, 10, 64)
+			if value_error != nil {
+				errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
+			} else {
+				result = &value
+			}
 		}
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
