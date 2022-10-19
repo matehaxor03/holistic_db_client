@@ -544,7 +544,7 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 	case "*string":
 		value, value_error := strconv.ParseUint((*(m[s].(*string))), 10, 64)
 		if value_error != nil {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64 %s", value_error))
 		} else {
 			result = &value
 		}
