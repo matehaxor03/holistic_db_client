@@ -41,6 +41,11 @@ func getBlacklistStringFunc() *func(m Map) []error {
 	return &function
 }
 
+func getBlacklistStringToUpperFunc() *func(m Map) []error {
+	function := BlackListStringToUpper
+	return &function
+}
+
 func WhiteListString(m Map) []error {
 	var errors []error
 	map_values := m.M("values")
@@ -85,15 +90,15 @@ func BlackListString(m Map) []error {
 	data_type, _ := m.GetString("data_type")
 
 	if map_values == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has empty array", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -103,7 +108,43 @@ func BlackListString(m Map) []error {
 	_, found := (*map_values)[*str]
 
 	if found {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: did not find value", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value", *data_type, *label))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+func BlackListStringToUpper(m Map) []error {
+	var errors []error
+	map_values := m.M("values")
+	str, _ := m.GetString("value")
+	label, _ := m.GetString("label")
+	data_type, _ := m.GetString("data_type")
+
+	if map_values == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
+	} else if len(*map_values) == 0 {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
+	}
+
+	if str == nil {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is nil", *data_type, *label))
+	} else if *str == "" {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is empty", *data_type, *label))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	_, found := (*map_values)[strings.ToUpper(*str)]
+
+	if found {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value", *data_type, *label))
 	}
 
 	if len(errors) > 0 {

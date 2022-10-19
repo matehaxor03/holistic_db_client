@@ -80,8 +80,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	data["[database]"] = Map{"value": CloneDatabase(database), "mandatory": true}
 	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true,
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
-						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringFunc()}}}
-						 
+						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
+
 	data["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
 	data["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	data["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
@@ -113,7 +113,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			}
 			
 			column_name_blacklist_params.SetString("value", &column)
-			column_name_blacklist_errors := BlackListString(column_name_blacklist_params)
+			column_name_blacklist_errors := BlackListStringToUpper(column_name_blacklist_params)
 			if column_name_blacklist_errors != nil {
 				continue
 			}	

@@ -105,7 +105,7 @@ func main() {
 		if class_pt == nil || !class_found {
 			context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
 		}
-		
+
 		if class_value == DATABASE_CLASS {
 			if database_name == nil || *database_name == "" {
 				context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
@@ -195,7 +195,7 @@ func generateKeywordAndReservedWordsBlacklist(client *class.Client) []error {
 	scanner := bufio.NewScanner(text_file)
 
 	for scanner.Scan() {
-		current_value := scanner.Text()
+		current_value := strings.ToUpper(scanner.Text())
 		current_value = strings.TrimSpace(current_value)
 		if current_value != "" {
 			parts := strings.Split(current_value, " ")

@@ -93,7 +93,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 			
 			column_name_blacklist_params.SetString("value", &column)
-			column_name_blacklist_errors := BlackListString(column_name_blacklist_params)
+			column_name_blacklist_errors := BlackListStringToUpper(column_name_blacklist_params)
 			if column_name_blacklist_errors != nil {
 				continue
 			}	
