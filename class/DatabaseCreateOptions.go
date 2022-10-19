@@ -4,12 +4,28 @@ import (
 	"fmt"
 )
 
-func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_CHARACTER_SET() string {
-	return "character_set"
+func GET_CHARACTER_SET_UTF8() string {
+	return "utf8"
 }
 
-func GET_TABLE_NAME_DATABASE_CREATE_OPTIONS_FIELD_NAME_COLLATE() string {
-	return "collate"
+func GET_CHARACTER_SET_UTF8MB4() string {
+	return "utf8mb4"
+}
+
+func GET_CHARACTER_SETS() Map {
+	return Map{GET_CHARACTER_SET_UTF8(): nil, GET_CHARACTER_SET_UTF8MB4(): nil}
+}
+
+func GET_COLLATE_UTF8_GENERAL_CI() string {
+	return "utf8_general_ci"
+}
+
+func GET_COLLATE_UTF8MB4_0900_AI_CI() string {
+	return "utf8mb4_0900_ai_ci"
+}
+
+func GET_COLLATES() Map {
+	return Map{GET_COLLATE_UTF8_GENERAL_CI(): nil, GET_COLLATE_UTF8MB4_0900_AI_CI(): nil}
 }
 
 type DatabaseCreateOptions struct {
@@ -20,29 +36,6 @@ type DatabaseCreateOptions struct {
 }
 
 func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseCreateOptions {
-	GET_CHARACTER_SET_UTF8 := func() string {
-		return "utf8"
-	}
-
-	GET_CHARACTER_SET_UTF8MB4 := func() string {
-		return "utf8mb4"
-	}
-
-	GET_CHARACTER_SETS := func() Map {
-		return Map{GET_CHARACTER_SET_UTF8(): nil, GET_CHARACTER_SET_UTF8MB4(): nil}
-	}
-
-	GET_COLLATE_UTF8_GENERAL_CI := func() string {
-		return "utf8_general_ci"
-	}
-
-	GET_COLLATE_UTF8MB4_0900_AI_CI := func() string {
-		return "utf8mb4_0900_ai_ci"
-	}
-
-	GET_COLLATES := func() Map {
-		return Map{GET_COLLATE_UTF8_GENERAL_CI(): nil, GET_COLLATE_UTF8MB4_0900_AI_CI(): nil}
-	}
 
 	data := Map{
 		"[character_set]": Map{"value": CloneString(character_set), "mandatory": false,

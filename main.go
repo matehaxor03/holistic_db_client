@@ -15,8 +15,8 @@ func main() {
 	const CLS_PORT string = "port_number"
 	const CLS_COMMAND string = "command"
 	const CLS_CLASS string = "class"
-	const CLS_IF_EXISTS string = "if_exists"
-	const CLS_IF_NOT_EXISTS string = "if_not_exists"
+	//const CLS_IF_EXISTS string = "if_exists"
+	//const CLS_IF_NOT_EXISTS string = "if_not_exists"
 	const CLS_DATABASE_NAME string = "database_name"
 	const CLS_CHARACTER_SET string = "character_set"
 	const CLS_COLLATE string = "collate"
@@ -34,9 +34,6 @@ func main() {
 	var DATABASE_CLASS = "DATABASE"
 	var USER_CLASS = "USER"
 
-	//var IF_EXISTS string = "IF EXISTS"
-	//var IF_NOT_EXISTS string = "IF NOT EXISTS"
-
 	context := class.NewContext()
 	params, errors := getParams(os.Args[1:])
 	if errors != nil || len((errors)) > 0 {
@@ -53,7 +50,6 @@ func main() {
 	character_set, _ := params[CLS_CHARACTER_SET]
 	collate, _ := params[CLS_COLLATE]
 
-	// User
 	user_username, _ := params[CLS_USER_USERNAME]
 	user_password, _ := params[CLS_USER_PASSWORD]
 	user_domain_name, _ := params[CLS_USER_DOMAIN_NAME]
@@ -70,12 +66,14 @@ func main() {
 		class_value = strings.ToUpper(*class_pt)
 	}
 
-	_, if_exists := params[CLS_IF_EXISTS]
-	_, if_not_exists := params[CLS_IF_NOT_EXISTS]
+	//_, if_exists := params[CLS_IF_EXISTS]
+	//_, if_not_exists := params[CLS_IF_NOT_EXISTS]
 
+	/*
 	if if_exists && if_not_exists {
 		context.LogError(fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
 	}
+	*/
 
 	if command_pt == nil || !command_found {
 		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
@@ -92,19 +90,6 @@ func main() {
 	if len(errors) > 0 {
 		context.LogErrors(errors)
 		os.Exit(1)
-	}
-
-	options := make(map[string]map[string][][]string)
-	if if_not_exists {
-		logic_options := make(map[string][][]string)
-		logic_options[command_value] = append(logic_options[command_value], class.GET_LOGIC_STATEMENT_IF_NOT_EXISTS())
-		options[class.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
-	}
-
-	if if_exists {
-		logic_options := make(map[string][][]string)
-		logic_options[command_value] = append(logic_options[command_value], class.GET_LOGIC_STATEMENT_IF_EXISTS())
-		options[class.GET_LOGIC_STATEMENT_FIELD_NAME()] = logic_options
 	}
 
 	host, host_errors := class.NewHost(host_value, port_value)
@@ -130,7 +115,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			if if_not_exists && *database_exists == false {
+			if *database_exists == false {
 				database_create_options := class.NewDatabaseCreateOptions(character_set, collate)
 				_, database_errors := client.CreateDatabase(*database_name, database_create_options)
 
