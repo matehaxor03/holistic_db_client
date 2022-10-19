@@ -419,7 +419,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 
 					table_column_type := (*table_schema_column).S("type")
-					if *table_column_type != filter_column_type {
+					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
 						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
