@@ -1,9 +1,5 @@
 package class
 
-import (
-	"strings"
-)
-
 func CloneDomainName(domain_name *DomainName) *DomainName {
 	if domain_name == nil {
 		return nil
@@ -38,12 +34,8 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 	}
 
 	getDomainName := func() *string {
-		ptr := data.M("[domain_name]").S("value")
-		if ptr == nil {
-			return nil
-		}
-		cloneString := strings.Clone(*ptr)
-		return &cloneString
+		ptr, _ := data.M("[domain_name]").GetString("value")
+		return CloneString(ptr)
 	}
 
 	errors := validate()

@@ -82,11 +82,13 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	}
 
 	getHostName := func() *string {
-		return CloneString(data.M("[host_name]").S("value"))
+		host_name, _ := data.M("[host_name]").GetString("value")
+		return CloneString(host_name)
 	}
 
 	getPortNumber := func() *string {
-		return CloneString(data.M("[port_number]").S("value"))
+		port_number, _ := data.M("[port_number]").GetString("value")
+		return CloneString(port_number)
 	}
 
 	validate := func() []error {

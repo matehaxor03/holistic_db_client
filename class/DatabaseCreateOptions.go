@@ -63,12 +63,12 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 
 		sql_command := ""
 
-		character_set := data.M("[character_set]").S("value")
+		character_set, _ := data.M("[character_set]").GetString("value")
 		if character_set != nil && *character_set != "" {
 			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 
-		collate := data.M("[collate]").S("value")
+		collate, _ := data.M("[collate]").GetString("value")
 		if collate != nil && *collate != "" {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
@@ -84,7 +84,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *DatabaseCreateOptions {
-			return NewDatabaseCreateOptions(data.M("[character_set]").S("value"), data.M("[collate]").S("value"))
+			character_set, _ := data.M("[character_set]").GetString("value")
+			collate, _ := data.M("[collate]").GetString("value")
+			return NewDatabaseCreateOptions(character_set, collate)
 		},
 		Validate: func() []error {
 			return validate()

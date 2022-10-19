@@ -55,7 +55,8 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	getDatabaseName := func() string {
-		n := CloneString(data.M("[database_name]").S("value"))
+		database_name, _ := data.M("[database_name]").GetString("value")
+		n := CloneString(database_name)
 		return *n
 	}
 

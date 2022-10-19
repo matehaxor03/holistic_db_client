@@ -91,16 +91,19 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 	}
 
 	getGrantValue := func() string {
-		g := CloneString(data.M("[grant]").S("value"))
+		grant, _ := data.M("[grant]").GetString("value")
+		g := CloneString(grant)
 		return *g
 	}
 
 	getDatabaseFilter := func() *string {
-		return CloneString(data.M("[database_filter]").S("value"))
+		database_filter, _ := data.M("[database_filter]").GetString("value")
+		return CloneString(database_filter)
 	}
 
 	getTableFilter := func() *string {
-		return CloneString(data.M("[table_filter]").S("value"))
+		table_filter, _ := data.M("[table_filter]").GetString("value")
+		return CloneString(table_filter)
 	}
 
 	getSQL := func() (*string, []error) {

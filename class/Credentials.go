@@ -166,11 +166,13 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 	}
 
 	getUsername := func() *string {
-		return CloneString(data.M("[username]").S("value"))
+		username_value, _ := data.M("[username]").GetString("value")
+		return CloneString(username_value)
 	}
 
 	getPassword := func() *string {
-		return CloneString(data.M("[password]").S("value"))
+		password_value, _ := data.M("[password]").GetString("value")
+		return CloneString(password_value)
 	}
 
 	x := Credentials{

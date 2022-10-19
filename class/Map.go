@@ -75,6 +75,20 @@ func (m Map) IsBool(s string) bool {
 	return false
 }
 
+func (m Map) IsEmptyString(s string) bool {
+	if m.IsNil(s) {
+		return false
+	}
+	
+	type_of := m.GetType(s)
+	if type_of == "string" || type_of == "*string" {
+		string_value, _ := m.GetString(s)
+		return *string_value == ""
+	}
+
+	return false
+}
+
 func (m Map) IsNumber(s string) bool {
 	type_of := m.GetType(s)
 	switch type_of {
@@ -274,29 +288,35 @@ func (m Map) Array(s string) []interface{} {
 	return m[s].([]interface{})
 }
 
-func (m Map) S(s string) *string {
+func (m Map) GetString(s string) (*string, []error) {
 	if m[s] == nil {
-		return nil
+		return nil, nil
 	}
 
+	var errors []error
+	var result *string
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "string":
 		value := m[s].(string)
 		newValue := strings.Clone(value)
-		return &newValue
+		result = &newValue
 	case "*string":
 		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
 			s := strings.Clone(*((m[s]).(*string)))
-			return &s
+			result = &s
 		} else {
-			return nil
+			errors = append(errors, fmt.Errorf("Map.GetString: *string value is null for attribute: %s", rep, s))
 		}
 	default:
-		panic(fmt.Errorf("Map.S: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
-	return nil
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
 }
 
 func (m Map) GetObject(s string) interface{} {
@@ -609,15 +629,15 @@ func (m Map) Clone() Map {
 
 		switch rep {
 		case "string":
-			cloneString := *(m.S(key))
-			clone[key] = cloneString
+			x, _ := m.GetString(key)
+			clone[key] = *(CloneString(x))
 			break
 		case "*string":
 			if fmt.Sprintf("%s", m[key]) == "%!s(*string=<nil>)" {
 				clone[key] = nil
 			} else {
-				cloneString := CloneString(m.S(key))
-				clone.SetString(key, cloneString)
+				x, _ := m.GetString(key)
+				clone.SetString(key, CloneString(x))
 			}
 			break
 		case "class.Map":

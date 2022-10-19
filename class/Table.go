@@ -90,7 +90,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	getTableName := func() *string {
-		return CloneString(data.M("[table_name]").S("value"))
+		table_name, _ := data.M("[table_name]").GetString("value")
+		return CloneString(table_name)
 	}
 
 	getTableColumns := func() []string {
@@ -172,7 +173,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		for index, column := range valid_columns {
 			columnSchema := data[column].(Map)
 
-			typeOf := columnSchema.S("type")
+			typeOf, _ := columnSchema.GetString("type")
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
 				sql_command += EscapeString(column) + " BIGINT"
@@ -218,10 +219,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			case "*time.Time":
 				sql_command += EscapeString(column) + " TIMESTAMP(6)"
 				if columnSchema.HasKey("default") {
-					if columnSchema.S("default") == nil {
+					default_value, _ := columnSchema.GetString("default")
+					if columnSchema.IsNil("default") {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
 						continue
-					} else if *(columnSchema.S("default")) != "now" {
+					} else if *default_value != "now" {
 						errors = append(errors, fmt.Errorf("column: %s had default value it did not understand", column))
 						continue
 					}
@@ -331,7 +333,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			count, count_err := strconv.ParseUint(*((*json_array)[0].(Map).S("COUNT(*)")), 10, 64)
+			count_value, _ := (*json_array)[0].(Map).GetString("COUNT(*)")
+			count, count_err := strconv.ParseUint(*count_value, 10, 64)
 			if count_err != nil {
 				errors = append(errors, count_err)
 				return nil, errors
@@ -418,7 +421,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 
 
-					table_column_type := (*table_schema_column).S("type")
+					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
 						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), *table_column_type))
 
@@ -453,7 +456,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 
 					case "*string", "string":
-						sql += fmt.Sprintf("'%s' ", EscapeString(*(filters.S(column_filter))))
+						filer_value, _ := filters.GetString(column_filter)
+						sql += fmt.Sprintf("'%s' ", EscapeString(*filer_value))
 					default:
 						errors = append(errors, fmt.Errorf("Table: Select: filter type not supported please implement: %s", type_of))
 					}
@@ -495,8 +499,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				columns := current_record.Keys()
 				mapped_record := Map{}
 				for _, column := range columns {
-					table_data_type := *((table_schema.M(column)).S("type"))
-					switch table_data_type {
+					table_data_type, _ := table_schema.M(column).GetString("type")
+					switch *table_data_type {
 					case "*uint64", "uint64":
 						value, value_errors := current_record.GetUInt64(column)
 						if value_errors != nil {
@@ -532,8 +536,15 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						} else {
 							mapped_record.SetBool(column, value)
 						}
+					case "*string", "string":
+						value, value_errors := current_record.GetString(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetString(column, value)
+						}
 					default:
-						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, table_data_type))
+						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, *table_data_type))
 					}
 				}
 
@@ -618,8 +629,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				for _, column_attribute := range column_attributes {
 					switch column_attribute {
 					case "Key":
-						key_value := *(column_map.S("Key"))
-						switch key_value {
+						key_value, _ := column_map.GetString("Key")
+						switch *key_value {
 						case "PRI":
 							is_primary_key = true
 							is_mandatory = true
@@ -628,13 +639,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							column_schema.SetBool("mandatory", &is_mandatory)
 						case "":
 						default:
-							errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", key_value))
+							errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", *key_value))
 						}
 					case "Field":
-						field_name = (*column_map.S("Field"))
+						field_name_value, _ := column_map.GetString("Field")
+						field_name = *field_name_value
 					case "Type":
-						type_of_value := (*column_map.S("Type"))
-						switch type_of_value {
+						type_of_value, _ := column_map.GetString("Type")
+						switch *type_of_value {
 						case "bigint unsigned", "int unsigned", "smallint unsigned":
 							data_type := "uint64"
 							unsigned := true
@@ -653,30 +665,30 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							data_type := "string"
 							column_schema.SetString("type", &data_type)
 						default:
-							if strings.HasPrefix(type_of_value, "char(") && strings.HasSuffix(type_of_value, ")") {
+							if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
 								data_type := "string"
 								column_schema.SetString("type", &data_type)
-							} else if strings.HasPrefix(type_of_value, "enum(")  && strings.HasSuffix(type_of_value, ")") {
-								type_of_value_values := type_of_value[5:len(type_of_value)-1]
+							} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
+								type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
 								parts := strings.Split(type_of_value_values, ",")
 								if len(parts) == 0 {
-									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", type_of_value))
+									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", *type_of_value))
 								} else {
 									part := parts[0]
 									if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
 										data_type := "string"
 										column_schema.SetString("type", &data_type)
 									} else {
-										errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", type_of_value))
+										errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
 									}
 								}
 							} else {
-								errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", type_of_value))
+								errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", *type_of_value))
 							}
 						}
 					case "Null":
-						null_value := *(column_map.S("Null"))
-						switch null_value {
+						null_value, _ := column_map.GetString("Null")
+						switch *null_value {
 						case "YES":
 							if !is_primary_key {
 								is_mandatory = false
@@ -688,12 +700,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							is_mandatory = true
 							column_schema.SetBool("mandatory", &is_mandatory)
 						default:
-							errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", null_value))
+							errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", *null_value))
 						}
 					case "Default":
-						default_value = *(column_map.S("Default"))
+						default_val, _ := column_map.GetString("Default")
+						default_value = *default_val
 					case "Extra":
-						extra_value = *(column_map.S("Extra"))
+						extra_val, _ := column_map.GetString("Extra")
+						extra_value = *extra_val
 						switch extra_value {
 						case "auto_increment":
 							auto_increment := true
@@ -716,29 +730,31 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					continue
 				}
 
+				dt, _ := column_schema.GetString("type")
+
 				if default_value != "" {
 					if default_value == "NULL" {
 					} else if default_value == "CURRENT_TIMESTAMP(6)" && extra_value == "DEFAULT_GENERATED" {
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
-						if *(column_schema.S("type")) == "*string" || *(column_schema.S("type")) == "string" {
+						if *dt == "*string" || *dt == "string" {
 							column_schema.SetString("default", &default_value)
-						} else if *(column_schema.S("type")) == "uint64" {
+						} else if *dt == "uint64" {
 							number, err := strconv.ParseUint(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
 							} else {
 								column_schema.SetUInt64("default", &number)
 							}
-						} else if *(column_schema.S("type")) == "int64" {
+						} else if *dt == "int64" {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
 							} else {
 								column_schema.SetInt64("default", &number)
 							}
-						} else if *(column_schema.S("type")) == "bool" {
+						} else if *dt == "bool" {
 							number, err := strconv.ParseInt(default_value, 10, 64)
 							if err != nil {
 								errors = append(errors, err)
@@ -750,17 +766,17 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 									boolean_value := true
 									column_schema.SetBool("default", &boolean_value)
 								} else {
-									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *(column_schema.S("type"))))
+									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
 								}
 							}
 						} else {
-							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *(column_schema.S("type"))))
+							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
 						}
 					}
 				}
 
 				if is_nullable {
-					adjusted_type := "*" + *(column_schema.S("type"))
+					adjusted_type := "*" + *dt
 					column_schema.SetString("type", &adjusted_type)
 				}
 

@@ -26,7 +26,7 @@ type Client struct {
 	GetUser             func(username string) (*User, []error)
 	CreateUser          func(username *string, password *string, domain_name *string) (*User, []error)
 	UserExists          func(username string) (*bool, []error)
-	GetDatabaseUsername func() *string
+	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() *Host
 	GetDatabase         func() *Database
 	Clone               func() *Client
@@ -49,8 +49,13 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		return CloneHost((data.M("[host]").GetObject("value").(*Host)))
 	}
 
-	getDatabaseUsername := func() *string {
-		return CloneString(data.M("[database_username]").S("value"))
+	getDatabaseUsername := func() (*string, []error) {
+		value, value_errors := data.M("[database_username]").GetString("value")
+		if value_errors != nil {
+			return nil, value_errors
+		}
+		clone_value := CloneString(value)
+		return clone_value, nil
 	}
 
 	getDatabase := func() *Database {
@@ -121,7 +126,8 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return validate()
 		},
 		Clone: func() *Client {
-			cloned, _ := NewClient(getHost(), getDatabaseUsername(), getDatabase())
+			database_username, _ := getDatabaseUsername()
+			cloned, _ := NewClient(getHost(), database_username, getDatabase())
 			return cloned
 		},
 		CreateDatabase: func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
@@ -189,7 +195,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		GetHost: func() *Host {
 			return getHost()
 		},
-		GetDatabaseUsername: func() *string {
+		GetDatabaseUsername: func() (*string, []error) {
 			return getDatabaseUsername()
 		},
 		GetDatabase: func() *Database {

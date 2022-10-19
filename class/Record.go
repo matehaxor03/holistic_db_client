@@ -162,9 +162,9 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 
-			type_of_schema_column := *((table_schema.M(record_column)).S("type"))
+			type_of_schema_column, _ := (table_schema.M(record_column)).GetString("type")
 			type_of_record_column := record.M(record_column).GetType("value")
-			if type_of_record_column != type_of_schema_column {
+			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
 		}
@@ -262,9 +262,9 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 
-			type_of_schema_column := *((table_schema.M(record_column)).S("type"))
+			type_of_schema_column, _ := (table_schema.M(record_column)).GetString("type")
 			type_of_record_column := record.M(record_column).GetType("value")
-			if type_of_record_column != type_of_schema_column {
+			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
 		}
@@ -431,14 +431,16 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 					return errors
 				}
 
-				count, count_err := strconv.ParseUint(*((*json_array)[0].(Map).S("LAST_INSERT_ID()")), 10, 64)
+				last_insert_id, _ := (*json_array)[0].(Map).GetString("LAST_INSERT_ID()")
+				count, count_err := strconv.ParseUint(*last_insert_id, 10, 64)
 				if count_err != nil {
 					errors = append(errors, count_err)
 					return errors
 				}
 
-				if options.S("auto_increment_column_name") != nil && *(options.S("auto_increment_column_name")) != "" {
-					auto_increment_column_name := options.S("auto_increment_column_name")
+
+				if !options.IsNil("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
+					auto_increment_column_name, _ := options.GetString("auto_increment_column_name")
 					data.SetMap(*auto_increment_column_name, Map{"type": "uint64", "value": count, "auto_increment": true, "primary_key": true})
 				}
 			}

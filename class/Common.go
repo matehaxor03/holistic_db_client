@@ -40,9 +40,9 @@ func getWhitelistStringFunc() *func(m Map) []error {
 func WhiteListString(m Map) []error {
 	var errors []error
 	map_values := m.M("values")
-	str := m.S("value")
-	label := m.S("label")
-	data_type := m.S("data_type")
+	str, _ := m.GetString("value")
+	label, _ := m.GetString("label")
+	data_type, _ := m.GetString("data_type")
 
 	if map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
@@ -108,9 +108,9 @@ func getWhitelistCharactersFunc() *func(m Map) []error {
 func WhitelistCharacters(m Map) []error {
 	var errors []error
 	map_values := m.M("values")
-	str := m.S("value")
-	label := m.S("label")
-	data_type := m.S("data_type")
+	str, _ := m.GetString("value")
+	label, _ := m.GetString("label")
+	data_type, _ := m.GetString("data_type")
 
 	if map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has nil map", *data_type, *label))
@@ -469,7 +469,7 @@ func ValidateData(fields Map, structType string) []error {
 			break
 		case "string":
 		case "*string":
-			string_value := parameter_fields.S(attribute_to_validate)
+			string_value, _ := parameter_fields.GetString(attribute_to_validate)
 
 			if parameter_fields.IsNil(FILTERS()) {
 				continue

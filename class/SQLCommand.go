@@ -41,7 +41,7 @@ func NewSQLCommand() *SQLCommand {
 				}
 			}
 
-			database_username := client.GetDatabaseUsername()
+			database_username, _ := client.GetDatabaseUsername()
 			if database_username == nil {
 				errors = append(errors, fmt.Errorf("database_username is nil"))
 			}
