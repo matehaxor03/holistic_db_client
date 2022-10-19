@@ -139,7 +139,7 @@ func WhitelistCharacters(m Map) []error {
 	}
 
 	if len(invalid_letters) > 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has invalid character(s): %s with value: %s", *data_type, *label, invalid_letters, *str))
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has invalid character(s): %s", *data_type, *label, invalid_letters))
 	}
 
 	if len(errors) > 0 {
