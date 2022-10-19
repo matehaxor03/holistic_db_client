@@ -654,7 +654,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							column_schema.SetString("type", &data_type)
 						default:
 							if strings.HasPrefix(type_of_value, "char(") && strings.HasSuffix(type_of_value, ")") {
-								data_type := "*string"
+								data_type := "string"
 								column_schema.SetString("type", &data_type)
 							} else if strings.HasPrefix(type_of_value, "enum(")  && strings.HasSuffix(type_of_value, ")") {
 								type_of_value_values := type_of_value[5:len(type_of_value)-1]
@@ -664,7 +664,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 								} else {
 									part := parts[0]
 									if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
-										data_type := "*string"
+										data_type := "string"
 										column_schema.SetString("type", &data_type)
 									} else {
 										errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", type_of_value))
@@ -704,8 +704,12 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
 						}
 					default:
-						errors = append(errors, fmt.Errorf("Table: GetSchema: column attribute not supported please implement: %s", column_attribute))
+						errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", *getTableName(), field_name, column_attribute))
 					}
+				}
+
+				if column_schema.IsNil("type") {
+					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", *getTableName(), field_name))
 				}
 
 				if len(errors) > 0 {
