@@ -506,7 +506,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
 						} else {
-							mapped_record.SetUInt64Value(column, *value)
+							mapped_record.SetUInt64(column, value)
 						}
 					case "*int64", "int64":
 						value, value_errors := current_record.GetInt64(column)
