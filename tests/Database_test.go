@@ -2,7 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
+	"strings"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -239,6 +239,43 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		database, create_database_errors := class.NewDatabase(client, blacklist_database_name, database_create_options)
+		
+		if create_database_errors == nil {
+			t.Errorf("NewDatabase should return error when database_name is blacklisted")
+		}
+
+		if database != nil {
+			t.Errorf("NewDatabase should be nil when database_name is blacklisted")
+		}
+	}
+}
+
+func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
+	client := GetTestClient(t)
+	database_create_options :=  GetTestDatabaseCreateOptions()
+	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+
+	for blacklist_database_name := range blacklist_map {
+		database, create_database_errors := class.NewDatabase(client, strings.ToUpper(blacklist_database_name), database_create_options)
+		
+		if create_database_errors == nil {
+			t.Errorf("NewDatabase should return error when database_name is blacklisted")
+		}
+
+		if database != nil {
+			t.Errorf("NewDatabase should be nil when database_name is blacklisted")
+		}
+	}
+}
+
+
+func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
+	client := GetTestClient(t)
+	database_create_options :=  GetTestDatabaseCreateOptions()
+	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+
+	for blacklist_database_name := range blacklist_map {
+		database, create_database_errors := class.NewDatabase(client, strings.ToLower(blacklist_database_name), database_create_options)
 		
 		if create_database_errors == nil {
 			t.Errorf("NewDatabase should return error when database_name is blacklisted")
