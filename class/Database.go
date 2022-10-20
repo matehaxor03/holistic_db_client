@@ -20,6 +20,7 @@ type Database struct {
 	Exists          func() (*bool, []error)
 	TableExists     func(table_name string) (*bool, []error)
 	GetDatabaseName func() string
+	SetDatabaseName func(database_name string) []error
 	SetClient       func(client *Client) []error
 	GetClient       func() *Client
 	CreateTable     func(table_name string, schema Map) (*Table, []error)
@@ -28,8 +29,8 @@ type Database struct {
 }
 
 func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
-	var this_database *Database
 	SQLCommand := NewSQLCommand()
+	var this_database *Database
 
 	data := Map{
 		"[client]": Map{"value": CloneClient(client), "mandatory": true},
@@ -47,6 +48,18 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return ValidateData(data, "Database")
 	}
 
+	setDatabase := func(database *Database) {
+		this_database = database
+	}
+
+	getDatabase := func() *Database {
+		return this_database
+	}
+
+	getDatabaseCreateOptions := func() *DatabaseCreateOptions {
+		return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
+	}
+
 	getClient := func() *Client {
 		return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
@@ -61,16 +74,14 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return *n
 	}
 
-	getDatabaseCreateOptions := func() *DatabaseCreateOptions {
-		return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
-	}
+	setDatabaseName := func(new_database_name string) []error {
+		new_database, new_database_errors := NewDatabase(getClient(), new_database_name, getDatabaseCreateOptions())
+		if new_database_errors != nil {
+			return new_database_errors
+		}
 
-	setDatabase := func(database *Database) {
-		this_database = database
-	}
-
-	getDatabase := func() *Database {
-		return this_database
+		setDatabase(new_database)
+		return nil
 	}
 
 	getCreateSQL := func() (*string, []error) {
@@ -272,6 +283,9 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		},
 		GetDatabaseName: func() string {
 			return getDatabaseName()
+		},
+		SetDatabaseName: func(database_name string) []error {
+			return setDatabaseName(database_name)
 		},
 		ToJSONString: func() string {
 			return getData().ToJSONString()
