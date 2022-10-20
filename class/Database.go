@@ -17,6 +17,7 @@ type Database struct {
 	Clone           func() *Database
 	Create          func() []error
 	Delete          func() []error
+	DeleteIfExists  func() []error
 	Exists          func() (*bool, []error)
 	TableExists     func(table_name string) (*bool, []error)
 	GetDatabaseName func() string
@@ -127,6 +128,52 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return nil
 	}
 
+	exists := func() (*bool, []error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		sql_command := fmt.Sprintf("USE %s;", EscapeString(getDatabaseName()))
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		boolean_value := false
+		if len(errors) > 0 {
+			//todo: check error message e.g database does not exist
+			boolean_value = false
+			return &boolean_value, nil
+		}
+
+		boolean_value = true
+		return &boolean_value, nil
+	}
+
+	delete := func() ([]error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		sql_command := fmt.Sprintf("DROP DATABASE %s;", EscapeString(getDatabaseName()))
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
 	errors := validate()
 
 	if errors != nil {
@@ -150,48 +197,28 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return nil
 		},
 		Delete: func() []error {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			sql_command := fmt.Sprintf("DROP DATABASE %s;", EscapeString(getDatabaseName()))
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
-
-			if execute_errors != nil {
-				errors = append(errors, execute_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			return nil
+			return delete()
 		},
 		Exists: func() (*bool, []error) {
+			return exists()
+		},
+		DeleteIfExists: func() []error {
 			errors := validate()
 
 			if len(errors) > 0 {
-				return nil, errors
+				return errors
 			}
 
-			sql_command := fmt.Sprintf("USE %s;", EscapeString(getDatabaseName()))
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
-
-			if execute_errors != nil {
-				errors = append(errors, execute_errors...)
+			exists, exists_errors := exists()
+			if exists_errors != nil {
+				return exists_errors
 			}
 
-			boolean_value := false
-			if len(errors) > 0 {
-				//todo: check error message e.g database does not exist
-				boolean_value = false
-				return &boolean_value, nil
+			if !(*exists) {
+				return nil
 			}
 
-			boolean_value = true
-			return &boolean_value, nil
+			return delete()
 		},
 		TableExists: func(table_name string) (*bool, []error) {
 			table, table_errors := NewTable(getDatabase(), table_name, nil)
