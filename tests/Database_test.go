@@ -82,7 +82,7 @@ func TestDatabaseDelete(t *testing.T) {
 	}
 }
 
-func TestDatabaseCreateExistsTrue(t *testing.T) {
+func TestDatabaseExistsTrue(t *testing.T) {
 	database := getTestDatabase(t)
 
     database.Create()
@@ -100,7 +100,7 @@ func TestDatabaseCreateExistsTrue(t *testing.T) {
 	} 
 }
 
-func TestDatabaseCreateExistsFalse(t *testing.T) {
+func TestDatabaseExistsFalse(t *testing.T) {
 	database := getTestDatabase(t)
 
 	exists, exists_errors := database.Exists()
