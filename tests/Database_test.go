@@ -63,12 +63,124 @@ func getTestDatabase(t *testing.T) (*class.Database) {
 	return database
 }
  
-func TestCanCreateDatabase(t *testing.T) {
+func TestDatabaseCreate(t *testing.T) {
 	database := getTestDatabase(t)
-	//fmt.Println(client.ToJSONString())
 
     database_errors := database.Create()
 	if database_errors != nil {
 		t.Error(database_errors)
 	}
+}
+
+func TestDatabaseDelete(t *testing.T) {
+	database := getTestDatabase(t)
+
+    database.Create()
+	database_errors := database.Delete()
+	if database_errors != nil {
+		t.Error(database_errors)
+	}
+}
+
+func TestDatabaseCreateExistsTrue(t *testing.T) {
+	database := getTestDatabase(t)
+
+    database.Create()
+	exists, exists_errors := database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if !(*exists) {
+		t.Error("exists is 'false' when it should be 'true'")
+	} 
+}
+
+func TestDatabaseCreateExistsFalse(t *testing.T) {
+	database := getTestDatabase(t)
+
+	exists, exists_errors := database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if (*exists) {
+		t.Error("exists is 'true' when it should be 'false'")
+	} 
+}
+
+func TestDatabaseCreateWithExists(t *testing.T) {
+	database := getTestDatabase(t)
+
+	exists, exists_errors := database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if (*exists) {
+		t.Error("exists is 'true' when it should be 'false'")
+	} 
+
+    database_errors := database.Create()
+	if database_errors != nil {
+		t.Error(database_errors)
+	}
+
+	exists, exists_errors = database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if !(*exists) {
+		t.Error("exists is 'false' when it should be 'true'")
+	} 
+}
+
+func TestDatabaseDeleteWithExists(t *testing.T) {
+	database := getTestDatabase(t)
+	database.Create()
+
+	exists, exists_errors := database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if !(*exists) {
+		t.Error("exists is 'false' when it should be 'true'")
+	} 
+
+    database.Delete()
+
+	exists, exists_errors = database.Exists()
+	if exists_errors != nil {
+		t.Error(exists_errors)
+	} 
+
+	if exists == nil {
+		t.Error("exists is nil")
+	} 
+
+	if (*exists) {
+		t.Error("exists is 'true' when it should be 'false'")
+	} 
 }
