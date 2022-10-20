@@ -1,6 +1,8 @@
 package class
 func GetDatabaseNameWhitelistCharacters() Map {
 return Map{
+    "#": nil,
+    "$": nil,
     "0": nil,
     "1": nil,
     "2": nil,

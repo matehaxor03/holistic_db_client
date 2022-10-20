@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"bufio"
+	"unicode"
 )
 
 func main() {
@@ -231,9 +232,32 @@ func generateKeywordAndReservedWordsBlacklist(client *class.Client) []error {
 	return nil
 }
 
+func basicFilter(value rune) bool {
+	string_value := string(value)
+	
+	if len(string_value) != 1 {
+		return false
+	}
+
+	if strings.TrimSpace(string_value) == "" {
+		return false
+	}
+
+	if unicode.IsControl(value) {
+		return false
+	}
+
+	if unicode.IsSpace(value) {
+		return false
+	}
+
+
+	return true
+}
+
 func testDatabaseName(client *class.Client) []error {
 	var errors []error
-	valid_runes := map[uint64]bool{}
+	
 	var percent_completed float64
 	var current_value uint64
 	var max_value uint64
@@ -242,8 +266,10 @@ func testDatabaseName(client *class.Client) []error {
 	max_value = 127
 
 	package_name := "class"
-	filename := fmt.Sprintf("./%s/DatabaseNameWhitelist.go", package_name)
-	method_name := "GetDatabaseNameWhitelistCharacters()"
+
+	valid_runes := map[uint64]bool{}
+	filename_whitelist := fmt.Sprintf("./%s/DatabaseNameWhitelistCharacters.go", package_name)
+	method_name_whitelist := "GetDatabaseNameWhitelistCharacters()"
 
 
 	for current_value <= max_value {
@@ -252,20 +278,15 @@ func testDatabaseName(client *class.Client) []error {
 		current_rune := rune(current_value)
 		string_value := string(current_rune)
 
-		if len(string_value) != 1 {
-			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-			current_value += 1
-			continue
-		}
 
-		if strings.TrimSpace(string_value) == "" {
-			fmt.Println(fmt.Sprintf("value is empty invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+		if !basicFilter(current_rune) {
+			fmt.Println(fmt.Sprintf("value was filtered by basic filter as invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			current_value += 1
 			continue
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "aaaaaaaaaaaaaaaa" + string_value
+		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 
 		database_exists, database_exists_errors := client.DatabaseExists(string_value)
 		if database_exists_errors != nil {
@@ -301,9 +322,13 @@ func testDatabaseName(client *class.Client) []error {
 		return errors
 	}
 
-	validation_map_errors := createMapValidationKeys(filename, package_name, method_name, valid_runes)
-	if validation_map_errors != nil {
-		return validation_map_errors
+	validation_whitelist_map_errors := createMapValidationKeys(filename_whitelist, package_name, method_name_whitelist, valid_runes)
+	if validation_whitelist_map_errors != nil {
+		errors = append(errors, validation_whitelist_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return errors
 	}
 	
 	return nil
@@ -352,20 +377,14 @@ func testTableName(client *class.Client) []error {
 		current_rune := rune(current_value)
 		string_value := string(current_rune)
 
-		if len(string_value) != 1 {
-			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-			current_value += 1
-			continue
-		}
-
-		if strings.TrimSpace(string_value) == "" {
-			fmt.Println(fmt.Sprintf("value is empty invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+		if !basicFilter(current_rune) {
+			fmt.Println(fmt.Sprintf("value was filtered by basic filter as invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			current_value += 1
 			continue
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "aaaaaaaaaaaaaaaa" + string_value
+		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 		schema := class.Map{"id": class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 
 		table, table_errors := database.CreateTable(string_value, schema)
@@ -444,20 +463,14 @@ func testColumnName(client *class.Client) []error {
 		current_rune := rune(current_value)
 		string_value := string(current_rune)
 
-		if len(string_value) != 1 {
-			fmt.Println(fmt.Sprintf("value has length != 1 invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
-			current_value += 1
-			continue
-		}
-
-		if strings.TrimSpace(string_value) == "" {
-			fmt.Println(fmt.Sprintf("value is empty invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
+		if !basicFilter(current_rune) {
+			fmt.Println(fmt.Sprintf("value was filtered by basic filter as invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			current_value += 1
 			continue
 		}
 
 		// double it due to defect in mysql with database names i or I
-		string_value = "aaaaaaaaaaaaaaaa" + string_value
+		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 		schema := class.Map{string_value: class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 		table_name := class.GenerateRandomLetters(10, nil)
 
