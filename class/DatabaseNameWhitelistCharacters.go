@@ -1,5 +1,5 @@
 package class
-func GetDatabaseNameValidCharacters() Map {
+func GetDatabaseNameWhitelistCharacters() Map {
 return Map{
     "0": nil,
     "1": nil,

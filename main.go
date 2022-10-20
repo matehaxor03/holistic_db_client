@@ -243,7 +243,7 @@ func testDatabaseName(client *class.Client) []error {
 
 	package_name := "class"
 	filename := fmt.Sprintf("./%s/DatabaseNameWhitelist.go", package_name)
-	method_name := "GetDatabaseNameValidCharacters()"
+	method_name := "GetDatabaseNameWhitelistCharacters()"
 
 
 	for current_value <= max_value {

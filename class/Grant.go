@@ -59,7 +59,7 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 			FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
 			data["[database_filter]"] = Map{"type": "*string", "value":CloneString(database_filter), "mandatory": true,
-			FILTERS(): Array{Map{"values": GetDatabaseNameValidCharacters(), "function": getWhitelistCharactersFunc()}}}
+			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
