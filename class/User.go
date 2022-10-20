@@ -139,7 +139,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			credentials := getCredentials()
 			username := credentials.GetUsername()
 
-			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, *host_name, new_password)
+			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, host_name, new_password)
 
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
 

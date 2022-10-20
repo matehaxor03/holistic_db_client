@@ -4,8 +4,8 @@ type Host struct {
 	Validate      func() []error
 	ToJSONString  func() string
 	Clone         func() *Host
-	GetHostName   func() *string
-	GetPortNumber func() *string
+	GetHostName   func() string
+	GetPortNumber func() string
 }
 
 func CloneHost(host *Host) *Host {
@@ -16,7 +16,7 @@ func CloneHost(host *Host) *Host {
 	return host.Clone()
 }
 
-func NewHost(host_name *string, port_number *string) (*Host, []error) {
+func NewHost(host_name string, port_number string) (*Host, []error) {
 
 	getHostNameValidCharacters := func() Map {
 		temp := Map{"a": nil,
@@ -75,20 +75,22 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 	}
 
 	data := Map{
-		"[host_name]": Map{"value": CloneString(host_name), "mandatory": true,
+		"[host_name]": Map{"value": CloneString(&host_name), "mandatory": true,
 			FILTERS(): Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-		"[port_number]": Map{"value": CloneString(port_number), "mandatory": true,
+		"[port_number]": Map{"value": CloneString(&port_number), "mandatory": true,
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
 	}
 
-	getHostName := func() *string {
+	getHostName := func() string {
 		host_name, _ := data.M("[host_name]").GetString("value")
-		return CloneString(host_name)
+		c := CloneString(host_name)
+		return *c
 	}
 
-	getPortNumber := func() *string {
+	getPortNumber := func() string {
 		port_number, _ := data.M("[port_number]").GetString("value")
-		return CloneString(port_number)
+		c := CloneString(port_number)
+		return *c
 	}
 
 	validate := func() []error {
@@ -112,10 +114,10 @@ func NewHost(host_name *string, port_number *string) (*Host, []error) {
 			cloned, _ := NewHost(getHostName(), getPortNumber())
 			return cloned
 		},
-		GetHostName: func() *string {
+		GetHostName: func() string {
 			return getHostName()
 		},
-		GetPortNumber: func() *string {
+		GetPortNumber: func() string {
 			return getPortNumber()
 		},
 	}

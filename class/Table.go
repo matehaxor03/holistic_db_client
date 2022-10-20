@@ -300,8 +300,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return getDatabase()
 		},
 		Clone: func() *Table {
-			clone_value, clone_errors := NewTable(getDatabase(), *getTableName(), schema.Clone())
-			fmt.Println(clone_errors)
+			clone_value, _ := NewTable(getDatabase(), *getTableName(), schema.Clone())
 			return clone_value
 		},
 		GetTableColumns: func() []string {
@@ -492,8 +491,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			if len(errors) > 0 {
 				return nil, errors
 			}
-
-			fmt.Println(sql)
 
 			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
 

@@ -43,8 +43,15 @@ func main() {
 		os.Exit(1)
 	}
 
-	host_value, _ := params[CLS_HOST]
-	port_value, _ := params[CLS_PORT]
+	host_value, found_host_found := params[CLS_HOST]
+	if !found_host_found {
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_HOST, CLS_HOST))
+	}
+
+	port_value, port_value_found := params[CLS_PORT]
+	if !port_value_found {
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_PORT, CLS_PORT))
+	}
 
 	user_value, _ := params[CLS_USER]
 
@@ -86,7 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	host, host_errors := class.NewHost(host_value, port_value)
+	host, host_errors := class.NewHost(*host_value, *port_value)
 	if host_errors != nil {
 		errors = append(errors, host_errors...)
 	}

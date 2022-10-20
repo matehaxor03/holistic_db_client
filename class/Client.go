@@ -88,7 +88,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil, details_errors
 		}
 
-		host, host_errors := NewHost(&db_hostname, &db_port_number)
+		host, host_errors := NewHost(db_hostname, db_port_number)
 		if host_errors != nil {
 			return nil, host_errors
 		}

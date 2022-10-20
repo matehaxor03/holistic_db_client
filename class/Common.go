@@ -6,6 +6,8 @@ import (
 	"time"
 	"unicode"
 	"math/rand"
+    "path/filepath"
+	"runtime"
 )
 
 func EscapeString(value string) string {
@@ -552,4 +554,14 @@ func GenerateRandomLetters(length uint64, upper_case *bool) (*string) {
 
 	value := sb.String()
 	return &value
+}
+
+func GetDirectoryOfExecutable() (*string, error) {
+    _, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return nil, fmt.Errorf("filename error")
+	}
+	directory_name := filepath.Dir(filename)
+	directory_name = strings.Replace(directory_name, "/class","", 1)
+	return &directory_name, nil
 }
