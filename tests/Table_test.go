@@ -15,7 +15,7 @@ func GetTestTablePrimaryKeyName() string {
 }
 
 func GetTestSchema() class.Map {
-	return class.Map {"test_table_id": class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
+	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
 }
 
 func GetTestSchemaColumn() class.Map {
@@ -34,12 +34,12 @@ func GetTestTable(t *testing.T) (*class.Table) {
 
 	use_database_errors := database.UseDatabase() 
 	if use_database_errors != nil {
-		errors = append(errors, errors...)
+		errors = append(errors, use_database_errors...)
 	}
 
 	table, table_errors := class.NewTable(database, GetTestTableName(), GetTestSchema())
 	if table_errors != nil {
-		errors = append(errors, errors...)
+		errors = append(errors, table_errors...)
 	}
 
 	if len(errors) > 0 {
@@ -182,7 +182,7 @@ func TestTableDeleteWithExists(t *testing.T) {
 	} 
 }
 
-func TestTableCannotSetDatabaseNameWithBlackListName(t *testing.T) {
+func TestTableCannotSetTableNameWithBlackListName(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	table := GetTestTable(t)
 

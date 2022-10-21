@@ -60,7 +60,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
 	if database_errors != nil {
-		errors = append(errors, errors...)
+		errors = append(errors, database_errors...)
 	}
 
 	if len(errors) > 0 {

@@ -253,6 +253,7 @@ func IsLower(s string) bool {
 func ValidateData(fields Map, structType string) []error {			
 	var errors []error
 	var parameters = fields.Keys()
+	primary_key_count := 0
 
 	for _, parameter := range parameters {
 
@@ -271,6 +272,11 @@ func ValidateData(fields Map, structType string) []error {
 		mandatory_field, mandatory_field_errors := parameter_fields.GetBool("mandatory")
 		default_is_null := parameter_fields.IsNil("default")
 
+		if parameter_fields.IsBoolTrue("primary_key") {
+			value_is_mandatory = true
+			primary_key_count += 1
+		}
+
 		if value_is_null && default_is_null && !parameter_fields.HasKey("value") {
 			continue
 		}
@@ -286,9 +292,7 @@ func ValidateData(fields Map, structType string) []error {
 		attribute_to_validate := "value"
 		if value_is_null && value_is_mandatory && default_is_null {
 			
-			
 			if parameter_fields.IsBoolFalse("primary_key") {
-				panic(parameter_fields.ToJSONString())
 				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but primary key is nil and default is nil", structType, parameter))
 				continue
 			} else if parameter_fields.IsBoolTrue("primary_key") {
@@ -518,6 +522,12 @@ func ValidateData(fields Map, structType string) []error {
 			panic(fmt.Sprintf("please implement type: %s for parameter: %s", typeOf, parameter))
 		}
 
+	}
+
+	if structType == "*class.Table" {
+		if primary_key_count <= 0 {
+			errors = append(errors, fmt.Errorf("table: %s did not have any primary keys", structType))
+		}
 	}
 
 	if len(errors) > 0 {

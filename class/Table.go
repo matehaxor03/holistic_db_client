@@ -48,8 +48,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		errors = append(errors, fmt.Errorf("table_name is empty"))
 	}
 
-	primary_key_count := 0
-
 	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
 	for _, column_name := range schema.Keys() {
 		column_name_params.SetString("value", &column_name)
@@ -73,14 +71,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		if !column_map.IsString("type") {
 			errors = append(errors, fmt.Errorf("column: %s type does not have a string value", column_name))
 		}
-
-		if column_map.IsBoolTrue("primary_key") {
-			primary_key_count += 1
-		}
-	}
-
-	if primary_key_count == 0 {
-		errors = append(errors, fmt.Errorf("table: %s table does not have a primary_key", table_name))
 	}
 
 	if len(errors) > 0 {
@@ -164,7 +154,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "Table")
+		return ValidateData(getData(), "*class.Table")
 	}
 
 	getDatabase := func() *Database {
