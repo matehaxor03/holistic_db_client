@@ -317,3 +317,44 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 		}
 	}
 }
+
+func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
+	client := GetTestClient(t)
+	database_create_options :=  GetTestDatabaseCreateOptions()
+	non_whitelist_map := class.Map{"(":nil, ")":nil}
+
+	for non_whitelist_characters := range non_whitelist_map {
+		database, new_database_errors := class.NewDatabase(client, "a" + non_whitelist_characters + "a", database_create_options)
+		
+		if new_database_errors == nil {
+			t.Errorf("NewDatabase should return error when database_name character is non-whitelisted: %s", non_whitelist_characters)
+			continue
+		}
+
+		if database != nil {
+			t.Errorf("NewDatabase should be nil when database_name is non-whitelisted: %s", non_whitelist_characters)
+			continue
+		}
+	}
+}
+
+func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
+	client := GetTestClient(t)
+	database_create_options :=  GetTestDatabaseCreateOptions()
+	whitelist_map := class.GetDatabaseNameWhitelistCharacters()
+
+	for whitelist_database_character := range whitelist_map {
+		database, new_database_errors := class.NewDatabase(client, whitelist_database_character, database_create_options)
+		
+		if new_database_errors == nil {
+			t.Errorf("NewDatabase should return error when database_name character is whitelisted and database_name is only one character long: %s", whitelist_database_character)
+			continue
+		}
+
+		if database != nil {
+			t.Errorf("NewDatabase should be nil when database_name is whitelisted and is only one character long: %s", whitelist_database_character)
+			continue
+		}
+
+	}
+}

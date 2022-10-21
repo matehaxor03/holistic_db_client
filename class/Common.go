@@ -335,7 +335,28 @@ func ValidateData(fields Map, structType string) []error {
 			break
 		case "string":
 		case "*string":
-			string_value, _ := parameter_fields.GetString(attribute_to_validate)
+			string_value, string_value_errors := parameter_fields.GetString(attribute_to_validate)
+
+			if string_value_errors != nil {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s was unable to parse to *string", structType, parameter, attribute_to_validate))
+				continue
+			}
+
+			if parameter_fields.IsNumber("min_length") {
+				min_length, min_length_errors := parameter_fields.GetUInt64("min_length")
+				if min_length_errors != nil {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had an error parsing number", structType, parameter, "min_length"))
+				} else {
+					runes, runes_errors := parameter_fields.GetRunes(attribute_to_validate)
+					if runes_errors != nil {
+						errors = append(errors, runes_errors...)
+					} else {
+						if uint64(len(*runes)) < *min_length {
+							errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s did not meet minimum length requirements and had length: %d", structType, parameter, "min_length", len(*runes)))
+						}
+					}
+				}
+			}
 
 			if parameter_fields.IsNil(FILTERS()) {
 				continue

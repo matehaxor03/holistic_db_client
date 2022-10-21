@@ -319,6 +319,42 @@ func (m Map) GetString(s string) (*string, []error) {
 	return result, nil
 }
 
+func (m Map) GetRunes(s string) (*[]rune, []error) {
+	if m[s] == nil {
+		return nil, nil
+	}
+
+	var errors []error
+	var result *string
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "string":
+		value := m[s].(string)
+		newValue := strings.Clone(value)
+		result = &newValue
+	case "*string":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*string=<nil>)" {
+			s := strings.Clone(*((m[s]).(*string)))
+			result = &s
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetString: *string value is null for attribute: %s", rep, s))
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	var runes []rune
+	for _, runeValue := range *result {
+		runes = append(runes, runeValue)
+	}
+
+	return &runes, nil
+}
+
 func (m Map) GetObject(s string) interface{} {
 	return m[s]
 }
