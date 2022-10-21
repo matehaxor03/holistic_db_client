@@ -27,6 +27,7 @@ type Database struct {
 	CreateTable     func(table_name string, schema Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
 	ToJSONString    func() string
+	UseDatabase     func() []error
 }
 
 func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
@@ -76,12 +77,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
-		new_database, new_database_errors := NewDatabase(getClient(), new_database_name, getDatabaseCreateOptions())
+		_, new_database_errors := NewDatabase(getClient(), new_database_name, getDatabaseCreateOptions())
 		if new_database_errors != nil {
 			return new_database_errors
 		}
 
-		setDatabase(new_database)
+		(data["[database_name]"].(Map))["value"] = CloneString(&new_database_name)
 		return nil
 	}
 
@@ -313,6 +314,9 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		},
 		SetDatabaseName: func(database_name string) []error {
 			return setDatabaseName(database_name)
+		},
+		UseDatabase: func() []error {
+			return getClient().UseDatabase(getDatabase())
 		},
 		ToJSONString: func() string {
 			return getData().ToJSONString()

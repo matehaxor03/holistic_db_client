@@ -20,8 +20,10 @@ type Table struct {
 	Exists                func() (*bool, []error)
 	Create                func() []error
 	Delete                func() []error
-	GetSchema              func() (*Map, []error)
-	GetTableName          func() *string
+	DeleteIfExists        func() []error
+	GetSchema             func() (*Map, []error)
+	GetTableName          func() string
+	SetTableName          func(table_name string) []error
 	GetTableColumns       func() []string
 	GetIdentityColumns    func() []string
 	GetNonIdentityColumns func() []string
@@ -46,6 +48,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		errors = append(errors, fmt.Errorf("table_name is empty"))
 	}
 
+	primary_key_count := 0
+
 	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
 	for _, column_name := range schema.Keys() {
 		column_name_params.SetString("value", &column_name)
@@ -55,7 +59,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}	
 
 		if schema.GetType(column_name) != "class.Map" {
-			panic(schema.ToJSONString())
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", table_name, column_name))
 			continue
 		}
@@ -70,6 +73,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		if !column_map.IsString("type") {
 			errors = append(errors, fmt.Errorf("column: %s type does not have a string value", column_name))
 		}
+
+		if column_map.IsBoolTrue("primary_key") {
+			primary_key_count += 1
+		}
+	}
+
+	if primary_key_count == 0 {
+		errors = append(errors, fmt.Errorf("table: %s table does not have a primary_key", table_name))
 	}
 
 	if len(errors) > 0 {
@@ -78,7 +89,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	data := schema.Clone()
 	data["[database]"] = Map{"value": CloneDatabase(database), "mandatory": true}
-	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true,
+	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "min_length": 2, 
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
@@ -91,9 +102,10 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return data.Clone()
 	}
 
-	getTableName := func() *string {
+	getTableName := func() string {
 		table_name, _ := data.M("[table_name]").GetString("value")
-		return CloneString(table_name)
+		n := CloneString(table_name)
+		return *n
 	}
 
 	getTableColumns := func() []string {
@@ -167,6 +179,62 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return this_table
 	}
 
+	setTableName := func(new_table_name string) []error {
+		_, new_table_errors := NewTable(getDatabase(), new_table_name, schema)
+		if new_table_errors != nil {
+			return new_table_errors
+		}
+
+		(data["[table_name]"].(Map))["value"] = CloneString(&new_table_name)
+		return nil
+	}
+
+	exists := func() (*bool, []error) {
+		var errors []error
+		validate_errors := validate()
+		if errors != nil {
+			errors = append(errors, validate_errors...)
+			return nil, errors
+		}
+
+		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(getTableName()))
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql_command, Map{"use_file": false})
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		boolean_value := false
+		if len(errors) > 0 {
+			//todo: check error message e.g database does not exist
+			boolean_value = false
+			return &boolean_value, nil
+		}
+
+		boolean_value = true
+		return &boolean_value, nil
+	}
+
+	delete := func() ([]error) {
+		errors := validate()
+		if errors != nil {
+			return errors
+		}
+
+		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(getTableName()))
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
 	getCreateSQL := func() (*string, []error) {
 		errors := validate()
 
@@ -174,7 +242,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(*getTableName()))
+		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(getTableName()))
 
 		valid_columns := getTableColumns()
 		primary_key_count := 0
@@ -266,7 +334,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(*getTableName())))
+			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(getTableName())))
 		}
 
 		if len(errors) > 0 {
@@ -300,7 +368,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return getDatabase()
 		},
 		Clone: func() *Table {
-			clone_value, _ := NewTable(getDatabase(), *getTableName(), schema.Clone())
+			clone_value, _ := NewTable(getDatabase(), getTableName(), schema.Clone())
 			return clone_value
 		},
 		GetTableColumns: func() []string {
@@ -326,7 +394,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((*getTableName())))
+			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString((getTableName())))
 			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
 
 			if sql_errors != nil {
@@ -352,23 +420,25 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return &count, nil
 		},
 		Delete: func() []error {
+			return delete()
+		},
+		DeleteIfExists: func() []error {
 			errors := validate()
-			if errors != nil {
-				return errors
-			}
-
-			sql := fmt.Sprintf("DROP TABLE %s;", EscapeString((*getTableName())))
-			_, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql, Map{"use_file": false})
-
-			if sql_errors != nil {
-				errors = append(errors, sql_errors...)
-			}
 
 			if len(errors) > 0 {
 				return errors
 			}
 
-			return nil
+			exists, exists_errors := exists()
+			if exists_errors != nil {
+				return exists_errors
+			}
+
+			if !(*exists) {
+				return nil
+			}
+
+			return delete()
 		},
 		CreateRecord: func(new_record_data Map) (*Record, []error) {
 			errors := validate()
@@ -402,7 +472,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *getTableName(), table_columns))
+						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, getTableName(), table_columns))
 					}
 				}
 
@@ -418,21 +488,21 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 					 
 					if table_schema.IsNil(filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, *getTableName(), table_schema.Keys()))
+						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, getTableName(), table_schema.Keys()))
 						continue
 					}
 
 					table_schema_column := table_schema.M(filter_column)
 
 					if table_schema_column.IsNil("type") {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, *getTableName()))
+						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, getTableName()))
 						continue
 					}
 
 
 					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, *getTableName(), *table_column_type))
+						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, getTableName(), *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
@@ -443,7 +513,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(*getTableName()))
+			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(getTableName()))
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
 					sql += "WHERE "
@@ -553,7 +623,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							mapped_record.SetString(column, value)
 						}
 					default:
-						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", *getTableName(), column, *table_data_type))
+						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", getTableName(), column, *table_data_type))
 					}
 				}
 
@@ -572,29 +642,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return &mapped_records, nil
 		},
 		Exists: func() (*bool, []error) {
-			var errors []error
-			validate_errors := validate()
-			if errors != nil {
-				errors = append(errors, validate_errors...)
-				return nil, errors
-			}
-
-			sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(*getTableName()))
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql_command, Map{"use_file": false})
-
-			if execute_errors != nil {
-				errors = append(errors, execute_errors...)
-			}
-
-			boolean_value := false
-			if len(errors) > 0 {
-				//todo: check error message e.g database does not exist
-				boolean_value = false
-				return &boolean_value, nil
-			}
-
-			boolean_value = true
-			return &boolean_value, nil
+			return exists()
 		},
 		GetSchema: func() (*Map, []error) {
 			var errors []error
@@ -604,7 +652,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 			
-			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(*getTableName()))
+			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(getTableName()))
 
 			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase().GetClient(), &sql_command, Map{"use_file": false, "json_output": true})
 
@@ -727,12 +775,12 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
 						}
 					default:
-						errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", *getTableName(), field_name, column_attribute))
+						errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", getTableName(), field_name, column_attribute))
 					}
 				}
 
 				if column_schema.IsNil("type") {
-					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", *getTableName(), field_name))
+					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", getTableName(), field_name))
 				}
 
 				if len(errors) > 0 {
@@ -802,8 +850,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		GetData: func() Map {
 			return getData()
 		},
-		GetTableName: func() *string {
+		GetTableName: func() string {
 			return getTableName()
+		},
+		SetTableName: func(table_name string) []error {
+			return setTableName(table_name)
 		},
 		ToJSONString: func() string {
 			return data.Clone().ToJSONString()

@@ -53,7 +53,7 @@ func GetTestClient(t *testing.T) (*class.Client) {
 	return client
 }
 
-func getTestDatabase(t *testing.T) (*class.Database) {
+func GetTestDatabase(t *testing.T) (*class.Database) {
 	var errors []error
 
 	client := GetTestClient(t)
@@ -63,21 +63,14 @@ func getTestDatabase(t *testing.T) (*class.Database) {
 		errors = append(errors, errors...)
 	}
 
-	database_exists, database_exists_error := database.Exists()
-	if database_exists_error != nil {
-		errors = append(errors, database_exists_error...)
-	}
-
 	if len(errors) > 0 {
 		t.Error(errors)
 		return nil
 	}
 
-	if *database_exists {
-		database_deleted_errors := database.Delete()
-		if database_deleted_errors != nil {
-			errors = append(errors, database_deleted_errors...)
-		}
+	database_delete_errors := database.DeleteIfExists()
+	if database_delete_errors != nil {
+		errors = append(errors, database_delete_errors...)
 	}
 
 	if len(errors) > 0 {
@@ -89,7 +82,7 @@ func getTestDatabase(t *testing.T) (*class.Database) {
 }
  
 func TestDatabaseCreate(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 
     database_errors := database.Create()
 	if database_errors != nil {
@@ -98,7 +91,7 @@ func TestDatabaseCreate(t *testing.T) {
 }
 
 func TestDatabaseDelete(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 
     database.Create()
 	database_errors := database.Delete()
@@ -108,7 +101,7 @@ func TestDatabaseDelete(t *testing.T) {
 }
 
 func TestDatabaseExistsTrue(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 
     database.Create()
 	exists, exists_errors := database.Exists()
@@ -126,7 +119,7 @@ func TestDatabaseExistsTrue(t *testing.T) {
 }
 
 func TestDatabaseExistsFalse(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
@@ -143,7 +136,7 @@ func TestDatabaseExistsFalse(t *testing.T) {
 }
 
 func TestDatabaseCreateWithExists(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
@@ -178,7 +171,7 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 }
 
 func TestDatabaseDeleteWithExists(t *testing.T) {
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 	database.Create()
 
 	exists, exists_errors := database.Exists()
@@ -212,7 +205,7 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 
 func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
-	database := getTestDatabase(t)
+	database := GetTestDatabase(t)
 	for blacklist_database_name := range blacklist_map {
 		set_database_name_errors := database.SetDatabaseName(blacklist_database_name)
 		
