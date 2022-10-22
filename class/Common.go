@@ -250,6 +250,12 @@ func IsLower(s string) bool {
 	return true
 }
 
+func IsDatabaseColumn(value string) bool {
+	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
+	column_name_errors := WhitelistCharacters(column_name_params)
+	return column_name_errors == nil
+}
+
 func ValidateData(fields Map, structType string) []error {			
 	var errors []error
 	var parameters = fields.Keys()
@@ -273,12 +279,18 @@ func ValidateData(fields Map, structType string) []error {
 		mandatory_field, mandatory_field_errors := parameter_fields.GetBool("mandatory")
 		default_is_null := parameter_fields.IsNil("default")
 
-		if parameter_fields.IsBoolTrue("primary_key") {
-			value_is_mandatory = true
-			primary_key_count += 1
+		if structType == "*class.Table" {
+			if parameter_fields.IsBoolTrue("primary_key") {
+				value_is_mandatory = true
+				primary_key_count += 1
 
-			if parameter_fields.IsBoolTrue("auto_increment") {
-				auto_increment_count += 1
+				if parameter_fields.IsBoolTrue("auto_increment") {
+					auto_increment_count += 1
+				}
+			}
+
+			if IsDatabaseColumn(parameter) && !parameter_fields.IsString("type") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s is missing type attribute", structType, parameter))
 			}
 		}
 

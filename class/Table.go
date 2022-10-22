@@ -44,31 +44,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		errors = append(errors, fmt.Errorf("schema is nil"))
 	}
 
-	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
-	for _, column_name := range schema.Keys() {
-		column_name_params.SetString("value", &column_name)
-		column_name_errors := WhitelistCharacters(column_name_params)
-		if column_name_errors != nil {
-			errors = append(errors, column_name_errors...)
-		}	
-
-		if schema.GetType(column_name) != "class.Map" {
-			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", table_name, column_name))
-			continue
-		}
-
-		column_map := schema.M(column_name)
-
-		if !column_map.HasKey("type") {
-			errors = append(errors, fmt.Errorf("column: %s does not have type attribute", column_name))
-			continue
-		}
-
-		if !column_map.IsString("type") {
-			errors = append(errors, fmt.Errorf("column: %s type does not have a string value", column_name))
-		}
-	}
-
 	if len(errors) > 0 {
 		return nil, errors
 	}
