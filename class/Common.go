@@ -276,10 +276,10 @@ func ValidateData(fields Map, structType string) []error {
 		if parameter_fields.IsBoolTrue("primary_key") {
 			value_is_mandatory = true
 			primary_key_count += 1
-		}
 
-		if parameter_fields.IsBoolTrue("auto_increment") {
-			auto_increment_count += 1
+			if parameter_fields.IsBoolTrue("auto_increment") {
+				auto_increment_count += 1
+			}
 		}
 
 		if value_is_null && default_is_null && !parameter_fields.HasKey("value") && (parameter_fields.IsBoolTrue("primary_key") && parameter_fields.IsBoolTrue("auto_increment")) {
