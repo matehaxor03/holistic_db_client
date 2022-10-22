@@ -289,8 +289,9 @@ func ValidateData(fields Map, structType string) []error {
 				}
 			}
 
-			if IsDatabaseColumn(parameter) && !parameter_fields.IsString("type") {
+			if IsDatabaseColumn(parameter) && (!parameter_fields.HasKey("type") || !parameter_fields.IsString("type")) {
 				errors = append(errors, fmt.Errorf("table: %s column: %s is missing type attribute", structType, parameter))
+				continue
 			}
 		}
 
@@ -506,10 +507,8 @@ func ValidateData(fields Map, structType string) []error {
 
 			break
 		default:
-			fmt.Println(fields.ToJSONString())
-			panic(fmt.Sprintf("please implement type: %s for parameter: %s", typeOf, parameter))
+			errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, attribute_to_validate, value_is_null, value_is_mandatory, default_is_null))
 		}
-
 	}
 
 	if structType == "*class.Table" {

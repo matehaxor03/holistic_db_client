@@ -100,6 +100,10 @@ func (m Map) IsNumber(s string) bool {
 }
 
 func (m Map) IsString(s string) bool {
+	if m.IsNil(s) {
+		return false
+	}
+
 	type_of := m.GetType(s)
 	if type_of == "string" || type_of == "*string" {
 		return true
