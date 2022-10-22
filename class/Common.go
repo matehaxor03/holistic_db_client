@@ -314,6 +314,18 @@ func ValidateData(fields Map, structType string) []error {
 			attribute_to_validate = "default"
 		} 
 
+
+		if structType == "*class.Table" && IsDatabaseColumn(parameter) {
+			
+			if parameter_fields.HasKey("value") {
+				errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s should not be set for table schemas please use default if you need to see a default value (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, "value", value_is_null, value_is_mandatory, default_is_null))
+			}
+			
+			if attribute_to_validate == "value" {
+				continue
+			}
+		}
+
 		typeOf := fmt.Sprintf("%T", (*parameter_fields)[attribute_to_validate])
 
 		switch typeOf {

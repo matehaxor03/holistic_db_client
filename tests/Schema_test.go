@@ -6,11 +6,15 @@ import (
 )
 
 func GetTestColumnSchemaNoPrimaryKey() class.Map {
-	return class.Map {"type": "uint64", "value": 1 }
+	return class.Map {"type": "uint64" }
 }
 
 func GetTestColumnSchemaNoType() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"primary_key": true}}
+}
+
+func GetTestColumnSchemaWithValue() class.Map {
+	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "value":"something", "auto_increment": true, "primary_key": true}}
 }
 
 func GetTestTableSchemaNoPrimaryKey() class.Map {
@@ -83,6 +87,17 @@ func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) 
 
 func TestSchemaCannotNewTableIfNoTypeAttribute(t *testing.T) {
 	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaNoType())
+	if table_errors == nil {
+		t.Errorf("expect table_errors to be not nil")
+	}
+
+	if table != nil {
+		t.Errorf("expect table to be nil")
+	}
+}
+
+func TestSchemaCannotNewTableIfHasValueAttribute(t *testing.T) {
+	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestColumnSchemaWithValue())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
