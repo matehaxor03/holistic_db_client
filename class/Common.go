@@ -254,6 +254,7 @@ func ValidateData(fields Map, structType string) []error {
 	var errors []error
 	var parameters = fields.Keys()
 	primary_key_count := 0
+	auto_increment_count := 0
 
 	for _, parameter := range parameters {
 
@@ -277,7 +278,11 @@ func ValidateData(fields Map, structType string) []error {
 			primary_key_count += 1
 		}
 
-		if value_is_null && default_is_null && !parameter_fields.HasKey("value") {
+		if parameter_fields.IsBoolTrue("auto_increment") {
+			auto_increment_count += 1
+		}
+
+		if value_is_null && default_is_null && !parameter_fields.HasKey("value") && (parameter_fields.IsBoolTrue("primary_key") && parameter_fields.IsBoolTrue("auto_increment")) {
 			continue
 		}
 
@@ -290,42 +295,7 @@ func ValidateData(fields Map, structType string) []error {
 		}
 
 		attribute_to_validate := "value"
-		if value_is_null && value_is_mandatory && default_is_null {
-			
-			if parameter_fields.IsBoolFalse("primary_key") {
-				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but primary key is nil and default is nil", structType, parameter))
-				continue
-			} else if parameter_fields.IsBoolTrue("primary_key") {
-				primary_key_value, primary_key_value_errors := parameter_fields.GetBool("primary_key")
-				if primary_key_value_errors != nil {
-					errors = append(errors, primary_key_value_errors...)
-					continue
-				} else if *primary_key_value == false {
-					errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory has primary key but it was false default is nil", structType, parameter))
-					continue
-				}
-			}
-
-			if !parameter_fields.IsNumber("type") {
-				continue
-			}
-
-			if parameter_fields.IsBoolFalse("auto_increment") {
-				panic(parameter_fields.ToJSONString())
-				errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but auto_increment was nil and default is nil", structType, parameter))
-			} else if parameter_fields.IsBoolTrue("auto_increment") {
-				auto_increment_value, auto_increment_value_errors := parameter_fields.GetBool("auto_increment")
-				if auto_increment_value_errors != nil {
-					errors = append(errors, auto_increment_value_errors...)
-					continue
-				} else if *auto_increment_value == false {
-					errors = append(errors, fmt.Errorf("table: %s parameter: %s is mandatory but auto_increment was false and default is nil",structType, parameter))
-					continue
-				}
-			}
-
-			continue
-		} else if value_is_null && !value_is_mandatory && default_is_null {
+		if value_is_null && !value_is_mandatory && default_is_null {
 			continue
 		} else if value_is_null && !default_is_null {
 			attribute_to_validate = "default"
@@ -359,6 +329,12 @@ func ValidateData(fields Map, structType string) []error {
 							errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s did not meet minimum length requirements and had length: %d", structType, parameter, "min_length", len(*runes)))
 						}
 					}
+				}
+			}
+
+			if parameter_fields.IsBoolTrue("not_empty_string_value") {
+				if *string_value == "" {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s was an empty string", structType, parameter, "not_empty_string_value"))
 				}
 			}
 
@@ -527,6 +503,10 @@ func ValidateData(fields Map, structType string) []error {
 	if structType == "*class.Table" {
 		if primary_key_count <= 0 {
 			errors = append(errors, fmt.Errorf("table: %s did not have any primary keys", structType))
+		}
+
+		if auto_increment_count > 1 {
+			errors = append(errors, fmt.Errorf("table: %s had more than one auto_increment attribute on a column", structType))
 		}
 	}
 

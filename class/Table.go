@@ -41,11 +41,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	var errors []error
 
 	if schema == nil {
-		schema = Map{}
-	}
-
-	if table_name == "" {
-		errors = append(errors, fmt.Errorf("table_name is empty"))
+		errors = append(errors, fmt.Errorf("schema is nil"))
 	}
 
 	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
@@ -79,7 +75,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	data := schema.Clone()
 	data["[database]"] = Map{"value": CloneDatabase(database), "mandatory": true}
-	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "min_length": 2, 
+	data["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2, 
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 

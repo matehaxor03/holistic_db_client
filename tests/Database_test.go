@@ -80,6 +80,54 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	return database
 }
+
+func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
+	var errors []error
+
+	client := GetTestClient(t)
+
+	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
+	if database_errors != nil {
+		errors = append(errors, database_errors...)
+	}
+
+	if len(errors) > 0 {
+		t.Error(errors)
+		return nil
+	}
+
+	database_delete_errors := database.DeleteIfExists()
+	if database_delete_errors != nil {
+		errors = append(errors, database_delete_errors...)
+	}
+
+	if len(errors) > 0 {
+		t.Error(errors)
+		return nil
+	}
+
+	database_create_errors := database.Create()
+	if database_create_errors != nil {
+		errors = append(errors, database_create_errors...)	
+	}
+
+	if len(errors) > 0 {
+		t.Error(errors)
+		return nil
+	}
+
+	use_database_errors := database.UseDatabase() 
+	if use_database_errors != nil {
+		errors = append(errors, use_database_errors...)
+	}
+
+	if len(errors) > 0 {
+		t.Error(errors)
+		return nil
+	}
+
+	return database
+}
  
 func TestDatabaseCreate(t *testing.T) {
 	database := GetTestDatabase(t)
