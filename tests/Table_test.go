@@ -14,11 +14,19 @@ func GetTestTablePrimaryKeyName() string {
 	return "test_table_id"
 }
 
+func GetTestTablePrimaryKeyName2() string {
+	return "test_table_id2"
+}
+
 func GetTestSchema() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
 }
 
 func GetTestSchemaColumn() class.Map {
+	return class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
+}
+
+func GetTestSchemaColumnPrimaryKeyAutoIncrement() class.Map {
 	return class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
 }
 

@@ -17,6 +17,11 @@ func GetTestTableSchemaNoPrimaryKey() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoPrimaryKey()}
 }
 
+func GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement() class.Map {
+	return class.Map {GetTestTablePrimaryKeyName(): GetTestSchemaColumnPrimaryKeyAutoIncrement(),
+	                  GetTestTablePrimaryKeyName2(): GetTestSchemaColumnPrimaryKeyAutoIncrement()}
+}
+
 func GetTestTableSchemaNoType() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
 }
@@ -56,6 +61,17 @@ func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
 
 func TestSchemaCannotNewTableIfNoPrimaryKey(t *testing.T) {
 	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
+	if table_errors == nil {
+		t.Errorf("expect table_errors to be not nil")
+	}
+
+	if table != nil {
+		t.Errorf("expect table to be nil")
+	}
+}
+
+func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
+	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
