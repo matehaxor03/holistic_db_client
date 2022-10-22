@@ -16,7 +16,7 @@ func TestSchemaCannotNewTableIfNil(t *testing.T) {
 	}
 }
 
-func TestSchemaCannotNewTableIfEmtpy(t *testing.T) {
+func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
 	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), class.Map{})
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
