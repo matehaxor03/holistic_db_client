@@ -109,7 +109,6 @@ func NewSQLCommand() *SQLCommand {
 				sql += "COMMIT;\n"
 			}
 
-
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename
