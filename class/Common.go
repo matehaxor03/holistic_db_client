@@ -259,6 +259,7 @@ func IsDatabaseColumn(value string) bool {
 func ValidateData(fields Map, structType string) []error {			
 	var errors []error
 	var parameters = fields.Keys()
+	var ignore_identity_errors = false
 	primary_key_count := 0
 	auto_increment_count := 0
 
@@ -280,6 +281,10 @@ func ValidateData(fields Map, structType string) []error {
 		default_is_null := parameter_fields.IsNil("default")
 
 		if structType == "*class.Table" {
+			if parameter == "[schema_is_nil]" && parameter_fields.IsBoolTrue("value") {
+				ignore_identity_errors = true
+			}
+
 			if parameter_fields.IsBoolTrue("primary_key") {
 				value_is_mandatory = true
 				primary_key_count += 1
@@ -523,7 +528,7 @@ func ValidateData(fields Map, structType string) []error {
 		}
 	}
 
-	if structType == "*class.Table" {
+	if structType == "*class.Table" && !ignore_identity_errors {
 		if primary_key_count <= 0 {
 			errors = append(errors, fmt.Errorf("table: %s did not have any primary keys", structType))
 		}

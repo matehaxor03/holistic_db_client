@@ -41,14 +41,14 @@ func TestSchemaCanNewTable(t *testing.T) {
 	}
 }
  
-func TestSchemaCannotNewTableIfNil(t *testing.T) {
+func TestSchemaCanNewTableIfNil(t *testing.T) {
 	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), nil)
-	if table_errors == nil {
-		t.Errorf("expect table_errors to be not nil")
+	if table_errors != nil {
+		t.Errorf("expect table_errors to be nil")
 	}
 
-	if table != nil {
-		t.Errorf("expect table to be nil")
+	if table == nil {
+		t.Errorf("expect table to be not nil")
 	}
 }
 

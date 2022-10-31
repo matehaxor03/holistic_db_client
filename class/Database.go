@@ -26,6 +26,8 @@ type Database struct {
 	GetClient       func() *Client
 	CreateTable     func(table_name string, schema Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
+	GetTables       func() (*[]Table, []error)
+	GetTableNames   func() (*[]string, []error)
 	ToJSONString    func() string
 	UseDatabase     func() []error
 }
@@ -154,6 +156,46 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return &boolean_value, nil
 	}
 
+	getTableNames := func() (*[]string, []error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		sql_command :=  fmt.Sprintf("SHOW TABLES IN %s;", EscapeString(getDatabaseName()))
+		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &sql_command, Map{"use_file": false})
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		if records == nil {
+			errors = append(errors, fmt.Errorf("Database: getTableNames returned nil records"))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		var table_names []string
+		column_name := "Tables_in_" + EscapeString(getDatabaseName())
+		for _, record := range *records {
+			table_name, table_name_errors := record.(Map).GetString(column_name)
+			if table_name_errors != nil {
+				errors = append(errors, table_name_errors...)
+				continue
+			}
+			table_names = append(table_names, *table_name)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return &table_names, nil
+	}
+
 	delete := func() ([]error) {
 		errors := validate()
 
@@ -173,6 +215,54 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		}
 
 		return nil
+	}
+
+	getTable := func(table_name string) (*Table, []error) {
+		var errors []error
+		database := getDatabase()
+		if database == nil {
+			errors = append(errors, fmt.Errorf("database is nil"))
+		} else {
+			database_errors := database.Validate()
+			if database_errors != nil {
+				errors = append(errors, database_errors...)
+			}
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		table, table_errors := NewTable(getDatabase(), table_name, nil)
+		if table_errors != nil {
+			errors = append(errors, table_errors...)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		table_schema, schema_errors := table.GetSchema()
+
+		if schema_errors != nil {
+			errors = append(errors, schema_errors...)
+		}
+
+		if table_schema == nil {
+			errors = append(errors, fmt.Errorf("Database.getTable schema is nil for table: %s", table_name))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}		
+
+		get_table, get_table_errors := NewTable(getDatabase(), table_name, *table_schema)
+
+		if get_table_errors != nil {
+			return nil, get_table_errors
+		}
+
+		return get_table, nil
 	}
 
 	errors := validate()
@@ -222,6 +312,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return delete()
 		},
 		TableExists: func(table_name string) (*bool, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
 			table, table_errors := NewTable(getDatabase(), table_name, nil)
 
 			if table_errors != nil {
@@ -231,6 +327,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return table.Exists()
 		},
 		CreateTable: func(table_name string, schema Map) (*Table, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+			
 			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
 
 			if new_table_errors != nil {
@@ -245,6 +347,24 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return table, nil
 		},
 		GetTable: func(table_name string) (*Table, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return getTable(table_name)
+		},
+		GetTableNames: func()  (*[]string, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return getTableNames()
+		},
+		GetTables: func() (*[]Table, []error) {
 			var errors []error
 			database := getDatabase()
 			if database == nil {
@@ -260,32 +380,31 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, table_errors := NewTable(getDatabase(), table_name, nil)
-			if table_errors != nil {
-				errors = append(errors, table_errors...)
+			var tables []Table
+			table_names, table_names_errors := getTableNames()
+			if table_names_errors != nil {
+				errors = append(errors, table_names_errors...)
 			}
 
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
-			table_schema, schema_errors := table.GetSchema()
+			for _, table_name := range *table_names {
+				table, table_errors := getTable(table_name)
+				if table_errors != nil {
+					errors = append(errors, table_errors...)
+					continue
+				}
 
-			if schema_errors != nil {
-				errors = append(errors, schema_errors...)
+				tables = append(tables, *table)
 			}
 
 			if len(errors) > 0 {
 				return nil, errors
-			}		
-
-			get_table, get_table_errors := NewTable(getDatabase(), table_name, *table_schema)
-
-			if get_table_errors != nil {
-				return nil, get_table_errors
 			}
 
-			return get_table, nil
+			return &tables, nil
 		},
 		SetClient: func(client *Client) []error {
 			var errors []error

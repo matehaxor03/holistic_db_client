@@ -41,7 +41,10 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	var errors []error
 
 	if schema == nil {
-		errors = append(errors, fmt.Errorf("schema is nil"))
+		schema = Map{}
+		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true}
+	} else {
+		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true}
 	}
 
 	if len(errors) > 0 {
@@ -608,7 +611,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		GetSchema: func() (*Map, []error) {
 			var errors []error
 			validate_errors := validate()
-			if errors != nil {
+			
+			if validate_errors != nil {
 				errors = append(errors, validate_errors...)
 				return nil, errors
 			}
@@ -799,7 +803,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				}
 
 				schema[field_name] = column_schema
-				
 			}
 
 			if len(errors) > 0 {

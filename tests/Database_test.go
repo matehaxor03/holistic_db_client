@@ -399,3 +399,39 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 
 	}
 }
+
+func TestDatabaseCanGetTableNames(t *testing.T) {
+	database := GetTestDatabaseCreated(t)
+	database.CreateTable("some_table", GetTestSchema())
+
+	table_names, tables_name_errors := database.GetTableNames()
+	if tables_name_errors != nil {
+		t.Error(tables_name_errors)
+	}
+
+	if table_names == nil {
+		t.Errorf("table_names should not be nil")
+	} else if !(len(*table_names) >= 0) {
+		t.Errorf("database.GetTables should return at least one table name")
+
+		if !class.Contains(*table_names, "some_table") {
+			t.Errorf("some_table not found in table_names")
+		}
+	}
+}
+
+func TestDatabaseCanGetTables(t *testing.T) {
+	database := GetTestDatabaseCreated(t)
+	database.CreateTable("some_table", GetTestSchema())
+
+	tables, tables_errors := database.GetTables()
+	if tables_errors != nil {
+		t.Error(tables_errors)
+	}
+
+	if tables == nil {
+		t.Errorf("tables should not be nil")
+	} else if !(len(*tables) >= 0) {
+		t.Errorf("database.GetTables should return at least one table")
+	}
+}
