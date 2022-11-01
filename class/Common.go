@@ -602,5 +602,14 @@ func GetDirectoryOfExecutable() (*string, error) {
 	}
 	directory_name := filepath.Dir(filename)
 	directory_name = strings.Replace(directory_name, "/class","", 1)
+	directory_name = strings.Replace(directory_name, "/tests","", 1)
+	directory_name = strings.Replace(directory_name, "/queue","", 1)
+	directory_name = strings.Replace(directory_name, "/go/pkg/mod/github.com/","/go/src/github.com/", 1)
+	
+	index_of_tag := strings.Index(directory_name, "@")
+	if index_of_tag != -1 {
+		directory_name = directory_name[:index_of_tag] + "/"
+	}
+
 	return &directory_name, nil
 }
