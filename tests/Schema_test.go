@@ -31,7 +31,7 @@ func GetTestTableSchemaNoType() class.Map {
 }
 
 func TestSchemaCanNewTable(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestSchema())
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestSchema())
 	if table_errors != nil {
 		t.Errorf("expect table_errors to be nil")
 	}
@@ -42,7 +42,7 @@ func TestSchemaCanNewTable(t *testing.T) {
 }
  
 func TestSchemaCanNewTableIfNil(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), nil)
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), nil)
 	if table_errors != nil {
 		t.Errorf("expect table_errors to be nil")
 	}
@@ -53,7 +53,7 @@ func TestSchemaCanNewTableIfNil(t *testing.T) {
 }
 
 func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), class.Map{})
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), class.Map{})
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -64,7 +64,7 @@ func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
 }
 
 func TestSchemaCannotNewTableIfNoPrimaryKey(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -75,7 +75,7 @@ func TestSchemaCannotNewTableIfNoPrimaryKey(t *testing.T) {
 }
 
 func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -86,7 +86,7 @@ func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) 
 }
 
 func TestSchemaCannotNewTableIfNoTypeAttribute(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestTableSchemaNoType())
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaNoType())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -97,7 +97,7 @@ func TestSchemaCannotNewTableIfNoTypeAttribute(t *testing.T) {
 }
 
 func TestSchemaCannotNewTableIfHasValueAttribute(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabaseCreated(t), GetTestTableName(), GetTestColumnSchemaWithValue())
+	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestColumnSchemaWithValue())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
