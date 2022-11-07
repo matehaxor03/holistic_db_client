@@ -342,6 +342,21 @@ func GetDatabaseClient(label string) (*Client, []error) {
 	return client, nil
 }
 
+func GetDatabase(label string) (*Database, []error) {
+	var errors []error
+	client, client_errors := GetDatabaseClient(label)
+	
+	if client_errors != nil {
+		errors = append(errors, client_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return client.GetDatabase(), nil
+}
+
 func GetCredentialDetails(label string) (string, string, string, string, string, []error) {
 	var errors []error
 
