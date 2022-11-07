@@ -308,6 +308,40 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	return &x, nil
 }
 
+func GetDatabaseClient(label string) (*Client, []error) {
+	var errors []error
+	db_hostname, db_port_number, db_name, db_username, _, details_errors := GetCredentialDetails(label)
+	if details_errors != nil {
+		errors = append(errors, details_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	host, host_errors := NewHost(db_hostname, db_port_number)
+	client, client_errors := NewClient(host, &db_username, nil)
+
+	if host_errors != nil {
+		errors = append(errors, host_errors...)
+	}
+
+	if client_errors != nil {
+		errors = append(errors, client_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	_, use_database_errors := client.UseDatabaseByName(db_name)
+	if use_database_errors != nil {
+		return nil, use_database_errors
+	}
+
+	return client, nil
+}
+
 func GetCredentialDetails(label string) (string, string, string, string, string, []error) {
 	var errors []error
 
