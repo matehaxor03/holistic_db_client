@@ -58,6 +58,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
 	data["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
+	data["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false}
 	data["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	data["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	data["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}

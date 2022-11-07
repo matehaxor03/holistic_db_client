@@ -222,7 +222,7 @@ func (m Map) ToJSONString() string {
 			}
 		}
 
-		if i < length {
+		if i < length - 1 {
 			json += ","
 		}
 		json += "\n"
