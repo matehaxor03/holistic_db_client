@@ -385,13 +385,13 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 	}
 
 	if filename == "" {
-		errors = append(errors, fmt.Errorf("database config for %s not found ust be in the format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
+		errors = append(errors, fmt.Errorf("database config for %s not found filename is empty: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
 		return "", "", "", "", "", errors
 	}
 
 	parts := strings.Split(filename, ":")
 	if len(parts) != 5 {
-		errors = append(errors, fmt.Errorf("database config for %s not found ust be in the format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
+		errors = append(errors, fmt.Errorf("database config for %s not found filename is in wrong format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
 		return "", "", "", "", "", errors
 	}
 
