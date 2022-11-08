@@ -9,11 +9,9 @@ import (
 
 type Map map[string]interface{}
 
-func ParseJSONMap(s *string) (*Map, []error) {
+func ParseJSON(s string) (*Map, []error) {
 	var errors []error
-	if s == nil {
-		errors = append(errors, fmt.Errorf("value nil"))
-	} else if *s == "" {
+	if s == "" {
 		errors = append(errors, fmt.Errorf("value empty string"))
 	}
 
@@ -21,12 +19,42 @@ func ParseJSONMap(s *string) (*Map, []error) {
 		return nil, errors
 	}
 
-	runes := []rune(*s)
-	return parseJSONMap(&runes, nil, nil, nil)
+	runes := []rune(s)
+	metrics := Map{"{":0, "}":0}
+	result, result_error :=  parseJSONMap(&runes, nil, nil, nil, &metrics)
+
+	opening_bracket_count, opening_bracket_count_errors := metrics.GetInt("{")
+	closing_bracket_count, closing_bracket_count_errors := metrics.GetInt("}")
+
+	if opening_bracket_count_errors != nil {
+		errors = append(errors, opening_bracket_count_errors...)
+	}
+
+	if closing_bracket_count_errors != nil {
+		errors = append(errors, closing_bracket_count_errors...)
+	}
+
+	if result_error != nil {
+		errors = append(errors, result_error...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *opening_bracket_count != *closing_bracket_count {
+		errors = append(errors, fmt.Errorf("opening and closing brackets do not match, opening: %d closing: %d", *opening_bracket_count, *closing_bracket_count))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
 }
 
 
-func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array) (*Map, []error) {
+func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array, metrics *Map) (*Map, []error) {
 	mode_looking_for_object := "looking_for_map"
 	mode_looking_for_keys := "looking_for_keys"
 	mode_looking_for_key_name := "looking_for_key_name"
@@ -41,14 +69,29 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array)
 	}
 
 	for i, value := range *runes {
+		if string(value) == "{" {
+			opening_count, _ := metrics.GetInt("{")
+			*opening_count++
+			metrics.SetInt("{", opening_count)
+		}
+
+
+		if string(value) == "}" {
+			closing_count, _ := metrics.GetInt("}")
+			*closing_count++
+			metrics.SetInt("}", closing_count)
+		}
+
+
 		if current_mode == mode_looking_for_object {
 			if string(value) == "{" {
 				new_mode := mode_looking_for_keys
-				new_s := string((*runes)[i:])
+				new_s := string((*runes)[i+1:])
 				new_runes := []rune(new_s)
 				new_map := Map{}
-				return parseJSONMap(&new_runes, &new_mode, &new_map, nil)
-			}
+
+				return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
+			} 
 		} else if current_mode == mode_looking_for_keys {
 			if string(value) == "\"" {
 				current_mode = mode_looking_for_key_name
@@ -66,18 +109,19 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array)
 		} else if current_mode == mode_looking_for_value {
 			if string(value) == "{" {
 				new_mode := mode_looking_for_keys
-				new_s := string((*runes)[i:])
+				new_s := string((*runes)[i+1:])
 				new_runes := []rune(new_s)
 				new_map := Map{}
 				data_map.SetMap(temp_key, &new_map)
-				return parseJSONMap(&new_runes, &new_mode, &new_map, nil)
+				
+				return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
 			} else if string(value) == "[" {
 				new_mode := mode_looking_for_value
-				new_s := string((*runes)[i:])
+				new_s := string((*runes)[i+1:])
 				new_runes := []rune(new_s)
 				new_array := Array{}
 				data_map.SetArray(temp_key, &new_array)
-				return parseJSONMap(&new_runes, &new_mode, nil, &new_array)
+				return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
 			} else if string(value) == "}" {
 				if data_map != nil {
 					(*data_map).SetString(temp_key, &temp_value)
@@ -90,7 +134,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array)
 				if data_array != nil {
 					*data_array = append(*data_array, temp_value)
 				}
-				
+
 				if data_map != nil {
 					(*data_map).SetString(temp_key, &temp_value)
 				}
