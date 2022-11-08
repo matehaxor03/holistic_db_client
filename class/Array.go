@@ -6,12 +6,16 @@ import (
 
 type Array []interface{}
 
-func NewArrayOfStrings(a *[]string) Array {
+func NewArrayOfStrings(a *[]string) *Array {
+	if a == nil {
+		return nil
+	}
+
 	array := Array{}
 	for _, value := range *a {
 		array = append(array, value)
 	}
-	return array
+	return &array
 }
 
 func (a Array) ToJSONString() string {
