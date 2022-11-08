@@ -138,7 +138,9 @@ func (m Map) IsBoolFalse(s string) bool {
 	return *value == false
 }
 
-func (m Map) ToJSONString() string {
+func (m Map) ToJSONString() (*string, []error) {
+	var errors []error
+	
 	json := "{\n"
 	keys := m.Keys()
 	length := len(keys)
@@ -174,9 +176,26 @@ func (m Map) ToJSONString() string {
 					json = json + "false"
 				}
 			case "class.Map":
-				json += value.(Map).ToJSONString()
+				x, x_error := value.(Map).ToJSONString()
+				if x_error != nil {
+					errors = append(errors, x_error...)
+				} else {
+					json += *x
+				}
 			case "class.Array":
-				json += value.(Array).ToJSONString()
+				x, x_error := value.(Array).ToJSONString()
+				if x_error != nil {
+					errors = append(errors, x_error...)
+				} else {
+					json += *x
+				}
+			case "*class.Array":
+				x, x_error := (*(value.(*Array))).ToJSONString()
+				if x_error != nil {
+					errors = append(errors, x_error...)
+				} else {
+					json += *x
+				}
 			case "[]string":
 				json += "["
 				array_length := len(m[key].([]string))
@@ -210,17 +229,47 @@ func (m Map) ToJSONString() string {
 			case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
 				json = json + fmt.Sprintf("\"%s\"", rep)
 			case "*class.Host":
-				json += (*(value.(*Host))).ToJSONString()
+				x, x_errors := (*(value.(*Host))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*class.Credentials":
-				json += (*(value.(*Credentials))).ToJSONString()
+				x, x_errors := (*(value.(*Credentials))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*class.DatabaseCreateOptions":
-				json += (*(value.(*DatabaseCreateOptions))).ToJSONString()
+				x, x_errors := (*(value.(*DatabaseCreateOptions))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*class.Database":
-				json += (*(value.(*Database))).ToJSONString()
+				x, x_errors := (*(value.(*Database))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*class.Client":
-				json += (*(value.(*Client))).ToJSONString()
+				x, x_errors := (*(value.(*Client))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*class.Table":
-				json += (*(value.(*Table))).ToJSONString()
+				x, x_errors := (*(value.(*Table))).ToJSONString()
+				if x_errors != nil {
+					errors = append(errors, x_errors...)
+				} else {
+					json += *x
+				}
 			case "*time.Time":
 				json += "\"" + (*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000") + "\""
 			case "map[string]map[string][][]string":
@@ -238,7 +287,7 @@ func (m Map) ToJSONString() string {
 			case "int":
 				json = json + strconv.FormatInt(int64(value.(int)), 10)
 			default:
-				panic(fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
+				errors = append(errors, fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 			}
 		}
 
@@ -248,7 +297,11 @@ func (m Map) ToJSONString() string {
 		json += "\n"
 	}
 	json += "}"
-	return json
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	return &json, nil
 }
 
 func (m Map) A(s string) Array {

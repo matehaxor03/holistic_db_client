@@ -30,7 +30,7 @@ func GET_COLLATES() Map {
 
 type DatabaseCreateOptions struct {
 	GetSQL       func() (*string, []error)
-	ToJSONString func() string
+	ToJSONString func() (*string, []error)
 	Clone        func() *DatabaseCreateOptions
 	Validate     func() []error
 }
@@ -73,7 +73,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 		GetSQL: func() (*string, []error) {
 			return getSQL()
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *DatabaseCreateOptions {

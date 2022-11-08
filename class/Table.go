@@ -32,7 +32,7 @@ type Table struct {
 	CreateRecord          func(record Map) (*Record, []error)
 	Select                func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() *Database
-	ToJSONString          func() string
+	ToJSONString          func() (*string, []error)
 }
 
 func NewTable(database *Database, table_name string, schema Map) (*Table, []error) {
@@ -821,7 +821,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return data.Clone().ToJSONString()
 		},
 	}

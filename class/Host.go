@@ -2,7 +2,7 @@ package class
 
 type Host struct {
 	Validate      func() []error
-	ToJSONString  func() string
+	ToJSONString  func() (*string, []error)
 	Clone         func() *Host
 	GetHostName   func() string
 	GetPortNumber func() string
@@ -107,7 +107,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 		Validate: func() []error {
 			return validate()
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Host {

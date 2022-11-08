@@ -18,7 +18,8 @@ func NewArrayOfStrings(a *[]string) *Array {
 	return &array
 }
 
-func (a Array) ToJSONString() string {
+func (a Array) ToJSONString() (*string, []error) {
+	var errors []error
 	json := "[\n"
 	length := len(a)
 	for i, value := range a {
@@ -33,9 +34,26 @@ func (a Array) ToJSONString() string {
 		case "string":
 			json = json + "\"" + value.(string) + "\""
 		case "class.Map":
-			json += value.(Map).ToJSONString()
+			x, x_errors := value.(Map).ToJSONString()
+			if x_errors != nil {
+				errors = append(errors, x_errors...)
+			} else {
+				json += *x
+			}
 		case "class.Array":
-			json += value.(Array).ToJSONString()
+			x, x_errors := value.(Array).ToJSONString()
+			if x_errors != nil {
+				errors = append(errors, x_errors...)
+			} else {
+				json += *x
+			}
+		case "*class.Array":
+			x, x_errors := (*(value.(*Array))).ToJSONString()
+			if x_errors != nil {
+				errors = append(errors, x_errors...)
+			} else {
+				json += *x
+			}
 		case "reflect.Value":
 			json = json + fmt.Sprintf("\"%s\"", value)
 		case "func(class.Map) []error":
@@ -43,7 +61,7 @@ func (a Array) ToJSONString() string {
 		case "<nil>":
 			json = json + fmt.Sprintf("null")
 		default:
-			panic(fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep))
+			errors = append(errors, (fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep)))
 		}
 
 		if i < length {
@@ -53,7 +71,12 @@ func (a Array) ToJSONString() string {
 		json += "\n"
 	}
 	json += "]"
-	return json
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &json, nil
 }
 
 func (a Array) ToPrimativeArray() []string {

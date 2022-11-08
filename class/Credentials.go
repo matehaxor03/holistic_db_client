@@ -12,7 +12,7 @@ type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() *string
 	GetPassword  func() *string
-	ToJSONString func() string
+	ToJSONString func() (*string, []error)
 	Clone        func() *Credentials
 }
 
@@ -185,7 +185,7 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 		GetPassword: func() *string {
 			return getPassword()
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return data.Clone().ToJSONString()
 		},
 		Clone: func() *Credentials {

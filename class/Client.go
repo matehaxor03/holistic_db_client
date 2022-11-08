@@ -32,7 +32,7 @@ type Client struct {
 	Clone               func() *Client
 	Validate            func() []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
-	ToJSONString        func() string
+	ToJSONString        func() (*string, []error)
 }
 
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
@@ -246,7 +246,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 			return grant_obj, nil
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return data.Clone().ToJSONString()
 		},
 		UserExists: func(username string) (*bool, []error) {

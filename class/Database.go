@@ -28,7 +28,7 @@ type Database struct {
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() (*[]Table, []error)
 	GetTableNames   func() (*[]string, []error)
-	ToJSONString    func() string
+	ToJSONString    func() (*string, []error)
 	UseDatabase     func() []error
 }
 
@@ -437,7 +437,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		UseDatabase: func() []error {
 			return getClient().UseDatabase(getDatabase())
 		},
-		ToJSONString: func() string {
+		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()
 		},
 	}
