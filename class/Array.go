@@ -64,7 +64,7 @@ func (a Array) ToJSONString() (*string, []error) {
 			errors = append(errors, (fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep)))
 		}
 
-		if i < length {
+		if i < length - 1 {
 			json += ","
 		}
 
