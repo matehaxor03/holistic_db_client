@@ -6,6 +6,14 @@ import (
 
 type Array []interface{}
 
+func NewArrayOfStrings(a *[]string) Array {
+	array := Array{}
+	for _, value := range *a {
+		array = append(array, value)
+	}
+	return array
+}
+
 func (a Array) ToJSONString() string {
 	json := "[\n"
 	length := len(a)
