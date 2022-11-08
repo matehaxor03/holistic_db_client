@@ -251,10 +251,15 @@ func (m Map) A(s string) Array {
 	}
 }
 
-func (m Map) SetArray(s string, array Array) {
+func (m Map) SetArray(s string, array *Array) {
+	if array == nil {
+		m[s] = nil
+		return
+	}
+
 	rep := fmt.Sprintf("%T", array)
 	switch rep {
-	case "class.Array":
+	case "*class.Array":
 		m[s] = array
 	default:
 		panic(fmt.Errorf("Map.SetArray: type %s is not supported please implement for field: %s", rep, s))
