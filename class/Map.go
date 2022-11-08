@@ -9,6 +9,100 @@ import (
 
 type Map map[string]interface{}
 
+func ParseJSONMap(s *string) (*Map, []error) {
+	var errors []error
+	if s == nil {
+		errors = append(errors, fmt.Errorf("value nil"))
+	} else if *s == "" {
+		errors = append(errors, fmt.Errorf("value empty string"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	runes := []rune(*s)
+	return parseJSONMap(&runes, nil, nil, nil)
+}
+
+
+func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array) (*Map, []error) {
+	mode_looking_for_object := "looking_for_map"
+	mode_looking_for_keys := "looking_for_keys"
+	mode_looking_for_key_name := "looking_for_key_name"
+	mode_looking_for_key_name_column := "looking_for_key_name_column"
+	mode_looking_for_value := "looking_for_value"
+	
+	temp_key := ""
+	temp_value := ""
+	var current_mode string
+	if mode == nil {
+		current_mode = mode_looking_for_object
+	}
+
+	for i, value := range *runes {
+		if current_mode == mode_looking_for_object {
+			if string(value) == "{" {
+				new_mode := mode_looking_for_keys
+				new_s := string((*runes)[i:])
+				new_runes := []rune(new_s)
+				new_map := Map{}
+				return parseJSONMap(&new_runes, &new_mode, &new_map, nil)
+			}
+		} else if current_mode == mode_looking_for_keys {
+			if string(value) == "\"" {
+				current_mode = mode_looking_for_key_name
+			}
+		} else if current_mode == mode_looking_for_key_name {
+			if string(value) == "\"" {
+				current_mode = mode_looking_for_key_name_column
+			} else {
+				temp_key += string(value)
+			}
+		} else if current_mode == mode_looking_for_key_name_column {
+			if string(value) == ":" {
+				current_mode = mode_looking_for_value
+			}
+		} else if current_mode == mode_looking_for_value {
+			if string(value) == "{" {
+				new_mode := mode_looking_for_keys
+				new_s := string((*runes)[i:])
+				new_runes := []rune(new_s)
+				new_map := Map{}
+				data_map.SetMap(temp_key, &new_map)
+				return parseJSONMap(&new_runes, &new_mode, &new_map, nil)
+			} else if string(value) == "[" {
+				new_mode := mode_looking_for_value
+				new_s := string((*runes)[i:])
+				new_runes := []rune(new_s)
+				new_array := Array{}
+				data_map.SetArray(temp_key, &new_array)
+				return parseJSONMap(&new_runes, &new_mode, nil, &new_array)
+			} else if string(value) == "}" {
+				if data_map != nil {
+					(*data_map).SetString(temp_key, &temp_value)
+				}
+			} else if string(value) == "]" {
+				if data_array != nil {
+					*data_array = append(*data_array, temp_value)
+				}
+			} else if string(value) == "," {
+				if data_array != nil {
+					*data_array = append(*data_array, temp_value)
+				}
+				
+				if data_map != nil {
+					(*data_map).SetString(temp_key, &temp_value)
+				}
+			} else {
+				temp_value += string(temp_value)
+			}
+		}
+	}
+
+	return data_map, nil
+}
+
 func (m Map) M(s string) *Map {
 	var errors []error
 	if m.IsNil(s) {
@@ -35,15 +129,8 @@ func (m Map) M(s string) *Map {
 	return result
 }
 
-func (m Map) SetMap(s string, zap Map) {
-	rep := fmt.Sprintf("%T", zap)
-
-	switch rep {
-	case "class.Map":
-		m[s] = zap
-	default:
-		panic(fmt.Errorf("Map.SetMap: type %s is not supported please implement for %s", rep, s))
-	}
+func (m Map) SetMap(s string, zap *Map) {
+	m[s] = zap
 }
 
 func (m Map) IsNil(s string) bool {

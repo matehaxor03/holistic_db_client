@@ -448,7 +448,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 				if !options.IsNil("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
 					auto_increment_column_name, _ := options.GetString("auto_increment_column_name")
-					data.SetMap(*auto_increment_column_name, Map{"type": "uint64", "value": count, "auto_increment": true, "primary_key": true})
+					auto_increment_column_schema := Map{"type": "uint64", "value": count, "auto_increment": true, "primary_key": true}
+					data.SetMap(*auto_increment_column_name, &auto_increment_column_schema)
 				}
 			}
 			return nil
