@@ -187,6 +187,26 @@ func (m Map) ToJSONString() string {
 					}
 				}
 				json += "]"
+			case "[]error":
+				json += "["
+				array_length := len(m[key].([]error))
+				for array_index, array_value := range m[key].([]error) {
+					json += "\"" + array_value.Error() + "\""
+					if array_index < array_length {
+						json += ","
+					}
+				}
+				json += "]"
+			case "*[]error":
+				json += "["
+				array_length := len(*(m[key].(*[]error)))
+				for array_index, array_value := range *(m[key].(*[]error)) {
+					json += "\"" + array_value.Error() + "\""
+					if array_index < array_length {
+						json += ","
+					}
+				}
+				json += "]"
 			case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
 				json = json + fmt.Sprintf("\"%s\"", rep)
 			case "*class.Host":
@@ -264,6 +284,15 @@ func (m Map) SetArray(s string, array *Array) {
 	default:
 		panic(fmt.Errorf("Map.SetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
+}
+
+func (m Map) SetErrors(s string, errors *[]error) {
+	if errors == nil {
+		m[s] = nil
+		return
+	}
+
+	m[s] = errors
 }
 
 func (m Map) GetType(s string) string {
@@ -756,6 +785,11 @@ func (m Map) Clone() Map {
 		case "*uint64":
 			uint64_value := *(current.(*uint64))
 			clone[key] = &uint64_value
+		case "*[]error":
+			errs := *(current.(*[]error))
+			clone[key] = &errs
+		case "[]error":
+			clone[key] = current.([]error)
 		case "<nil>":
 			clone[key] = nil
 		default:
