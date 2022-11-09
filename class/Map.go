@@ -247,6 +247,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		data_type = "bool"
 		boolean_value_false := false 
 		boolean_value = &boolean_value_false
+	} else if *string_value == "null" {
+		data_type = "null"
 	}
 
 	if data_type == "" {
@@ -263,6 +265,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			*data_array = append(*data_array, string_value)
 		} else if data_type == "bool" {
 			*data_array = append(*data_array, boolean_value)
+		} else if data_type == "null" {
+			*data_array = append(*data_array, nil)
 		}
 	}
 
@@ -271,6 +275,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			(*data_map).SetString(temp_key, string_value)
 		} else if data_type == "bool" {
 			(*data_map).SetBool(temp_key, boolean_value)
+		} else if data_type == "null" {
+			(*data_map).SetNil(temp_key)
 		}
 	}
 
@@ -615,6 +621,9 @@ func (m Map) SetErrors(s string, errors *[]error) {
 }
 
 func (m Map) GetType(s string) string {
+	if m.IsNil(s) {
+		return "nil"
+	}
 	return fmt.Sprintf("%T", m[s])
 }
 
@@ -790,6 +799,10 @@ func (m Map) SetString(s string, value *string) {
 
 	clone_string := CloneString(value)
 	m[s] = clone_string
+}
+
+func (m Map) SetNil(s string) {
+	m[s] = nil
 }
 
 func (m Map) Keys() []string {
