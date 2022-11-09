@@ -217,23 +217,46 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 
 func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) []error {
 	var errors []error
-	
-	clone_value := CloneString(&temp_value)
-	if strings.HasPrefix(*clone_value, "\"") && strings.HasSuffix(*clone_value, "\"") {
-		dequoted_value := (*clone_value)[1:(len(*clone_value)-1)]
-		clone_value = &dequoted_value
-	} else if strings.HasPrefix(*clone_value, "\"") || !strings.HasSuffix(*clone_value, "\"") {
-		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
-	} else if !strings.HasPrefix(*clone_value, "\"") || strings.HasSuffix(*clone_value, "\"") {
-		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
+
+	if data_map == nil && data_array == nil {
+		errors = append(errors, fmt.Errorf("map or array cannot both be nil"))
+	}
+
+	if data_map != nil && data_array != nil {
+		errors = append(errors, fmt.Errorf("map or array cannot both not be nil"))
 	}
 	
+	data_type := ""
+	string_value := CloneString(&temp_value)
+	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
+		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
+		string_value = &dequoted_value
+		data_type = "string"
+	} else if strings.HasPrefix(*string_value, "\"") || !strings.HasSuffix(*string_value, "\"") {
+		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
+	} else if !strings.HasPrefix(*string_value, "\"") || strings.HasSuffix(*string_value, "\"") {
+		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
+	}
+
+	if data_type == "" {
+		errors = append(errors, fmt.Errorf("data_type is unknown please implement"))
+	}
+
+
+	if len(errors) > 0 {
+		return errors
+	}
+
 	if data_array != nil {
-		*data_array = append(*data_array, clone_value)
+		if data_type == "string" {
+			*data_array = append(*data_array, string_value)
+		}
 	}
 
 	if data_map != nil {
-		(*data_map).SetString(temp_key, clone_value)
+		if data_type == "string" {
+			(*data_map).SetString(temp_key, string_value)
+		}
 	}
 
 	if len(errors) > 0 {
