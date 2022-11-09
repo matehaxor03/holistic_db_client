@@ -15,13 +15,24 @@ func ParseJSON(s string) (*Map, []error) {
 		errors = append(errors, fmt.Errorf("value empty string"))
 	}
 
+	if !strings.HasPrefix(s, "{") {
+		errors = append(errors, fmt.Errorf("json does not start with {"))
+	}
+
+	if !strings.HasSuffix(s, "}") {
+		errors = append(errors, fmt.Errorf("json does not end with }"))
+	}
+
 	if len(errors) > 0 {
 		return nil, errors
 	}
 
 	runes := []rune(s)
 	metrics := Map{"{":0, "}":0}
-	result, result_error :=  parseJSONMap(&runes, nil, nil, nil, &metrics)
+	mode := "looking_for_keys"
+	parent_map := Map{}
+	// parent map array and current map array etc
+	result, result_error :=  parseJSONMap(&runes, &mode, &parent_map, nil, &metrics)
 
 	opening_bracket_count, opening_bracket_count_errors := metrics.GetInt("{")
 	closing_bracket_count, closing_bracket_count_errors := metrics.GetInt("}")
@@ -55,18 +66,30 @@ func ParseJSON(s string) (*Map, []error) {
 
 
 func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array, metrics *Map) (*Map, []error) {
-	mode_looking_for_object := "looking_for_map"
+	var errors []error
+	if data_map == nil && data_array == nil {
+		errors = append(errors, fmt.Errorf("parent map or array cannot both be nil"))
+	}
+
+	if data_map != nil && data_array != nil {
+		errors = append(errors, fmt.Errorf("parent map or array cannot both not be nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	
+	
 	mode_looking_for_keys := "looking_for_keys"
 	mode_looking_for_key_name := "looking_for_key_name"
 	mode_looking_for_key_name_column := "looking_for_key_name_column"
 	mode_looking_for_value := "looking_for_value"
+	mode_unknown := "unknown"
 	
 	temp_key := ""
 	temp_value := ""
-	var current_mode string
-	if mode == nil {
-		current_mode = mode_looking_for_object
-	}
+	temp_mode := CloneString(mode)
+	current_mode := *temp_mode
 
 	for i, value := range *runes {
 		if string(value) == "{" {
@@ -75,23 +98,46 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 			metrics.SetInt("{", opening_count)
 		}
 
-
 		if string(value) == "}" {
 			closing_count, _ := metrics.GetInt("}")
 			*closing_count++
 			metrics.SetInt("}", closing_count)
 		}
 
+		if current_mode == mode_unknown {
+			if string(value) == "\n" {
 
-		if current_mode == mode_looking_for_object {
-			if string(value) == "{" {
+			} else if string(value) == "{" {
 				new_mode := mode_looking_for_keys
 				new_s := string((*runes)[i+1:])
 				new_runes := []rune(new_s)
 				new_map := Map{}
 
+				if data_map != nil {
+					data_map.SetMap(temp_key, &new_map)	
+				} else if data_array != nil {
+					*data_array = append(*data_array, &data_map)
+				}
 				return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
-			} 
+			} else if string(value) == "[" {
+				new_mode := mode_looking_for_value
+				new_s := string((*runes)[i+1:])
+				new_runes := []rune(new_s)
+				new_array := Array{}
+
+				if data_map != nil {
+					data_map.SetArray(temp_key, &new_array)	
+				} else if data_array != nil {
+					*data_array = append(*data_array, &new_array)
+				}
+				return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
+			} else if string(value) == "," {
+				if data_map != nil {
+					current_mode = mode_looking_for_keys
+				} else if data_array != nil {
+					current_mode = mode_looking_for_value
+				}
+			}
 		} else if current_mode == mode_looking_for_keys {
 			if string(value) == "\"" {
 				current_mode = mode_looking_for_key_name
@@ -123,28 +169,50 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				data_map.SetArray(temp_key, &new_array)
 				return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
 			} else if string(value) == "}" {
-				if data_map != nil {
-					(*data_map).SetString(temp_key, &temp_value)
-				}
-			} else if string(value) == "]" {
-				if data_array != nil {
-					*data_array = append(*data_array, temp_value)
-				}
-			} else if string(value) == "," {
-				if data_array != nil {
-					*data_array = append(*data_array, temp_value)
-				}
+				parseJSONValue(temp_key, temp_value, data_map, data_array)
 
-				if data_map != nil {
-					(*data_map).SetString(temp_key, &temp_value)
-				}
+				temp_key = ""
+				temp_value = ""
+
+				current_mode = mode_unknown
+			} else if string(value) == "]" {
+				parseJSONValue(temp_key, temp_value, data_map, data_array)
+
+				temp_key = ""
+				temp_value = ""
+
+				current_mode = mode_unknown
+			} else if string(value) == "," {
+				parseJSONValue(temp_key, temp_value, data_map, data_array)
+				
+				temp_key = ""
+				temp_value = ""
+
+				current_mode = mode_unknown
 			} else {
-				temp_value += string(temp_value)
+				temp_value += string(value)
 			}
 		}
 	}
 
 	return data_map, nil
+}
+
+func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) {
+	clone_value := CloneString(&temp_value)
+	if strings.HasPrefix(*clone_value, "\"") && strings.HasSuffix(*clone_value, "\"") {
+		dequoted_value := (*clone_value)[1:(len(*clone_value)-1)]
+		clone_value = &dequoted_value
+	}
+	
+	if data_array != nil {
+		*data_array = append(*data_array, clone_value)
+	}
+
+	if data_map != nil {
+		(*data_map).SetString(temp_key, clone_value)
+	}
+
 }
 
 func (m Map) M(s string) *Map {
@@ -648,18 +716,13 @@ func (m Map) SetBool(s string, value *bool) {
 }
 
 func (m Map) SetString(s string, value *string) {
-	rep := fmt.Sprintf("%T", value)
-
-	switch rep {
-	case "string":
-		m[s] = value
-		break
-	case "*string":
-		m[s] = value
-		break
-	default:
-		panic(fmt.Errorf("Map.SetString: type %s is not supported please implement", rep))
+	if value == nil {
+		m[s] = nil
+		return 
 	}
+
+	clone_string := CloneString(value)
+	m[s] = clone_string
 }
 
 func (m Map) Keys() []string {
