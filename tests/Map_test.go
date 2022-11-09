@@ -87,5 +87,57 @@ func TestCanParseString(t *testing.T) {
 		json_string, _ := json.ToJSONString()
 		fmt.Println(*json_string)
 	}
+}
+
+func TestCanParseMultipleStrings(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\"value\",\"key2\":\"value2\"}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
 	
+	has_key := json.HasKey("key")
+	if !has_key {
+		t.Errorf("key not found")
+	} else {
+		type_of := json.GetType("key")
+		if type_of != "*string" {
+			t.Errorf("key is not a string: %s", type_of)
+		} else {
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+		}
+	}
+
+	has_key2 := json.HasKey("key2")
+	if !has_key2 {
+		t.Errorf("key2 not found")
+	} else {
+		type_of := json.GetType("key2")
+		if type_of != "*string" {
+			t.Errorf("key2 is not a string: %s", type_of)
+		} else {
+			value, value_errors := json.GetString("key2") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value2" {
+				t.Errorf("expected: value2 actual: %s", *value)
+			}
+		}
+	}
+
+	if json != nil {
+		json_string, _ := json.ToJSONString()
+		fmt.Println(*json_string)
+	}
 }

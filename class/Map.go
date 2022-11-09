@@ -188,7 +188,11 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				temp_key = ""
 				temp_value = ""
 
-				current_mode = mode_unknown
+				if data_map != nil {
+					current_mode = mode_looking_for_keys
+				} else if data_array != nil {
+					current_mode = mode_looking_for_value
+				}
 			} else {
 				temp_value += string(value)
 			}
