@@ -228,14 +228,25 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	
 	data_type := ""
 	string_value := CloneString(&temp_value)
+	
+
+	var boolean_value *bool
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
-		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
-		string_value = &dequoted_value
 		data_type = "string"
-	} else if strings.HasPrefix(*string_value, "\"") || !strings.HasSuffix(*string_value, "\"") {
+		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
+		string_value = &dequoted_value	
+	} else if strings.HasPrefix(*string_value, "\"") && !strings.HasSuffix(*string_value, "\"") {
 		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
-	} else if !strings.HasPrefix(*string_value, "\"") || strings.HasSuffix(*string_value, "\"") {
+	} else if !strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
+	} else if *string_value == "true" {
+		data_type = "bool"
+		boolean_value_true := true 
+		boolean_value = &boolean_value_true
+	} else if *string_value == "false" {
+		data_type = "bool"
+		boolean_value_false := false 
+		boolean_value = &boolean_value_false
 	}
 
 	if data_type == "" {
@@ -250,12 +261,16 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	if data_array != nil {
 		if data_type == "string" {
 			*data_array = append(*data_array, string_value)
+		} else if data_type == "bool" {
+			*data_array = append(*data_array, boolean_value)
 		}
 	}
 
 	if data_map != nil {
 		if data_type == "string" {
 			(*data_map).SetString(temp_key, string_value)
+		} else if data_type == "bool" {
+			(*data_map).SetBool(temp_key, boolean_value)
 		}
 	}
 
