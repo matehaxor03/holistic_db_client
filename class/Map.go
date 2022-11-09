@@ -169,21 +169,30 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				data_map.SetArray(temp_key, &new_array)
 				return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
 			} else if string(value) == "}" {
-				parseJSONValue(temp_key, temp_value, data_map, data_array)
+				parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+				if parse_errors != nil {
+					errors = append(errors, parse_errors...)
+				}
 
 				temp_key = ""
 				temp_value = ""
 
 				current_mode = mode_unknown
 			} else if string(value) == "]" {
-				parseJSONValue(temp_key, temp_value, data_map, data_array)
+				parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+				if parse_errors != nil {
+					errors = append(errors, parse_errors...)
+				}
 
 				temp_key = ""
 				temp_value = ""
 
 				current_mode = mode_unknown
 			} else if string(value) == "," {
-				parseJSONValue(temp_key, temp_value, data_map, data_array)
+				parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+				if parse_errors != nil {
+					errors = append(errors, parse_errors...)
+				}
 				
 				temp_key = ""
 				temp_value = ""
@@ -197,16 +206,26 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				temp_value += string(value)
 			}
 		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
 	}
 
 	return data_map, nil
 }
 
-func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) {
+func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) []error {
+	var errors []error
+	
 	clone_value := CloneString(&temp_value)
 	if strings.HasPrefix(*clone_value, "\"") && strings.HasSuffix(*clone_value, "\"") {
 		dequoted_value := (*clone_value)[1:(len(*clone_value)-1)]
 		clone_value = &dequoted_value
+	} else if strings.HasPrefix(*clone_value, "\"") || !strings.HasSuffix(*clone_value, "\"") {
+		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
+	} else if !strings.HasPrefix(*clone_value, "\"") || strings.HasSuffix(*clone_value, "\"") {
+		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
 	}
 	
 	if data_array != nil {
@@ -217,6 +236,12 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		(*data_map).SetString(temp_key, clone_value)
 	}
 
+	if len(errors) > 0 {
+		return errors
+	}
+
+
+	return nil
 }
 
 func (m Map) M(s string) *Map {

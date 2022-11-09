@@ -89,6 +89,30 @@ func TestCanParseString(t *testing.T) {
 	}
 }
 
+func TestCannotParseStringWithoutQuotePrefix(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":value\"}")
+
+	if json_errors == nil {
+		t.Errorf("expected errors for ParseJSON")
+	}
+
+	if json != nil {
+		t.Errorf("expected nil json")
+	}
+}
+
+func TestCannotParseStringWithoutQuoteSuffix(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\"value}")
+
+	if json_errors == nil {
+		t.Errorf("expected errors for ParseJSON")
+	}
+
+	if json != nil {
+		t.Errorf("expected nil json")
+	}
+}
+
 func TestCanParseMultipleStrings(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"key\":\"value\",\"key2\":\"value2\"}")
 
