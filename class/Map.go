@@ -225,12 +225,18 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	if data_map != nil && data_array != nil {
 		errors = append(errors, fmt.Errorf("map or array cannot both not be nil"))
 	}
+
+	if len(errors) > 0 {
+		return errors
+	}
 	
 	data_type := ""
 	string_value := CloneString(&temp_value)
 	
 	var boolean_value *bool
 	var float64_value *float64
+	var int64_value *int64
+	var uint64_value *uint64
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		data_type = "string"
 		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
@@ -286,8 +292,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 
 		if decimal_number {
 			data_type = "float64"
-			float64_temp, float64_error := strconv.ParseFloat(*string_value, 64)
-			if float64_error != nil {
+			float64_temp, float64_temp_error := strconv.ParseFloat(*string_value, 64)
+			if float64_temp_error != nil {
 				errors = append(errors, fmt.Errorf("strconv.ParseFloat(*string_value, 64) error"))
 			} else {
 				float64_value = &float64_temp
@@ -295,8 +301,20 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		} else {
 			if negative_number {
 				data_type = "int64"
+				int64_temp, int64_temp_error := strconv.ParseInt(*string_value, 10, 64)
+				if int64_temp_error != nil {
+					errors = append(errors, fmt.Errorf("strconv.ParseInt(str, 10, 64) error"))
+				} else {
+					int64_value = &int64_temp
+				}
 			} else {
 				data_type = "uint64"
+				uint64_temp, uint64_temp_error := strconv.ParseUint(*string_value, 10, 64)
+				if uint64_temp_error != nil {
+					errors = append(errors, fmt.Errorf("strconv.ParseUint(str, 10, 64) error"))
+				} else {
+					uint64_value = &uint64_temp
+				}
 			}
 		}
 
@@ -323,6 +341,10 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			*data_array = append(*data_array, nil)
 		} else if data_type == "float64" {
 			*data_array = append(*data_array, float64_value)
+		} else if data_type == "int64" {
+			*data_array = append(*data_array, int64_value)
+		} else if data_type == "uint64" {
+			*data_array = append(*data_array, uint64_value)
 		}
 	}
 
@@ -335,6 +357,10 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			(*data_map).SetNil(temp_key)
 		} else if data_type == "float64" {
 			(*data_map).SetFloat64(temp_key, float64_value)
+		} else if data_type == "int64" {
+			(*data_map).SetInt64(temp_key, int64_value)
+		} else if data_type == "uint64" {
+			(*data_map).SetUInt64(temp_key, uint64_value)
 		}
 	}
 
