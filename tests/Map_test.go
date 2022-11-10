@@ -354,3 +354,203 @@ func TestCanParseMultipleNil(t *testing.T) {
 		fmt.Println(*json_string)
 	}
 }
+
+func TestCanParseFloat64Positive(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0.1234567890}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
+	
+	has_key := json.HasKey("key")
+	if !has_key {
+		t.Errorf("key not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != 0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+
+		if json != nil {
+			json_string, _ := json.ToJSONString()
+			fmt.Println(*json_string)
+		}
+	}
+}
+
+func TestCanParseFloat64Negative(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":-0.1234567890}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
+	
+	has_key := json.HasKey("key")
+	if !has_key {
+		t.Errorf("key not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != -0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+
+		if json != nil {
+			json_string, _ := json.ToJSONString()
+			fmt.Println(*json_string)
+		}
+	}
+}
+
+func TestCanParseFloat64MultiplePositive(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0.1234567890,\"key2\":0.2234567890}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
+	
+	if !json.HasKey("key") {
+		t.Errorf("key not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != 0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+	}
+
+	if !json.HasKey("key2") {
+		t.Errorf("key2 not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key2") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != 0.2234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+	}
+
+	if json != nil {
+		json_string, _ := json.ToJSONString()
+		fmt.Println(*json_string)
+	}
+}
+
+func TestCanParseFloat64MultipleNegative(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":-0.1234567890,\"key2\":-0.2234567890}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
+	
+	if !json.HasKey("key") {
+		t.Errorf("key not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != -0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+	}
+
+	if !json.HasKey("key2") {
+		t.Errorf("key2 not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key2") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != -0.2234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+	}
+
+	if json != nil {
+		json_string, _ := json.ToJSONString()
+		fmt.Println(*json_string)
+	}
+}
+
+func TestCanParseFloat64Multiple(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0.1234567890, \"key2\":-0.1234567890}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	}
+	
+	if !json.HasKey("key") {
+		t.Errorf("key not found")
+	} else if json.GetType("key") != "*float64" {
+		t.Errorf("key is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != 0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+
+		if json != nil {
+			json_string, _ := json.ToJSONString()
+			fmt.Println(*json_string)
+		}
+	}
+
+	if !json.HasKey("key2") {
+		t.Errorf("key2 not found")
+	} else if json.GetType("key2") != "*float64" {
+		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
+	} else {
+		value, value_errors := json.GetFloat64("key2") 
+
+		if value_errors != nil {
+			t.Errorf("map GetFloat64 has errors")
+		} else if value == nil {
+			t.Errorf("GetFloat64 is nil")
+		} else if *value != -0.1234567890 {
+			t.Errorf("expected: value actual: %f", *value)
+		}
+
+		if json != nil {
+			json_string, _ := json.ToJSONString()
+			fmt.Println(*json_string)
+		}
+	}
+}

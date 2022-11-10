@@ -229,8 +229,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	data_type := ""
 	string_value := CloneString(&temp_value)
 	
-
 	var boolean_value *bool
+	var float64_value *float64
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		data_type = "string"
 		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
@@ -249,6 +249,60 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		boolean_value = &boolean_value_false
 	} else if *string_value == "null" {
 		data_type = "null"
+	} else {
+		var negative_number bool
+		negative_number_count := strings.Count(*string_value, "-")
+		if negative_number_count == 1 {
+			negative_number = true
+			if !strings.HasPrefix(*string_value, "-") {
+				errors = append(errors, fmt.Errorf("negative symbol is not at the start of the number"))
+			}
+		} else if negative_number_count == 0 {
+			negative_number = false
+		} else {
+			errors = append(errors, fmt.Errorf("value contained %d - characters", negative_number_count))
+		}
+
+		var decimal_number bool
+		decimal_count := strings.Count(*string_value, ".")
+		if decimal_count == 1 {
+			decimal_number = true
+		} else if decimal_count == 0 {
+			decimal_number = false
+		} else {
+			errors = append(errors, fmt.Errorf("value contained %d decimal points", decimal_count))
+		}
+
+		whitelist_characters := Map{"0":nil,"1":nil,"2":nil,"3":nil,"4":nil,"5":nil,"6":nil,"7":nil,"8":nil,"9":nil,".":nil,"-":nil}
+		parameters := Map{"values":&whitelist_characters,"value":string_value,"label":"parseJSONValue","data_type":"number"}
+		whitelist_chracter_errors := WhitelistCharacters(parameters)
+		if whitelist_chracter_errors != nil {
+			errors = append(errors, whitelist_chracter_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		if decimal_number {
+			data_type = "float64"
+			float64_temp, float64_error := strconv.ParseFloat(*string_value, 64)
+			if float64_error != nil {
+				errors = append(errors, fmt.Errorf("strconv.ParseFloat(*string_value, 64) error"))
+			} else {
+				float64_value = &float64_temp
+			}
+		} else {
+			if negative_number {
+				data_type = "int64"
+			} else {
+				data_type = "uint64"
+			}
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
 	}
 
 	if data_type == "" {
@@ -267,6 +321,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			*data_array = append(*data_array, boolean_value)
 		} else if data_type == "null" {
 			*data_array = append(*data_array, nil)
+		} else if data_type == "float64" {
+			*data_array = append(*data_array, float64_value)
 		}
 	}
 
@@ -277,6 +333,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			(*data_map).SetBool(temp_key, boolean_value)
 		} else if data_type == "null" {
 			(*data_map).SetNil(temp_key)
+		} else if data_type == "float64" {
+			(*data_map).SetFloat64(temp_key, float64_value)
 		}
 	}
 
@@ -558,6 +616,14 @@ func (m Map) ToJSONString() (*string, []error) {
 				json = json + strconv.FormatInt(int64(*(value.(*int))), 10)
 			case "int":
 				json = json + strconv.FormatInt(int64(value.(int)), 10)
+			case "*float64":
+				json = json + fmt.Sprintf("%f", *(value.(*float64)))
+			case "float64":
+				json = json + fmt.Sprintf("%f", (value.(float64)))
+			case "*float32":
+				json = json + fmt.Sprintf("%f", *(value.(*float32)))
+			case "float32":
+				json = json + fmt.Sprintf("%f", (value.(float32)))
 			default:
 				errors = append(errors, fmt.Errorf("Map.ToJSONString: type %s is not supported please implement for %s", rep, key))
 			}
@@ -676,6 +742,37 @@ func (m Map) GetString(s string) (*string, []error) {
 		}
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
+}
+
+func (m Map) GetFloat64(s string) (*float64, []error) {
+	if m[s] == nil {
+		return nil, nil
+	}
+
+	var errors []error
+	var result *float64
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "float64":
+		value := m[s].(float64)
+		result = &value
+	case "*float64":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*float64=<nil>)" {
+			value := m[s].(*float64)
+			new_value := *value
+			result = &new_value
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetFloat64: *float64 value is null for attribute: %s", rep, s))
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetFloat64: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -900,6 +997,10 @@ func (m Map) SetInt(s string, v *int) {
 }
 
 func (m Map) SetInt64(s string, v *int64) {
+	m[s] = v
+}
+
+func (m Map) SetFloat64(s string, v *float64) {
 	m[s] = v
 }
 
