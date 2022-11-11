@@ -235,6 +235,7 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	
 	var boolean_value *bool
 	var float64_value *float64
+	var float32_value *float32
 	var int64_value *int64
 	var uint64_value *uint64
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
@@ -298,23 +299,47 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			} else {
 				float64_value = &float64_temp
 			}
+
+			if len(errors) > 0 {
+				return errors
+			}
+
+			float32_temp, float32_temp_error := strconv.ParseFloat(*string_value, 32)
+			if float32_temp_error != nil {
+			} else {
+				data_type = "float32"
+				float32_conv := float32(float32_temp)
+				float32_value = &float32_conv
+			}
+
+
 		} else {
 			if negative_number {
 				data_type = "int64"
 				int64_temp, int64_temp_error := strconv.ParseInt(*string_value, 10, 64)
 				if int64_temp_error != nil {
-					errors = append(errors, fmt.Errorf("strconv.ParseInt(str, 10, 64) error"))
+					errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 64) error"))
 				} else {
 					int64_value = &int64_temp
 				}
+
+				if len(errors) > 0 {
+					return errors
+				}
+
 			} else {
 				data_type = "uint64"
 				uint64_temp, uint64_temp_error := strconv.ParseUint(*string_value, 10, 64)
 				if uint64_temp_error != nil {
-					errors = append(errors, fmt.Errorf("strconv.ParseUint(str, 10, 64) error"))
+					errors = append(errors, fmt.Errorf("strconv.ParseUint(*string_value, 10, 64) error"))
 				} else {
 					uint64_value = &uint64_temp
 				}
+
+				if len(errors) > 0 {
+					return errors
+				}
+
 			}
 		}
 
@@ -341,7 +366,9 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			*data_array = append(*data_array, nil)
 		} else if data_type == "float64" {
 			*data_array = append(*data_array, float64_value)
-		} else if data_type == "int64" {
+		} else if data_type == "float32" {
+			*data_array = append(*data_array, float32_value)
+		}  else if data_type == "int64" {
 			*data_array = append(*data_array, int64_value)
 		} else if data_type == "uint64" {
 			*data_array = append(*data_array, uint64_value)
@@ -357,6 +384,8 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			(*data_map).SetNil(temp_key)
 		} else if data_type == "float64" {
 			(*data_map).SetFloat64(temp_key, float64_value)
+		} else if data_type == "float32" {
+			(*data_map).SetFloat32(temp_key, float32_value)
 		} else if data_type == "int64" {
 			(*data_map).SetInt64(temp_key, int64_value)
 		} else if data_type == "uint64" {
@@ -808,6 +837,37 @@ func (m Map) GetFloat64(s string) (*float64, []error) {
 	return result, nil
 }
 
+func (m Map) GetFloat32(s string) (*float32, []error) {
+	if m[s] == nil {
+		return nil, nil
+	}
+
+	var errors []error
+	var result *float32
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "float32":
+		value := m[s].(float32)
+		result = &value
+	case "*float32":
+		if fmt.Sprintf("%s", m[s]) != "%!s(*float32=<nil>)" {
+			value := m[s].(*float32)
+			new_value := *value
+			result = &new_value
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetFloat32: *float32 value is null for attribute: %s", rep, s))
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetFloat32: type %s is not supported please implement for attribute: %s", rep, s))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return result, nil
+}
+
 func (m Map) GetRunes(s string) (*[]rune, []error) {
 	if m[s] == nil {
 		return nil, nil
@@ -1027,6 +1087,10 @@ func (m Map) SetInt64(s string, v *int64) {
 }
 
 func (m Map) SetFloat64(s string, v *float64) {
+	m[s] = v
+}
+
+func (m Map) SetFloat32(s string, v *float32) {
 	m[s] = v
 }
 
