@@ -740,6 +740,33 @@ func (m Map) GetInt16(s string) (*int16, []error) {
 	return result, nil
 }
 
+func (m Map) GetInt32(s string) (*int32, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *int64_value < -2147483648 || *int64_value > 2147483647 {
+		errors = append(errors, fmt.Errorf("value is not in range [-2147483648, 2147483647]"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int32_conv := int32(*int64_value)
+	result := &int32_conv
+
+	return result, nil
+}
+
 func (m Map) GetInt(s string) (*int, []error) {
 	var errors []error
 	var result *int
