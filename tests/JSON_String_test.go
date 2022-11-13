@@ -11,32 +11,69 @@ func TestCanParseString(t *testing.T) {
 
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
-	}
-	
-	has_key := json.HasKey("key")
-	if !has_key {
-		t.Errorf("key not found")
-	}
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetString("key") 
 
-	type_of := json.GetType("key")
-	if type_of != "*string" {
-		t.Errorf("key is not a string: %s", type_of)
-	}
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
 
-	value, value_errors := json.GetString("key") 
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Error(json_string_errors[0].Error())
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+	}	
+}
 
-	if value_errors != nil {
-		t.Errorf("map GetString has errors")
-	} else if value == nil {
-		t.Errorf("GetString is nil")
-	} else if *value != "value" {
-		t.Errorf("expected: value actual: %s", *value)
-	}
+func TestCanParseStringWithQuoteKey(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"ke\\\"y\":\"value\"}")
 
-	if json != nil {
-		json_string, _ := json.ToJSONString()
-		fmt.Println(*json_string)
-	}
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			t.Error(json_string_errors[0].Error())
+		} else if json_string == nil {
+			t.Errorf("json_string is nil")
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("ke\"y") {
+			t.Errorf("key not found")
+		} else if json.GetType("ke\"y") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("ke\"y"))
+		} else {
+			value, value_errors := json.GetString("ke\"y") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+		}
+	}	
 }
 
 func TestCannotParseStringWithoutQuotePrefix(t *testing.T) {

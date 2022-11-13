@@ -268,6 +268,9 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	if len(errors) > 0 {
 		return errors
 	}
+
+	temp_key = strings.ReplaceAll(temp_key, "\\\"", "\"")
+	temp_value = strings.ReplaceAll(temp_value, "\\\"", "\"")
 	
 	data_type := ""
 	string_value := CloneString(&temp_value)
