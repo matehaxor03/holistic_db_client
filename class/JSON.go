@@ -100,6 +100,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 	temp_key := ""
 	temp_value := ""
 	parsing_string := false
+	found_value := false
 	temp_mode := CloneString(mode)
 	current_mode := *temp_mode
 
@@ -132,7 +133,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 		
 
 		if current_mode == mode_unknown {
-			if string(value) == "\n" {
+			if string(value) == "\n" || string(value) == " " {
 
 			} else if string(value) == "{" {
 				new_mode := mode_looking_for_keys
@@ -182,6 +183,12 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				current_mode = mode_looking_for_value
 			}
 		} else if current_mode == mode_looking_for_value {
+			if !found_value && (string(value) == " " || string(value) == "\n") {
+				continue
+			} else {
+				found_value = true
+			}
+
 			if !parsing_string {
 				if !parsing_string && string(value) == "\"" && string((*runes)[i-1]) != "\\" {
 					temp_value += string(value)
@@ -192,7 +199,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					new_runes := []rune(new_s)
 					new_map := Map{}
 					data_map.SetMap(temp_key, &new_map)
-					
+					found_value = false
 					return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
 				} else if string(value) == "[" {
 					new_mode := mode_looking_for_value
@@ -200,6 +207,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					new_runes := []rune(new_s)
 					new_array := Array{}
 					data_map.SetArray(temp_key, &new_array)
+					found_value = false
 					return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
 				} else if string(value) == "}" {
 					parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
@@ -220,6 +228,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					temp_key = ""
 					temp_value = ""
 
+					found_value = false
 					current_mode = mode_unknown
 				} else if string(value) == "," {
 					parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
@@ -235,6 +244,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					} else if data_array != nil {
 						current_mode = mode_looking_for_value
 					}
+					found_value = false
 				} else {
 					temp_value += string(value)
 				}
@@ -244,6 +254,17 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 			} else if parsing_string && string(value) == "\"" && string((*runes)[i-1]) != "\\" {
 				temp_value += string(value)
 				parsing_string = false
+
+				parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+				if parse_errors != nil {
+					errors = append(errors, parse_errors...)
+				}
+
+				temp_key = ""
+				temp_value = ""
+
+				found_value = false
+				current_mode = mode_unknown
 			} else {
 				temp_value += string(value)
 			}
