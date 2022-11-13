@@ -271,6 +271,22 @@ func (m Map) ToJSONString() (*string, []error) {
 				json = json + strconv.FormatUint(*(value.(*uint64)), 10)
 			case "uint64":
 				json = json + strconv.FormatUint(value.(uint64), 10)
+			case "*uint32":
+				json = json + strconv.FormatUint(uint64(*(value.(*uint32))), 10)
+			case "uint32":
+				json = json + strconv.FormatUint(uint64(value.(uint32)), 10)
+			case "*uint16":
+				json = json + strconv.FormatUint(uint64(*(value.(*uint16))), 10)
+			case "uint16":
+				json = json + strconv.FormatUint(uint64(value.(uint16)), 10)
+			case "*uint8":
+				json = json + strconv.FormatUint(uint64(*(value.(*uint8))), 10)
+			case "uint8":
+				json = json + strconv.FormatUint(uint64(value.(uint8)), 10)
+			case "*uint":
+				json = json + strconv.FormatUint(uint64(*(value.(*uint))), 10)
+			case "uint":
+				json = json + strconv.FormatUint(uint64(value.(uint)), 10)
 			case "*int64":
 				json = json + strconv.FormatInt(*(value.(*int64)), 10)
 			case "int64":
@@ -285,10 +301,6 @@ func (m Map) ToJSONString() (*string, []error) {
 				json = json + strconv.FormatInt(int64((value.(int16))), 10)
 			case "*int8":
 				json = json + strconv.FormatInt(int64(*(value.(*int8))), 10)
-			case "*uint8":
-				json = json + strconv.FormatUint(uint64(*(value.(*uint8))), 10)
-			case "uint8":
-				json = json + strconv.FormatUint(uint64(value.(uint8)), 10)
 			case "int8":
 				json = json + strconv.FormatInt(int64((value.(int8))), 10)
 			case "*int":

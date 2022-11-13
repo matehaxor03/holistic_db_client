@@ -298,6 +298,204 @@ func TestCannotParseNegativeInt64_9223372036854775809(t *testing.T) {
 	}
 }
 
+func TestCanParseUInt8_0_WithSpaceBeforeValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\": 0}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
+func TestCanParseUInt8_0_WithSpaceAfterValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0 }")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
+func TestCanParseUInt8_0_WithNewlineBeforeValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\n0}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
+func TestCanParseUInt8_0_WithNewlineAfterValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0\n}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
+func TestCanParseUInt8_0_WithDosNewlineBeforeValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\r\n0}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
+func TestCanParseUInt8_0_WithDosNewlineAfterValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":0\r\n}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json != nil {
+		json_string, json_string_errors := json.ToJSONString()
+		if json_string_errors != nil {
+			fmt.Println(json_string_errors)
+		} else {
+			fmt.Println(*json_string)
+		}
+
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint8" {
+			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt8("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetUInt8 has errors: " + value_errors[0].Error())
+			} else if value == nil {
+				t.Errorf("GetUInt8 is nil")
+			} else if *value != 0 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	} else {
+		t.Errorf("json is nil")
+	}	
+}
+
 func TestCanParseUInt8_0(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"key\":0}")
 

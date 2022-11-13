@@ -329,6 +329,9 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	} else if *string_value == "null" {
 		data_type = "null"
 	} else {
+		string_temp := strings.TrimSpace(*string_value)
+		string_value = &string_temp
+
 		var negative_number bool
 		negative_number_count := strings.Count(*string_value, "-")
 		if negative_number_count == 1 {
