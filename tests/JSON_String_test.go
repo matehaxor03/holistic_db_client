@@ -32,6 +32,33 @@ func TestCanParseString(t *testing.T) {
 	}	
 }
 
+func TestCanParseEmptyString(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\"\"}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		PrintJSON(t, json)
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {			
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+		}
+	}	
+}
+
 func TestCanParseStringWithSpaceBeforeKey(t *testing.T) {
 	json, json_errors := class.ParseJSON("{ \"key\":\"value\"}")
 
