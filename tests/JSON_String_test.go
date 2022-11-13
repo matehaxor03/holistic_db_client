@@ -2,7 +2,6 @@ package tests
  
 import (
     "testing"
-	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -14,11 +13,12 @@ func TestCanParseString(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
 			t.Errorf("key is not a string: %s", json.GetType("key"))
-		} else {
+		} else {			
 			value, value_errors := json.GetString("key") 
 
 			if value_errors != nil {
@@ -27,15 +27,6 @@ func TestCanParseString(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -49,6 +40,7 @@ func TestCanParseStringWithSpaceBeforeKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -62,15 +54,6 @@ func TestCanParseStringWithSpaceBeforeKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -84,6 +67,7 @@ func TestCanParseStringWithNewlineBeforeKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -97,15 +81,6 @@ func TestCanParseStringWithNewlineBeforeKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -119,6 +94,7 @@ func TestCanParseStringWithDosNewlineBeforeKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -132,15 +108,6 @@ func TestCanParseStringWithDosNewlineBeforeKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -154,6 +121,7 @@ func TestCanParseStringWithSpaceAfterKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -167,15 +135,6 @@ func TestCanParseStringWithSpaceAfterKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -189,6 +148,7 @@ func TestCanParseStringWithNewlineAfterKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -202,15 +162,6 @@ func TestCanParseStringWithNewlineAfterKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -224,6 +175,7 @@ func TestCanParseStringWithDosNewlineAfterKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -237,15 +189,6 @@ func TestCanParseStringWithDosNewlineAfterKey(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -259,6 +202,7 @@ func TestCanParseStringWithSpaceBeforeValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -272,15 +216,6 @@ func TestCanParseStringWithSpaceBeforeValue(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -294,6 +229,7 @@ func TestCanParseStringWithNewlineBeforeValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -307,15 +243,6 @@ func TestCanParseStringWithNewlineBeforeValue(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -329,6 +256,7 @@ func TestCanParseStringWithDosNewlineBeforeValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -342,15 +270,6 @@ func TestCanParseStringWithDosNewlineBeforeValue(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -364,6 +283,7 @@ func TestCanParseStringWithSpaceAfterValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -377,15 +297,6 @@ func TestCanParseStringWithSpaceAfterValue(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -399,6 +310,7 @@ func TestCanParseStringWithNewlineAfterValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -412,15 +324,6 @@ func TestCanParseStringWithNewlineAfterValue(t *testing.T) {
 				t.Errorf("GetString is nil")
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
-			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	}	
@@ -434,6 +337,7 @@ func TestCanParseStringWithDosNewlineAfterValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -448,15 +352,6 @@ func TestCanParseStringWithDosNewlineAfterValue(t *testing.T) {
 			} else if *value != "value" {
 				t.Errorf("expected: value actual: %s", *value)
 			}
-
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				t.Error(json_string_errors[0].Error())
-			} else if json_string == nil {
-				t.Errorf("json_string is nil")
-			} else {
-				fmt.Println(*json_string)
-			}
 		}
 	}	
 }
@@ -469,14 +364,7 @@ func TestCanParseStringWithQuoteKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke\"y") {
 			t.Errorf("key not found")
@@ -504,14 +392,7 @@ func TestCanParseStringWithOpenBracketKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke{y") {
 			t.Errorf("key not found")
@@ -539,14 +420,7 @@ func TestCanParseStringWithCloseBracketKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke}y") {
 			t.Errorf("key not found")
@@ -574,14 +448,7 @@ func TestCanParseStringWithOpenSquareBracketKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke[y") {
 			t.Errorf("key not found")
@@ -609,14 +476,7 @@ func TestCanParseStringWithCloseSquareBracketKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke]y") {
 			t.Errorf("key not found")
@@ -644,14 +504,7 @@ func TestCanParseStringWithCommaKey(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("ke,y") {
 			t.Errorf("ke,y not found")
@@ -680,14 +533,7 @@ func TestCanParseStringWithQuoteValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -715,14 +561,7 @@ func TestCanParseStringWithOpenBracketValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -750,14 +589,7 @@ func TestCanParseStringWithCloseBracketValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -785,14 +617,7 @@ func TestCanParseStringWithOpenSquareBracketValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -820,15 +645,7 @@ func TestCanParseStringWithCloseSquareBracketValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
-
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -855,15 +672,7 @@ func TestCanParseStringWithCommaValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
-
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*string" {
@@ -890,15 +699,7 @@ func TestCanParseStringWithQuoteKeyAndValue(t *testing.T) {
 	} else if json == nil {
 		t.Errorf("json is nil")
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			t.Error(json_string_errors[0].Error())
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-		} else {
-			fmt.Println(*json_string)
-		}
-
+		PrintJSON(t, json)
 		if !json.HasKey("ke\"y") {
 			t.Errorf("ke\"y not found")
 		} else if json.GetType("ke\"y") != "*string" {
@@ -947,18 +748,16 @@ func TestCanParseMultipleStrings(t *testing.T) {
 
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
-	}
-	
-	has_key := json.HasKey("key")
-	if !has_key {
-		t.Errorf("key not found")
+	} else if json == nil {
+		t.Errorf("json is nil")
 	} else {
-		type_of := json.GetType("key")
-		if type_of != "*string" {
-			t.Errorf("key is not a string: %s", type_of)
+		PrintJSON(t, json)
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string"  {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
 		} else {
 			value, value_errors := json.GetString("key") 
-
 			if value_errors != nil {
 				t.Errorf("map GetString has errors")
 			} else if value == nil {
@@ -967,30 +766,20 @@ func TestCanParseMultipleStrings(t *testing.T) {
 				t.Errorf("expected: value actual: %s", *value)
 			}
 		}
-	}
 
-	has_key2 := json.HasKey("key2")
-	if !has_key2 {
-		t.Errorf("key2 not found")
-	} else {
-		type_of := json.GetType("key2")
-		if type_of != "*string" {
-			t.Errorf("key2 is not a string: %s", type_of)
+		if !json.HasKey("key2") {
+			t.Errorf("key2 not found")
+		} else if json.GetType("key2") != "*string"  {
+			t.Errorf("key2 is not a string: %s", json.GetType("key2"))
 		} else {
 			value, value_errors := json.GetString("key2") 
-
 			if value_errors != nil {
 				t.Errorf("map GetString has errors")
 			} else if value == nil {
 				t.Errorf("GetString is nil")
 			} else if *value != "value2" {
-				t.Errorf("expected: value2 actual: %s", *value)
+				t.Errorf("expected: value actual: %s", *value)
 			}
 		}
-	}
-
-	if json != nil {
-		json_string, _ := json.ToJSONString()
-		fmt.Println(*json_string)
 	}
 }
