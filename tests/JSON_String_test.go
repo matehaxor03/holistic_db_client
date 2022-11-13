@@ -111,6 +111,41 @@ func TestCanParseStringWithNewlineBeforeKey(t *testing.T) {
 	}	
 }
 
+func TestCanParseStringWithDosNewlineBeforeKey(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\r\n\"key\":\"value\"}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Error(json_string_errors[0].Error())
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+	}	
+}
+
 func TestCanParseStringWithSpaceAfterKey(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"key\" :\"value\"}")
 
@@ -148,6 +183,41 @@ func TestCanParseStringWithSpaceAfterKey(t *testing.T) {
 
 func TestCanParseStringWithNewlineAfterKey(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"key\"\n:\"value\"}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Error(json_string_errors[0].Error())
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+	}	
+}
+
+func TestCanParseStringWithDosNewlineAfterKey(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\"\r\n:\"value\"}")
 
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
@@ -251,6 +321,41 @@ func TestCanParseStringWithNewlineBeforeValue(t *testing.T) {
 	}	
 }
 
+func TestCanParseStringWithDosNewlineBeforeValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\r\n\"value\"}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Error(json_string_errors[0].Error())
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+	}	
+}
+
 func TestCanParseStringWithSpaceAfterValue(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"key\":\"value\" }")
 
@@ -321,6 +426,40 @@ func TestCanParseStringWithNewlineAfterValue(t *testing.T) {
 	}	
 }
 
+func TestCanParseStringWithDosNewlineAfterValue(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":\"value\"\r\n}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*string" {
+			t.Errorf("key is not a string: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetString("key") 
+
+			if value_errors != nil {
+				t.Errorf("map GetString has errors")
+			} else if value == nil {
+				t.Errorf("GetString is nil")
+			} else if *value != "value" {
+				t.Errorf("expected: value actual: %s", *value)
+			}
+
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Error(json_string_errors[0].Error())
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+	}	
+}
 
 func TestCanParseStringWithQuoteKey(t *testing.T) {
 	json, json_errors := class.ParseJSON("{\"ke\\\"y\":\"value\"}")

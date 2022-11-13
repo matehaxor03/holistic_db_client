@@ -133,7 +133,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 		
 
 		if current_mode == mode_unknown {
-			if string(value) == "\n" || string(value) == " " {
+			if string(value) == "\r" || string(value) == "\n" || string(value) == " " {
 
 			} else if string(value) == "{" {
 				new_mode := mode_looking_for_keys
@@ -183,7 +183,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				current_mode = mode_looking_for_value
 			}
 		} else if current_mode == mode_looking_for_value {
-			if !found_value && (string(value) == " " || string(value) == "\n") {
+			if !found_value && (string(value) == " " || string(value) == "\r" || string(value) == "\n") {
 				continue
 			} else {
 				found_value = true
