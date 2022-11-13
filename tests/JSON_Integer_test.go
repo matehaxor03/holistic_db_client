@@ -589,3 +589,55 @@ func TestCannotParseUInt64_18446744073709551616(t *testing.T) {
 		t.Errorf("json value was returned")
 	}
 }
+
+func TestCanParseUInt64PositiveMuitple(t *testing.T) {
+	json, json_errors := class.ParseJSON("{\"key\":4294967296,\"key2\":4294967297}")
+
+	if json_errors != nil {
+		t.Errorf("%s", json_errors) 
+	} else if json == nil {
+		t.Errorf("json is nil") 
+	} else {
+		if !json.HasKey("key") {
+			t.Errorf("key not found")
+		} else if json.GetType("key") != "*uint64" {
+			t.Errorf("key is not a *uint64: %s", json.GetType("key"))
+		} else {
+			value, value_errors := json.GetUInt64("key") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetInt64 has errors")
+			} else if value == nil {
+				t.Errorf("GetUInt64 is nil")
+			} else if *value != 4294967296 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+
+		if !json.HasKey("key2") {
+			t.Errorf("key2 not found")
+		} else if json.GetType("key") != "*uint64" {
+			t.Errorf("key2 is not a *uint64: %s", json.GetType("key2"))
+		} else {
+			value, value_errors := json.GetUInt64("key2") 
+	
+			if value_errors != nil {
+				t.Errorf("map GetInt64 has errors")
+			} else if value == nil {
+				t.Errorf("GetUInt64 is nil")
+			} else if *value != 4294967297 {
+				t.Errorf("expected: value actual: %d", *value)
+			}
+		}
+	
+		if json != nil {
+			json_string, _ := json.ToJSONString()
+			fmt.Println(*json_string)
+		}
+	}
+	
+}
+
+	
+	
+	
