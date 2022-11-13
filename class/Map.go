@@ -285,6 +285,10 @@ func (m Map) ToJSONString() (*string, []error) {
 				json = json + strconv.FormatInt(int64((value.(int16))), 10)
 			case "*int8":
 				json = json + strconv.FormatInt(int64(*(value.(*int8))), 10)
+			case "*uint8":
+				json = json + strconv.FormatUint(uint64(*(value.(*uint8))), 10)
+			case "uint8":
+				json = json + strconv.FormatUint(uint64(value.(uint8)), 10)
 			case "int8":
 				json = json + strconv.FormatInt(int64((value.(int8))), 10)
 			case "*int":
@@ -713,6 +717,33 @@ func (m Map) GetInt8(s string) (*int8, []error) {
 	return result, nil
 }
 
+func (m Map) GetUInt8(s string) (*uint8, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 255 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 255]"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int8_conv := uint8(*int64_value)
+	result := &int8_conv
+
+	return result, nil
+}
+
 func (m Map) GetInt16(s string) (*int16, []error) {
 	var errors []error
 	int64_value, int64_value_errors := m.GetInt64(s)
@@ -740,6 +771,34 @@ func (m Map) GetInt16(s string) (*int16, []error) {
 	return result, nil
 }
 
+func (m Map) GetUInt16(s string) (*uint16, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 65535 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 65535]"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int16_conv := uint16(*int64_value)
+	result := &int16_conv
+
+	return result, nil
+}
+
+
 func (m Map) GetInt32(s string) (*int32, []error) {
 	var errors []error
 	int64_value, int64_value_errors := m.GetInt64(s)
@@ -762,6 +821,33 @@ func (m Map) GetInt32(s string) (*int32, []error) {
 	}
 
 	int32_conv := int32(*int64_value)
+	result := &int32_conv
+
+	return result, nil
+}
+
+func (m Map) GetUInt32(s string) (*uint32, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 4294967295 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 4294967295]"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int32_conv := uint32(*int64_value)
 	result := &int32_conv
 
 	return result, nil
@@ -833,53 +919,115 @@ func (m Map) SetFloat32(s string, v *float32) {
 
 func (m Map) GetUInt64(s string) (*uint64, []error) {
 	var errors []error
-	var result *uint64
-	if m[s] == nil {
+	if m[s] == nil || m.IsNil(s) {
 		return nil, nil
 	}
 
+	var uint64_value uint64
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "*int64":
-		value := *(m[s].(*int64))
-		if value >= 0 {
-			temp := uint64(value)
-			result = &temp
+		x := *(m[s].(*int64))
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "int64":
+		x := m[s].(int64)
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "*int32":
+		x := *(m[s].(*int32))
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "int32":
+		x := m[s].(int32)
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "*int16":
+		x := *(m[s].(*int16))
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "int16":
+		x := m[s].(int16)
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "*int8":
+		x := *(m[s].(*int8))
+		if x >= 0 {
+			uint64_value = uint64(x)
+		} else {
+			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+		}
+	case "int8":
+		x := m[s].(int8)
+		if x >= 0 {
+			uint64_value = uint64(x)
 		} else {
 			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int":
-		value := (m[s].(int))
-		if value >= 0 {
-			temp := uint64(value)
-			result = &temp
+		x := (m[s].(int))
+		if x >= 0 {
+			uint64_value = uint64(x)
 		} else {
 			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int":
-		value := *(m[s].(*int))
-		if value >= 0 {
-			temp := uint64(value)
-			result = &temp
+		x := *(m[s].(*int))
+		if x >= 0 {
+			uint64_value = uint64(x)
 		} else {
 			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*uint64":
-		value := *(m[s].(*uint64))
-		result = &value
+		uint64_value = *(m[s].(*uint64))
 	case "uint64":
-		value := (m[s].(uint64))
-		result = &value
+		uint64_value = (m[s].(uint64))
+	case "*uint32":
+		x := *(m[s].(*uint32))
+		uint64_value = uint64(x)
+	case "uint32":
+		x := (m[s].(uint32))
+		uint64_value = uint64(x)
+	case "*uint16":
+		x := *(m[s].(*uint16))
+		uint64_value = uint64(x)
+	case "uint16":
+		x := (m[s].(uint16))
+		uint64_value = uint64(x)
+	case "*uint8":
+		x := *(m[s].(*uint8))
+		uint64_value = uint64(x)
+	case "uint8":
+		x := (m[s].(uint8))
+		uint64_value = uint64(x)
 	case "*string":
 		string_value := (m[s].(*string))
-		if string_value == nil || *string_value == "NULL" {
-			result = nil
+		if *string_value == "NULL" {
+			return nil, nil
 		} else {
 			value, value_error := strconv.ParseUint(*string_value, 10, 64)
 			if value_error != nil {
 				errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
 			} else {
-				result = &value
+				uint64_value = value
 			}
 		}
 	default:
@@ -890,10 +1038,22 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		return nil, errors
 	}
 
-	return result, nil
+	return &uint64_value, nil
 }
 
 func (m Map) SetUInt64(s string, v *uint64) {
+	m[s] = v
+}
+
+func (m Map) SetUInt32(s string, v *uint32) {
+	m[s] = v
+}
+
+func (m Map) SetUInt16(s string, v *uint16) {
+	m[s] = v
+}
+
+func (m Map) SetUInt8(s string, v *uint8) {
 	m[s] = v
 }
 

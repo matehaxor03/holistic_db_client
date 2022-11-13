@@ -238,6 +238,9 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	var int16_value *int16
 	var int8_value *int8
 	var uint64_value *uint64
+	var uint32_value *uint32
+	var uint16_value *uint16
+	var uint8_value *uint8
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		data_type = "string"
 		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
@@ -360,6 +363,34 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 					errors = append(errors, fmt.Errorf("strconv.ParseUint(*string_value, 10, 64) error"))
 				} else {
 					uint64_value = &uint64_temp
+					if *uint64_value >= 0 && *uint64_value <= 255 {
+						data_type = "uint8"
+						int8_temp, int8_temp_error := strconv.ParseUint(*string_value, 10, 8)
+						if int8_temp_error != nil {
+							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 8) error"))
+						} else {
+							int8_conv := uint8(int8_temp)
+							uint8_value = &int8_conv
+						}
+					} else if *uint64_value >= 256 && *uint64_value <= 65535 {
+						data_type = "uint16"
+						int16_temp, int16_temp_error := strconv.ParseUint(*string_value, 10, 16)
+						if int16_temp_error != nil {
+							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 16) error"))
+						} else {
+							int16_conv := uint16(int16_temp)
+							uint16_value = &int16_conv
+						}
+					} else if *uint64_value >= 65536  && *uint64_value <= 4294967295 {
+						data_type = "uint32"
+						int32_temp, int32_temp_error := strconv.ParseUint(*string_value, 10, 32)
+						if int32_temp_error != nil {
+							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 32) error"))
+						} else {
+							int32_conv := uint32(int32_temp)
+							uint32_value = &int32_conv
+						}
+					}
 				}
 
 				if len(errors) > 0 {
@@ -402,6 +433,12 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			*data_array = append(*data_array, int32_value)
 		}  else if data_type == "int64" {
 			*data_array = append(*data_array, int64_value)
+		} else if data_type == "uint8" {
+			*data_array = append(*data_array, uint8_value)
+		} else if data_type == "uint16" {
+			*data_array = append(*data_array, uint16_value)
+		} else if data_type == "uint32" {
+			*data_array = append(*data_array, uint32_value)
 		} else if data_type == "uint64" {
 			*data_array = append(*data_array, uint64_value)
 		}
@@ -426,6 +463,12 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 			(*data_map).SetInt32(temp_key, int32_value)
 		} else if data_type == "int64" {
 			(*data_map).SetInt64(temp_key, int64_value)
+		} else if data_type == "uint8" {
+			(*data_map).SetUInt8(temp_key, uint8_value)
+		} else if data_type == "uint16" {
+			(*data_map).SetUInt16(temp_key, uint16_value)
+		} else if data_type == "uint32" {
+			(*data_map).SetUInt32(temp_key, uint32_value)
 		} else if data_type == "uint64" {
 			(*data_map).SetUInt64(temp_key, uint64_value)
 		}
