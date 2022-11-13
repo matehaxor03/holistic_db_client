@@ -275,6 +275,18 @@ func (m Map) ToJSONString() (*string, []error) {
 				json = json + strconv.FormatInt(*(value.(*int64)), 10)
 			case "int64":
 				json = json + strconv.FormatInt(value.(int64), 10)
+			case "*int32":
+				json = json + strconv.FormatInt(int64(*(value.(*int32))), 10)
+			case "int32":
+				json = json + strconv.FormatInt(int64((value.(int32))), 10)
+			case "*int16":
+				json = json + strconv.FormatInt(int64(*(value.(*int16))), 10)
+			case "int16":
+				json = json + strconv.FormatInt(int64((value.(int16))), 10)
+			case "*int8":
+				json = json + strconv.FormatInt(int64(*(value.(*int8))), 10)
+			case "int8":
+				json = json + strconv.FormatInt(int64((value.(int8))), 10)
 			case "*int":
 				json = json + strconv.FormatInt(int64(*(value.(*int))), 10)
 			case "int":
@@ -650,6 +662,75 @@ func (m Map) GetInt64(s string) (*int64, []error) {
 	return result, nil
 }
 
+func (m Map) GetInt8(s string) (*int8, []error) {
+	var errors []error
+	var temp_value int64
+
+	if m[s] == nil || m.IsNil(s) {
+		return nil, nil
+	}
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "*int64":
+		x := m[s].(*int64)
+		temp_value = int64(*x)
+	case "int64":
+		x := m[s].(int64)
+		temp_value = x
+	case "*int32":
+		x := m[s].(*int32)
+		temp_value = int64(*x)
+	case "int32":
+		x := m[s].(int32)
+		temp_value = int64(x)
+	case "*int16":
+		x := m[s].(*int16)
+		temp_value = int64(*x)
+	case "int16":
+		x := m[s].(int16)
+		temp_value = int64(x)
+	case "*int8":
+		x := m[s].(*int8)
+		temp_value = int64(*x)
+	case "int8":
+		x := m[s].(int8)
+		temp_value = int64(x)
+	case "int":
+		x := m[s].(int)
+		temp_value = int64(x)
+	case "*int":
+		x := m[s].(*int)
+		temp_value = int64(*x)
+	case "*string":
+		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 8)
+		if value_error != nil {
+			errors = append(errors, fmt.Errorf("Map.GetInt8: cannot convert *string value to int8"))
+		} else {
+			temp_value = int64(value)
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if temp_value < -128 || temp_value > 127 {
+		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]", rep))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int8_conv := int8(temp_value)
+	result := &int8_conv
+
+	return result, nil
+}
+
 func (m Map) GetInt(s string) (*int, []error) {
 	var errors []error
 	var result *int
@@ -691,6 +772,18 @@ func (m Map) SetInt(s string, v *int) {
 }
 
 func (m Map) SetInt64(s string, v *int64) {
+	m[s] = v
+}
+
+func (m Map) SetInt8(s string, v *int8) {
+	m[s] = v
+}
+
+func (m Map) SetInt16(s string, v *int16) {
+	m[s] = v
+}
+
+func (m Map) SetInt32(s string, v *int32) {
 	m[s] = v
 }
 
