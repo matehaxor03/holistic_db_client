@@ -318,162 +318,164 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
 	} else if !strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
-	} else if *string_value == "true" {
-		data_type = "bool"
-		boolean_value_true := true 
-		boolean_value = &boolean_value_true
-	} else if *string_value == "false" {
-		data_type = "bool"
-		boolean_value_false := false 
-		boolean_value = &boolean_value_false
-	} else if *string_value == "null" {
-		data_type = "null"
 	} else {
 		string_temp := strings.TrimSpace(*string_value)
 		string_value = &string_temp
 
-		var negative_number bool
-		negative_number_count := strings.Count(*string_value, "-")
-		if negative_number_count == 1 {
-			negative_number = true
-			if !strings.HasPrefix(*string_value, "-") {
-				errors = append(errors, fmt.Errorf("negative symbol is not at the start of the number"))
-			}
-		} else if negative_number_count == 0 {
-			negative_number = false
+		if *string_value == "true" {
+			data_type = "bool"
+			boolean_value_true := true 
+			boolean_value = &boolean_value_true
+		} else if *string_value == "false" {
+			data_type = "bool"
+			boolean_value_false := false 
+			boolean_value = &boolean_value_false
+		} else if *string_value == "null" {
+			data_type = "null"
 		} else {
-			errors = append(errors, fmt.Errorf("value contained %d - characters", negative_number_count))
-		}
-
-		var decimal_number bool
-		decimal_count := strings.Count(*string_value, ".")
-		if decimal_count == 1 {
-			decimal_number = true
-		} else if decimal_count == 0 {
-			decimal_number = false
-		} else {
-			errors = append(errors, fmt.Errorf("value contained %d decimal points", decimal_count))
-		}
-
-		whitelist_characters := Map{"0":nil,"1":nil,"2":nil,"3":nil,"4":nil,"5":nil,"6":nil,"7":nil,"8":nil,"9":nil,".":nil,"-":nil}
-		parameters := Map{"values":&whitelist_characters,"value":string_value,"label":"parseJSONValue","data_type":"number"}
-		whitelist_chracter_errors := WhitelistCharacters(parameters)
-		if whitelist_chracter_errors != nil {
-			errors = append(errors, whitelist_chracter_errors...)
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		if decimal_number {
-			data_type = "float64"
-			float64_temp, float64_temp_error := strconv.ParseFloat(*string_value, 64)
-			if float64_temp_error != nil {
-				errors = append(errors, fmt.Errorf("strconv.ParseFloat(*string_value, 64) error"))
+			var negative_number bool
+			negative_number_count := strings.Count(*string_value, "-")
+			if negative_number_count == 1 {
+				negative_number = true
+				if !strings.HasPrefix(*string_value, "-") {
+					errors = append(errors, fmt.Errorf("negative symbol is not at the start of the number"))
+				}
+			} else if negative_number_count == 0 {
+				negative_number = false
 			} else {
-				float64_value = &float64_temp
-				
-				float32_temp, float32_temp_error := strconv.ParseFloat(*string_value, 32)
-				if float32_temp_error != nil {
+				errors = append(errors, fmt.Errorf("value contained %d - characters", negative_number_count))
+			}
+
+			var decimal_number bool
+			decimal_count := strings.Count(*string_value, ".")
+			if decimal_count == 1 {
+				decimal_number = true
+			} else if decimal_count == 0 {
+				decimal_number = false
+			} else {
+				errors = append(errors, fmt.Errorf("value contained %d decimal points", decimal_count))
+			}
+
+			whitelist_characters := Map{"0":nil,"1":nil,"2":nil,"3":nil,"4":nil,"5":nil,"6":nil,"7":nil,"8":nil,"9":nil,".":nil,"-":nil}
+			parameters := Map{"values":&whitelist_characters,"value":string_value,"label":"parseJSONValue","data_type":"number"}
+			whitelist_chracter_errors := WhitelistCharacters(parameters)
+			if whitelist_chracter_errors != nil {
+				errors = append(errors, whitelist_chracter_errors...)
+			}
+
+			if len(errors) > 0 {
+				return errors
+			}
+
+			if decimal_number {
+				data_type = "float64"
+				float64_temp, float64_temp_error := strconv.ParseFloat(*string_value, 64)
+				if float64_temp_error != nil {
+					errors = append(errors, fmt.Errorf("strconv.ParseFloat(*string_value, 64) error"))
 				} else {
-					data_type = "float32"
-					float32_conv := float32(float32_temp)
-					float32_value = &float32_conv
+					float64_value = &float64_temp
+					
+					float32_temp, float32_temp_error := strconv.ParseFloat(*string_value, 32)
+					if float32_temp_error != nil {
+					} else {
+						data_type = "float32"
+						float32_conv := float32(float32_temp)
+						float32_value = &float32_conv
+					}
+				}
+
+				if len(errors) > 0 {
+					return errors
+				}
+			} else {
+				if negative_number {
+					data_type = "int64"
+					int64_temp, int64_temp_error := strconv.ParseInt(*string_value, 10, 64)
+					if int64_temp_error != nil {
+						errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 64) error"))
+					} else {
+						int64_value = &int64_temp
+						if *int64_value >= -128 && *int64_value <= 127 {
+							data_type = "int8"
+							int8_temp, int8_temp_error := strconv.ParseInt(*string_value, 10, 8)
+							if int8_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 8) error"))
+							} else {
+								int8_conv := int8(int8_temp)
+								int8_value = &int8_conv
+							}
+						} else if *int64_value >= -32768 && *int64_value <= 32767 {
+							data_type = "int16"
+							int16_temp, int16_temp_error := strconv.ParseInt(*string_value, 10, 16)
+							if int16_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 16) error"))
+							} else {
+								int16_conv := int16(int16_temp)
+								int16_value = &int16_conv
+							}
+						} else if *int64_value >= -2147483648 && *int64_value <= 2147483647 {
+							data_type = "int32"
+							int32_temp, int32_temp_error := strconv.ParseInt(*string_value, 10, 32)
+							if int32_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 32) error"))
+							} else {
+								int32_conv := int32(int32_temp)
+								int32_value = &int32_conv
+							}
+						}
+					}
+
+					if len(errors) > 0 {
+						return errors
+					}
+
+				} else {
+					data_type = "uint64"
+					uint64_temp, uint64_temp_error := strconv.ParseUint(*string_value, 10, 64)
+					if uint64_temp_error != nil {
+						errors = append(errors, fmt.Errorf("strconv.ParseUint(*string_value, 10, 64) error"))
+					} else {
+						uint64_value = &uint64_temp
+						if *uint64_value >= 0 && *uint64_value <= 255 {
+							data_type = "uint8"
+							int8_temp, int8_temp_error := strconv.ParseUint(*string_value, 10, 8)
+							if int8_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 8) error"))
+							} else {
+								int8_conv := uint8(int8_temp)
+								uint8_value = &int8_conv
+							}
+						} else if *uint64_value >= 256 && *uint64_value <= 65535 {
+							data_type = "uint16"
+							int16_temp, int16_temp_error := strconv.ParseUint(*string_value, 10, 16)
+							if int16_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 16) error"))
+							} else {
+								int16_conv := uint16(int16_temp)
+								uint16_value = &int16_conv
+							}
+						} else if *uint64_value >= 65536  && *uint64_value <= 4294967295 {
+							data_type = "uint32"
+							int32_temp, int32_temp_error := strconv.ParseUint(*string_value, 10, 32)
+							if int32_temp_error != nil {
+								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 32) error"))
+							} else {
+								int32_conv := uint32(int32_temp)
+								uint32_value = &int32_conv
+							}
+						}
+					}
+
+					if len(errors) > 0 {
+						return errors
+					}
+
 				}
 			}
 
 			if len(errors) > 0 {
 				return errors
 			}
-		} else {
-			if negative_number {
-				data_type = "int64"
-				int64_temp, int64_temp_error := strconv.ParseInt(*string_value, 10, 64)
-				if int64_temp_error != nil {
-					errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 64) error"))
-				} else {
-					int64_value = &int64_temp
-					if *int64_value >= -128 && *int64_value <= 127 {
-						data_type = "int8"
-						int8_temp, int8_temp_error := strconv.ParseInt(*string_value, 10, 8)
-						if int8_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 8) error"))
-						} else {
-							int8_conv := int8(int8_temp)
-							int8_value = &int8_conv
-						}
-					} else if *int64_value >= -32768 && *int64_value <= 32767 {
-						data_type = "int16"
-						int16_temp, int16_temp_error := strconv.ParseInt(*string_value, 10, 16)
-						if int16_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 16) error"))
-						} else {
-							int16_conv := int16(int16_temp)
-							int16_value = &int16_conv
-						}
-					} else if *int64_value >= -2147483648 && *int64_value <= 2147483647 {
-						data_type = "int32"
-						int32_temp, int32_temp_error := strconv.ParseInt(*string_value, 10, 32)
-						if int32_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 32) error"))
-						} else {
-							int32_conv := int32(int32_temp)
-							int32_value = &int32_conv
-						}
-					}
-				}
-
-				if len(errors) > 0 {
-					return errors
-				}
-
-			} else {
-				data_type = "uint64"
-				uint64_temp, uint64_temp_error := strconv.ParseUint(*string_value, 10, 64)
-				if uint64_temp_error != nil {
-					errors = append(errors, fmt.Errorf("strconv.ParseUint(*string_value, 10, 64) error"))
-				} else {
-					uint64_value = &uint64_temp
-					if *uint64_value >= 0 && *uint64_value <= 255 {
-						data_type = "uint8"
-						int8_temp, int8_temp_error := strconv.ParseUint(*string_value, 10, 8)
-						if int8_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 8) error"))
-						} else {
-							int8_conv := uint8(int8_temp)
-							uint8_value = &int8_conv
-						}
-					} else if *uint64_value >= 256 && *uint64_value <= 65535 {
-						data_type = "uint16"
-						int16_temp, int16_temp_error := strconv.ParseUint(*string_value, 10, 16)
-						if int16_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 16) error"))
-						} else {
-							int16_conv := uint16(int16_temp)
-							uint16_value = &int16_conv
-						}
-					} else if *uint64_value >= 65536  && *uint64_value <= 4294967295 {
-						data_type = "uint32"
-						int32_temp, int32_temp_error := strconv.ParseUint(*string_value, 10, 32)
-						if int32_temp_error != nil {
-							errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 32) error"))
-						} else {
-							int32_conv := uint32(int32_temp)
-							uint32_value = &int32_conv
-						}
-					}
-				}
-
-				if len(errors) > 0 {
-					return errors
-				}
-
-			}
-		}
-
-		if len(errors) > 0 {
-			return errors
 		}
 	}
 
