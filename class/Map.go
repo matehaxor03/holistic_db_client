@@ -628,42 +628,6 @@ func (m Map) HasKey(key string) bool {
 
 func (m Map) GetInt64(s string) (*int64, []error) {
 	var errors []error
-	var result *int64
-
-	if m[s] == nil {
-		return nil, nil
-	}
-
-	rep := fmt.Sprintf("%T", m[s])
-	switch rep {
-	case "*int64":
-		result = m[s].(*int64)
-	case "int":
-		value := int64(m[s].(int))
-		result = &value
-	case "*int":
-		value := int64(*(m[s].(*int)))
-		result = &value
-	case "*string":
-		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 64)
-		if value_error != nil {
-			errors = append(errors, fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
-		} else {
-			result = &value
-		}
-	default:
-		errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return result, nil
-}
-
-func (m Map) GetInt8(s string) (*int8, []error) {
-	var errors []error
 	var temp_value int64
 
 	if m[s] == nil || m.IsNil(s) {
@@ -672,61 +636,106 @@ func (m Map) GetInt8(s string) (*int8, []error) {
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
-	case "*int64":
-		x := m[s].(*int64)
-		temp_value = int64(*x)
-	case "int64":
-		x := m[s].(int64)
-		temp_value = x
-	case "*int32":
-		x := m[s].(*int32)
-		temp_value = int64(*x)
-	case "int32":
-		x := m[s].(int32)
-		temp_value = int64(x)
-	case "*int16":
-		x := m[s].(*int16)
-		temp_value = int64(*x)
-	case "int16":
-		x := m[s].(int16)
-		temp_value = int64(x)
-	case "*int8":
-		x := m[s].(*int8)
-		temp_value = int64(*x)
-	case "int8":
-		x := m[s].(int8)
-		temp_value = int64(x)
-	case "int":
-		x := m[s].(int)
-		temp_value = int64(x)
-	case "*int":
-		x := m[s].(*int)
-		temp_value = int64(*x)
-	case "*string":
-		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 8)
-		if value_error != nil {
-			errors = append(errors, fmt.Errorf("Map.GetInt8: cannot convert *string value to int8"))
-		} else {
-			temp_value = int64(value)
-		}
-	default:
-		errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+		case "*int64":
+			x := m[s].(*int64)
+			temp_value = int64(*x)
+		case "int64":
+			x := m[s].(int64)
+			temp_value = x
+		case "*int32":
+			x := m[s].(*int32)
+			temp_value = int64(*x)
+		case "int32":
+			x := m[s].(int32)
+			temp_value = int64(x)
+		case "*int16":
+			x := m[s].(*int16)
+			temp_value = int64(*x)
+		case "int16":
+			x := m[s].(int16)
+			temp_value = int64(x)
+		case "*int8":
+			x := m[s].(*int8)
+			temp_value = int64(*x)
+		case "int8":
+			x := m[s].(int8)
+			temp_value = int64(x)
+		case "int":
+			x := m[s].(int)
+			temp_value = int64(x)
+		case "*int":
+			x := m[s].(*int)
+			temp_value = int64(*x)
+		case "*string":
+			value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 64)
+			if value_error != nil {
+				errors = append(errors, fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
+			} else {
+				temp_value = value
+			}
+		default:
+			errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+	}
+	
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	result := &temp_value
+
+	return result, nil
+}
+
+func (m Map) GetInt8(s string) (*int8, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
 
-	if temp_value < -128 || temp_value > 127 {
-		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]", rep))
+	if *int64_value < -128 || *int64_value > 127 {
+		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]"))
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
 
-	int8_conv := int8(temp_value)
+	int8_conv := int8(*int64_value)
 	result := &int8_conv
+
+	return result, nil
+}
+
+func (m Map) GetInt16(s string) (*int16, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if *int64_value < -32768 || *int64_value > 32767 {
+		errors = append(errors, fmt.Errorf("value is not in range [-32768, 32767]"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	int16_conv := int16(*int64_value)
+	result := &int16_conv
 
 	return result, nil
 }
