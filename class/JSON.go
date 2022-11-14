@@ -198,7 +198,13 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					new_s := string((*runes)[i+1:])
 					new_runes := []rune(new_s)
 					new_map := Map{}
-					data_map.SetMap(temp_key, &new_map)
+
+					if data_map != nil {
+						data_map.SetMap(temp_key, &new_map)	
+					} else if data_array != nil {
+						*data_array = append(*data_array, &data_map)
+					}
+
 					found_value = false
 					return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
 				} else if string(value) == "[" {
@@ -206,7 +212,12 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					new_s := string((*runes)[i+1:])
 					new_runes := []rune(new_s)
 					new_array := Array{}
-					data_map.SetArray(temp_key, &new_array)
+					
+					if data_map != nil {
+						data_map.SetArray(temp_key, &new_array)	
+					} else if data_array != nil {
+						*data_array = append(*data_array, &new_array)
+					}
 					found_value = false
 					return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
 				} else if string(value) == "}" {
