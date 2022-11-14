@@ -68,6 +68,15 @@ func (m Map) IsBool(s string) bool {
 	return false
 }
 
+func (m Map) IsArray(s string) bool {
+	type_of := m.GetType(s)
+	if type_of == "class.Array" || type_of == "*class.Array" {
+		return true
+	}
+
+	return false
+}
+
 func (m Map) IsEmptyString(s string) bool {
 	if m.IsNil(s) {
 		return false
@@ -333,6 +342,7 @@ func (m Map) ToJSONString() (*string, []error) {
 	return &json, nil
 }
 
+/*
 func (m Map) A(s string) Array {
 	if m[s] == nil {
 		return nil
@@ -351,7 +361,7 @@ func (m Map) A(s string) Array {
 	default:
 		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
 	}
-}
+}*/
 
 func (m Map) SetArray(s string, array *Array) {
 	if array == nil {
@@ -407,8 +417,29 @@ func (m Map) SetFunc(s string, function func(Map) []error) {
 	m[s] = function
 }
 
-func (m Map) Array(s string) []interface{} {
-	return m[s].([]interface{})
+func (m Map) GetArray(s string) (*Array, []error) {
+	if m[s] == nil || m.IsNil(s) {
+		return nil, nil
+	}
+
+	var errors []error
+	var array *Array
+
+	rep := fmt.Sprintf("%T", m[s])
+	switch rep {
+	case "*class.Array":
+		array = m[s].(*Array).Clone()
+	case "class.Array":
+		array = m[s].(Array).Clone()
+	default:
+		errors = append(errors, fmt.Errorf("Map.GetArray: type %s is not supported please implement for field: %s", rep, s))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return array, nil
 }
 
 func (m Map) GetString(s string) (*string, []error) {

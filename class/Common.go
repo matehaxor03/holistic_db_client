@@ -372,19 +372,27 @@ func ValidateData(fields Map, structType string) []error {
 				continue
 			}
 			
-			if parameter_fields.GetType(FILTERS()) != "class.Array" {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array", structType, parameter, FILTERS()))
+			if !parameter_fields.IsArray(FILTERS())  {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array: %s", structType, parameter, FILTERS(), parameter_fields.GetType(FILTERS())))
 				continue
 			}
 
-			filters := parameter_fields.A(FILTERS())
+			filters, filters_errors := parameter_fields.GetArray(FILTERS())
+			if filters_errors != nil {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had errory getting array", structType, parameter, FILTERS()))
+				continue
+			}
 
-			if len(filters) == 0 {
+			if filters == nil {
+				continue
+			}
+
+			if len(*filters) == 0 {
 				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s has no filters", structType, parameter, FILTERS()))
 				continue
 			}
 
-			for filter_index, filter := range filters {
+			for filter_index, filter := range *filters {
 				filter_map := filter.(Map)
 
 				if !filter_map.HasKey("function") {

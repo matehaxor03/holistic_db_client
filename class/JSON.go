@@ -29,7 +29,7 @@ func ParseJSON(s string) (*Map, []error) {
 	mode := "looking_for_keys"
 	parent_map := Map{}
 	// parent map array and current map array etc
-	result, result_error :=  parseJSONMap(&runes, &mode, &parent_map, nil, &metrics)
+	result_error :=  parseJSONMap(&runes, &mode, &parent_map, nil, &metrics)
 
 	opening_bracket_count, opening_bracket_count_errors := metrics.GetInt("{")
 	closing_bracket_count, closing_bracket_count_errors := metrics.GetInt("}")
@@ -72,11 +72,11 @@ func ParseJSON(s string) (*Map, []error) {
 		return nil, errors
 	}
 
-	return result, nil
+	return &parent_map, nil
 }
 
 
-func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array, metrics *Map) (*Map, []error) {
+func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array, metrics *Map) ([]error) {
 	var errors []error
 	if data_map == nil && data_array == nil {
 		errors = append(errors, fmt.Errorf("parent map or array cannot both be nil"))
@@ -87,7 +87,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 	}
 
 	if len(errors) > 0 {
-		return nil, errors
+		return errors
 	}
 	
 	
@@ -271,11 +271,11 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return errors
 		}
 	}
 
-	return data_map, nil
+	return nil
 }
 
 func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) []error {
@@ -321,6 +321,11 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	} else {
 		string_temp := strings.TrimSpace(*string_value)
 		string_value = &string_temp
+
+		// when parsing emtpy array []
+		if *string_value == "" {
+			return nil
+		}
 
 		if *string_value == "true" {
 			data_type = "bool"

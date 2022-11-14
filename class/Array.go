@@ -94,7 +94,7 @@ func (a Array) ToPrimativeArray() []string {
 	return results
 }
 
-func (a Array) Clone() Array {
+func (a Array) Clone() *Array {
 	clone := Array{}
 	for _, current := range a {
 		rep := fmt.Sprintf("%T", current)
@@ -112,5 +112,5 @@ func (a Array) Clone() Array {
 			panic(fmt.Errorf("Array.Clone: type %s is not supported please implement", rep))
 		}
 	}
-	return clone
+	return &clone
 }
