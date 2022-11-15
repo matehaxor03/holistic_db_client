@@ -190,7 +190,10 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 			}
 
 			if !parsing_string {
-				if !parsing_string && string(value) == "\"" && string((*runes)[i-1]) != "\\" {
+				if i > 0 && !parsing_string && string(value) == "\"" && string((*runes)[i-1]) != "\\" {
+					temp_value += string(value)
+					parsing_string = true
+				} else if i == 0 && !parsing_string && string(value) == "\"" {
 					temp_value += string(value)
 					parsing_string = true
 				} else if string(value) == "{" {

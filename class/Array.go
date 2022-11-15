@@ -102,6 +102,10 @@ func (a Array) Clone() *Array {
 		case "string":
 			clone = append(clone, current)
 			break
+		case "*string":
+			value := CloneString(current.(*string))
+			clone = append(clone, *value)
+			break
 		case "class.Map":
 			clone = append(clone, current.(Map).Clone())
 			break
