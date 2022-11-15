@@ -94,7 +94,12 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data.Clone(), "Host")
+		data_cloned, data_cloned_errors := data.Clone()
+		if data_cloned_errors != nil {
+			return data_cloned_errors
+		}
+
+		return ValidateData(*data_cloned, "Host")
 	}
 
 	errors := validate()
@@ -108,7 +113,12 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 			return validate()
 		},
 		ToJSONString: func() (*string, []error) {
-			return data.Clone().ToJSONString()
+			data_cloned, data_cloned_errors := data.Clone()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+
+			return data_cloned.ToJSONString()
 		},
 		Clone: func() *Host {
 			cloned, _ := NewHost(getHostName(), getPortNumber())

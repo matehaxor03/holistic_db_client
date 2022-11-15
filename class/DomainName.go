@@ -30,7 +30,12 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data.Clone(), "DomainName")
+		data_cloned, data_cloned_errors := data.Clone()
+		if data_cloned_errors != nil {
+			return data_cloned_errors
+		}
+
+		return ValidateData(*data_cloned, "DomainName")
 	}
 
 	getDomainName := func() *string {

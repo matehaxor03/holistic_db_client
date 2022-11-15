@@ -247,7 +247,11 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return grant_obj, nil
 		},
 		ToJSONString: func() (*string, []error) {
-			return data.Clone().ToJSONString()
+			data_cloned, data_cloned_errors := data.Clone()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+			return data_cloned.ToJSONString()
 		},
 		UserExists: func(username string) (*bool, []error) {
 			errors := validate()

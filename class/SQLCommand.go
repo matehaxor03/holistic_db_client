@@ -165,7 +165,11 @@ func NewSQLCommand() *SQLCommand {
 					if current_value == "\n" {
 						column_value := CloneString(&value)
 						record.SetString(columns[columns_count].(string), column_value)
-						records = append(records, record.Clone())
+						cloned_record, cloned_record_errors := record.Clone()
+						if cloned_record_errors != nil {
+							return nil, cloned_record_errors
+						}
+						records = append(records, cloned_record)
 						record = Map{}
 						value = ""
 						columns_count = 0

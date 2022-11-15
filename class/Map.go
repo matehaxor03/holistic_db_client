@@ -428,9 +428,19 @@ func (m Map) GetArray(s string) (*Array, []error) {
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "*class.Array":
-		array = m[s].(*Array).Clone()
+		cloned_array, cloned_array_errors := m[s].(*Array).Clone()
+		if cloned_array_errors != nil {
+			errors = append(errors, cloned_array_errors...)
+		} else {
+			array = cloned_array
+		}
 	case "class.Array":
-		array = m[s].(Array).Clone()
+		cloned_array, cloned_array_errors := m[s].(Array).Clone()
+		if cloned_array_errors != nil {
+			errors = append(errors, cloned_array_errors...)
+		} else {
+			array = cloned_array
+		}
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
@@ -1159,7 +1169,8 @@ func (m Map) Values() Array {
 	return array
 }
 
-func (m Map) Clone() Map {
+func (m Map) Clone() (*Map, []error) {
+	var errors []error
 	clone := Map{}
 	keys := m.Keys()
 
@@ -1186,10 +1197,20 @@ func (m Map) Clone() Map {
 			}
 			break
 		case "class.Map":
-			clone[key] = current.(Map).Clone()
+			cloned_map, cloned_map_error := current.(Map).Clone()
+			if cloned_map_error != nil {
+				errors = append(errors, cloned_map_error...)
+			} else {
+				clone[key] = *cloned_map
+			}
 			break
 		case "class.Array":
-			clone[key] = current.(Array).Clone()
+			cloned_array, cloned_array_errors := current.(Array).Clone()
+			if cloned_array_errors != nil {
+				errors = append(errors, cloned_array_errors...)
+			} else {
+				clone[key] = cloned_array
+			}
 			break
 		case "func(class.Map) []error", "map[string]map[string][][]string", "*func(class.Map) []error":
 			clone[key] = current
@@ -1251,9 +1272,13 @@ func (m Map) Clone() Map {
 		case "<nil>":
 			clone[key] = nil
 		default:
-			panic(fmt.Errorf("Map.Clone: type %s is not supported please implement", rep))
+			errors = append(errors, fmt.Errorf("Map.Clone: type %s is not supported please implement", rep))
 		}
 	}
 
-	return clone
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &clone, nil
 }

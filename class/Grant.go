@@ -79,7 +79,12 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 	}
 
 	validate := func() []error {
-		return ValidateData(data.Clone(), "Grant")
+		data_cloned, data_cloned_errors := data.Clone()
+		if data_cloned_errors != nil {
+			return data_cloned_errors
+		}
+
+		return ValidateData(*data_cloned, "Grant")
 	}
 
 	getClient := func() *Client {

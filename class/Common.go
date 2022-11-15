@@ -379,7 +379,7 @@ func ValidateData(fields Map, structType string) []error {
 
 			filters, filters_errors := parameter_fields.GetArray(FILTERS())
 			if filters_errors != nil {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had errory getting array", structType, parameter, FILTERS()))
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had error getting array %s", structType, parameter, FILTERS(), filters_errors))
 				continue
 			}
 
@@ -393,7 +393,7 @@ func ValidateData(fields Map, structType string) []error {
 			}
 
 			for filter_index, filter := range *filters {
-				filter_map := filter.(Map)
+				filter_map := filter.(*Map)
 
 				if !filter_map.HasKey("function") {
 					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", structType, parameter, FILTERS(), filter_index))
@@ -415,7 +415,8 @@ func ValidateData(fields Map, structType string) []error {
 				filter_map.SetString("data_type", &structType)
 				filter_map.SetString("label", &parameter)
 
-				function_errors := function(filter.(Map))
+				temp_map := filter.(*Map)
+				function_errors := function(*temp_map)
 				if function_errors != nil {
 					errors = append(errors, function_errors...)
 				}

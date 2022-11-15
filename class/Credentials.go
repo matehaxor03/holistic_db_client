@@ -162,7 +162,12 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 	}
 
 	validate := func() []error {
-		return ValidateData(data.Clone(), "Credentials")
+		data_cloned, data_cloned_errors := data.Clone()
+		if data_cloned_errors != nil {
+			return data_cloned_errors
+		}
+
+		return ValidateData(*data_cloned, "Credentials")
 	}
 
 	getUsername := func() *string {
@@ -186,7 +191,11 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 			return getPassword()
 		},
 		ToJSONString: func() (*string, []error) {
-			return data.Clone().ToJSONString()
+			data_cloned, data_cloned_errors := data.Clone()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+			return data_cloned.ToJSONString()
 		},
 		Clone: func() *Credentials {
 			cloned, _ := NewCredentials(getUsername(), getPassword())

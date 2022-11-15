@@ -74,7 +74,12 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 			return getSQL()
 		},
 		ToJSONString: func() (*string, []error) {
-			return data.Clone().ToJSONString()
+			data_cloned, data_cloned_errors := data.Clone()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+
+			return data_cloned.ToJSONString()
 		},
 		Clone: func() *DatabaseCreateOptions {
 			character_set, _ := data.M("[character_set]").GetString("value")

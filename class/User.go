@@ -124,7 +124,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 			}
 
-			validate_password_errors := ValidateData(data.Clone(), "NewUserPassword")
+			data_clone, data_clone_errors := data.Clone()
+			if data_clone_errors != nil {
+				return data_clone_errors
+			}
+
+			validate_password_errors := ValidateData(*data_clone, "NewUserPassword")
 			if validate_password_errors != nil {
 				errors = append(errors, validate_password_errors...)
 			}

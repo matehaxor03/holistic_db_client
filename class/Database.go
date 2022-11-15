@@ -44,12 +44,17 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
 	}
 
-	getData := func() Map {
+	getData := func() (*Map, []error) {
 		return data.Clone()
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Database")
+		data_cloned, data_cloned_errors := data.Clone()
+		if data_cloned_errors != nil {
+			return data_cloned_errors
+		}
+
+		return ValidateData(*data_cloned, "Database")
 	}
 
 	setDatabase := func(database *Database) {
@@ -181,7 +186,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		var table_names []string
 		column_name := "Tables_in_" + EscapeString(getDatabaseName())
 		for _, record := range *records {
-			table_name, table_name_errors := record.(Map).GetString(column_name)
+			table_name, table_name_errors := record.(*Map).GetString(column_name)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
 				continue
@@ -438,7 +443,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return getClient().UseDatabase(getDatabase())
 		},
 		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+			data_cloned, data_cloned_errors := getData()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+
+			return data_cloned.ToJSONString()
 		},
 	}
 	setDatabase(&x)

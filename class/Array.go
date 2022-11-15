@@ -94,7 +94,8 @@ func (a Array) ToPrimativeArray() []string {
 	return results
 }
 
-func (a Array) Clone() *Array {
+func (a Array) Clone() (*Array, []error) {
+	var errors []error
 	clone := Array{}
 	for _, current := range a {
 		rep := fmt.Sprintf("%T", current)
@@ -107,14 +108,45 @@ func (a Array) Clone() *Array {
 			clone = append(clone, *value)
 			break
 		case "class.Map":
-			clone = append(clone, current.(Map).Clone())
+			cloned_map, cloned_map_errors := current.(Map).Clone()
+			if cloned_map_errors != nil {
+				errors = append(errors, cloned_map_errors...)
+			} else {
+				clone = append(clone, cloned_map)
+			}
+			break
+		case "*class.Map":
+			cloned_map, cloned_map_errors := current.(*Map).Clone()
+			if cloned_map_errors != nil {
+				errors = append(errors, cloned_map_errors...)
+			} else {
+				clone = append(clone, cloned_map)
+			}
 			break
 		case "class.Array":
-			clone = append(clone, current.(Array).Clone())
+			cloned_array, cloned_array_errors := current.(Array).Clone()
+			if cloned_array_errors != nil {
+				errors = append(errors, cloned_array_errors...)
+			} else {
+				clone = append(clone, cloned_array)
+			}
+			break
+		case "*class.Array":
+			cloned_array, cloned_array_errors := current.(*Array).Clone()
+			if cloned_array_errors != nil {
+				errors = append(errors, cloned_array_errors...)
+			} else {
+				clone = append(clone, cloned_array)
+			}
 			break
 		default:
-			panic(fmt.Errorf("Array.Clone: type %s is not supported please implement", rep))
+			errors = append(errors, fmt.Errorf("Array.Clone: type %s is not supported please implement", rep))
 		}
 	}
-	return &clone
+
+	if len(errors) > 0 { 
+		return nil, errors
+	}
+
+	return &clone, nil
 }
