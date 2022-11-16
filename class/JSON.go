@@ -111,7 +111,7 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 		i := *index
 		value := (*runes)[*index]
 
-		fmt.Println(current_mode + " " + string(value))
+		//fmt.Println(current_mode + " " + string(value))
 
 		if !parsing_string {
 			if string(value) == "{" {
@@ -622,7 +622,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	}
 
 	if fmt.Sprintf("%T", list.Front().Value) == "*class.Array" {
-		fmt.Println("adding array value " + data_type + " " + *string_value)
+		//fmt.Println("adding array value " + data_type + " " + *string_value)
 		data_array := list.Front().Value.(*Array)
 		if data_type == "string" {
 			*data_array = append(*data_array, string_value)
@@ -654,7 +654,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	}
 
 	if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
-		fmt.Println("adding map value " + temp_key + " " + *string_value)
+		//fmt.Println("adding map value " + temp_key + " " + *string_value)
 
 		if data_type == "string" {
 			list.Front().Value.(*Map).SetString(temp_key, string_value)

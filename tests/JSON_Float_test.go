@@ -2,7 +2,6 @@ package tests
  
 import (
     "testing"
-	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -18,6 +17,7 @@ func TestCanParseFloat64Positive(t *testing.T) {
 	} else if json.GetType("key") != "*float32" {
 		t.Errorf("key is not a *float32: %s", json.GetType("key"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key") 
 
 		if value_errors != nil {
@@ -26,11 +26,6 @@ func TestCanParseFloat64Positive(t *testing.T) {
 			t.Errorf("GetFloat64 is nil")
 		} else if *value != 0.1234567890 {
 			t.Errorf("expected: value actual: %f", *value)
-		}
-
-		if json != nil {
-			json_string, _ := json.ToJSONString()
-			fmt.Println(*json_string)
 		}
 	}
 }
@@ -47,6 +42,7 @@ func TestCanParseFloat32Negative(t *testing.T) {
 	} else if json.GetType("key") != "*float32" {
 		t.Errorf("key is not a *float32: %s", json.GetType("key"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key") 
 
 		if value_errors != nil {
@@ -55,11 +51,6 @@ func TestCanParseFloat32Negative(t *testing.T) {
 			t.Errorf("GetFloat32 is nil")
 		} else if *value != -0.1234567890 {
 			t.Errorf("expected: value actual: %f", *value)
-		}
-
-		if json != nil {
-			json_string, _ := json.ToJSONString()
-			fmt.Println(*json_string)
 		}
 	}
 }
@@ -92,6 +83,7 @@ func TestCanParseFloat32MultiplePositive(t *testing.T) {
 	} else if json.GetType("key2") != "*float32" {
 		t.Errorf("key2 is not a *float32: %s", json.GetType("key"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key2") 
 
 		if value_errors != nil {
@@ -101,11 +93,6 @@ func TestCanParseFloat32MultiplePositive(t *testing.T) {
 		} else if *value != 0.2234567890 {
 			t.Errorf("expected: value actual: %f", *value)
 		}
-	}
-
-	if json != nil {
-		json_string, _ := json.ToJSONString()
-		fmt.Println(*json_string)
 	}
 }
 
@@ -137,6 +124,7 @@ func TestCanParseFloat32MultipleNegative(t *testing.T) {
 	} else if json.GetType("key") != "*float32" {
 		t.Errorf("key2 is not a *float32: %s", json.GetType("key"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key2") 
 
 		if value_errors != nil {
@@ -146,11 +134,6 @@ func TestCanParseFloat32MultipleNegative(t *testing.T) {
 		} else if *value != -0.2234567890 {
 			t.Errorf("expected: value actual: %f", *value)
 		}
-	}
-
-	if json != nil {
-		json_string, _ := json.ToJSONString()
-		fmt.Println(*json_string)
 	}
 }
 
@@ -166,6 +149,7 @@ func TestCanParseFloat32Multiple(t *testing.T) {
 	} else if json.GetType("key") != "*float32" {
 		t.Errorf("key is not a *float32: %s", json.GetType("key"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key") 
 
 		if value_errors != nil {
@@ -175,11 +159,6 @@ func TestCanParseFloat32Multiple(t *testing.T) {
 		} else if *value != 0.1234567890 {
 			t.Errorf("expected: value actual: %f", *value)
 		}
-
-		if json != nil {
-			json_string, _ := json.ToJSONString()
-			fmt.Println(*json_string)
-		}
 	}
 
 	if !json.HasKey("key2") {
@@ -187,6 +166,7 @@ func TestCanParseFloat32Multiple(t *testing.T) {
 	} else if json.GetType("key2") != "*float32" {
 		t.Errorf("key2 is not a *float32: %s", json.GetType("key2"))
 	} else {
+		PrintJSON(t, json)
 		value, value_errors := json.GetFloat32("key2") 
 
 		if value_errors != nil {
@@ -195,11 +175,6 @@ func TestCanParseFloat32Multiple(t *testing.T) {
 			t.Errorf("GetFloat3t2 is nil")
 		} else if *value != -0.2234567890 {
 			t.Errorf("expected: value actual: %f", *value)
-		}
-
-		if json != nil {
-			json_string, _ := json.ToJSONString()
-			fmt.Println(*json_string)
 		}
 	}
 }

@@ -2,7 +2,6 @@ package tests
  
 import (
     "testing"
-	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -11,12 +10,15 @@ func TestCanParseNegativeInt8_1(t *testing.T) {
 
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
+	} else if json == nil {
+		t.Errorf("json is nil")
 	} else if json != nil {
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*int8" {
 			t.Errorf("key is not a *int8: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt8("key") 
 	
 			if value_errors != nil {
@@ -27,18 +29,7 @@ func TestCanParseNegativeInt8_1(t *testing.T) {
 				t.Errorf("expected: value actual: %d", *value)
 			}
 		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
-			}
-		}
-	} else {
-		t.Errorf("json is nil")
-	}	
+	} 
 }
 
 func TestCanParseNegativeInt8_128(t *testing.T) {
@@ -52,6 +43,7 @@ func TestCanParseNegativeInt8_128(t *testing.T) {
 		} else if json.GetType("key") != "*int8" {
 			t.Errorf("key is not a *int8: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt8("key") 
 	
 			if value_errors != nil {
@@ -63,14 +55,7 @@ func TestCanParseNegativeInt8_128(t *testing.T) {
 			}
 		}
 
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
-			}
-		}
+		
 	} else {
 		t.Errorf("json is nil")
 	}	
@@ -87,6 +72,7 @@ func TestCanParseNegativeInt16_129(t *testing.T) {
 		} else if json.GetType("key") != "*int16" {
 			t.Errorf("key is not a *int16: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt16("key") 
 	
 			if value_errors != nil {
@@ -95,15 +81,6 @@ func TestCanParseNegativeInt16_129(t *testing.T) {
 				t.Errorf("GetInt16 is nil")
 			} else if *value != -129 {
 				t.Errorf("expected: -129  actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -122,6 +99,7 @@ func TestCanParseNegativeInt16_32768(t *testing.T) {
 		} else if json.GetType("key") != "*int16" {
 			t.Errorf("key is not a *int16: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt16("key") 
 	
 			if value_errors != nil {
@@ -130,15 +108,6 @@ func TestCanParseNegativeInt16_32768(t *testing.T) {
 				t.Errorf("GetInt16 is nil")
 			} else if *value != -32768 {
 				t.Errorf("expected: -32768  actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -157,6 +126,7 @@ func TestCanParseNegativeInt32_32769(t *testing.T) {
 		} else if json.GetType("key") != "*int32" {
 			t.Errorf("key is not a *int32: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt32("key") 
 	
 			if value_errors != nil {
@@ -165,15 +135,6 @@ func TestCanParseNegativeInt32_32769(t *testing.T) {
 				t.Errorf("GetInt32 is nil")
 			} else if *value != -32769 {
 				t.Errorf("expected: -32769  actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -192,6 +153,7 @@ func TestCanParseNegativeInt32_2147483648(t *testing.T) {
 		} else if json.GetType("key") != "*int32" {
 			t.Errorf("key is not a *int32: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt32("key") 
 	
 			if value_errors != nil {
@@ -203,14 +165,6 @@ func TestCanParseNegativeInt32_2147483648(t *testing.T) {
 			}
 		}
 
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
-			}
-		}
 	} else {
 		t.Errorf("json is nil")
 	}	
@@ -227,6 +181,7 @@ func TestCanParseNegativeInt64_2147483649(t *testing.T) {
 		} else if json.GetType("key") != "*int64" {
 			t.Errorf("key is not a *int64: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt64("key") 
 	
 			if value_errors != nil {
@@ -235,15 +190,6 @@ func TestCanParseNegativeInt64_2147483649(t *testing.T) {
 				t.Errorf("GetInt64 is nil")
 			} else if *value != -2147483649 {
 				t.Errorf("expected: -2147483649  actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -262,6 +208,7 @@ func TestCanParseNegativeInt64_9223372036854775808(t *testing.T) {
 		} else if json.GetType("key") != "*int64" {
 			t.Errorf("key is not a *int64: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetInt64("key") 
 	
 			if value_errors != nil {
@@ -270,15 +217,6 @@ func TestCanParseNegativeInt64_9223372036854775808(t *testing.T) {
 				t.Errorf("GetInt64 is nil")
 			} else if *value != -9223372036854775808 {
 				t.Errorf("expected: -9223372036854775808  actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -304,13 +242,7 @@ func TestCanParseUInt8_0_WithSpaceBeforeValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
-
+		PrintJSON(t, json)
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*uint8" {
@@ -337,12 +269,7 @@ func TestCanParseUInt8_0_WithSpaceAfterValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -370,12 +297,7 @@ func TestCanParseUInt8_0_WithNewlineBeforeValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -403,12 +325,7 @@ func TestCanParseUInt8_0_WithNewlineAfterValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -436,12 +353,7 @@ func TestCanParseUInt8_0_WithDosNewlineBeforeValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -469,12 +381,7 @@ func TestCanParseUInt8_0_WithDosNewlineAfterValue(t *testing.T) {
 	if json_errors != nil {
 		t.Errorf("%s", json_errors)
 	} else if json != nil {
-		json_string, json_string_errors := json.ToJSONString()
-		if json_string_errors != nil {
-			fmt.Println(json_string_errors)
-		} else {
-			fmt.Println(*json_string)
-		}
+		PrintJSON(t, json)
 
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
@@ -507,6 +414,7 @@ func TestCanParseUInt8_0(t *testing.T) {
 		} else if json.GetType("key") != "*uint8" {
 			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt8("key") 
 	
 			if value_errors != nil {
@@ -515,15 +423,6 @@ func TestCanParseUInt8_0(t *testing.T) {
 				t.Errorf("GetUInt8 is nil")
 			} else if *value != 0 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -542,6 +441,7 @@ func TestCanParseUInt8_255(t *testing.T) {
 		} else if json.GetType("key") != "*uint8" {
 			t.Errorf("key is not a *uint8: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt8("key") 
 	
 			if value_errors != nil {
@@ -550,15 +450,6 @@ func TestCanParseUInt8_255(t *testing.T) {
 				t.Errorf("GetUInt8 is nil")
 			} else if *value != 255 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -577,6 +468,7 @@ func TestCanParseUInt16_256(t *testing.T) {
 		} else if json.GetType("key") != "*uint16" {
 			t.Errorf("key is not a *uint16: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt16("key") 
 	
 			if value_errors != nil {
@@ -585,15 +477,6 @@ func TestCanParseUInt16_256(t *testing.T) {
 				t.Errorf("GetUInt16 is nil")
 			} else if *value != 256 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -612,6 +495,7 @@ func TestCanParseUInt16_65535(t *testing.T) {
 		} else if json.GetType("key") != "*uint16" {
 			t.Errorf("key is not a *uint16: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt16("key") 
 	
 			if value_errors != nil {
@@ -620,15 +504,6 @@ func TestCanParseUInt16_65535(t *testing.T) {
 				t.Errorf("GetUInt16 is nil")
 			} else if *value != 65535 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -647,6 +522,7 @@ func TestCanParseUInt32_65536(t *testing.T) {
 		} else if json.GetType("key") != "*uint32" {
 			t.Errorf("key is not a *uint32: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt32("key") 
 	
 			if value_errors != nil {
@@ -655,15 +531,6 @@ func TestCanParseUInt32_65536(t *testing.T) {
 				t.Errorf("GetUInt32 is nil")
 			} else if *value != 65536 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -682,6 +549,7 @@ func TestCanParseUInt32_4294967295(t *testing.T) {
 		} else if json.GetType("key") != "*uint32" {
 			t.Errorf("key is not a *uint32: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt32("key") 
 	
 			if value_errors != nil {
@@ -690,15 +558,6 @@ func TestCanParseUInt32_4294967295(t *testing.T) {
 				t.Errorf("GetUInt32 is nil")
 			} else if *value != 4294967295 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -717,6 +576,7 @@ func TestCanParseUInt64_4294967296(t *testing.T) {
 		} else if json.GetType("key") != "*uint64" {
 			t.Errorf("key is not a *uint64: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt64("key") 
 	
 			if value_errors != nil {
@@ -725,15 +585,6 @@ func TestCanParseUInt64_4294967296(t *testing.T) {
 				t.Errorf("GetUInt32 is nil")
 			} else if *value != 4294967296 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -752,6 +603,7 @@ func TestCanParseUInt64_18446744073709551615(t *testing.T) {
 		} else if json.GetType("key") != "*uint64" {
 			t.Errorf("key is not a *uint64: %s", json.GetType("key"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt64("key") 
 	
 			if value_errors != nil {
@@ -760,15 +612,6 @@ func TestCanParseUInt64_18446744073709551615(t *testing.T) {
 				t.Errorf("GetUInt32 is nil")
 			} else if *value != 18446744073709551615 {
 				t.Errorf("expected: value actual: %d", *value)
-			}
-		}
-
-		if json != nil {
-			json_string, json_string_errors := json.ToJSONString()
-			if json_string_errors != nil {
-				fmt.Println(json_string_errors)
-			} else {
-				fmt.Println(*json_string)
 			}
 		}
 	} else {
@@ -817,6 +660,7 @@ func TestCanParseUInt64PositiveMuitple(t *testing.T) {
 		} else if json.GetType("key") != "*uint64" {
 			t.Errorf("key2 is not a *uint64: %s", json.GetType("key2"))
 		} else {
+			PrintJSON(t, json)
 			value, value_errors := json.GetUInt64("key2") 
 	
 			if value_errors != nil {
@@ -826,11 +670,6 @@ func TestCanParseUInt64PositiveMuitple(t *testing.T) {
 			} else if *value != 4294967297 {
 				t.Errorf("expected: value actual: %d", *value)
 			}
-		}
-	
-		if json != nil {
-			json_string, _ := json.ToJSONString()
-			fmt.Println(*json_string)
 		}
 	}
 	

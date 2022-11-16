@@ -154,7 +154,7 @@ func (m Map) ToJSONString() (*string, []error) {
 		} else {
 			json += *string_conversion
 		}
-		
+
 		if i < length - 1 {
 			json += ","
 		}
@@ -1030,8 +1030,24 @@ func (m Map) Clone() (*Map, []error) {
 				clone[key] = *cloned_map
 			}
 			break
+		case "*class.Map":
+			cloned_map, cloned_map_error := current.(*Map).Clone()
+			if cloned_map_error != nil {
+				errors = append(errors, cloned_map_error...)
+			} else {
+				clone[key] = *cloned_map
+			}
+			break
 		case "class.Array":
 			cloned_array, cloned_array_errors := current.(Array).Clone()
+			if cloned_array_errors != nil {
+				errors = append(errors, cloned_array_errors...)
+			} else {
+				clone[key] = cloned_array
+			}
+			break
+		case "*class.Array":
+			cloned_array, cloned_array_errors := current.(*Array).Clone()
 			if cloned_array_errors != nil {
 				errors = append(errors, cloned_array_errors...)
 			} else {
@@ -1077,16 +1093,51 @@ func (m Map) Clone() (*Map, []error) {
 			clone[key] = current.(*time.Time)
 		case "int":
 			clone[key] = current.(int)
-		case "uint64":
-			clone[key] = current.(uint64)
+		case "*int":
+			int_value := *(current.(*int))
+			clone[key] = int_value
+		case "int8":
+			clone[key] = current.(int8)
+		case "*int8":
+			int8_value := *(current.(*int8))
+			clone[key] = &int8_value
+		case "int16":
+			clone[key] = current.(int16)
+		case "*int16":
+			int16_value := *(current.(*int16))
+			clone[key] = &int16_value
+		case "int32":
+			clone[key] = current.(int32)
+		case "*int32":
+			int32_value := *(current.(*int32))
+			clone[key] = &int32_value
 		case "int64":
 			clone[key] = current.(int64)
 		case "*int64":
 			int64_value := *(current.(*int64))
 			clone[key] = &int64_value
-		case "*int":
-			int_value := *(current.(*int))
-			clone[key] = &int_value
+		case "uint":
+			clone[key] = current.(uint)
+		case "*uint":
+			uint_value := *(current.(*uint))
+			clone[key] = &uint_value
+		case "uint8":
+			clone[key] = current.(uint8)
+		case "*uint8":
+			uint8_value := *(current.(*uint8))
+			clone[key] = &uint8_value
+		case "uint16":
+			clone[key] = current.(uint16)
+		case "*uint16":
+			uint16_value := *(current.(*uint16))
+			clone[key] = &uint16_value
+		case "uint32":
+			clone[key] = current.(uint32)
+		case "*uint32":
+			uint32_value := *(current.(*uint32))
+			clone[key] = &uint32_value
+		case "uint64":
+			clone[key] = current.(uint64)
 		case "*uint64":
 			uint64_value := *(current.(*uint64))
 			clone[key] = &uint64_value
