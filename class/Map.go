@@ -1141,6 +1141,16 @@ func (m Map) Clone() (*Map, []error) {
 		case "*uint64":
 			uint64_value := *(current.(*uint64))
 			clone[key] = &uint64_value
+		case "float32":
+			clone[key] = current.(float32)
+		case "*float32":
+			float32_value := *(current.(*float32))
+			clone[key] = &float32_value
+		case "float64":
+			clone[key] = current.(float64)
+		case "*float64":
+			float64_value := *(current.(*float64))
+			clone[key] = &float64_value
 		case "*[]error":
 			errs := *(current.(*[]error))
 			clone[key] = &errs

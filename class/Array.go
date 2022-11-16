@@ -183,6 +183,16 @@ func (a Array) Clone() (*Array, []error) {
 		case "*uint64":
 			uint64_value := *(current.(*uint64))
 			clone = append(clone,  &uint64_value)
+		case "float32":
+			clone = append(clone,  current.(float32))
+		case "*float32":
+			float32_value := *(current.(*float32))
+			clone = append(clone, &float32_value)
+		case "float64":
+			clone = append(clone,  current.(float64))
+		case "*float64":
+			float64_value := *(current.(*float64))
+			clone = append(clone, &float64_value)
 		case "[]error":
 			clone = append(clone, current.([]error))
 		case "*[]error":
