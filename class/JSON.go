@@ -718,6 +718,10 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "\"" + strings.ReplaceAll(value.(string), "\"", "\\\"") + "\""
 	case "*string":
 		result = "\"" + strings.ReplaceAll(*(value.(*string)), "\"", "\\\"") + "\""
+	case "error":
+		result = "\"" + strings.ReplaceAll(value.(error).Error(), "\"", "\\\"") + "\""
+	case "*error":
+		result = "\"" + strings.ReplaceAll((*(value.(*error))).Error(), "\"", "\\\"") + "\""
 	case "bool":
 		temp := value.(bool)
 		if temp {
@@ -757,7 +761,12 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "["
 		array_length := len(value.([]string))
 		for array_index, array_value := range value.([]string) {
-			result += "\"" + strings.ReplaceAll(array_value, "\"", "\\\"") + "\""
+			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			if string_conversion_error != nil {
+				errors = append(errors, string_conversion_error...)
+			} else {
+				result += *string_conversion
+			}
 			if array_index < (array_length - 1) {
 				result += ","
 			}
@@ -767,7 +776,12 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "["
 		array_length := len(*(value.(*[]string)))
 		for array_index, array_value := range *(value.(*[]string)) {
-			result += "\"" + strings.ReplaceAll(array_value, "\"", "\\\"") + "\""
+			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			if string_conversion_error != nil {
+				errors = append(errors, string_conversion_error...)
+			} else {
+				result += *string_conversion
+			}
 			if array_index < (array_length - 1) {
 				result += ","
 			}
@@ -777,7 +791,12 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "["
 		array_length := len(value.([]error))
 		for array_index, array_value := range value.([]error) {
-			result += "\"" + strings.ReplaceAll(array_value.Error(), "\"", "\\\"") + "\""
+			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			if string_conversion_error != nil {
+				errors = append(errors, string_conversion_error...)
+			} else {
+				result += *string_conversion
+			}
 			if array_index < (array_length - 1) {
 				result += ","
 			}
@@ -787,7 +806,12 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "["
 		array_length := len(*(value.(*[]error)))
 		for array_index, array_value := range *(value.(*[]error)) {
-			result += "\"" + strings.ReplaceAll(array_value.Error(), "\"", "\\\"") + "\""
+			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			if string_conversion_error != nil {
+				errors = append(errors, string_conversion_error...)
+			} else {
+				result += *string_conversion
+			}
 			if array_index < (array_length - 1) {
 				result += ","
 			}
