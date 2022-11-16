@@ -622,3 +622,4 @@ func GetDirectoryOfExecutable() (*string, error) {
 
 	return &directory_name, nil
 }
+

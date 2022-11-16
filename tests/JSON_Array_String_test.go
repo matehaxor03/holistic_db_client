@@ -2,6 +2,7 @@ package tests
  
 import (
     "testing"
+	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -70,6 +71,21 @@ func TestCanParseMultipleArraysContainingSingleString(t *testing.T) {
 		t.Errorf("json is nil")
 	} else {
 		//PrintJSON(t, json)
+
+		if json == nil {
+			t.Errorf("json is nil")
+		} else {
+			json_string, json_string_errors := json.ToJSONString()
+			if json_string_errors != nil {
+				t.Errorf("%s", json_string_errors)
+			} else if json_string == nil {
+				t.Errorf("json_string is nil")
+			} else {
+				fmt.Println(*json_string)
+			}
+		}
+
+
 		if !json.HasKey("key") {
 			t.Errorf("key not found")
 		} else if json.GetType("key") != "*class.Array" {

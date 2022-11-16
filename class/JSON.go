@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"container/list"
+	"time"
 )
 
 func ParseJSON(s string) (*Map, []error) {
@@ -28,8 +30,11 @@ func ParseJSON(s string) (*Map, []error) {
 	metrics := Map{"{":0, "}":0, "[":0, "]":0}
 	mode := "looking_for_keys"
 	parent_map := Map{}
+	list := list.New()
+	list.PushFront(&parent_map)
+	index := uint64(0)
 	// parent map array and current map array etc
-	result_error :=  parseJSONMap(&runes, &mode, &parent_map, nil, &metrics)
+	result_error :=  parseJSONMap(&runes, &index, &mode, list, &metrics)
 
 	opening_bracket_count, opening_bracket_count_errors := metrics.GetInt("{")
 	closing_bracket_count, closing_bracket_count_errors := metrics.GetInt("}")
@@ -76,14 +81,12 @@ func ParseJSON(s string) (*Map, []error) {
 }
 
 
-func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array, metrics *Map) ([]error) {
+func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, metrics *Map) ([]error) {
 	var errors []error
-	if data_map == nil && data_array == nil {
-		errors = append(errors, fmt.Errorf("parent map or array cannot both be nil"))
-	}
-
-	if data_map != nil && data_array != nil {
-		errors = append(errors, fmt.Errorf("parent map or array cannot both not be nil"))
+	if list == nil {
+		errors = append(errors, fmt.Errorf("list is nil"))
+	} else if (*list).Len() == 0 {
+		errors = append(errors, fmt.Errorf("list is empty"))
 	}
 
 	if len(errors) > 0 {
@@ -104,7 +107,12 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 	temp_mode := CloneString(mode)
 	current_mode := *temp_mode
 
-	for i, value := range *runes {
+	for *index < uint64(len(*runes)) {
+		i := *index
+		value := (*runes)[*index]
+
+		fmt.Println(current_mode + " " + string(value))
+
 		if !parsing_string {
 			if string(value) == "{" {
 				opening_count, _ := metrics.GetInt("{")
@@ -137,34 +145,65 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 
 			} else if string(value) == "{" {
 				new_mode := mode_looking_for_keys
-				new_s := string((*runes)[i+1:])
-				new_runes := []rune(new_s)
+				//new_s := string((*runes)[i+1:])
+				//new_runes := []rune(new_s)
 				new_map := Map{}
 
+				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+					list.Front().Value.(*Map).SetMap(temp_key, &new_map)	
+				} else {
+					temp_array := list.Front().Value.(*Array)
+					*temp_array = append(*temp_array, &new_map)
+				} 
+				list.PushFront(&new_map)
+
+				/*
 				if data_map != nil {
 					data_map.SetMap(temp_key, &new_map)	
 				} else if data_array != nil {
-					*data_array = append(*data_array, &data_map)
-				}
-				return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
+					*data_array = append(*data_array, &new_map)
+				}*/
+				//return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
+				*index++
+				parseJSONMap(runes, index, &new_mode, list, metrics)
+				//*index--
 			} else if string(value) == "[" {
 				new_mode := mode_looking_for_value
-				new_s := string((*runes)[i+1:])
-				new_runes := []rune(new_s)
+				//new_s := string((*runes)[i+1:])
+				//new_runes := []rune(new_s)
 				new_array := Array{}
 
+				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+					list.Front().Value.(*Map).SetArray(temp_key, &new_array)	
+				} else {
+					temp_array := list.Front().Value.(*Array)
+					*temp_array = append(*temp_array, &new_array)
+				} 
+				list.PushFront(&new_array)
+
+				/*
 				if data_map != nil {
 					data_map.SetArray(temp_key, &new_array)	
 				} else if data_array != nil {
 					*data_array = append(*data_array, &new_array)
-				}
-				return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
+				}*/
+				//return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
+				*index++
+				parseJSONMap(runes, index, &new_mode, list, metrics)
+				//*index--
 			} else if string(value) == "," {
+				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+					current_mode = mode_looking_for_keys
+				} else {
+					current_mode = mode_looking_for_value
+				}
+
+				/*
 				if data_map != nil {
 					current_mode = mode_looking_for_keys
 				} else if data_array != nil {
 					current_mode = mode_looking_for_value
-				}
+				}*/
 			}
 		} else if current_mode == mode_looking_for_keys {
 			if string(value) == "\"" && string((*runes)[i-1]) != "\\"{
@@ -184,6 +223,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 			}
 		} else if current_mode == mode_looking_for_value {
 			if !found_value && (string(value) == " " || string(value) == "\r" || string(value) == "\n") {
+				*index++
 				continue
 			} else {
 				found_value = true
@@ -198,43 +238,59 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					parsing_string = true
 				} else if string(value) == "{" {
 					new_mode := mode_looking_for_keys
-					new_s := string((*runes)[i+1:])
-					new_runes := []rune(new_s)
+					//new_s := string((*runes)[i+1:])
+					//new_runes := []rune(new_s)
 					new_map := Map{}
 
+					/*
 					if data_map != nil {
 						data_map.SetMap(temp_key, &new_map)	
 					} else if data_array != nil {
-						*data_array = append(*data_array, &data_map)
-					}
+						*data_array = append(*data_array, &new_map)
+					}*/
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						list.Front().Value.(*Map).SetMap(temp_key, &new_map)	
+					} else {
+						temp_array := list.Front().Value.(*Array)
+						*temp_array = append(*temp_array, &new_map)
+					} 
+					list.PushFront(&new_map)
+
 
 					found_value = false
-					return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
+					//return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
+					*index++
+					parseJSONMap(runes, index, &new_mode, list, metrics)
+					//*index--
 				} else if string(value) == "[" {
 					new_mode := mode_looking_for_value
-					new_s := string((*runes)[i+1:])
-					new_runes := []rune(new_s)
+					//new_s := string((*runes)[i+1:])
+					//new_runes := []rune(new_s)
 					new_array := Array{}
 					
+					/*
 					if data_map != nil {
 						data_map.SetArray(temp_key, &new_array)	
 					} else if data_array != nil {
 						*data_array = append(*data_array, &new_array)
-					}
+					}*/
+
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						list.Front().Value.(*Map).SetArray(temp_key, &new_array)	
+					} else {
+						temp_array := list.Front().Value.(*Array)
+						*temp_array = append(*temp_array, &new_array)
+					} 
+					list.PushFront(&new_array)
+
+					
 					found_value = false
-					return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
+					//return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
+					*index++
+					parseJSONMap(runes, index, &new_mode, list, metrics)
+					//*index--
 				} else if string(value) == "}" {
-					parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
-					if parse_errors != nil {
-						errors = append(errors, parse_errors...)
-					}
-
-					temp_key = ""
-					temp_value = ""
-
-					current_mode = mode_unknown
-				} else if string(value) == "]" {
-					parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+					parse_errors := parseJSONValue(temp_key, temp_value, list)
 					if parse_errors != nil {
 						errors = append(errors, parse_errors...)
 					}
@@ -243,9 +299,54 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					temp_value = ""
 
 					found_value = false
-					current_mode = mode_unknown
+					list.Remove(list.Front())
+
+					//current_mode = mode_unknown
+					if list.Len() > 0 {
+						if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+							current_mode = mode_looking_for_keys
+						} else {
+							current_mode = mode_looking_for_value
+						}
+					} 
+
+
+					/*
+					if previous_map != nil {
+						current_mode = mode_looking_for_keys
+					} else if previous_array != nil {
+						current_mode = mode_looking_for_value
+					} else {
+						current_mode = mode_looking_for_keys
+					}*/
+				} else if string(value) == "]" {
+					parse_errors := parseJSONValue(temp_key, temp_value, list)
+					if parse_errors != nil {
+						errors = append(errors, parse_errors...)
+					}
+
+					temp_key = ""
+					temp_value = ""
+
+					found_value = false
+					list.Remove(list.Front())
+
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						current_mode = mode_looking_for_keys
+					} else {
+						current_mode = mode_looking_for_value
+					}
+					/*
+					//current_mode = mode_unknown
+					if previous_map != nil {
+						current_mode = mode_looking_for_keys
+					} else if previous_array != nil {
+						current_mode = mode_looking_for_value
+					} else {
+						current_mode = mode_looking_for_keys
+					}*/
 				} else if string(value) == "," {
-					parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
+					parse_errors := parseJSONValue(temp_key, temp_value, list)
 					if parse_errors != nil {
 						errors = append(errors, parse_errors...)
 					}
@@ -253,11 +354,17 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 					temp_key = ""
 					temp_value = ""
 
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						current_mode = mode_looking_for_keys
+					} else {
+						current_mode = mode_looking_for_value
+					}
+					/*
 					if data_map != nil {
 						current_mode = mode_looking_for_keys
 					} else if data_array != nil {
 						current_mode = mode_looking_for_value
-					}
+					}*/
 					found_value = false
 				} else {
 					temp_value += string(value)
@@ -269,6 +376,7 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				temp_value += string(value)
 				parsing_string = false
 
+				/*
 				parse_errors := parseJSONValue(temp_key, temp_value, data_map, data_array)
 				if parse_errors != nil {
 					errors = append(errors, parse_errors...)
@@ -278,29 +386,31 @@ func parseJSONMap(runes *[]rune, mode *string, data_map *Map, data_array *Array,
 				temp_value = ""
 
 				found_value = false
-				current_mode = mode_unknown
+				current_mode = mode_unknown*/
 			} else {
 				temp_value += string(value)
 			}
+
+			
 		}
 
 		if len(errors) > 0 {
 			return errors
 		}
+
+		*index++
 	}
 
 	return nil
 }
 
-func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_array *Array) []error {
+func parseJSONValue(temp_key string, temp_value string, list *list.List) []error {
 	var errors []error
-
-	if data_map == nil && data_array == nil {
-		errors = append(errors, fmt.Errorf("map or array cannot both be nil"))
-	}
-
-	if data_map != nil && data_array != nil {
-		errors = append(errors, fmt.Errorf("map or array cannot both not be nil"))
+	
+	if list == nil {
+		errors = append(errors, fmt.Errorf("list is nil"))
+	} else if (*list).Len() == 0 {
+		errors = append(errors, fmt.Errorf("list is empty"))
 	}
 
 	if len(errors) > 0 {
@@ -324,6 +434,13 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	var uint32_value *uint32
 	var uint16_value *uint16
 	var uint8_value *uint8
+
+	//if strings.HasPrefix(*string_value, "\"") || strings.HasSuffix(*string_value, "\"") {
+	string_temp := strings.TrimSpace(*string_value)
+	string_value = &string_temp
+	//}
+
+
 	if strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		data_type = "string"
 		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
@@ -333,9 +450,6 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 	} else if !strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
 		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
 	} else {
-		string_temp := strings.TrimSpace(*string_value)
-		string_value = &string_temp
-
 		// when parsing emtpy array []
 		if *string_value == "" {
 			return nil
@@ -507,7 +621,9 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		return errors
 	}
 
-	if data_array != nil {
+	if fmt.Sprintf("%T", list.Front().Value) == "*class.Array" {
+		fmt.Println("adding array value " + data_type + " " + *string_value)
+		data_array := list.Front().Value.(*Array)
 		if data_type == "string" {
 			*data_array = append(*data_array, string_value)
 		} else if data_type == "bool" {
@@ -537,33 +653,35 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 		}
 	}
 
-	if data_map != nil {
+	if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+		fmt.Println("adding map value " + temp_key + " " + *string_value)
+
 		if data_type == "string" {
-			(*data_map).SetString(temp_key, string_value)
+			list.Front().Value.(*Map).SetString(temp_key, string_value)
 		} else if data_type == "bool" {
-			(*data_map).SetBool(temp_key, boolean_value)
+			list.Front().Value.(*Map).SetBool(temp_key, boolean_value)
 		} else if data_type == "null" {
-			(*data_map).SetNil(temp_key)
+			list.Front().Value.(*Map).SetNil(temp_key)
 		} else if data_type == "float64" {
-			(*data_map).SetFloat64(temp_key, float64_value)
+			list.Front().Value.(*Map).SetFloat64(temp_key, float64_value)
 		} else if data_type == "float32" {
-			(*data_map).SetFloat32(temp_key, float32_value)
+			list.Front().Value.(*Map).SetFloat32(temp_key, float32_value)
 		} else if data_type == "int8" {
-			(*data_map).SetInt8(temp_key, int8_value)
+			list.Front().Value.(*Map).SetInt8(temp_key, int8_value)
 		} else if data_type == "int16" {
-			(*data_map).SetInt16(temp_key, int16_value)
+			list.Front().Value.(*Map).SetInt16(temp_key, int16_value)
 		} else if data_type == "int32" {
-			(*data_map).SetInt32(temp_key, int32_value)
+			list.Front().Value.(*Map).SetInt32(temp_key, int32_value)
 		} else if data_type == "int64" {
-			(*data_map).SetInt64(temp_key, int64_value)
+			list.Front().Value.(*Map).SetInt64(temp_key, int64_value)
 		} else if data_type == "uint8" {
-			(*data_map).SetUInt8(temp_key, uint8_value)
+			list.Front().Value.(*Map).SetUInt8(temp_key, uint8_value)
 		} else if data_type == "uint16" {
-			(*data_map).SetUInt16(temp_key, uint16_value)
+			list.Front().Value.(*Map).SetUInt16(temp_key, uint16_value)
 		} else if data_type == "uint32" {
-			(*data_map).SetUInt32(temp_key, uint32_value)
+			list.Front().Value.(*Map).SetUInt32(temp_key, uint32_value)
 		} else if data_type == "uint64" {
-			(*data_map).SetUInt64(temp_key, uint64_value)
+			list.Front().Value.(*Map).SetUInt64(temp_key, uint64_value)
 		}
 	}
 
@@ -573,4 +691,212 @@ func parseJSONValue(temp_key string, temp_value string, data_map *Map, data_arra
 
 
 	return nil
+}
+
+func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error) {
+	var errors []error
+	result := "null"
+
+	if value == nil {
+		return &result, nil
+	}
+
+	string_value := fmt.Sprintf("%s", value)
+
+	if string_value == "<nil>" {
+		return &result, nil
+	}
+
+	rep := fmt.Sprintf("%T", value)
+
+	if string_value == "%!s("+rep+"=<nil>)" {
+		return &result, nil
+	}
+	
+	switch rep {
+	case "string":
+		result = "\"" + strings.ReplaceAll(value.(string), "\"", "\\\"") + "\""
+	case "*string":
+		result = "\"" + strings.ReplaceAll(*(value.(*string)), "\"", "\\\"") + "\""
+	case "bool":
+		temp := value.(bool)
+		if temp {
+			result = "true"
+		} else {
+			result = "false"
+		}
+	case "*bool":
+		temp := *(value.(*bool))
+		if temp {
+			result = "true"
+		} else {
+			result = "false"
+		}
+	case "class.Map":
+		x, x_error := value.(Map).ToJSONString()
+		if x_error != nil {
+			errors = append(errors, x_error...)
+		} else {
+			result = *x
+		}
+	case "class.Array":
+		x, x_error := value.(Array).ToJSONString()
+		if x_error != nil {
+			errors = append(errors, x_error...)
+		} else {
+			result = *x
+		}
+	case "*class.Array":
+		x, x_error := (*(value.(*Array))).ToJSONString()
+		if x_error != nil {
+			errors = append(errors, x_error...)
+		} else {
+			result = *x
+		}
+	case "[]string":
+		result = "["
+		array_length := len(value.([]string))
+		for array_index, array_value := range value.([]string) {
+			result += "\"" + strings.ReplaceAll(array_value, "\"", "\\\"") + "\""
+			if array_index < (array_length - 1) {
+				result += ","
+			}
+		}
+		result += "]"
+	case "*[]string":
+		result = "["
+		array_length := len(*(value.(*[]string)))
+		for array_index, array_value := range *(value.(*[]string)) {
+			result += "\"" + strings.ReplaceAll(array_value, "\"", "\\\"") + "\""
+			if array_index < (array_length - 1) {
+				result += ","
+			}
+		}
+		result += "]"
+	case "[]error":
+		result = "["
+		array_length := len(value.([]error))
+		for array_index, array_value := range value.([]error) {
+			result += "\"" + strings.ReplaceAll(array_value.Error(), "\"", "\\\"") + "\""
+			if array_index < (array_length - 1) {
+				result += ","
+			}
+		}
+		result += "]"
+	case "*[]error":
+		result = "["
+		array_length := len(*(value.(*[]error)))
+		for array_index, array_value := range *(value.(*[]error)) {
+			result += "\"" + strings.ReplaceAll(array_value.Error(), "\"", "\\\"") + "\""
+			if array_index < (array_length - 1) {
+				result += ","
+			}
+		}
+		result += "]"
+	case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
+		result = fmt.Sprintf("\"%s\"", rep)
+	case "*class.Host":
+		x, x_errors := (*(value.(*Host))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*class.Credentials":
+		x, x_errors := (*(value.(*Credentials))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*class.DatabaseCreateOptions":
+		x, x_errors := (*(value.(*DatabaseCreateOptions))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*class.Database":
+		x, x_errors := (*(value.(*Database))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*class.Client":
+		x, x_errors := (*(value.(*Client))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*class.Table":
+		x, x_errors := (*(value.(*Table))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
+	case "*time.Time":
+		result = "\"" + (*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000") + "\""
+	case "map[string]map[string][][]string":
+		result = "\"map[string]map[string][][]string\""
+	case "*uint64":
+		result = strconv.FormatUint(*(value.(*uint64)), 10)
+	case "uint64":
+		result = strconv.FormatUint(value.(uint64), 10)
+	case "*uint32":
+		result = strconv.FormatUint(uint64(*(value.(*uint32))), 10)
+	case "uint32":
+		result = strconv.FormatUint(uint64(value.(uint32)), 10)
+	case "*uint16":
+		result = strconv.FormatUint(uint64(*(value.(*uint16))), 10)
+	case "uint16":
+		result = strconv.FormatUint(uint64(value.(uint16)), 10)
+	case "*uint8":
+		result = strconv.FormatUint(uint64(*(value.(*uint8))), 10)
+	case "uint8":
+		result = strconv.FormatUint(uint64(value.(uint8)), 10)
+	case "*uint":
+		result = strconv.FormatUint(uint64(*(value.(*uint))), 10)
+	case "uint":
+		result = strconv.FormatUint(uint64(value.(uint)), 10)
+	case "*int64":
+		result = strconv.FormatInt(*(value.(*int64)), 10)
+	case "int64":
+		result = strconv.FormatInt(value.(int64), 10)
+	case "*int32":
+		result = strconv.FormatInt(int64(*(value.(*int32))), 10)
+	case "int32":
+		result = strconv.FormatInt(int64((value.(int32))), 10)
+	case "*int16":
+		result = strconv.FormatInt(int64(*(value.(*int16))), 10)
+	case "int16":
+		result = strconv.FormatInt(int64((value.(int16))), 10)
+	case "*int8":
+		result = strconv.FormatInt(int64(*(value.(*int8))), 10)
+	case "int8":
+		result = strconv.FormatInt(int64((value.(int8))), 10)
+	case "*int":
+		result = strconv.FormatInt(int64(*(value.(*int))), 10)
+	case "int":
+		result = strconv.FormatInt(int64(value.(int)), 10)
+	case "*float64":
+		result = fmt.Sprintf("%f", *(value.(*float64)))
+	case "float64":
+		result = fmt.Sprintf("%f", (value.(float64)))
+	case "*float32":
+		result = fmt.Sprintf("%f", *(value.(*float32)))
+	case "float32":
+		result = fmt.Sprintf("%f", (value.(float32)))
+	default:
+		errors = append(errors, fmt.Errorf("JSON.ConvertInterfaceValueToJSONStringValue: type %s is not supported please implement", rep))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+
+	return &result, nil
 }

@@ -27,14 +27,21 @@ func (a Array) ToJSONString() (*string, []error) {
 		switch rep {
 		case "*string":
 			if fmt.Sprintf("%s", value) != "%!s(*string=<nil>)" {
-				json = json + "null"
-			} else {
 				json = json + "\"" + (*(value).(*string)) + "\""
+			} else {
+				json = json + "null"
 			}
 		case "string":
 			json = json + "\"" + value.(string) + "\""
 		case "class.Map":
 			x, x_errors := value.(Map).ToJSONString()
+			if x_errors != nil {
+				errors = append(errors, x_errors...)
+			} else {
+				json += *x
+			}
+		case "*class.Map":
+			x, x_errors := value.(*Map).ToJSONString()
 			if x_errors != nil {
 				errors = append(errors, x_errors...)
 			} else {
