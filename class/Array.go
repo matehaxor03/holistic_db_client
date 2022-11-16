@@ -23,52 +23,11 @@ func (a Array) ToJSONString() (*string, []error) {
 	json := "[\n"
 	length := len(a)
 	for i, value := range a {
-		rep := fmt.Sprintf("%T", value)
-		switch rep {
-		case "*string":
-			if fmt.Sprintf("%s", value) != "%!s(*string=<nil>)" {
-				json = json + "\"" + (*(value).(*string)) + "\""
-			} else {
-				json = json + "null"
-			}
-		case "string":
-			json = json + "\"" + value.(string) + "\""
-		case "class.Map":
-			x, x_errors := value.(Map).ToJSONString()
-			if x_errors != nil {
-				errors = append(errors, x_errors...)
-			} else {
-				json += *x
-			}
-		case "*class.Map":
-			x, x_errors := value.(*Map).ToJSONString()
-			if x_errors != nil {
-				errors = append(errors, x_errors...)
-			} else {
-				json += *x
-			}
-		case "class.Array":
-			x, x_errors := value.(Array).ToJSONString()
-			if x_errors != nil {
-				errors = append(errors, x_errors...)
-			} else {
-				json += *x
-			}
-		case "*class.Array":
-			x, x_errors := (*(value.(*Array))).ToJSONString()
-			if x_errors != nil {
-				errors = append(errors, x_errors...)
-			} else {
-				json += *x
-			}
-		case "reflect.Value":
-			json = json + fmt.Sprintf("\"%s\"", value)
-		case "func(class.Map) []error":
-			json = json + fmt.Sprintf("\"func(class.Map) []error\"")
-		case "<nil>":
-			json = json + fmt.Sprintf("null")
-		default:
-			errors = append(errors, (fmt.Errorf("Array.ToJSONString: type %s is not supported please implement", rep)))
+		string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(value)
+		if string_conversion_error != nil {
+			errors = append(errors, string_conversion_error...)
+		} else {
+			json += *string_conversion
 		}
 
 		if i < length - 1 {
