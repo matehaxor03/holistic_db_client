@@ -476,7 +476,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 			} else if negative_number_count == 0 {
 				negative_number = false
 			} else {
-				errors = append(errors, fmt.Errorf("value contained %d - characters", negative_number_count))
+				errors = append(errors, fmt.Errorf("value contained %d negative symbols expected 1", negative_number_count))
 			}
 
 			var decimal_number bool
