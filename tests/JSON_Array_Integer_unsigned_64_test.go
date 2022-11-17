@@ -5,7 +5,7 @@ import (
 )
 
 // uint64 boundary low
-func TestCanParseArrayContainingSingleUInt64_4294967296(t *testing.T) {
+func TestCanParseArrayContainingSingleUInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[4294967296]}")
 
 	if !json.HasKey("key") {
@@ -27,7 +27,7 @@ func TestCanParseArrayContainingSingleUInt64_4294967296(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleUInt64_4294967296_4294967297(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleUInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[4294967296],\"key2\":[4294967297]}")
 
 	if !json.HasKey("key") {
@@ -67,7 +67,7 @@ func TestCanParseMultipleArraysContainingSingleUInt64_4294967296_4294967297(t *t
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleUInt64_4294967296_4294967297_4294967298_4294967299(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleUInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[4294967296,4294967297],\"key2\":[4294967298,4294967299]}")
 
 	if !json.HasKey("key") {
@@ -111,7 +111,7 @@ func TestCanParseMultipleArraysContainingMultipleUInt64_4294967296_4294967297_42
 	}
 }
 
-func TestCanParseArrayContainingMultipleUInt64_4294967296_4294967297(t *testing.T) {
+func TestCanParseArrayContainingMultipleUInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[4294967296,4294967297]}")
 
 	if !json.HasKey("key") {
@@ -136,7 +136,7 @@ func TestCanParseArrayContainingMultipleUInt64_4294967296_4294967297(t *testing.
 }
 
 // uint64 boundary high
-func TestCanParseArrayContainingSingleUInt64_18446744073709551615(t *testing.T) {
+func TestCanParseArrayContainingSingleUInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[18446744073709551615]}")
 
 	if !json.HasKey("key") {
@@ -158,7 +158,7 @@ func TestCanParseArrayContainingSingleUInt64_18446744073709551615(t *testing.T) 
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleUInt64_18446744073709551614_18446744073709551615(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleUInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[18446744073709551614],\"key2\":[18446744073709551615]}")
 
 	if !json.HasKey("key") {
@@ -198,7 +198,7 @@ func TestCanParseMultipleArraysContainingSingleUInt64_18446744073709551614_18446
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleUInt64_18446744073709551612_18446744073709551613_18446744073709551614_18446744073709551615(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleUInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[18446744073709551612,18446744073709551613],\"key2\":[18446744073709551614,18446744073709551615]}")
 
 	if !json.HasKey("key") {
@@ -242,7 +242,7 @@ func TestCanParseMultipleArraysContainingMultipleUInt64_18446744073709551612_184
 	}
 }
 
-func TestCanParseArrayContainingMultipleUInt64_18446744073709551614_18446744073709551615(t *testing.T) {
+func TestCanParseArrayContainingMultipleUInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[18446744073709551614,18446744073709551615]}")
 
 	if !json.HasKey("key") {

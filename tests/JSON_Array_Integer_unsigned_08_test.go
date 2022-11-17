@@ -5,7 +5,7 @@ import (
 )
 
 // uint8 boundary low
-func TestCanParseArrayContainingSingleUInt8_0(t *testing.T) {
+func TestCanParseArrayContainingSingleUInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[0]}")
 
 	if !json.HasKey("key") {
@@ -27,7 +27,7 @@ func TestCanParseArrayContainingSingleUInt8_0(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleUInt8_0_1(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleUInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[0],\"key2\":[1]}")
 
 	if !json.HasKey("key") {
@@ -67,7 +67,7 @@ func TestCanParseMultipleArraysContainingSingleUInt8_0_1(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleUInt8_0_1_2_3(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleUInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[0,1],\"key2\":[2,3]}")
 
 	if !json.HasKey("key") {
@@ -111,7 +111,7 @@ func TestCanParseMultipleArraysContainingMultipleUInt8_0_1_2_3(t *testing.T) {
 	}
 }
 
-func TestCanParseArrayContainingMultipleUInt8_0_1(t *testing.T) {
+func TestCanParseArrayContainingMultipleUInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[0,1]}")
 
 	if !json.HasKey("key") {
@@ -136,7 +136,7 @@ func TestCanParseArrayContainingMultipleUInt8_0_1(t *testing.T) {
 }
 
 // uint8 boundary high
-func TestCanParseArrayContainingSingleUInt8_255(t *testing.T) {
+func TestCanParseArrayContainingSingleUInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[255]}")
 
 	if !json.HasKey("key") {
@@ -158,7 +158,7 @@ func TestCanParseArrayContainingSingleUInt8_255(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleUInt8_254_255(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleUInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[254],\"key2\":[255]}")
 
 	if !json.HasKey("key") {
@@ -198,7 +198,7 @@ func TestCanParseMultipleArraysContainingSingleUInt8_254_255(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleUInt8_252_253_254_255(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleUInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[252,253],\"key2\":[254,255]}")
 
 	if !json.HasKey("key") {
@@ -242,7 +242,7 @@ func TestCanParseMultipleArraysContainingMultipleUInt8_252_253_254_255(t *testin
 	}
 }
 
-func TestCanParseArrayContainingMultipleUInt8_254_255(t *testing.T) {
+func TestCanParseArrayContainingMultipleUInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[254,255]}")
 
 	if !json.HasKey("key") {

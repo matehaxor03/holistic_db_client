@@ -5,7 +5,7 @@ import (
 )
 
 // int64 boundary low
-func TestCanParseArrayContainingSingleInt64_low(t *testing.T) {
+func TestCanParseArrayContainingSingleInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483649]}")
 
 	if !json.HasKey("key") {
@@ -27,7 +27,7 @@ func TestCanParseArrayContainingSingleInt64_low(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt64_low(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483649],\"key2\":[-2147483650]}")
 
 	if !json.HasKey("key") {
@@ -67,7 +67,7 @@ func TestCanParseMultipleArraysContainingSingleInt64_low(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt64_low(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483649,-2147483650],\"key2\":[-2147483651,-2147483652]}")
 
 	if !json.HasKey("key") {
@@ -111,7 +111,7 @@ func TestCanParseMultipleArraysContainingMultipleInt64_low(t *testing.T) {
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt64_low(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt64LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483649,-2147483650]}")
 
 	if !json.HasKey("key") {
@@ -136,7 +136,7 @@ func TestCanParseArrayContainingMultipleInt64_low(t *testing.T) {
 }
 
 // int64 boundary high
-func TestCanParseArrayContainingSingleInt64_high(t *testing.T) {
+func TestCanParseArrayContainingSingleInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-9223372036854775808]}")
 
 	if !json.HasKey("key") {
@@ -158,7 +158,7 @@ func TestCanParseArrayContainingSingleInt64_high(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt64_high(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-9223372036854775808],\"key2\":[-9223372036854775807]}")
 
 	if !json.HasKey("key") {
@@ -198,7 +198,7 @@ func TestCanParseMultipleArraysContainingSingleInt64_high(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt64_high(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleInt64HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-9223372036854775808,-9223372036854775807],\"key2\":[-9223372036854775806,-9223372036854775805]}")
 
 	if !json.HasKey("key") {
@@ -242,7 +242,7 @@ func TestCanParseMultipleArraysContainingMultipleInt64_high(t *testing.T) {
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt64_high(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt64HighBoundaryh(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-9223372036854775808,-9223372036854775807]}")
 
 	if !json.HasKey("key") {

@@ -5,7 +5,7 @@ import (
 )
 
 // int32 boundary low
-func TestCanParseArrayContainingSingleInt32_neg32769(t *testing.T) {
+func TestCanParseArrayContainingSingleInt32LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-32769]}")
 
 	if !json.HasKey("key") {
@@ -27,7 +27,7 @@ func TestCanParseArrayContainingSingleInt32_neg32769(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt32_neg32769_neg32770(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleInt32LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-32769],\"key2\":[-32770]}")
 
 	if !json.HasKey("key") {
@@ -67,7 +67,7 @@ func TestCanParseMultipleArraysContainingSingleInt32_neg32769_neg32770(t *testin
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt32_neg32769_neg32770_neg32771_neg32772(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleInt32LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-32769,-32770],\"key2\":[-32771,-32772]}")
 
 	if !json.HasKey("key") {
@@ -111,7 +111,7 @@ func TestCanParseMultipleArraysContainingMultipleInt32_neg32769_neg32770_neg3277
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt32_neg32769_neg32770(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt32LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-32769,-32770]}")
 
 	if !json.HasKey("key") {
@@ -136,7 +136,7 @@ func TestCanParseArrayContainingMultipleInt32_neg32769_neg32770(t *testing.T) {
 }
 
 // int32 boundary high
-func TestCanParseArrayContainingSingleInt32_neg2147483648(t *testing.T) {
+func TestCanParseArrayContainingSingleInt32HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483648]}")
 
 	if !json.HasKey("key") {
@@ -158,7 +158,7 @@ func TestCanParseArrayContainingSingleInt32_neg2147483648(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt32_neg2147483648_neg2147483647(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleInt32HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483648],\"key2\":[-2147483647]}")
 
 	if !json.HasKey("key") {
@@ -198,7 +198,7 @@ func TestCanParseMultipleArraysContainingSingleInt32_neg2147483648_neg2147483647
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt32_neg2147483648_neg2147483647_neg2147483646_neg2147483645(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleInt32HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483648,-2147483647],\"key2\":[-2147483646,-2147483645]}")
 
 	if !json.HasKey("key") {
@@ -242,7 +242,7 @@ func TestCanParseMultipleArraysContainingMultipleInt32_neg2147483648_neg21474836
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt32_neg2147483648_neg2147483647(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt32HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-2147483648,-2147483647]}")
 
 	if !json.HasKey("key") {

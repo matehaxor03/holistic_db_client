@@ -4,8 +4,8 @@ import (
     "testing"
 )
 
-// int8 boundary low
-func TestCanParseArrayContainingSingleInt8_neg1(t *testing.T) {
+// int8 boundary low boundary
+func TestCanParseArrayContainingSingleInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-1]}")
 
 	if !json.HasKey("key") {
@@ -27,7 +27,7 @@ func TestCanParseArrayContainingSingleInt8_neg1(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt8_neg1_neg2(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-1],\"key2\":[-2]}")
 
 	if !json.HasKey("key") {
@@ -67,7 +67,7 @@ func TestCanParseMultipleArraysContainingSingleInt8_neg1_neg2(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt8_neg1_neg2_neg3_neg4(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-1,-2],\"key2\":[-3,-4]}")
 
 	if !json.HasKey("key") {
@@ -111,7 +111,7 @@ func TestCanParseMultipleArraysContainingMultipleInt8_neg1_neg2_neg3_neg4(t *tes
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt8_neg1_neg2(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt8LowBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-1,-2]}")
 
 	if !json.HasKey("key") {
@@ -136,7 +136,7 @@ func TestCanParseArrayContainingMultipleInt8_neg1_neg2(t *testing.T) {
 }
 
 // int8 boundary high
-func TestCanParseArrayContainingSingleInt8_neg128(t *testing.T) {
+func TestCanParseArrayContainingSingleInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-128]}")
 
 	if !json.HasKey("key") {
@@ -158,7 +158,7 @@ func TestCanParseArrayContainingSingleInt8_neg128(t *testing.T) {
 	}
 }
 
-func TestCanParseMultipleArraysContainingSingleInt8_neg128_neg127(t *testing.T) {
+func TestCanParseMultipleArraysContainingSingleHighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-128],\"key2\":[-127]}")
 
 	if !json.HasKey("key") {
@@ -198,7 +198,7 @@ func TestCanParseMultipleArraysContainingSingleInt8_neg128_neg127(t *testing.T) 
 	}
 }
 
-func TestCanParseMultipleArraysContainingMultipleInt8_neg128_neg127_neg126_neg125(t *testing.T) {
+func TestCanParseMultipleArraysContainingMultipleHighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-128,-127],\"key2\":[-126,-125]}")
 
 	if !json.HasKey("key") {
@@ -242,7 +242,7 @@ func TestCanParseMultipleArraysContainingMultipleInt8_neg128_neg127_neg126_neg12
 	}
 }
 
-func TestCanParseArrayContainingMultipleInt8_neg128_neg127(t *testing.T) {
+func TestCanParseArrayContainingMultipleInt8HighBoundary(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":[-128,-127]}")
 
 	if !json.HasKey("key") {
