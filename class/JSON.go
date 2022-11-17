@@ -486,7 +486,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 			} else if decimal_count == 0 {
 				decimal_number = false
 			} else {
-				errors = append(errors, fmt.Errorf("value contained %d decimal points", decimal_count))
+				errors = append(errors, fmt.Errorf("value contained %d decimal points expected 1", decimal_count))
 			}
 
 			whitelist_characters := Map{"0":nil,"1":nil,"2":nil,"3":nil,"4":nil,"5":nil,"6":nil,"7":nil,"8":nil,"9":nil,".":nil,"-":nil}
