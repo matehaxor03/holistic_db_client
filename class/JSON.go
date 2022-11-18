@@ -98,7 +98,6 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 	mode_looking_for_key_name := "looking_for_key_name"
 	mode_looking_for_key_name_column := "looking_for_key_name_column"
 	mode_looking_for_value := "looking_for_value"
-	mode_unknown := "unknown"
 	
 	temp_key := ""
 	temp_value := ""
@@ -140,72 +139,7 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 		}
 		
 
-		if current_mode == mode_unknown {
-			if string(value) == "\r" || string(value) == "\n" || string(value) == " " {
-
-			} else if string(value) == "{" {
-				new_mode := mode_looking_for_keys
-				//new_s := string((*runes)[i+1:])
-				//new_runes := []rune(new_s)
-				new_map := Map{}
-
-				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
-					list.Front().Value.(*Map).SetMap(temp_key, &new_map)	
-				} else {
-					temp_array := list.Front().Value.(*Array)
-					*temp_array = append(*temp_array, &new_map)
-				} 
-				list.PushFront(&new_map)
-
-				/*
-				if data_map != nil {
-					data_map.SetMap(temp_key, &new_map)	
-				} else if data_array != nil {
-					*data_array = append(*data_array, &new_map)
-				}*/
-				//return parseJSONMap(&new_runes, &new_mode, &new_map, nil, metrics)
-				*index++
-				parseJSONMap(runes, index, &new_mode, list, metrics)
-				//*index--
-			} else if string(value) == "[" {
-				new_mode := mode_looking_for_value
-				//new_s := string((*runes)[i+1:])
-				//new_runes := []rune(new_s)
-				new_array := Array{}
-
-				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
-					list.Front().Value.(*Map).SetArray(temp_key, &new_array)	
-				} else {
-					temp_array := list.Front().Value.(*Array)
-					*temp_array = append(*temp_array, &new_array)
-				} 
-				list.PushFront(&new_array)
-
-				/*
-				if data_map != nil {
-					data_map.SetArray(temp_key, &new_array)	
-				} else if data_array != nil {
-					*data_array = append(*data_array, &new_array)
-				}*/
-				//return parseJSONMap(&new_runes, &new_mode, nil, &new_array, metrics)
-				*index++
-				parseJSONMap(runes, index, &new_mode, list, metrics)
-				//*index--
-			} else if string(value) == "," {
-				if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
-					current_mode = mode_looking_for_keys
-				} else {
-					current_mode = mode_looking_for_value
-				}
-
-				/*
-				if data_map != nil {
-					current_mode = mode_looking_for_keys
-				} else if data_array != nil {
-					current_mode = mode_looking_for_value
-				}*/
-			}
-		} else if current_mode == mode_looking_for_keys {
+		if current_mode == mode_looking_for_keys {
 			if string(value) == "\"" && string((*runes)[i-1]) != "\\"{
 				current_mode = mode_looking_for_key_name
 				parsing_string = true
@@ -222,7 +156,7 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 				current_mode = mode_looking_for_value
 			}
 		} else if current_mode == mode_looking_for_value {
-			if !found_value && (string(value) == " " || string(value) == "\r" || string(value) == "\n") {
+			if !found_value && (string(value) == " " || string(value) == "\r" || string(value) == "\n" || string(value) == "\t") {
 				*index++
 				continue
 			} else {
