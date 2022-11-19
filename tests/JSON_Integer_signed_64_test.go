@@ -13,7 +13,6 @@ func TestCanParseNegativeInt64LowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*int64" {
 		t.Errorf("key is not a *int64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt64("key") 
 
 		if value_errors != nil {
@@ -34,7 +33,6 @@ func TestCanParseNegativeInt64HighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*int64" {
 		t.Errorf("key is not a *int64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt64("key") 
 
 		if value_errors != nil {

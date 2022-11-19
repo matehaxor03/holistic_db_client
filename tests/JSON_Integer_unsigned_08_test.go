@@ -153,7 +153,6 @@ func TestCanParseUInt8HighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*uint8" {
 		t.Errorf("key is not a *uint8: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt8("key") 
 
 		if value_errors != nil {

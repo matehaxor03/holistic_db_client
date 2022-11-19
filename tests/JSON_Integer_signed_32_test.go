@@ -12,7 +12,6 @@ func TestCanParseNegativeInt32LowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*int32" {
 		t.Errorf("key is not a *int32: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt32("key") 
 
 		if value_errors != nil {
@@ -33,7 +32,6 @@ func TestCanParseNegativeInt32HighBoundarfy(t *testing.T) {
 	} else if json.GetType("key") != "*int32" {
 		t.Errorf("key is not a *int32: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt32("key") 
 
 		if value_errors != nil {

@@ -12,7 +12,6 @@ func TestCanParseNegativeInt16LowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*int16" {
 		t.Errorf("key is not a *int16: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt16("key") 
 
 		if value_errors != nil {
@@ -33,7 +32,6 @@ func TestCanParseNegativeInt16HighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*int16" {
 		t.Errorf("key is not a *int16: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetInt16("key") 
 
 		if value_errors != nil {

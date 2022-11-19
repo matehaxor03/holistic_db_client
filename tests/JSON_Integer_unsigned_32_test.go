@@ -13,7 +13,6 @@ func TestCanParseUInt32LowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*uint32" {
 		t.Errorf("key is not a *uint32: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt32("key") 
 
 		if value_errors != nil {
@@ -34,7 +33,6 @@ func TestCanParseUInt32HighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*uint32" {
 		t.Errorf("key is not a *uint32: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt32("key") 
 
 		if value_errors != nil {

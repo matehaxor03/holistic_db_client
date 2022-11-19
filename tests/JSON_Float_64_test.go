@@ -15,7 +15,6 @@ func TestCanParseFloat64PositiveLowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -36,7 +35,6 @@ func TestCanParseFloat64NegativeLowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -73,7 +71,6 @@ func TestCanParseFloat64MultiplePositiveLowBoundary(t *testing.T) {
 	} else if json.GetType("key2") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {
@@ -110,7 +107,6 @@ func TestCanParseFloat64MultipleNegativeLowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {
@@ -131,7 +127,6 @@ func TestCanParseFloat64MultipleLowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -148,7 +143,6 @@ func TestCanParseFloat64MultipleLowBoundary(t *testing.T) {
 	} else if json.GetType("key2") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key2"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {
@@ -170,7 +164,6 @@ func TestCanParseFloat64PositiveHighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -191,7 +184,6 @@ func TestCanParseFloat64NegativeHighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -228,7 +220,6 @@ func TestCanParseFloat64MultiplePositiveHighBoundary(t *testing.T) {
 	} else if json.GetType("key2") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {
@@ -265,7 +256,6 @@ func TestCanParseFloat64MultipleNegativeHighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {
@@ -286,7 +276,6 @@ func TestCanParseFloat64MultipleHighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*float64" {
 		t.Errorf("key is not a *float64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key") 
 
 		if value_errors != nil {
@@ -303,7 +292,6 @@ func TestCanParseFloat64MultipleHighBoundary(t *testing.T) {
 	} else if json.GetType("key2") != "*float64" {
 		t.Errorf("key2 is not a *float64: %s", json.GetType("key2"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetFloat64("key2") 
 
 		if value_errors != nil {

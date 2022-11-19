@@ -14,7 +14,6 @@ func TestCanParseUInt64LowBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*uint64" {
 		t.Errorf("key is not a *uint64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt64("key") 
 
 		if value_errors != nil {
@@ -35,7 +34,6 @@ func TestCanParseUInt64HighBoundary(t *testing.T) {
 	} else if json.GetType("key") != "*uint64" {
 		t.Errorf("key is not a *uint64: %s", json.GetType("key"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt64("key") 
 
 		if value_errors != nil {
@@ -84,7 +82,6 @@ func TestCanParseUInt64PositiveMuitpleHighBondary(t *testing.T) {
 	} else if json.GetType("key") != "*uint64" {
 		t.Errorf("key2 is not a *uint64: %s", json.GetType("key2"))
 	} else {
-		PrintJSON(t, json)
 		value, value_errors := json.GetUInt64("key2") 
 
 		if value_errors != nil {
