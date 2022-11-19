@@ -2,17 +2,12 @@ package tests
  
 import (
     "testing"
-	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
 // low boundary
 func TestCanParseFloat32Zero(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":0.00}")
+	json := ParseJSONSuccessfully(t, "{\"key\":0.00}")
 
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
-	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
 	} else if json.GetType("key") != "*float32" {
@@ -32,12 +27,8 @@ func TestCanParseFloat32Zero(t *testing.T) {
 }
 
 func TestCanParseFloat32PositiveLowBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":0.1234567890}")
+	json := ParseJSONSuccessfully(t, "{\"key\":0.1234567890}")
 
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
-	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
 	} else if json.GetType("key") != "*float32" {
@@ -57,11 +48,7 @@ func TestCanParseFloat32PositiveLowBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32NegativeLowBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":-0.1234567890}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":-0.1234567890}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -82,12 +69,8 @@ func TestCanParseFloat32NegativeLowBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultiplePositiveLowBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":0.1234567890,\"key2\":0.2234567890}")
+	json := ParseJSONSuccessfully(t, "{\"key\":0.1234567890,\"key2\":0.2234567890}")
 
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
-	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
 	} else if json.GetType("key") != "*float32" {
@@ -123,11 +106,7 @@ func TestCanParseFloat32MultiplePositiveLowBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultipleNegativeLowBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":-0.1234567890,\"key2\":-0.2234567890}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":-0.1234567890,\"key2\":-0.2234567890}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -164,11 +143,7 @@ func TestCanParseFloat32MultipleNegativeLowBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultipleLowBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":0.1234567890, \"key2\":-0.2234567890}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":0.1234567890, \"key2\":-0.2234567890}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -207,12 +182,8 @@ func TestCanParseFloat32MultipleLowBoundary(t *testing.T) {
 
 // high boundary
 func TestCanParseFloat32PositiveHighBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":340000000000000000000000000000000000000.00}")
+	json := ParseJSONSuccessfully(t, "{\"key\":340000000000000000000000000000000000000.00}")
 
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
-	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
 	} else if json.GetType("key") != "*float32" {
@@ -232,11 +203,7 @@ func TestCanParseFloat32PositiveHighBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32NegativeHighBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":-340000000000000000000000000000000000000.00}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":-340000000000000000000000000000000000000.00}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -257,11 +224,7 @@ func TestCanParseFloat32NegativeHighBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultiplePositiveHighBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":340000000000000000000000000000000000000.00,\"key2\":339999999999999999999999999999999999999.99}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":340000000000000000000000000000000000000.00,\"key2\":339999999999999999999999999999999999999.99}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -298,11 +261,7 @@ func TestCanParseFloat32MultiplePositiveHighBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultipleNegativeHighBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":-340000000000000000000000000000000000000.00,\"key2\":-339999999999999999999999999999999999999.99}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":-340000000000000000000000000000000000000.00,\"key2\":-339999999999999999999999999999999999999.99}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
@@ -339,11 +298,7 @@ func TestCanParseFloat32MultipleNegativeHighBoundary(t *testing.T) {
 }
 
 func TestCanParseFloat32MultipleHighBoundary(t *testing.T) {
-	json, json_errors := class.ParseJSON("{\"key\":340000000000000000000000000000000000000.00, \"key2\":-339999999999999999999999999999999999999.99}")
-
-	if json_errors != nil {
-		t.Errorf("%s", json_errors)
-	}
+	json := ParseJSONSuccessfully(t, "{\"key\":340000000000000000000000000000000000000.00, \"key2\":-339999999999999999999999999999999999999.99}")
 	
 	if !json.HasKey("key") {
 		t.Errorf("key not found")
