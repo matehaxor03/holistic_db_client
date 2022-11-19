@@ -21,8 +21,15 @@ func NewArrayOfStrings(a *[]string) *Array {
 
 func (a Array) ToJSONString() (*string, []error) {
 	var errors []error
-	json := "[\n"
 	length := len(a)
+
+	json := ""
+	if length == 0 {
+		json = "[]"
+		return &json, nil
+	}
+
+	json += "[\n"
 	for i, value := range a {
 		string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(value)
 		if string_conversion_error != nil {

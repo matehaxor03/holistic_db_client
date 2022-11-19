@@ -142,12 +142,18 @@ func (m Map) IsBoolFalse(s string) bool {
 
 func (m Map) ToJSONString() (*string, []error) {
 	var errors []error
-	
-	json := "{\n"
 	keys := m.Keys()
 	length := len(keys)
+	
+	json := ""
+	if length == 0 {
+		json = "{}"
+		return &json, nil
+	}
+
+	json += "{\n"
 	for i, key := range keys {
-		json = json + "\"" + key + "\":"
+		json = json + "\"" + strings.ReplaceAll(key, "\"", "\\\"") + "\":"
 		string_conversion, string_conversion_errors := ConvertInterfaceValueToJSONStringValue(m[key])
 		if string_conversion_errors != nil {
 			errors = append(errors, string_conversion_errors...)
