@@ -506,13 +506,25 @@ func (m Map) Keys() []string {
 }
 
 func (m Map) HasKey(key string) bool {
-	keys := m.Keys()
-	for _, compare_key := range keys {
-		if key == compare_key {
-			return true
-		}
+	if _, found := m[key]; found {
+		return true
+	} else {
+		return false
 	}
-	return false
+}
+
+func (m Map) RemoveKey(key string) (*bool, []error) {
+	var errors []error
+	var result bool
+	if !m.HasKey(key) {
+		result = false
+		errors = append(errors, fmt.Errorf("key %s not found", key))
+		return &result, errors
+	}	
+
+	result = true
+	delete(m, key)
+	return &result, nil 
 }
 
 func (m Map) GetInt64(s string) (*int64, []error) {

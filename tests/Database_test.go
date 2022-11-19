@@ -347,26 +347,21 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 	for whitelist_database_character := range whitelist_map {
 		database, new_database_errors := class.NewDatabase(client, "a" + whitelist_database_character + "a", database_create_options)
-		
+			
 		if new_database_errors != nil {
 			t.Errorf("NewDatabase should not return error when database_name character is whitelisted: %s", whitelist_database_character)
-			continue
-		}
-
-		if database == nil {
+		} else if database == nil {
 			t.Errorf("NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
-			continue
-		}
-
-		database_delete_errors := database.DeleteIfExists()
-		if database_delete_errors != nil {
-			t.Error(database_delete_errors)
-			continue
-		} 
-
-		create_database_errors := database.Create()
-		if create_database_errors != nil {
-			t.Error(create_database_errors)
+		} else {
+			database_delete_errors := database.DeleteIfExists()
+			if database_delete_errors != nil {
+				t.Error(database_delete_errors)
+			} else {
+				create_database_errors := database.Create()
+				if create_database_errors != nil {
+					t.Error(create_database_errors)
+				}
+			}
 		}
 	}
 }
