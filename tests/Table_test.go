@@ -195,20 +195,23 @@ func TestTableCannotSetTableNameWithBlackListName(t *testing.T) {
 	table := GetTestTable(t)
 
 	for blacklist_database_name := range blacklist_map {
-		set_table_name_errors := table.SetTableName(blacklist_database_name)
-		
-		if set_table_name_errors == nil {
-			t.Errorf("SetTableName should return error when table_name is blacklisted")
-		}
+		t.Run(blacklist_database_name, func(t *testing.T) {
+			t.Parallel()
+			set_table_name_errors := table.SetTableName(blacklist_database_name)
+			
+			if set_table_name_errors == nil {
+				t.Errorf("SetTableName should return error when table_name is blacklisted")
+			}
 
-		table_name := table.GetTableName()
-		if table_name == blacklist_database_name {
-			t.Errorf("table_name was updated to the blacklisted table_name")
-		}
+			table_name := table.GetTableName()
+			if table_name == blacklist_database_name {
+				t.Errorf("table_name was updated to the blacklisted table_name")
+			}
 
-		if table_name != GetTestTableName() {
-			t.Errorf("table_name is '%s' and should be '%s'", table_name,  GetTestTableName())
-		}
+			if table_name != GetTestTableName() {
+				t.Errorf("table_name is '%s' and should be '%s'", table_name,  GetTestTableName())
+			}
+		})
 	}
 }
 
@@ -220,15 +223,18 @@ func TestTableCannotCreateWithBlackListName(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		table, create_table_errors := class.NewTable(database, blacklist_table_name, GetTestSchema())
-		
-		if create_table_errors == nil {
-			t.Errorf("NewTable should return error when table_name is blacklisted")
-		}
+		t.Run(blacklist_table_name, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, blacklist_table_name, GetTestSchema())
+			
+			if create_table_errors == nil {
+				t.Errorf("NewTable should return error when table_name is blacklisted")
+			}
 
-		if table != nil {
-			t.Errorf("NewTable should be nil when table_name is blacklisted")
-		}
+			if table != nil {
+				t.Errorf("NewTable should be nil when table_name is blacklisted")
+			}
+		})
 	}
 }
 
@@ -239,15 +245,18 @@ func TestTableCannotCreateWithBlackListNameUppercase(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		table, create_table_errors := class.NewTable(database, strings.ToUpper(blacklist_table_name), GetTestSchema())
-		
-		if create_table_errors == nil {
-			t.Errorf("NewTable should return error when table_name is blacklisted")
-		}
+		t.Run(blacklist_table_name, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, strings.ToUpper(blacklist_table_name), GetTestSchema())
+			
+			if create_table_errors == nil {
+				t.Errorf("NewTable should return error when table_name is blacklisted")
+			}
 
-		if table != nil {
-			t.Errorf("NewTable should be nil when table_name is blacklisted")
-		}
+			if table != nil {
+				t.Errorf("NewTable should be nil when table_name is blacklisted")
+			}
+		})
 	}
 }
 
@@ -259,15 +268,18 @@ func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		table, create_table_errors := class.NewTable(database, strings.ToLower(blacklist_table_name), GetTestSchema())
-		
-		if create_table_errors == nil {
-			t.Errorf("NewTable should return error when table_name is blacklisted")
-		}
+		t.Run(blacklist_table_name, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, strings.ToLower(blacklist_table_name), GetTestSchema())
+			
+			if create_table_errors == nil {
+				t.Errorf("NewTable should return error when table_name is blacklisted")
+			}
 
-		if table != nil {
-			t.Errorf("NewTable should be nil when table_name is blacklisted")
-		}
+			if table != nil {
+				t.Errorf("NewTable should be nil when table_name is blacklisted")
+			}
+		})
 	}
 }
 
@@ -278,15 +290,18 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 	valid_characters_map := class.GetTableNameValidCharacters()
 
 	for valid_character := range valid_characters_map {
-		table, create_table_errors := class.NewTable(database, valid_character + valid_character, GetTestSchema())
-		
-		if create_table_errors != nil {
-			t.Errorf("NewTable should not return error when table_name is whitelisted")
-		}
+		t.Run(valid_character, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, valid_character + valid_character, GetTestSchema())
+			
+			if create_table_errors != nil {
+				t.Errorf("NewTable should not return error when table_name is whitelisted")
+			}
 
-		if table == nil {
-			t.Errorf("NewTable should be not be nil when table_name is whitelisted")
-		}
+			if table == nil {
+				t.Errorf("NewTable should be not be nil when table_name is whitelisted")
+			}
+		})
 	}
 }
 
@@ -297,15 +312,18 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	non_whitelist_map := class.Map{"(":nil, ")":nil}
 
 	for invalid_character := range non_whitelist_map {
-		table, create_table_errors := class.NewTable(database, invalid_character + invalid_character, GetTestSchema())
-		
-		if create_table_errors == nil {
-			t.Errorf("NewTable should return error when table_name is non-whitelisted")
-		}
+		t.Run(invalid_character, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, invalid_character + invalid_character, GetTestSchema())
+			
+			if create_table_errors == nil {
+				t.Errorf("NewTable should return error when table_name is non-whitelisted")
+			}
 
-		if table != nil {
-			t.Errorf("NewTable should be nil when table_name is non-whitelisted")
-		}
+			if table != nil {
+				t.Errorf("NewTable should be nil when table_name is non-whitelisted")
+			}
+		})
 	}
 }
 
@@ -316,14 +334,17 @@ func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T
 	valid_characters_map := class.GetTableNameValidCharacters()
 
 	for valid_character := range valid_characters_map {
-		table, create_table_errors := class.NewTable(database, valid_character, GetTestSchema())
-		
-		if create_table_errors == nil {
-			t.Errorf("NewTable should return error when table_name is whitelisted but has length 1")
-		}
+		t.Run(valid_character, func(t *testing.T) {
+			t.Parallel()
+			table, create_table_errors := class.NewTable(database, valid_character, GetTestSchema())
+			
+			if create_table_errors == nil {
+				t.Errorf("NewTable should return error when table_name is whitelisted but has length 1")
+			}
 
-		if table != nil {
-			t.Errorf("NewTable should be nil when table_name is whitelisted but has length 1")
-		}
+			if table != nil {
+				t.Errorf("NewTable should be nil when table_name is whitelisted but has length 1")
+			}
+		})
 	}
 }
