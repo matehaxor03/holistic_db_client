@@ -7,16 +7,37 @@ import (
 
 type Array []interface{}
 
-func NewArrayOfStrings(a *[]string) *Array {
+func ToArray(a interface{}) (*Array, []error) {
 	if a == nil {
-		return nil
+		return nil, nil
 	}
 
+	var errors []error
 	array := Array{}
-	for _, value := range *a {
-		array = append(array, value)
+	rep := fmt.Sprintf("%T", a)
+	switch rep {
+	case "*[]string": 
+		for _, value := range *(a.(*[]string)) {
+			array = append(array, value)
+		}
+	case "*[]class.Record":
+		for _, value := range *(a.(*[]Record)) {
+			record, record_errors := value.Clone()
+			if record_errors != nil {
+				errors = append(errors, record_errors...)
+			} else {
+				array = append(array, record)
+			}
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Array.ToArray: type is not supported please implement: %s", rep))
 	}
-	return &array
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	
+	return &array, nil
 }
 
 func (a Array) ToJSONString() (*string, []error) {
