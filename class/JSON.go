@@ -643,11 +643,11 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 	case "exec.ExitError":
 		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
 	case "*exec.ExitError":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", (*value.(*interface{}))), "\"", "\\\"") + "\""
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
 	case "errors.errorString":
 		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
 	case "*errors.errorString":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", (*value.(*interface{}))), "\"", "\\\"") + "\""
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
 	case "bool":
 		temp := value.(bool)
 		if temp {
