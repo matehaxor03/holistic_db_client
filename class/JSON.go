@@ -669,6 +669,13 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		} else {
 			result = *x
 		}
+	case "*class.Map":
+		x, x_error := (*value.(*Map)).ToJSONString()
+		if x_error != nil {
+			errors = append(errors, x_error...)
+		} else {
+			result = *x
+		}
 	case "class.Array":
 		x, x_error := value.(Array).ToJSONString()
 		if x_error != nil {
