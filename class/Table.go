@@ -577,7 +577,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 			var mapped_records []Record
 			for _, json := range *json_array {
-				current_record := json.(Map)
+				current_record := json.(*Map)
 				columns := current_record.Keys()
 				mapped_record := Map{}
 				for _, column := range columns {
