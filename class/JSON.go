@@ -200,7 +200,7 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 					opening_count, _ := metrics.GetInt("opening_quote")
 					*opening_count++
 					metrics.SetInt("opening_quote", opening_count)
-					
+
 				} else if string(value) == "{" {
 					new_mode := mode_looking_for_keys
 					new_map := Map{}
@@ -640,6 +640,14 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "\"" + strings.ReplaceAll(value.(error).Error(), "\"", "\\\"") + "\""
 	case "*error":
 		result = "\"" + strings.ReplaceAll((*(value.(*error))).Error(), "\"", "\\\"") + "\""
+	case "exec.ExitError":
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+	case "*exec.ExitError":
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", (*value.(*interface{}))), "\"", "\\\"") + "\""
+	case "errors.errorString":
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+	case "*errors.errorString":
+		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", (*value.(*interface{}))), "\"", "\\\"") + "\""
 	case "bool":
 		temp := value.(bool)
 		if temp {
