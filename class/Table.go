@@ -798,10 +798,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 				if default_value != "" {
 					if default_value == "NULL" {
-					} else if default_value == "CURRENT_TIMESTAMP(6)" && extra_value == "DEFAULT_GENERATED" {
-						now := "now"
-						column_schema.SetString("default", &now)
-					} else {
+					}else {
 						if *dt == "*string" || *dt == "string" {
 							column_schema.SetString("default", &default_value)
 						} else if *dt == "uint64" {
@@ -832,6 +829,15 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 								} else {
 									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
 								}
+							}
+						} else if *dt == "time.Time" {
+							if (default_value == "CURRENT_TIMESTAMP(6)" || 
+							   default_value == "CURRENT_TIMESTAMP(3)" ||
+							   default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
+								now := "now"
+								column_schema.SetString("default", &now)
+							} else {
+								errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
 							}
 						} else {
 							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
