@@ -50,24 +50,27 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	for _, column := range record_data.Keys() {
 		mapped_field := Map{"value": record_data[column]}
 
-		for _, schema_column := range table_schema.Keys() {
-			
-			if table_schema.GetType(schema_column) != "class.Map" {
-				errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", schema_column))
-				continue
-			}
+		if !table_schema.HasKey(column) {
+			errors = append(errors, fmt.Errorf("Record.newRecord table schema does not have column: %s", column))
+			continue
+		}
 
-			for _, schema_column_data := range table_schema.M(schema_column).Keys() {
-				switch schema_column_data {
-				case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
-					mapped_field[schema_column_data] = (*table_schema.M(schema_column))[schema_column_data]
-				case "value":
+		if table_schema.GetType(column) != "class.Map" {
+			errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", column))
+			continue
+		}
 
-				default:
-					errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
-				}
+		for _, schema_column_data := range table_schema.M(column).Keys() {
+			switch schema_column_data {
+			case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
+				mapped_field[schema_column_data] = (*table_schema.M(column))[schema_column_data]
+			case "value":
+
+			default:
+				errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
 			}
 		}
+		
 		expanded_record[column] = mapped_field
 	}
 
