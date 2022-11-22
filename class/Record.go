@@ -502,7 +502,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 
 			cloned_data.RemoveKey("[table]")
-			return NewRecord(getTable(), *cloned_data)
+
+			copyied_record := Map{}
+			for _, cloned_record_key := range cloned_data.Keys() {
+				copyied_record[cloned_record_key] = (*(cloned_data.M(cloned_record_key)))["value"]
+			}
+
+			return NewRecord(getTable(), copyied_record)
 		},
 		Create: func() []error {
 			sql, options, errors := getInsertSQL()
