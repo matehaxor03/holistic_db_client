@@ -496,9 +496,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		},
 		Clone: func() (*Record, []error) {
 			cloned_data, cloned_data_errors := getData()
+			
 			if cloned_data_errors != nil {
 				return nil, cloned_data_errors
 			}
+
+			cloned_data.RemoveKey("[table]")
 			return NewRecord(getTable(), *cloned_data)
 		},
 		Create: func() []error {
