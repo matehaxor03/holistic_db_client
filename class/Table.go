@@ -82,7 +82,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		clone_data, clone_data_errors :=  getData()
+		clone_data, clone_data_errors := getData()
 		if clone_data_errors != nil {
 			return nil, clone_data_errors
 		}

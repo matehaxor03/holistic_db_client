@@ -41,39 +41,34 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		return nil, errors
 	}
 
-	table_data, table_data_errors := table.GetData()
-	if table_data_errors != nil {
-		return nil, table_data_errors
+	table_schema, table_schema_errors := table.GetSchema()
+	if table_schema_errors != nil {
+		return nil, table_schema_errors
 	}
 
-	table_columns, table_columns_errors := (*table).GetTableColumns()
-	if table_columns_errors != nil {
-		return nil, table_columns_errors
-	}
 	expanded_record := Map{}
 	for _, column := range record_data.Keys() {
-		for _, schema_column := range *table_columns {
-			if column == schema_column {
-				column_data := Map{"value": record_data[column]}
+		mapped_field := Map{"value": record_data[column]}
 
-				if table_data.GetType(column) != "class.Map" {
-					errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", column))
-					continue
-				}
+		for _, schema_column := range table_schema.Keys() {
+			
+			if table_schema.GetType(schema_column) != "class.Map" {
+				errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", schema_column))
+				continue
+			}
 
-				for _, schema_column_data := range table_data.M(column).Keys() {
-					switch schema_column_data {
-					case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
-						column_data[schema_column_data] = (*(table_data).M(column))[schema_column_data]
-					case "value":
-					default:
-						errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
-					}
+			for _, schema_column_data := range table_schema.M(schema_column).Keys() {
+				switch schema_column_data {
+				case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
+					mapped_field[schema_column_data] = (*table_schema.M(schema_column))[schema_column_data]
+				case "value":
+
+				default:
+					errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
 				}
-				expanded_record[column] = column_data
-				break
 			}
 		}
+		expanded_record[column] = mapped_field
 	}
 
 	data, data_errors := expanded_record.Clone()
