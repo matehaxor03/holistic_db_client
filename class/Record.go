@@ -23,6 +23,7 @@ type Record struct {
 	GetInt64  func(field string) (*int64, []error)
 	SetInt64  func(field string, value *int64)
 	GetUInt64 func(field string) (*uint64, []error)
+	ToJSONString  func() (*string, []error)
 }
 
 func NewRecord(table *Table, record_data Map) (*Record, []error) {
@@ -574,6 +575,15 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return nil, cloned_data_errors
 			}
 			return cloned_data.M(field).GetUInt64("value")
+		},
+		ToJSONString: func() (*string, []error) {
+			data_cloned, data_cloned_errors := data.Clone()
+			if data_cloned_errors != nil {
+				return nil, data_cloned_errors
+			}
+			data_cloned.RemoveKey("[table]")
+
+			return data_cloned.ToJSONString()
 		},
 	}
 

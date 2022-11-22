@@ -794,6 +794,13 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		} else {
 			result = *x
 		}
+	case "*class.Record":
+		x, x_errors := (*(value.(*Record))).ToJSONString()
+		if x_errors != nil {
+			errors = append(errors, x_errors...)
+		} else {
+			result = *x
+		}
 	case "*time.Time":
 		result = "\"" + (*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000") + "\""
 	case "map[string]map[string][][]string":
