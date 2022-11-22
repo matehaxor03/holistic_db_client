@@ -533,7 +533,7 @@ func ValidateData(fields Map, structType string) []error {
 
 			break
 		default:
-			errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, attribute_to_validate, value_is_null, value_is_mandatory, default_is_null))
+			errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
 		}
 	}
 
