@@ -537,7 +537,7 @@ func ValidateData(fields Map, structType string) []error {
 			if json_string_errors != nil {
 				errors = append(errors, json_string_errors...)
 			} else {
-				errors = append(errors, fmt.Errorf("raw: %s class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", json_string, structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
+				errors = append(errors, fmt.Errorf("raw: %s class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", *json_string, structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
 			}
 		default:
 			errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
