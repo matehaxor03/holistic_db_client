@@ -729,6 +729,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 							if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
 								data_type := "string"
 								column_schema.SetString("type", &data_type)
+							} else if strings.HasPrefix(*type_of_value, "varchar(") && strings.HasSuffix(*type_of_value, ")") {
+								data_type := "string"
+								column_schema.SetString("type", &data_type)
 							} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
 								type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
 								parts := strings.Split(type_of_value_values, ",")
