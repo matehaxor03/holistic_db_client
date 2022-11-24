@@ -110,7 +110,7 @@ func BlackListString(m Map) []error {
 	_, found := (*map_values)[*str]
 
 	if found {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value", *data_type, *label))
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 
 	if len(errors) > 0 {
