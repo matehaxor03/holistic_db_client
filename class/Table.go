@@ -405,7 +405,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			count_value, _ := (*json_array)[0].(Map).GetString("COUNT(*)")
+			count_value, _ := (*json_array)[0].(*Map).GetString("COUNT(*)")
 			count, count_err := strconv.ParseUint(*count_value, 10, 64)
 			if count_err != nil {
 				errors = append(errors, count_err)
