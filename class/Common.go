@@ -111,8 +111,9 @@ func BlackListString(m Map) []error {
 
 	if found {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value: %s", *data_type, *label, *str))
+		panic(fmt.Sprintf("%s", errors))
 	}
-
+	
 	if len(errors) > 0 {
 		return errors
 	}
@@ -147,8 +148,9 @@ func BlackListStringToUpper(m Map) []error {
 
 	if found {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value: %s", *data_type, *label, *str))
+		panic(fmt.Sprintf("%s", errors))
 	}
-
+	
 	if len(errors) > 0 {
 		return errors
 	}
