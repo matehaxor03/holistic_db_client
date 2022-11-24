@@ -174,40 +174,8 @@ func (m Map) ToJSONString() (*string, []error) {
 	return &json, nil
 }
 
-/*
-func (m Map) A(s string) Array {
-	if m[s] == nil {
-		return nil
-	}
-
-	rep := fmt.Sprintf("%T", m[s])
-	switch rep {
-	case "class.Array":
-		return m[s].(Array)
-	case "[]string":
-		newArray := Array{}
-		for _, v := range m[s].([]string) {
-			newArray = append(newArray, v)
-		}
-		return newArray
-	default:
-		panic(fmt.Errorf("Map.A: type %s is not supported please implement for field: %s", rep, s))
-	}
-}*/
-
 func (m Map) SetArray(s string, array *Array) {
-	if array == nil {
-		m[s] = nil
-		return
-	}
-
-	rep := fmt.Sprintf("%T", array)
-	switch rep {
-	case "*class.Array":
-		m[s] = array
-	default:
-		panic(fmt.Errorf("Map.SetArray: type %s is not supported please implement for field: %s", rep, s))
-	}
+	m[s] = array
 }
 
 func (m Map) SetErrors(s string, errors *[]error) {

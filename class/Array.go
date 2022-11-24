@@ -74,21 +74,6 @@ func (a Array) ToJSONString() (*string, []error) {
 	return &json, nil
 }
 
-func (a Array) ToPrimativeArray() []string {
-	var results []string
-	for _, value := range a {
-		rep := fmt.Sprintf("%T", value)
-		switch rep {
-		case "string":
-			results = append(results, value.(string))
-			break
-		default:
-			panic(fmt.Errorf("Array.ToPrimativeArray: type %s is not supported please implement", rep))
-		}
-	}
-	return results
-}
-
 func (a Array) Clone() (*Array, []error) {
 	var errors []error
 	clone := Array{}

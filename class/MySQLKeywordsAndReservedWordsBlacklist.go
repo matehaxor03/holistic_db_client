@@ -843,7 +843,6 @@ return Map{
     "UPGRADE": nil,
     "USAGE": nil,
     "USE": nil,
-    "USER": nil,
     "USER_RESOURCES": nil,
     "USE_FRM": nil,
     "USING": nil,
