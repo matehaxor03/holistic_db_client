@@ -127,7 +127,12 @@ func main() {
 			}
 
 			if *database_exists == false {
-				database_create_options := class.NewDatabaseCreateOptions(character_set, collate)
+				database_create_options, database_create_options_errors := class.NewDatabaseCreateOptions(character_set, collate)
+				if database_create_options_errors != nil {
+					context.LogErrors(database_create_options_errors)
+					os.Exit(1)
+				}
+
 				_, database_errors := client.CreateDatabase(*database_name, database_create_options)
 
 				if database_errors != nil {

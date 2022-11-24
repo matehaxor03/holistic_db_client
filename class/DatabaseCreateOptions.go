@@ -35,7 +35,7 @@ type DatabaseCreateOptions struct {
 	Validate     func() []error
 }
 
-func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseCreateOptions {
+func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 
 	data := Map{
 		"[character_set]": Map{"value": CloneString(character_set), "mandatory": false,
@@ -69,7 +69,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 		return &sql_command, nil
 	}
 
-	return &DatabaseCreateOptions{
+	x := DatabaseCreateOptions{
 		GetSQL: func() (*string, []error) {
 			return getSQL()
 		},
@@ -81,13 +81,22 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) *DatabaseC
 
 			return data_cloned.ToJSONString()
 		},
-		Clone: func() *DatabaseCreateOptions {
+		Clone: func() (*DatabaseCreateOptions) {
 			character_set, _ := data.M("[character_set]").GetString("value")
 			collate, _ := data.M("[collate]").GetString("value")
-			return NewDatabaseCreateOptions(character_set, collate)
+			database_create_option, _ :=  NewDatabaseCreateOptions(character_set, collate)
+			return database_create_option
 		},
 		Validate: func() []error {
 			return validate()
 		},
 	}
+
+	validate_errors := validate()
+
+	if len(validate_errors) > 0 {
+		return nil, validate_errors
+	}
+
+	return &x, nil
 }

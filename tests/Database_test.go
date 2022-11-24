@@ -10,10 +10,11 @@ func GetTestDatabaseName() string {
 	return "holistic_test"
 }
 
-func GetTestDatabaseCreateOptions() *class.DatabaseCreateOptions {
+func GetTestDatabaseCreateOptions() (*class.DatabaseCreateOptions) {
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
-	return class.NewDatabaseCreateOptions(&character_set, &collate)
+	database_create_options, _ :=  class.NewDatabaseCreateOptions(&character_set, &collate)
+	return database_create_options
 }
 
 func GetTestHost(t *testing.T) (*class.Host) {
