@@ -244,11 +244,12 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		sql_command += "("
 		for index, column := range *valid_columns {
 			columnSchema := (*data)[column].(Map)
+			sql_command += EscapeString(column)
 
 			typeOf, _ := columnSchema.GetString("type")
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
-				sql_command += EscapeString(column) + " BIGINT"
+				sql_command += " BIGINT"
 
 				if *typeOf == "*uint64" ||
 					*typeOf == "*uint" ||
@@ -289,7 +290,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 				}
 			case "*time.Time":
-				sql_command += EscapeString(column) + " TIMESTAMP(6)"
+				sql_command += " TIMESTAMP(6)"
 				if columnSchema.HasKey("default") {
 					default_value, _ := columnSchema.GetString("default")
 					if columnSchema.IsNil("default") {
@@ -303,7 +304,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 				}
 			case "*bool", "bool":
-				sql_command += EscapeString(column) + " BOOLEAN"
+				sql_command += " BOOLEAN"
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
@@ -317,6 +318,24 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						errors = append(errors, fmt.Errorf("column: %s had unknown error for boolean default value", column))
 					}
 				}
+			case "*string", "string":
+				sql_command += " VARCHAR("
+				if !columnSchema.HasKey("length") {
+					errors = append(errors, fmt.Errorf("column: %s did not specify length attribute", column))
+				} else if columnSchema.GetType("length") != "int" {
+					errors = append(errors, fmt.Errorf("column: %s specified length attribute however it's not an int", column))
+				} else {
+					length, length_errors := columnSchema.GetInt("length")
+					if length_errors != nil {
+						errors = append(errors, fmt.Errorf("column: %s specified length attribute had errors %s", column, fmt.Sprintf("%s", length_errors)))
+					} else if *length <= 0 {
+						errors = append(errors, fmt.Errorf("column: %s specified length attribute was <= 0 and had value: %d", column, length))
+					} else {
+						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
+						sql_command += fmt.Sprintf("%d", (4*(*length)))
+					}
+				}
+				sql_command += ")"
 			default:
 				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
 			}
@@ -330,6 +349,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		if primary_key_count == 0 {
 			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(getTableName())))
 		}
+
+		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
 
 		if len(errors) > 0 {
 			return nil, errors
