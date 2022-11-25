@@ -336,6 +336,27 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 				}
 				sql_command += ")"
+
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
+				if columnSchema.HasKey("default") {
+					if columnSchema.IsNil("default") {
+						sql_command += " DEFAULT NULL"
+					} else if !columnSchema.IsString("default") {
+						errors = append(errors, fmt.Errorf("column: %s had non-string default value", column))
+					} else {
+						default_value, default_value_errors := columnSchema.GetString("default")
+						if default_value_errors != nil {
+							errors = append(errors, fmt.Errorf("column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
+						} else {
+							sql_command += " DEFAULT \"" + EscapeString(*default_value) + "\""
+						}
+					} 
+				}
+
+				
 			default:
 				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
 			}
