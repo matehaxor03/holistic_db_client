@@ -320,19 +320,19 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				}
 			case "*string", "string":
 				sql_command += " VARCHAR("
-				if !columnSchema.HasKey("length") {
+				if !columnSchema.HasKey("max_length") {
 					errors = append(errors, fmt.Errorf("column: %s did not specify length attribute", column))
-				} else if columnSchema.GetType("length") != "int" {
+				} else if columnSchema.GetType("max_length") != "int" {
 					errors = append(errors, fmt.Errorf("column: %s specified length attribute however it's not an int", column))
 				} else {
-					length, length_errors := columnSchema.GetInt("length")
-					if length_errors != nil {
-						errors = append(errors, fmt.Errorf("column: %s specified length attribute had errors %s", column, fmt.Sprintf("%s", length_errors)))
-					} else if *length <= 0 {
-						errors = append(errors, fmt.Errorf("column: %s specified length attribute was <= 0 and had value: %d", column, length))
+					max_length, max_length_errors := columnSchema.GetInt("max_length")
+					if max_length_errors != nil {
+						errors = append(errors, fmt.Errorf("column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
+					} else if *max_length <= 0 {
+						errors = append(errors, fmt.Errorf("column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
 					} else {
 						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
-						sql_command += fmt.Sprintf("%d", (4*(*length)))
+						sql_command += fmt.Sprintf("%d", (4*(*max_length)))
 					}
 				}
 				sql_command += ")"
