@@ -278,8 +278,19 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			rep := record.M(record_column).GetType("value")
+			parameter := record.M(record_column)
+			if !parameter.HasKey("value") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have value attribute", table.GetTableName(), record_column))
+				continue
+			}
+
+			value := parameter.GetObject("value")
+			rep := parameter.GetType("value")
 			switch rep {
+			case "string":
+				sql_command += "\"" + EscapeString(value.(string)) + "\""
+			case "*string":
+				sql_command += "\"" + EscapeString(*(value.(*string))) + "\""
 			default:
 				//EscapeString
 				errors = append(errors, fmt.Errorf("type: %s not supported for table please implement", rep))
