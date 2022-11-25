@@ -838,54 +838,54 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 				dt, _ := column_schema.GetString("type")
 
-				if default_value != "" {
-					if default_value == "NULL" {
-					}else {
-						if *dt == "*string" || *dt == "string" {
-							column_schema.SetString("default", &default_value)
-						} else if *dt == "uint64" {
-							number, err := strconv.ParseUint(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								column_schema.SetUInt64("default", &number)
-							}
-						} else if *dt == "int64" {
-							number, err := strconv.ParseInt(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								column_schema.SetInt64("default", &number)
-							}
-						} else if *dt == "bool" {
-							number, err := strconv.ParseInt(default_value, 10, 64)
-							if err != nil {
-								errors = append(errors, err)
-							} else {
-								if number == 0 {
-									boolean_value := false
-									column_schema.SetBool("default", &boolean_value)
-								} else if number == 1 {
-									boolean_value := true
-									column_schema.SetBool("default", &boolean_value)
-								} else {
-									errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
-								}
-							}
-						} else if *dt == "time.Time" {
-							if (default_value == "CURRENT_TIMESTAMP(6)" || 
-							   default_value == "CURRENT_TIMESTAMP(3)" ||
-							   default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
-								now := "now"
-								column_schema.SetString("default", &now)
-							} else {
-								errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
-							}
+			
+				if default_value == "NULL" {
+				} else {
+					if *dt == "string" {
+						column_schema.SetString("default", &default_value)
+					} else if *dt == "uint64" && default_value != "" {
+						number, err := strconv.ParseUint(default_value, 10, 64)
+						if err != nil {
+							errors = append(errors, err)
 						} else {
-							errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
+							column_schema.SetUInt64("default", &number)
 						}
+					} else if *dt == "int64" && default_value != "" {
+						number, err := strconv.ParseInt(default_value, 10, 64)
+						if err != nil {
+							errors = append(errors, err)
+						} else {
+							column_schema.SetInt64("default", &number)
+						}
+					} else if *dt == "bool" && default_value != "" {
+						number, err := strconv.ParseInt(default_value, 10, 64)
+						if err != nil {
+							errors = append(errors, err)
+						} else {
+							if number == 0 {
+								boolean_value := false
+								column_schema.SetBool("default", &boolean_value)
+							} else if number == 1 {
+								boolean_value := true
+								column_schema.SetBool("default", &boolean_value)
+							} else {
+								errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
+							}
+						}
+					} else if *dt == "time.Time" && default_value != "" {
+						if (default_value == "CURRENT_TIMESTAMP(6)" || 
+							default_value == "CURRENT_TIMESTAMP(3)" ||
+							default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
+							now := "now"
+							column_schema.SetString("default", &now)
+						} else {
+							errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
+						}
+					} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "string" || *dt == "uint64") && default_value != "" {
+						errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
 					}
 				}
+				
 
 				if is_nullable {
 					adjusted_type := "*" + *dt
