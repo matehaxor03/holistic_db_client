@@ -258,6 +258,10 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					sql_command += " UNSIGNED"
 				}
 
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
 				if columnSchema.HasKey("auto_increment") {
 					if columnSchema.IsBool("auto_increment") && !columnSchema.IsNil("auto_increment") {
 						if columnSchema.IsBoolTrue("auto_increment") {
@@ -271,15 +275,13 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				if columnSchema.HasKey("primary_key") {
 					if columnSchema.IsBool("primary_key") && !columnSchema.IsNil("primary_key") {
 						if columnSchema.IsBoolTrue("primary_key") {
-							sql_command += " PRIMARY KEY NOT NULL"
+							sql_command += " PRIMARY KEY"
 							primary_key_count += 1
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
 					}
-				} else if !strings.HasPrefix(*typeOf, "*") {
-					sql_command += " NOT NULL"
-				}
+				} 
 
 				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
 					default_value, default_value_errors := columnSchema.GetInt64("default")
@@ -291,6 +293,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				}
 			case "*time.Time":
 				sql_command += " TIMESTAMP(6)"
+
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
 				if columnSchema.HasKey("default") {
 					default_value, _ := columnSchema.GetString("default")
 					if columnSchema.IsNil("default") {
@@ -305,6 +312,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				}
 			case "*bool", "bool":
 				sql_command += " BOOLEAN"
+
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
 						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
