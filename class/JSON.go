@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"container/list"
+	"net/url"
 	"time"
 )
 
@@ -640,6 +641,8 @@ func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error
 		result = "\"" + strings.ReplaceAll(value.(error).Error(), "\"", "\\\"") + "\""
 	case "*error":
 		result = "\"" + strings.ReplaceAll((*(value.(*error))).Error(), "\"", "\\\"") + "\""
+	case "*url.Error":
+		result = "\"" + strings.ReplaceAll((*(value.(*url.Error))).Error(), "\"", "\\\"") + "\""
 	case "exec.ExitError":
 		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
 	case "*exec.ExitError":
