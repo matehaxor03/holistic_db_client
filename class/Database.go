@@ -36,12 +36,11 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	data := Map{
-		"[client]": Map{"value": client, "mandatory": true},
-		"[database_name]": Map{"value": &database_name, "mandatory": true, "min_length":2, "not_empty_string_value": true,
+		"[client]": Map{"value": client, "mandatory": true, "validated":false},
+		"[database_name]": Map{"value": &database_name, "mandatory": true, "min_length":2, "not_empty_string_value": true, "validated":false,
 			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()},
 							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}},
-		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
-		"[validated]": Map{"value": false, "mandatory": true},
+		"[database_create_options]": Map{"value": database_create_options, "mandatory": false, "validated":false},
 	}
 
 	getData := func() (*Map) {

@@ -19,10 +19,9 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	SQLCommand := NewSQLCommand()
 
 	data := Map{
-		"[client]":      Map{"value": client, "mandatory": true},
-		"[credentials]": Map{"value": credentials, "mandatory": true},
-		"[domain_name]": Map{"value": domain_name, "mandatory": true},
-		"[validated]": Map{"value": false, "mandatory": true},
+		"[client]":      Map{"value": client, "mandatory": true, "validated": false},
+		"[credentials]": Map{"value": credentials, "mandatory": true, "validated": false},
+		"[domain_name]": Map{"value": domain_name, "mandatory": true, "validated": false},
 	}
 
 	getData := func() *Map {

@@ -40,7 +40,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 	data := Map{}
 	for _, column := range record_data.Keys() {
-		mapped_field := Map{"value": record_data[column]}
+		mapped_field := Map{"value": record_data[column], "validated": false}
 
 		if !table_schema.HasKey(column) {
 			errors = append(errors, fmt.Errorf("Record.newRecord table schema does not have column: %s", column))
@@ -61,18 +61,18 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			switch schema_column_data {
 			case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
 				mapped_field[schema_column_data] = (*table_schema_column_map)[schema_column_data]
-			case "value":
+			case "value", "validated":
 
 			default:
 				errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
 			}
 		}
 		
+		
 		data[column] = mapped_field
 	}
 
 	data["[table]"] = Map{"value": table, "mandatory": true}
-	data["[validated]"] = Map{"value": false, "mandatory": true}
 
 
 	getData := func() (*Map) {

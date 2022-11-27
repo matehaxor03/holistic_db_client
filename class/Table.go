@@ -33,9 +33,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	if schema == nil {
 		schema = Map{}
-		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true}
+		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true, "validated": false}
 	} else {
-		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true}
+		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true, "validated": false}
 	}
 
 	if len(errors) > 0 {
@@ -44,17 +44,16 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	data := schema
 	
-	(data)["[database]"] = Map{"value": database, "mandatory": true}
-	(data)["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2, 
+	(data)["[database]"] = Map{"value": database, "mandatory": true, "validated": false}
+	(data)["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
-	(data)["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
-	(data)["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false}
-	(data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
-	(data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
-	(data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
-	(data)["[validated]"] = Map{"value": false, "mandatory": true}
+	(data)["active"] = Map{"type": "*bool", "mandatory": true, "default": true, "validated": false}
+	(data)["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false, "validated": false}
+	(data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+	(data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+	(data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
 
 	getData := func() (*Map) {
 		return &data

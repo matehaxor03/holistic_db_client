@@ -37,11 +37,10 @@ type DatabaseCreateOptions struct {
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 
 	data := Map{
-		"[character_set]": Map{"value": CloneString(character_set), "mandatory": false,
+		"[character_set]": Map{"value": CloneString(character_set), "mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-		"[collate]": Map{"value": CloneString(collate), "mandatory": false,
+		"[collate]": Map{"value": CloneString(collate), "mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
-		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

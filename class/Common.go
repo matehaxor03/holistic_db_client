@@ -264,13 +264,8 @@ func IsDatabaseColumn(value string) bool {
 	return column_name_errors == nil
 }
 
-func ValidateData(fields *Map, structType string) []error {	
-	var errors []error
-	var parameters = fields.Keys()
-	var ignore_identity_errors = false
-	primary_key_count := 0
-	auto_increment_count := 0
-
+/*
+func resetValidation(fields *Map, structType string) []error {
 	if !fields.HasKey("[validated]") {
 		errors = append(errors, fmt.Errorf("table: %s does not have [validated] attribute", structType))
 		return errors
@@ -280,13 +275,25 @@ func ValidateData(fields *Map, structType string) []error {
 			errors = append(errors, fmt.Errorf("table: %s had errors getting map: %s", structType, fmt.Sprintf("%s", validated_map_errors)))
 		} else if !validated_map.IsBool("value") {
 			errors = append(errors, fmt.Errorf("table: %s attribute: [validated] is not a bool", structType))
-		} else if validated_map.IsBoolTrue("value") {
-			return nil
 		} else {
-			bool_true := true
-			validated_map.SetBool("value", &bool_true)
+			bool_false := false
+			validated_map.SetBool("value", &bool_false)
 		}
 	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}*/
+
+func ValidateData(fields *Map, structType string) []error {	
+	var errors []error
+	var parameters = fields.Keys()
+	var ignore_identity_errors = false
+	primary_key_count := 0
+	auto_increment_count := 0
 
 	for _, parameter := range parameters {
 		if fields.GetType(parameter) != "class.Map" {
@@ -329,6 +336,24 @@ func ValidateData(fields *Map, structType string) []error {
 				errors = append(errors, fmt.Errorf("table: %s column: %s is missing type attribute", structType, parameter))
 				continue
 			}
+		}
+
+		if !parameter_fields.HasKey("validated") {
+			bool_true := true
+			parameter_fields.SetBool("validated", &bool_true)
+		} else {
+		 	 if !parameter_fields.IsBool("validated") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", structType, parameter))
+			} else if parameter_fields.IsBoolTrue("validated") {
+				continue
+			} else {
+				bool_true := true
+				parameter_fields.SetBool("validated", &bool_true)
+			}
+		}
+	
+		if len(errors) > 0 {
+			return errors
 		}
 
 		if value_is_null && default_is_null && !parameter_fields.HasKey("value") && (parameter_fields.IsBoolTrue("primary_key") && parameter_fields.IsBoolTrue("auto_increment")) {

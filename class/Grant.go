@@ -38,11 +38,10 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 	SQLCommand := NewSQLCommand()
 
 	data := Map{
-		"[client]": Map{"value": client, "mandatory": true},
-		"[user]":   Map{"value": user, "mandatory": true},
-		"[grant]": Map{"value": &grant_value, "mandatory": true,
+		"[client]": Map{"value": client, "mandatory": true, "validated":false},
+		"[user]":   Map{"value": user, "mandatory": true, "validated":false},
+		"[grant]": Map{"value": &grant_value, "mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
-		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	if database_filter != nil {

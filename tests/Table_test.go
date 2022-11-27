@@ -35,9 +35,21 @@ func GetTestTable(t *testing.T) (*class.Table) {
 	var errors []error
 
 	database := GetTestDatabase(t)
+
+	if database == nil {
+		t.Error(fmt.Errorf("database is nil"))
+		t.FailNow()
+		return nil
+	}
+
 	database_create_errors := database.Create()
 	if database_create_errors != nil {
+		errors = append(errors, database_create_errors...)
+	}
+
+	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -53,6 +65,7 @@ func GetTestTable(t *testing.T) (*class.Table) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -63,6 +76,7 @@ func GetTestTable(t *testing.T) (*class.Table) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
