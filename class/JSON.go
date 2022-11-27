@@ -125,6 +125,9 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 	for *index < uint64(len(*runes)) {
 		i := *index
 		value := (*runes)[*index]
+		
+		//fmt.Println(current_mode + " " + string(value))
+		//fmt.Println(temp_key + " " + temp_value + " parsing:" + fmt.Sprintf("%s", parsing_string) + "found value: " +  fmt.Sprintf("%s", found_value))
 
 		if !parsing_string {
 			if string(value) == "{" {
@@ -161,6 +164,25 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 				opening_count, _ := metrics.GetInt("opening_quote")
 				*opening_count++
 				metrics.SetInt("opening_quote", opening_count)
+			} else if string(value) == "}" {
+				if list.Len() > 1 {
+					list.Remove(list.Front())
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						current_mode = mode_looking_for_keys
+					} else {
+						current_mode = mode_looking_for_value
+					}
+				}	
+			} else if string(value) == "]" {
+				// this should not occur for valid json todo throw error
+				/*if list.Len() > 1 {
+					list.Remove(list.Front())
+					if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
+						current_mode = mode_looking_for_keys
+					} else {
+						current_mode = mode_looking_for_value
+					}
+				}*/
 			}
 		} else if current_mode == mode_looking_for_key_name {
 			if string(value) == "\"" && string((*runes)[i-1]) != "\\" {
@@ -178,6 +200,7 @@ func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, m
 				current_mode = mode_looking_for_value
 			}
 		} else if current_mode == mode_looking_for_value {
+			
 			if !found_value && (string(value) == " " || string(value) == "\r" || string(value) == "\n" || string(value) == "\t") {
 				*index++
 				continue
