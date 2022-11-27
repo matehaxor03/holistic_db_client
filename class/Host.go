@@ -70,6 +70,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 			FILTERS(): Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 		"[port_number]": Map{"value": &port_number, "mandatory": true,
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

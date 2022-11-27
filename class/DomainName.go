@@ -18,6 +18,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 	data := Map{
 		"[domain_name]": Map{"value": CloneString(&domain_name), "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

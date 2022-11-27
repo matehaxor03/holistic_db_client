@@ -34,6 +34,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		"[database_username]": Map{"value": database_username, "mandatory": false,
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 		"[database]": Map{"value": database, "mandatory": false},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

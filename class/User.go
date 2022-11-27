@@ -22,6 +22,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		"[client]":      Map{"value": client, "mandatory": true},
 		"[credentials]": Map{"value": credentials, "mandatory": true},
 		"[domain_name]": Map{"value": domain_name, "mandatory": true},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

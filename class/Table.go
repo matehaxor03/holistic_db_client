@@ -54,6 +54,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	(data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	(data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 	(data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
+	(data)["[validated]"] = Map{"value": false, "mandatory": true}
 
 	getData := func() (*Map) {
 		return &data

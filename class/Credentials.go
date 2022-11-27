@@ -151,6 +151,7 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 		"[password]": Map{"value": CloneString(&password), "mandatory": true,
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {

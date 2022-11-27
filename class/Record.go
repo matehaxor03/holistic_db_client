@@ -72,6 +72,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	data["[table]"] = Map{"value": table, "mandatory": true}
+	data["[validated]"] = Map{"value": false, "mandatory": true}
+
 
 	getData := func() (*Map) {
 		return &data

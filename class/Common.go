@@ -271,6 +271,23 @@ func ValidateData(fields *Map, structType string) []error {
 	primary_key_count := 0
 	auto_increment_count := 0
 
+	if !fields.HasKey("[validated]") {
+		errors = append(errors, fmt.Errorf("table: %s does not have [validated] attribute", structType))
+		return errors
+	} else {
+		validated_map, validated_map_errors := fields.GetMap("[validated]")
+		if validated_map_errors != nil {
+			errors = append(errors, fmt.Errorf("table: %s had errors getting map: %s", structType, fmt.Sprintf("%s", validated_map_errors)))
+		} else if !validated_map.IsBool("value") {
+			errors = append(errors, fmt.Errorf("table: %s attribute: [validated] is not a bool", structType))
+		} else if validated_map.IsBoolTrue("value") {
+			return nil
+		} else {
+			bool_true := true
+			validated_map.SetBool("value", &bool_true)
+		}
+	}
+
 	for _, parameter := range parameters {
 		if fields.GetType(parameter) != "class.Map" {
 			errors = append(errors, fmt.Errorf("table: %s column: %s is not of type class.Map", structType, parameter))
@@ -463,7 +480,92 @@ func ValidateData(fields *Map, structType string) []error {
 				errors = append(errors, value_of_errors...)
 				continue
 			}
-		case "*class.Table", "*class.User", "*class.Client", "*class.Database", "*class.DomainName", "*class.Host", "*class.Credentials", "*class.DatabaseCreateOptions", "*class.Grant":
+		case "*class.Database":
+			database := parameter_fields.GetObject(attribute_to_validate).(*Database)
+
+			errors_for_database := database.Validate()
+			if errors_for_database != nil {
+				errors = append(errors, errors_for_database...)
+			}
+			break
+		case "*class.DomainName":
+			domain_name := parameter_fields.GetObject(attribute_to_validate).(*DomainName)
+
+			errors_for_domain_name := domain_name.Validate()
+			if errors_for_domain_name != nil {
+				errors = append(errors, errors_for_domain_name...)
+			}
+			break
+		case "*class.Host":
+			host := parameter_fields.GetObject(attribute_to_validate).(*Host)
+
+			errors_for_host := host.Validate()
+			if errors_for_host != nil {
+				errors = append(errors, errors_for_host...)
+			}
+
+			break
+		case "*class.Credentials":
+			credentials := parameter_fields.GetObject(attribute_to_validate).(*Credentials)
+
+			errors_for_credentaials := credentials.Validate()
+			if errors_for_credentaials != nil {
+				errors = append(errors, errors_for_credentaials...)
+			}
+
+			break
+		case "*class.DatabaseCreateOptions":
+			database_create_options := parameter_fields.GetObject(attribute_to_validate).(*DatabaseCreateOptions)
+
+			errors_for_database_create_options := database_create_options.Validate()
+			if errors_for_database_create_options != nil {
+				errors = append(errors, errors_for_database_create_options...)
+			}
+
+			break
+		case "*class.Client":
+			client := parameter_fields.GetObject(attribute_to_validate).(*Client)
+
+			errors_for_client := client.Validate()
+			if errors_for_client != nil {
+				errors = append(errors, errors_for_client...)
+			}
+
+			break
+		case "*class.Grant":
+			grant := parameter_fields.GetObject(attribute_to_validate).(*Grant)
+
+			errors_for_grant := grant.Validate()
+			if errors_for_grant != nil {
+				errors = append(errors, errors_for_grant...)
+			}
+
+			break
+		case "*class.User":
+			user := parameter_fields.GetObject(attribute_to_validate).(*User)
+
+			errors_for_user := user.Validate()
+			if errors_for_user != nil {
+				errors = append(errors, errors_for_user...)
+			}
+
+			break
+		case "*class.Table":
+			table := parameter_fields.GetObject(attribute_to_validate).(*Table)
+
+			errors_for_table := table.Validate()
+			if errors_for_table != nil {
+				errors = append(errors, errors_for_table...)
+			}
+
+			break
+		case "class.Map":
+			json_string, json_string_errors := fields.ToJSONString()
+			if json_string_errors != nil {
+				errors = append(errors, json_string_errors...)
+			} else {
+				errors = append(errors, fmt.Errorf("raw: %s class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", *json_string, structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
+			}
 		default:
 			errors = append(errors, fmt.Errorf("class: %s column: %s attribute: %s with type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", structType, parameter, attribute_to_validate, typeOf, value_is_null, value_is_mandatory, default_is_null))
 		}

@@ -30,6 +30,7 @@ func GetTestHost(t *testing.T) (*class.Host) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -42,6 +43,12 @@ func GetTestClient(t *testing.T) (*class.Client) {
 	user_value := "root"
 	host := GetTestHost(t)
 
+	if host == nil {
+		t.Error(fmt.Errorf("host is nil"))
+		t.FailNow()
+		return nil
+	}
+
 	client, client_errors := class.NewClient(host, &user_value, nil)
 	if client_errors != nil {
 		errors = append(errors, client_errors...)
@@ -49,6 +56,7 @@ func GetTestClient(t *testing.T) (*class.Client) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -60,6 +68,12 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	client := GetTestClient(t)
 
+	if client == nil {
+		t.Error(fmt.Errorf("test client is nil"))
+		t.FailNow()
+		return nil
+	}
+
 	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
 	if database_errors != nil {
 		errors = append(errors, database_errors...)
@@ -67,6 +81,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -77,6 +92,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -88,6 +104,12 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 
 	client := GetTestClient(t)
 
+	if client == nil {
+		t.Error(fmt.Errorf("test client is nil"))
+		t.FailNow()
+		return nil
+	}
+
 	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
 	if database_errors != nil {
 		errors = append(errors, database_errors...)
@@ -95,6 +117,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -105,6 +128,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -115,6 +139,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 
@@ -125,6 +150,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 
 	if len(errors) > 0 {
 		t.Error(errors)
+		t.FailNow()
 		return nil
 	}
 

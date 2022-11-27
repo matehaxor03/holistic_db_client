@@ -42,6 +42,7 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 		"[user]":   Map{"value": user, "mandatory": true},
 		"[grant]": Map{"value": &grant_value, "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	if database_filter != nil {

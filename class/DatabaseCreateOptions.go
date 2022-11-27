@@ -41,6 +41,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
 		"[collate]": Map{"value": CloneString(collate), "mandatory": false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
+		"[validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() *Map {
