@@ -31,7 +31,6 @@ func GET_COLLATES() Map {
 type DatabaseCreateOptions struct {
 	GetSQL       func() (*string, []error)
 	ToJSONString func() (*string, []error)
-	Clone        func() *DatabaseCreateOptions
 	Validate     func() []error
 }
 
@@ -42,6 +41,10 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
 		"[collate]": Map{"value": CloneString(collate), "mandatory": false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
+	}
+
+	getData := func() *Map {
+		return &data
 	}
 
 	validate := func() []error {
@@ -89,7 +92,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		if collate_errors != nil {
 			return nil, collate_errors
 		}
-		
+
 		if collate != nil && *collate != "" {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
@@ -102,18 +105,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			return getSQL()
 		},
 		ToJSONString: func() (*string, []error) {
-			data_cloned, data_cloned_errors := data.Clone()
-			if data_cloned_errors != nil {
-				return nil, data_cloned_errors
-			}
-
-			return data_cloned.ToJSONString()
-		},
-		Clone: func() (*DatabaseCreateOptions) {
-			character_set, _ := get_character_set()
-			collate, _ := get_collate()
-			database_create_option, _ := NewDatabaseCreateOptions(character_set, collate)
-			return database_create_option
+			return getData().ToJSONString()
 		},
 		Validate: func() []error {
 			return validate()

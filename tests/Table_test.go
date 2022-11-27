@@ -197,7 +197,6 @@ func TestTableCannotSetTableNameWithBlackListName(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			set_table_name_errors := table.SetTableName(blacklist_database_name)
 			
 			if set_table_name_errors == nil {
@@ -229,7 +228,6 @@ func TestTableCannotCreateWithBlackListName(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, blacklist_table_name, GetTestSchema())
 			
 			if create_table_errors == nil {
@@ -251,7 +249,6 @@ func TestTableCannotCreateWithBlackListNameUppercase(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, strings.ToUpper(blacklist_table_name), GetTestSchema())
 			
 			if create_table_errors == nil {
@@ -274,7 +271,6 @@ func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, strings.ToLower(blacklist_table_name), GetTestSchema())
 			
 			if create_table_errors == nil {
@@ -296,7 +292,6 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, valid_character + valid_character, GetTestSchema())
 			
 			if create_table_errors != nil {
@@ -318,7 +313,6 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 	for invalid_character := range non_whitelist_map {
 		t.Run(invalid_character, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, invalid_character + invalid_character, GetTestSchema())
 			
 			if create_table_errors == nil {
@@ -340,7 +334,6 @@ func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {
-			t.Parallel()
 			table, create_table_errors := class.NewTable(database, valid_character, GetTestSchema())
 			
 			if create_table_errors == nil {

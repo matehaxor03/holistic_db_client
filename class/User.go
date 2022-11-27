@@ -4,14 +4,6 @@ import (
 	"fmt"
 )
 
-func CloneUser(user *User) *User {
-	if user == nil {
-		return user
-	}
-
-	return user.Clone()
-}
-
 type User struct {
 	Validate       func() []error
 	Create         func() []error
@@ -27,9 +19,9 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	SQLCommand := NewSQLCommand()
 
 	data := Map{
-		"[client]":      Map{"value": CloneClient(client), "mandatory": true},
-		"[credentials]": Map{"value": CloneCredentials(credentials), "mandatory": true},
-		"[domain_name]": Map{"value": CloneDomainName(domain_name), "mandatory": true},
+		"[client]":      Map{"value": client, "mandatory": true},
+		"[credentials]": Map{"value": credentials, "mandatory": true},
+		"[domain_name]": Map{"value": domain_name, "mandatory": true},
 	}
 
 	validate := func() []error {
@@ -43,7 +35,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		}
 
 		temp_client := temp_client_map.GetObject("value").(*Client)
-		return CloneClient(temp_client), nil
+		return temp_client, nil
 	}
 
 	getCredentials := func() (*Credentials, []error) {
@@ -53,9 +45,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		}
 
 		temp_credentails := temp_credentials_map.GetObject("value").(*Credentials)
-		return CloneCredentials(temp_credentails), nil
-
-		//return CloneCredentials(data.M("[credentials]").GetObject("value").(*Credentials))
+		return temp_credentails, nil
 	}
 
 	getDomainName := func() (*DomainName, []error) {
@@ -65,9 +55,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		}
 
 		temp_domain_name := temp_domain_name_map.GetObject("value").(*DomainName)
-		return CloneDomainName(temp_domain_name), nil
-
-		//return CloneDomainName(data.M("[domain_name]").GetObject("value").(*DomainName))
+		return temp_domain_name, nil
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {
@@ -189,17 +177,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 				errors = append(errors, validate_errors...)
 			}
 
-			data := Map{
-				"password": Map{"value": CloneString(&new_password), "mandatory": true,
+			password_data := Map{
+				"password": Map{"value": new_password, "mandatory": true,
 					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 			}
 
-			data_clone, data_clone_errors := data.Clone()
-			if data_clone_errors != nil {
-				return data_clone_errors
-			}
-
-			validate_password_errors := ValidateData(*data_clone, "NewUserPassword")
+			validate_password_errors := ValidateData(password_data, "NewUserPassword")
 			if validate_password_errors != nil {
 				errors = append(errors, validate_password_errors...)
 			}

@@ -258,7 +258,6 @@ func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 	database := GetTestDatabase(t)
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			set_database_name_errors := database.SetDatabaseName(blacklist_database_name)
 			
 			if set_database_name_errors == nil {
@@ -289,7 +288,6 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors := class.NewDatabase(client, blacklist_database_name, database_create_options)
 			
 			if create_database_errors == nil {
@@ -310,7 +308,6 @@ func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors := class.NewDatabase(client, strings.ToUpper(blacklist_database_name), database_create_options)
 			
 			if create_database_errors == nil {
@@ -332,7 +329,6 @@ func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors := class.NewDatabase(client, strings.ToLower(blacklist_database_name), database_create_options)
 			
 			if create_database_errors == nil {
@@ -379,7 +375,6 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 	for non_whitelist_characters := range non_whitelist_map {
 		t.Run(non_whitelist_characters, func(t *testing.T) {
-			t.Parallel()
 			database, new_database_errors := class.NewDatabase(client, "a" + non_whitelist_characters + "a", database_create_options)
 			
 			if new_database_errors == nil {
@@ -398,7 +393,6 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 
 	for whitelist_database_character := range whitelist_map {
 		t.Run(whitelist_database_character, func(t *testing.T) {
-			t.Parallel()
 			database, new_database_errors := class.NewDatabase(client, whitelist_database_character, database_create_options)
 			
 			if new_database_errors == nil {

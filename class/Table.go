@@ -6,17 +6,8 @@ import (
 	"strings"
 )
 
-func CloneTable(table *Table) *Table {
-	if table == nil {
-		return nil
-	}
-
-	return table.Clone()
-}
-
 type Table struct {
 	Validate              func() []error
-	Clone                 func() *Table
 	Exists                func() (*bool, []error)
 	Create                func() []error
 	Delete                func() []error
@@ -28,7 +19,7 @@ type Table struct {
 	GetIdentityColumns    func() (*[]string, []error)
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
-	GetData               func() (*Map, []error)
+	//GetData               func() (*Map, []error)
 	CreateRecord          func(record Map) (*Record, []error)
 	Select                func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
@@ -51,38 +42,30 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return nil, errors
 	}
 
-	data, data_errors := schema.Clone()
-	if data_errors != nil {
-		return nil, data_errors
-	}
+	data := schema
 	
-	(*data)["[database]"] = Map{"value": CloneDatabase(database), "mandatory": true}
-	(*data)["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2, 
+	(data)["[database]"] = Map{"value": database, "mandatory": true}
+	(data)["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2, 
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
-	(*data)["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
-	(*data)["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false}
-	(*data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
-	(*data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
-	(*data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
+	(data)["active"] = Map{"type": "*bool", "mandatory": true, "default": true}
+	(data)["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false}
+	(data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
+	(data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
+	(data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now"}
 
-	getData := func() (*Map, []error) {
-		return data.Clone()
+	getData := func() (*Map) {
+		return &data
 	}
 
-	getTableName := func() (string, []error) {
-		table_name_map, table_name_map_errors := data.GetMap("[table_name]")
+	getTableName := func() (*string, []error) {
+		table_name_map, table_name_map_errors := getData().GetMap("[table_name]")
 		if table_name_map_errors != nil {
-			return "", table_name_map_errors
+			return nil, table_name_map_errors
 		}
 
-		table_name, table_name_errors := table_name_map.GetString("value")
-		if table_name_errors != nil {
-			return "", table_name_errors
-		}
-		n := CloneString(table_name)
-		return *n, nil
+		return table_name_map.GetString("value")
 	}
 
 	getTableColumns := func() (*[]string, []error) {
@@ -90,13 +73,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		clone_data, clone_data_errors := getData()
-		if clone_data_errors != nil {
-			return nil, clone_data_errors
-		}
-
-		for _, column := range clone_data.Keys() {
-			if data.GetType(column) != "class.Map" {
+		for _, column := range (*getData()).Keys() {
+			if getData().GetType(column) != "class.Map" {
 				continue
 			}
 
@@ -125,7 +103,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}
 
 		for _, column := range *table_columns {
-			columnSchema := (*data)[column].(Map)
+			columnSchema := (*getData())[column].(Map)
 
 			if columnSchema.IsBoolFalse("primary_key") {
 				continue
@@ -145,7 +123,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}
 
 		for _, column := range *table_columns {
-			columnSchema := (*data)[column].(Map)
+			columnSchema := (*getData())[column].(Map)
 
 			if columnSchema.IsBoolTrue("primary_key") {
 				continue
@@ -157,22 +135,17 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	validate := func() []error {
-		data_cloned, data_cloned_errors := getData()
-		if data_cloned_errors != nil {
-			return data_cloned_errors
-		}
-
-		return ValidateData(*data_cloned, "*class.Table")
+		return ValidateData(data, "*class.Table")
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
 		if temp_database_map_errors != nil {
 			return nil, temp_database_map_errors
 		}
 
 		temp_database := temp_database_map.GetObject("value").(*Database)
-		return CloneDatabase(temp_database), nil
+		return temp_database, nil
 	}
 
 	setTable := func(table *Table) {
@@ -215,7 +188,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(temp_table_name))
+		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(*temp_table_name))
 		
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -255,7 +228,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return temp_table_name_errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(temp_table_name))
+		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(*temp_table_name))
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -292,7 +265,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return nil, temp_table_name_errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(temp_table_name))
+		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(*temp_table_name))
 
 		valid_columns, valid_columns_errors := getTableColumns()
 		if valid_columns_errors != nil {
@@ -303,7 +276,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 		sql_command += "("
 		for index, column := range *valid_columns {
-			columnSchema := (*data)[column].(Map)
+			columnSchema := (*getData())[column].(Map)
 			sql_command += EscapeString(column)
 
 			typeOf, _ := columnSchema.GetString("type")
@@ -440,7 +413,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(temp_table_name)))
+			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(*temp_table_name)))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -485,13 +458,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
 		},
-		Clone: func() *Table {
-			schema_clone, _ :=  schema.Clone()
-			temp_database, _ := getDatabase()
-			temp_table_name, _ := getTableName()
-			clone_value, _ := NewTable(temp_database, temp_table_name, *schema_clone)
-			return clone_value
-		},
 		GetTableColumns: func() (*[]string, []error) {
 			return getTableColumns()
 		},
@@ -520,7 +486,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, temp_table_name_errors
 			}
 
-			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString(temp_table_name))
+			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString(*temp_table_name))
 
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
@@ -603,10 +569,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			table_schema, table_schema_errors := getData()
-			if table_schema_errors != nil {
-				return nil, table_schema_errors
-			}
+			table_schema := getData()
 
 			temp_table_name, temp_table_name_errors := getTableName()
 			if temp_table_name_errors != nil {
@@ -622,7 +585,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(*table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
+						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *temp_table_name, *table_columns))
 					}
 				}
 
@@ -667,7 +630,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(temp_table_name))
+			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(*temp_table_name))
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
 					sql += "WHERE "
@@ -833,7 +796,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, temp_table_name_errors
 			}
 			
-			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(temp_table_name))
+			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(*temp_table_name))
 
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
@@ -1046,21 +1009,22 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 			return &schema, nil
 		},
+		/*
 		GetData: func() (*Map, []error) {
 			return getData()
-		},
+		},*/
 		GetTableName: func() (string, []error) {
-			return getTableName()
+			table_name_ptr, table_name_ptr_errors := getTableName()
+			if table_name_ptr_errors != nil {
+				return "", table_name_ptr_errors
+			}
+			return *table_name_ptr, nil
 		},
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)
 		},
 		ToJSONString: func() (*string, []error) {
-			data_clone, data_clone_errors := data.Clone()
-			if data_clone_errors != nil {
-				return nil, data_clone_errors
-			}
-			return data_clone.ToJSONString()
+			return getData().ToJSONString()
 		},
 	}
 	setTable(&x)

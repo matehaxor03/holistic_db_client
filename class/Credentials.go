@@ -1,13 +1,5 @@
 package class
 
-func CloneCredentials(credentials *Credentials) *Credentials {
-	if credentials == nil {
-		return credentials
-	}
-
-	return credentials.Clone()
-}
-
 type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() (string, []error)
@@ -161,37 +153,28 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 	}
 
+	getData := func() *Map {
+		return &data
+	}
+
 	validate := func() []error {
-		data_cloned, data_cloned_errors := data.Clone()
-		if data_cloned_errors != nil {
-			return data_cloned_errors
-		}
-
-		return ValidateData(*data_cloned, "Credentials")
+		return ValidateData(data, "Credentials")
 	}
 
-	getUsername := func() (string, []error) {
-		temp_username_map, temp_username_map_errors :=  data.GetMap("[username]")
+	getUsername := func() (*string, []error) {
+		temp_username_map, temp_username_map_errors := getData().GetMap("[username]")
 		if temp_username_map_errors != nil {
-			return "", temp_username_map_errors
+			return nil, temp_username_map_errors
 		}
-		username_value, username_value_errors := temp_username_map.GetString("value")
-		if username_value_errors != nil {
-			return "", username_value_errors
-		}
-		return *(CloneString(username_value)), nil
+		return temp_username_map.GetString("value")
 	}
 
-	getPassword := func() (string, []error) {
+	getPassword := func() (*string, []error) {
 		temp_password_map, temp_password_map_errors := data.GetMap("[password]")
 		if temp_password_map_errors != nil {
-			return "", temp_password_map_errors
+			return nil, temp_password_map_errors
 		}
-		password_value, password_value_errors := temp_password_map.GetString("value")
-		if password_value_errors != nil {
-			return "", password_value_errors
-		}
-		return (*CloneString(password_value)), nil
+		return temp_password_map.GetString("value")
 	}
 
 	x := Credentials{
@@ -199,24 +182,21 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 			return validate()
 		},
 		GetUsername: func() (string, []error) {
-			return getUsername()
+			username_ptr, username_ptr_errors := getUsername() 
+			if username_ptr_errors != nil {
+				return "", username_ptr_errors
+			}
+			return *username_ptr, nil
 		},
 		GetPassword: func() (string, []error) {
-			return getPassword()
+			password_ptr, password_ptr_errors := getPassword()
+			if password_ptr_errors != nil {
+				return "", password_ptr_errors
+			}
+			return *password_ptr, nil
 		},
 		ToJSONString: func() (*string, []error) {
-			data_cloned, data_cloned_errors := data.Clone()
-			if data_cloned_errors != nil {
-				return nil, data_cloned_errors
-			}
-			return data_cloned.ToJSONString()
-		},
-		Clone: func() (*Credentials) {
-			temp_username, _ := getUsername()
-			temp_password, _ := getPassword()
-
-			cloned, _ := NewCredentials(temp_username, temp_password)
-			return cloned
+			return getData().ToJSONString()
 		},
 	}
 

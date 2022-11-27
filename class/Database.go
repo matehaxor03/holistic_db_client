@@ -4,17 +4,8 @@ import (
 	"fmt"
 )
 
-func CloneDatabase(database *Database) *Database {
-	if database == nil {
-		return nil
-	}
-
-	return database.Clone()
-}
-
 type Database struct {
 	Validate        func() []error
-	Clone           func() *Database
 	Create          func() []error
 	Delete          func() []error
 	DeleteIfExists  func() []error
@@ -36,27 +27,6 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	SQLCommand := NewSQLCommand()
 	var this_database *Database
 
-	data := Map{
-		"[client]": Map{"value": CloneClient(client), "mandatory": true},
-		"[database_name]": Map{"value": CloneString(&database_name), "mandatory": true, "min_length":2, "not_empty_string_value": true,
-			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()},
-							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}},
-		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
-	}
-
-	getData := func() (*Map, []error) {
-		return data.Clone()
-	}
-
-	validate := func() []error {
-		data_cloned, data_cloned_errors := data.Clone()
-		if data_cloned_errors != nil {
-			return data_cloned_errors
-		}
-
-		return ValidateData(*data_cloned, "Database")
-	}
-
 	setDatabase := func(database *Database) {
 		this_database = database
 	}
@@ -65,40 +35,51 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return this_database
 	}
 
+	data := Map{
+		"[client]": Map{"value": client, "mandatory": true},
+		"[database_name]": Map{"value": &database_name, "mandatory": true, "min_length":2, "not_empty_string_value": true,
+			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()},
+							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}},
+		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
+	}
+
+	getData := func() (*Map) {
+		return &data
+	}
+
+	validate := func() []error {
+		return ValidateData(data, "Database")
+	}
+
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		temp_database_create_options_map, temp_database_create_options_map_errors := data.GetMap("[database_create_options]")
+		temp_database_create_options_map, temp_database_create_options_map_errors := getData().GetMap("[database_create_options]")
 		if temp_database_create_options_map_errors != nil {
 			return nil, temp_database_create_options_map_errors
 		}
 
 		return temp_database_create_options_map.GetObject("value").(*DatabaseCreateOptions), nil
-
-		//return data.M("[database_create_options]").GetObject("value").(*DatabaseCreateOptions)
 	}
 
 	getClient := func() (*Client,[]error) {
-		temp_client_map, temp_client_map_errors := data.GetMap("[client]")
+		temp_client_map, temp_client_map_errors := getData().GetMap("[client]")
 		if temp_client_map_errors != nil {
 			return nil, temp_client_map_errors
 		}
 
 		return temp_client_map.GetObject("value").(*Client), nil
-
-		//return CloneClient(data.M("[client]").GetObject("value").(*Client))
 	}
 
 	setClient := func(client *Client) []error {
-		temp_client_map, temp_client_map_errors := data.GetMap("[client]")
+		temp_client_map, temp_client_map_errors := getData().GetMap("[client]")
 		if temp_client_map_errors != nil {
 			return temp_client_map_errors
 		}
 		temp_client_map.SetObject("value", client)
 		return nil
-		//(*(data.M("[client]")))["value"] = client
 	}
 
 	getDatabaseName := func() (string, []error) {
-		temp_database_name_map, temp_database_name_map_errors := data.GetMap("[database_name]")
+		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[database_name]")
 		if temp_database_name_map_errors != nil {
 			return "", temp_database_name_map_errors
 		}
@@ -111,21 +92,28 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
-		temp_client, _ := getClient()
-		temp_database_create_options, _ := getDatabaseCreateOptions()
+		temp_client, temp_client_errors := getClient()
+		
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		temp_database_create_options, temp_database_create_options_errors := getDatabaseCreateOptions()
+		if temp_database_create_options_errors != nil {
+			return temp_database_create_options_errors
+		}
 
 		_, new_database_errors := NewDatabase(temp_client, new_database_name, temp_database_create_options)
 		if new_database_errors != nil {
 			return new_database_errors
 		}
 
-		temp_database_name_map, temp_database_name_map_errors := data.GetMap("[database_name]")
+		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[database_name]")
 		if temp_database_name_map_errors != nil {
 			return temp_database_name_map_errors
 		}
 
-		temp_database_name_map.SetString("value", CloneString(&new_database_name))
-		//(data["[database_name]"].(Map))["value"] = CloneString(&new_database_name)
+		temp_database_name_map.SetString("value", &new_database_name)
 		return nil
 	}
 
@@ -363,13 +351,6 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		Validate: func() []error {
 			return validate()
 		},
-		Clone: func() *Database {
-			temp_client, _ := getClient()
-			temp_database_name, _ := getDatabaseName()
-			temp_database_create_options, _ :=  getDatabaseCreateOptions()
-			clone_value, _ := NewDatabase(temp_client, temp_database_name, temp_database_create_options)
-			return clone_value
-		},
 		Create: func() []error {
 			errors := createDatabase()
 			if errors != nil {
@@ -536,12 +517,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return temp_client.UseDatabase(temp_database)
 		},
 		ToJSONString: func() (*string, []error) {
-			data_cloned, data_cloned_errors := getData()
-			if data_cloned_errors != nil {
-				return nil, data_cloned_errors
-			}
-
-			return data_cloned.ToJSONString()
+			return getData().ToJSONString()
 		},
 	}
 	setDatabase(&x)

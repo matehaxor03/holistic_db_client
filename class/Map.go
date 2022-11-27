@@ -223,24 +223,15 @@ func (m Map) GetArray(s string) (*Array, []error) {
 	}
 
 	var errors []error
-	var array *Array
+	var result *Array
 
 	rep := fmt.Sprintf("%T", m[s])
 	switch rep {
 	case "*class.Array":
-		cloned_array, cloned_array_errors := m[s].(*Array).Clone()
-		if cloned_array_errors != nil {
-			errors = append(errors, cloned_array_errors...)
-		} else {
-			array = cloned_array
-		}
+		result = m[s].(*Array)
 	case "class.Array":
-		cloned_array, cloned_array_errors := m[s].(Array).Clone()
-		if cloned_array_errors != nil {
-			errors = append(errors, cloned_array_errors...)
-		} else {
-			array = cloned_array
-		}
+		temp := m[s].(Array)
+		result = &temp
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
@@ -249,7 +240,7 @@ func (m Map) GetArray(s string) (*Array, []error) {
 		return nil, errors
 	}
 
-	return array, nil
+	return result, nil
 }
 
 func (m Map) GetString(s string) (*string, []error) {
@@ -983,179 +974,4 @@ func (m Map) Values() Array {
 		array = append(array, f)
 	}
 	return array
-}
-
-func (m Map) Clone() (*Map, []error) {
-	var errors []error
-	clone := Map{}
-	keys := m.Keys()
-
-	for _, key := range keys {
-		if m.IsNil(key) {
-			clone[key] = nil
-			continue
-		}
-
-		current := m[key]
-		rep := fmt.Sprintf("%T", current)
-
-		switch rep {
-		case "string":
-			x, _ := m.GetString(key)
-			clone[key] = *(CloneString(x))
-			break
-		case "*string":
-			if fmt.Sprintf("%s", m[key]) == "%!s(*string=<nil>)" {
-				clone[key] = nil
-			} else {
-				x, _ := m.GetString(key)
-				clone.SetString(key, CloneString(x))
-			}
-			break
-		case "class.Map":
-			cloned_map, cloned_map_error := current.(Map).Clone()
-			if cloned_map_error != nil {
-				errors = append(errors, cloned_map_error...)
-			} else {
-				clone[key] = *cloned_map
-			}
-			break
-		case "*class.Map":
-			cloned_map, cloned_map_error := current.(*Map).Clone()
-			if cloned_map_error != nil {
-				errors = append(errors, cloned_map_error...)
-			} else {
-				clone[key] = *cloned_map
-			}
-			break
-		case "class.Array":
-			cloned_array, cloned_array_errors := current.(Array).Clone()
-			if cloned_array_errors != nil {
-				errors = append(errors, cloned_array_errors...)
-			} else {
-				clone[key] = cloned_array
-			}
-			break
-		case "*class.Array":
-			cloned_array, cloned_array_errors := current.(*Array).Clone()
-			if cloned_array_errors != nil {
-				errors = append(errors, cloned_array_errors...)
-			} else {
-				clone[key] = cloned_array
-			}
-			break
-		case "func(class.Map) []error", "map[string]map[string][][]string", "*func(class.Map) []error":
-			clone[key] = current
-			break
-		case "*class.Credentials":
-			clone[key] = (*(current.(*Credentials))).Clone()
-			break
-		case "*class.DatabaseCreateOptions":
-			clone[key] = (*(current.(*DatabaseCreateOptions))).Clone()
-			break
-		case "*class.Database":
-			clone[key] = (*(current.(*Database))).Clone()
-			break
-		case "*class.Host":
-			clone[key] = (*(current.(*Host))).Clone()
-			break
-		case "*class.Client":
-			clone[key] = (*(current.(*Client))).Clone()
-			break
-		case "*class.Grant":
-			clone[key] = (*(current.(*Grant))).Clone()
-			break
-		case "*class.User":
-			clone[key] = (*(current.(*User))).Clone()
-			break
-		case "*class.DomainName":
-			clone[key] = (*(current.(*DomainName))).Clone()
-			break
-		case "*class.Table":
-			clone[key] = (*(current.(*Table))).Clone()
-			break
-		case "bool":
-			clone[key] = current.(bool)
-		case "*bool":
-			bool_value := *(current.(*bool))
-			clone[key] = &bool_value
-		case "*time.Time":
-			clone[key] = current.(*time.Time)
-		case "int":
-			clone[key] = current.(int)
-		case "*int":
-			int_value := *(current.(*int))
-			clone[key] = int_value
-		case "int8":
-			clone[key] = current.(int8)
-		case "*int8":
-			int8_value := *(current.(*int8))
-			clone[key] = &int8_value
-		case "int16":
-			clone[key] = current.(int16)
-		case "*int16":
-			int16_value := *(current.(*int16))
-			clone[key] = &int16_value
-		case "int32":
-			clone[key] = current.(int32)
-		case "*int32":
-			int32_value := *(current.(*int32))
-			clone[key] = &int32_value
-		case "int64":
-			clone[key] = current.(int64)
-		case "*int64":
-			int64_value := *(current.(*int64))
-			clone[key] = &int64_value
-		case "uint":
-			clone[key] = current.(uint)
-		case "*uint":
-			uint_value := *(current.(*uint))
-			clone[key] = &uint_value
-		case "uint8":
-			clone[key] = current.(uint8)
-		case "*uint8":
-			uint8_value := *(current.(*uint8))
-			clone[key] = &uint8_value
-		case "uint16":
-			clone[key] = current.(uint16)
-		case "*uint16":
-			uint16_value := *(current.(*uint16))
-			clone[key] = &uint16_value
-		case "uint32":
-			clone[key] = current.(uint32)
-		case "*uint32":
-			uint32_value := *(current.(*uint32))
-			clone[key] = &uint32_value
-		case "uint64":
-			clone[key] = current.(uint64)
-		case "*uint64":
-			uint64_value := *(current.(*uint64))
-			clone[key] = &uint64_value
-		case "float32":
-			clone[key] = current.(float32)
-		case "*float32":
-			float32_value := *(current.(*float32))
-			clone[key] = &float32_value
-		case "float64":
-			clone[key] = current.(float64)
-		case "*float64":
-			float64_value := *(current.(*float64))
-			clone[key] = &float64_value
-		case "*[]error":
-			errs := *(current.(*[]error))
-			clone[key] = &errs
-		case "[]error":
-			clone[key] = current.([]error)
-		case "<nil>":
-			clone[key] = nil
-		default:
-			errors = append(errors, fmt.Errorf("Map.Clone: type %s is not supported please implement", rep))
-		}
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return &clone, nil
 }

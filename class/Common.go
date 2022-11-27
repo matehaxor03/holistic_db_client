@@ -264,7 +264,7 @@ func IsDatabaseColumn(value string) bool {
 	return column_name_errors == nil
 }
 
-func ValidateData(fields Map, structType string) []error {			
+func ValidateData(fields Map, structType string) []error {	
 	var errors []error
 	var parameters = fields.Keys()
 	var ignore_identity_errors = false
@@ -408,7 +408,7 @@ func ValidateData(fields Map, structType string) []error {
 			}
 
 			for filter_index, filter := range *filters {
-				filter_map := filter.(*Map)
+				filter_map := filter.(Map)
 
 				if !filter_map.HasKey("function") {
 					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", structType, parameter, FILTERS(), filter_index))
@@ -430,8 +430,8 @@ func ValidateData(fields Map, structType string) []error {
 				filter_map.SetString("data_type", &structType)
 				filter_map.SetString("label", &parameter)
 
-				temp_map := filter.(*Map)
-				function_errors := function(*temp_map)
+				temp_map := filter.(Map)
+				function_errors := function(temp_map)
 				if function_errors != nil {
 					errors = append(errors, function_errors...)
 				}

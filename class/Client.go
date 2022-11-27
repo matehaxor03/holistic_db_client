@@ -8,14 +8,6 @@ import (
 	"strings"
 )
 
-func CloneClient(client *Client) *Client {
-	if client == nil {
-		return client
-	}
-
-	return client.Clone()
-}
-
 type Client struct {
 	CreateDatabase      func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error)
 	DeleteDatabase      func(database_name string) []error
@@ -29,7 +21,6 @@ type Client struct {
 	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() (*Host, []error)
 	GetDatabase         func() (*Database, []error)
-	Clone               func() *Client
 	Validate            func() []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ToJSONString        func() (*string, []error)
@@ -39,67 +30,59 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	var this_client *Client
 
 	data := Map{
-		"[host]": Map{"value": CloneHost(host), "mandatory": false},
-		"[database_username]": Map{"value": CloneString(database_username), "mandatory": false,
+		"[host]": Map{"value": host, "mandatory": false},
+		"[database_username]": Map{"value": database_username, "mandatory": false,
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-		"[database]": Map{"value": CloneDatabase(database), "mandatory": false},
+		"[database]": Map{"value": database, "mandatory": false},
+	}
+
+	getData := func() *Map {
+		return &data
 	}
 
 	getHost := func() (*Host, []error) {
-		temp_host_map, temp_host_error_map := data.GetMap("[host]")
+		temp_host_map, temp_host_error_map := getData().GetMap("[host]")
 		if temp_host_error_map != nil {
 			return nil, temp_host_error_map
 		}
 		temp_host := temp_host_map.GetObject("value").(*Host)
-		return CloneHost(temp_host), nil
-		//return CloneHost((data.M("[host]").GetObject("value").(*Host)))
+		return temp_host, nil
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		temp_database_username_map, temp_database_username_map_errors := data.GetMap("[database_username]")
+		temp_database_username_map, temp_database_username_map_errors := getData().GetMap("[database_username]")
 		if temp_database_username_map_errors != nil {
 			return nil, temp_database_username_map_errors
 		}
 
-		value, value_errors := temp_database_username_map.GetString("value")
-		if value_errors != nil {
-			return nil, value_errors
-		}
-
-		clone_value := CloneString(value)
-		return clone_value, nil
+		return temp_database_username_map.GetString("value")
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
 		if temp_database_map_errors != nil {
 			return nil, temp_database_map_errors
 		}
 
 		temp_database := temp_database_map.GetObject("value").(*Database)
-		return CloneDatabase(temp_database), nil
-
-		//return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
+		return temp_database, nil
 	}
 
 	setDatabase := func(database *Database) []error {
-		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
 		if temp_database_map_errors != nil {
 			return temp_database_map_errors
 		}
-		temp_database_map.SetObject("value", CloneDatabase(database))
+		temp_database_map.SetObject("value", database)
 		return nil
-
-		//(*(data.M("[database]")))["value"] = CloneDatabase(database)
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
-		temp_database_map, temp_database_map_errors := data.GetMap("[database_username]")
+		temp_database_map, temp_database_map_errors := getData().GetMap("[database_username]")
 		if temp_database_map_errors != nil {
 			return temp_database_map_errors
 		}
-		temp_database_map.SetString("value", CloneString(&database_username))
-		//(*(data.M("[database_username]")))["value"] = CloneString(&database_username)
+		temp_database_map.SetString("value", &database_username)
 		return nil
 	}
 
@@ -157,13 +140,6 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	x := Client{
 		Validate: func() []error {
 			return validate()
-		},
-		Clone: func() *Client {
-			database_username, _ := getDatabaseUsername()
-			temp_database, _ := getDatabase()
-			temp_host, _ := getHost()
-			cloned, _ := NewClient(temp_host, database_username, temp_database)
-			return cloned
 		},
 		CreateDatabase: func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 			database, errs := NewDatabase(getClient(), database_name, database_create_options)
@@ -282,11 +258,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return grant_obj, nil
 		},
 		ToJSONString: func() (*string, []error) {
-			data_cloned, data_cloned_errors := data.Clone()
-			if data_cloned_errors != nil {
-				return nil, data_cloned_errors
-			}
-			return data_cloned.ToJSONString()
+			return data.ToJSONString()
 		},
 		UserExists: func(username string) (*bool, []error) {
 			errors := validate()
