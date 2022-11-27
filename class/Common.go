@@ -50,12 +50,14 @@ func getBlacklistStringToUpperFunc() *func(m Map) []error {
 
 func WhiteListString(m Map) []error {
 	var errors []error
-	map_values := m.M("values")
+	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values == nil {
+	if map_values_errors != nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+	} else if  map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
 		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has empty array", *data_type, *label))
@@ -86,12 +88,14 @@ func WhiteListString(m Map) []error {
 
 func BlackListString(m Map) []error {
 	var errors []error
-	map_values := m.M("values")
+	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values == nil {
+	if map_values_errors != nil {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
@@ -122,12 +126,14 @@ func BlackListString(m Map) []error {
 
 func BlackListStringToUpper(m Map) []error {
 	var errors []error
-	map_values := m.M("values")
+	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values == nil {
+	if map_values_errors != nil {
+		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
 		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
@@ -190,12 +196,14 @@ func getWhitelistCharactersFunc() *func(m Map) []error {
 
 func WhitelistCharacters(m Map) []error {
 	var errors []error
-	map_values := m.M("values")
+	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values == nil {
+	if map_values_errors != nil {
+		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
 		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has empty array", *data_type, *label))
@@ -273,7 +281,14 @@ func ValidateData(fields Map, structType string) []error {
 			continue
 		}
 
-		parameter_fields := fields.M(parameter)
+		parameter_fields, parameter_fields_errors := fields.GetMap(parameter)
+		if parameter_fields_errors != nil {
+			errors = append(errors, fmt.Errorf("table: %s column: %s has errors getting map: %s", structType, parameter, fmt.Sprintf("%s", parameter_fields_errors)))
+		}
+
+		if len(errors) > 0 {
+			continue
+		}
 
 		value_is_mandatory := true
 		value_is_null := parameter_fields.IsNil("value")

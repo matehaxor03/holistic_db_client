@@ -27,8 +27,8 @@ type Client struct {
 	CreateUser          func(username *string, password *string, domain_name *string) (*User, []error)
 	UserExists          func(username string) (*bool, []error)
 	GetDatabaseUsername func() (*string, []error)
-	GetHost             func() *Host
-	GetDatabase         func() *Database
+	GetHost             func() (*Host, []error)
+	GetDatabase         func() (*Database, []error)
 	Clone               func() *Client
 	Validate            func() []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
@@ -45,29 +45,62 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		"[database]": Map{"value": CloneDatabase(database), "mandatory": false},
 	}
 
-	getHost := func() *Host {
-		return CloneHost((data.M("[host]").GetObject("value").(*Host)))
+	getHost := func() (*Host, []error) {
+		temp_host_map, temp_host_error_map := data.GetMap("[host]")
+		if temp_host_error_map != nil {
+			return nil, temp_host_error_map
+		}
+		temp_host := temp_host_map.GetObject("value").(*Host)
+		return CloneHost(temp_host), nil
+		//return CloneHost((data.M("[host]").GetObject("value").(*Host)))
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		value, value_errors := data.M("[database_username]").GetString("value")
+		temp_database_username_map, temp_database_username_map_errors := data.GetMap("[database_username]")
+		if temp_database_username_map_errors != nil {
+			return nil, temp_database_username_map_errors
+		}
+
+		value, value_errors := temp_database_username_map.GetString("value")
 		if value_errors != nil {
 			return nil, value_errors
 		}
+
 		clone_value := CloneString(value)
 		return clone_value, nil
 	}
 
-	getDatabase := func() *Database {
-		return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
+	getDatabase := func() (*Database, []error) {
+		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		if temp_database_map_errors != nil {
+			return nil, temp_database_map_errors
+		}
+
+		temp_database := temp_database_map.GetObject("value").(*Database)
+		return CloneDatabase(temp_database), nil
+
+		//return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
 	}
 
-	setDatabase := func(database *Database) {
-		(*(data.M("[database]")))["value"] = CloneDatabase(database)
+	setDatabase := func(database *Database) []error {
+		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		if temp_database_map_errors != nil {
+			return temp_database_map_errors
+		}
+		temp_database_map.SetObject("value", CloneDatabase(database))
+		return nil
+
+		//(*(data.M("[database]")))["value"] = CloneDatabase(database)
 	}
 
-	setDatabaseUsername := func(database_username string) {
-		(*(data.M("[database_username]")))["value"] = CloneString(&database_username)
+	setDatabaseUsername := func(database_username string) []error {
+		temp_database_map, temp_database_map_errors := data.GetMap("[database_username]")
+		if temp_database_map_errors != nil {
+			return temp_database_map_errors
+		}
+		temp_database_map.SetString("value", CloneString(&database_username))
+		//(*(data.M("[database_username]")))["value"] = CloneString(&database_username)
+		return nil
 	}
 
 	validate := func() []error {
@@ -127,7 +160,9 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		},
 		Clone: func() *Client {
 			database_username, _ := getDatabaseUsername()
-			cloned, _ := NewClient(getHost(), database_username, getDatabase())
+			temp_database, _ := getDatabase()
+			temp_host, _ := getHost()
+			cloned, _ := NewClient(temp_host, database_username, temp_database)
 			return cloned
 		},
 		CreateDatabase: func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
@@ -192,13 +227,13 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 			return user, nil
 		},
-		GetHost: func() *Host {
+		GetHost: func() (*Host, []error) {
 			return getHost()
 		},
 		GetDatabaseUsername: func() (*string, []error) {
 			return getDatabaseUsername()
 		},
-		GetDatabase: func() *Database {
+		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
 		},
 		UseDatabase: func(database *Database) []error {
@@ -358,7 +393,12 @@ func GetDatabase(label string) (*Database, []error) {
 		return nil, errors
 	}
 
-	return client.GetDatabase(), nil
+	temp_database, temp_database_errors := client.GetDatabase()
+	if temp_database_errors != nil {
+		return nil, temp_database_errors
+	}
+
+	return temp_database, nil
 }
 
 func GetCredentialDetails(label string) (string, string, string, string, string, []error) {

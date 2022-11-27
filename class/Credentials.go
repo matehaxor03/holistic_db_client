@@ -10,8 +10,8 @@ func CloneCredentials(credentials *Credentials) *Credentials {
 
 type Credentials struct {
 	Validate     func() []error
-	GetUsername  func() *string
-	GetPassword  func() *string
+	GetUsername  func() (*string, []error)
+	GetPassword  func() (*string, []error)
 	ToJSONString func() (*string, []error)
 	Clone        func() *Credentials
 }
@@ -170,24 +170,38 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 		return ValidateData(*data_cloned, "Credentials")
 	}
 
-	getUsername := func() *string {
-		username_value, _ := data.M("[username]").GetString("value")
-		return CloneString(username_value)
+	getUsername := func() (*string, []error) {
+		temp_username_map, temp_username_map_errors :=  data.GetMap("[username]")
+		if temp_username_map_errors != nil {
+			return nil, temp_username_map_errors
+		}
+		username_value, username_value_errors := temp_username_map.GetString("value")
+		if username_value_errors != nil {
+			return nil, username_value_errors
+		}
+		return CloneString(username_value), nil
 	}
 
-	getPassword := func() *string {
-		password_value, _ := data.M("[password]").GetString("value")
-		return CloneString(password_value)
+	getPassword := func() (*string, []error) {
+		temp_password_map, temp_password_map_errors := data.GetMap("[password]")
+		if temp_password_map_errors != nil {
+			return nil, temp_password_map_errors
+		}
+		password_value, password_value_errors := temp_password_map.GetString("value")
+		if password_value_errors != nil {
+			return nil, password_value_errors
+		}
+		return CloneString(password_value), nil
 	}
 
 	x := Credentials{
 		Validate: func() []error {
 			return validate()
 		},
-		GetUsername: func() *string {
+		GetUsername: func() (*string, []error) {
 			return getUsername()
 		},
-		GetPassword: func() *string {
+		GetPassword: func() (*string, []error) {
 			return getPassword()
 		},
 		ToJSONString: func() (*string, []error) {
@@ -197,8 +211,11 @@ func NewCredentials(username *string, password *string) (*Credentials, []error) 
 			}
 			return data_cloned.ToJSONString()
 		},
-		Clone: func() *Credentials {
-			cloned, _ := NewCredentials(getUsername(), getPassword())
+		Clone: func() (*Credentials) {
+			temp_username, _ := getUsername()
+			temp_password, _ := getPassword()
+
+			cloned, _ := NewCredentials(temp_username, temp_password)
 			return cloned
 		},
 	}

@@ -48,6 +48,26 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return ValidateData(data, "DatabaseCreateOptions")
 	}
 
+	get_character_set := func() (*string, []error) {
+		character_set_map, character_set_map_errors := data.GetMap("[character_set]")
+		
+		if character_set_map_errors != nil {
+			return nil, character_set_map_errors
+		}
+
+		return character_set_map.GetString("value")
+	}
+
+	get_collate := func() (*string, []error) {
+		collate_map, colalte_map_errors := data.GetMap("[collate]")
+		
+		if colalte_map_errors != nil {
+			return nil, colalte_map_errors
+		}
+
+		return collate_map.GetString("value")
+	}
+
 	getSQL := func() (*string, []error) {
 		errs := validate()
 		if errs != nil {
@@ -56,12 +76,20 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 		sql_command := ""
 
-		character_set, _ := data.M("[character_set]").GetString("value")
+		character_set, character_set_errors := get_character_set()
+		if character_set_errors != nil {
+			return nil, character_set_errors
+		}
+
 		if character_set != nil && *character_set != "" {
 			sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
 		}
 
-		collate, _ := data.M("[collate]").GetString("value")
+		collate, collate_errors := get_collate()
+		if collate_errors != nil {
+			return nil, collate_errors
+		}
+		
 		if collate != nil && *collate != "" {
 			sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 		}
@@ -82,9 +110,9 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			return data_cloned.ToJSONString()
 		},
 		Clone: func() (*DatabaseCreateOptions) {
-			character_set, _ := data.M("[character_set]").GetString("value")
-			collate, _ := data.M("[collate]").GetString("value")
-			database_create_option, _ :=  NewDatabaseCreateOptions(character_set, collate)
+			character_set, _ := get_character_set()
+			collate, _ := get_collate()
+			database_create_option, _ := NewDatabaseCreateOptions(character_set, collate)
 			return database_create_option
 		},
 		Validate: func() []error {

@@ -9,10 +9,10 @@ import (
 
 type Map map[string]interface{}
 
-func (m Map) M(s string) *Map {
+func (m Map) GetMap(s string) (*Map, []error) {
 	var errors []error
 	if m.IsNil(s) {
-		return nil
+		return nil, nil
 	}
 
 	var result *Map
@@ -29,10 +29,10 @@ func (m Map) M(s string) *Map {
 	}
 
 	if len(errors) > 0 {
-		return nil
+		return nil, errors
 	}
 
-	return result
+	return result, nil
 }
 
 func (m Map) SetMap(s string, zap *Map) {
@@ -383,6 +383,10 @@ func (m Map) GetRunes(s string) (*[]rune, []error) {
 
 func (m Map) GetObject(s string) interface{} {
 	return m[s]
+}
+
+func (m Map) SetObject(s string, object interface{}) {
+	m[s] = object
 }
 
 func (m Map) GetBool(s string) (*bool, []error) {
