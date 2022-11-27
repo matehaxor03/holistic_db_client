@@ -31,7 +31,7 @@ type Table struct {
 	GetData               func() (*Map, []error)
 	CreateRecord          func(record Map) (*Record, []error)
 	Select                func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
-	GetDatabase           func() *Database
+	GetDatabase           func() (*Database, []error)
 	ToJSONString          func() (*string, []error)
 }
 
@@ -157,8 +157,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return ValidateData(*data_cloned, "*class.Table")
 	}
 
-	getDatabase := func() *Database {
-		return CloneDatabase(data.M("[database]").GetObject("value").(*Database))
+	getDatabase := func() (*Database, []error) {
+		temp_database_map, temp_database_map_errors := data.GetMap("[database]")
+		if temp_database_map_errors != nil {
+			return nil, temp_database_map_errors
+		}
+
+		temp_database := temp_database_map.GetObject("value").(*Database)
+		return CloneDatabase(temp_database)
 	}
 
 	setTable := func(table *Table) {
@@ -412,7 +418,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		Validate: func() []error {
 			return validate()
 		},
-		GetDatabase: func() *Database {
+		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
 		},
 		Clone: func() *Table {

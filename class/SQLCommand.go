@@ -31,8 +31,10 @@ func NewSQLCommand() *SQLCommand {
 				return nil, errors
 			}
 
-			host := client.GetHost()
-			if host == nil {
+			host, host_errors := client.GetHost()
+			if host_errors != nil {
+				errors = append(errors, host_errors...)
+			} else if host == nil {
 				errors = append(errors, fmt.Errorf("host is nil"))
 			} else {
 				host_errs := host.Validate()
@@ -46,8 +48,10 @@ func NewSQLCommand() *SQLCommand {
 				errors = append(errors, fmt.Errorf("database_username is nil"))
 			}
 
-			database := client.GetDatabase()
-			if database != nil {
+			database, database_errors := client.GetDatabase()
+			if database_errors != nil {
+				errors = append(errors, database_errors...)
+			} else if database != nil {
 				database_errs := database.Validate()
 				if database_errs != nil {
 					errors = append(errors, database_errs...)
@@ -69,13 +73,32 @@ func NewSQLCommand() *SQLCommand {
 				return nil, errors
 			}
 
-			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", (*host).GetHostName(), (*host).GetPortNumber())
+			host_name, host_name_errors := (*host).GetHostName()
+			if host_name_errors != nil {
+				errors = append(errors, host_name_errors...)
+			}
+
+			port_number, port_number_errors := (*host).GetPortNumber()
+			if port_number_errors != nil {
+				errors = append(errors, port_number_errors...)
+			}
+
+			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", host_name, port_number)
 			credentials_command := ""
 
 			if database != nil {
-				credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + (*host).GetHostName() + ":" + (*host).GetPortNumber() + ":" + (*database).GetDatabaseName() + ":" + (*database_username) + ".config"
+				database_name, database_name_errors := (*database).GetDatabaseName()
+				if database_name_errors != nil {
+					errors = append(errors, database_name_errors...)
+				} else {
+					credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + host_name + ":" + port_number + ":" + database_name + ":" + (*database_username) + ".config"
+				}
 			} else {
-				credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + (*host).GetHostName() + ":" + (*host).GetPortNumber() + "::" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + host_name + ":" + port_number + "::" + (*database_username) + ".config"
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
 			}
 
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command)
@@ -91,7 +114,12 @@ func NewSQLCommand() *SQLCommand {
 			}
 
 			if database != nil {
-				sql = fmt.Sprintf("USE %s;\n", (*database).GetDatabaseName())
+				database_name, database_name_errors := (*database).GetDatabaseName()
+				if database_name_errors != nil {
+					errors = append(errors, database_name_errors...)
+				} else {
+					sql = fmt.Sprintf("USE %s;\n", database_name)
+				}
 			}
 
 			sql += " " + *sql_command

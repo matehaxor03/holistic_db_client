@@ -21,7 +21,7 @@ type Record struct {
 	Create    func() []error
 	Update    func() []error
 	GetInt64  func(field string) (*int64, []error)
-	SetInt64  func(field string, value *int64)
+	SetInt64  func(field string, value *int64) []error
 	GetUInt64 func(field string) (*uint64, []error)
 	ToJSONString  func() (*string, []error)
 }
@@ -61,10 +61,15 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			continue
 		}
 
-		for _, schema_column_data := range table_schema.M(column).Keys() {
+		table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)
+		if table_schema_column_map_errors != nil {
+			return nil, table_schema_column_map_errors
+		}
+
+		for _, schema_column_data := range (*table_schema_column_map).Keys() {
 			switch schema_column_data {
 			case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
-				mapped_field[schema_column_data] = (*table_schema.M(column))[schema_column_data]
+				mapped_field[schema_column_data] = (*table_schema_column_map)[schema_column_data]
 			case "value":
 
 			default:
@@ -117,8 +122,14 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		return &columns, nil
 	}
 
-	getTable := func() *Table {
-		return CloneTable(data.M("[table]").GetObject("value").(*Table))
+	getTable := func() (*Table, []error) {
+		temp_table_map, temp_table_map_errors := data.GetMap("[table]")
+		if temp_table_map_errors != nil {
+			return nil, temp_table_map_errors
+		}
+
+		temp_table := temp_table_map.GetObject("value").(*Table)
+		return CloneTable(temp_table), nil
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
@@ -127,7 +138,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, record_columns_errors
 		}
 
-		non_identity_columns, non_identity_columns_errors := getTable().GetNonIdentityColumns()
+
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			return nil, temp_table_errors
+		}
+
+		non_identity_columns, non_identity_columns_errors := temp_table.GetNonIdentityColumns()
 		if non_identity_columns_errors != nil {
 			return nil, non_identity_columns_errors
 		}
@@ -156,7 +173,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, record_columns_errors
 		}
 
-		identity_columns, identity_columns_errors := getTable().GetIdentityColumns()
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			return nil, temp_table_errors
+		}
+
+		identity_columns, identity_columns_errors := temp_table.GetIdentityColumns()
 		if identity_columns_errors != nil {
 			return nil, identity_columns_errors
 		}
@@ -190,7 +212,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, errors
 		}
 
-		table := getTable()
+		table, table_errors := getTable()
+		if table_errors != nil {
+			return nil, nil, table_errors
+		}
+
 		table_schema, table_schema_errors := table.GetData()
 		
 		if table_schema_errors != nil {
@@ -220,8 +246,22 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 
-			type_of_schema_column, _ := (table_schema.M(record_column)).GetString("type")
-			type_of_record_column := record.M(record_column).GetType("value")
+			temp_table_schema_map, temp_table_schema_map_errors := table_schema.GetMap(record_column)
+			if temp_table_schema_map_errors != nil {
+				return nil, nil, temp_table_schema_map_errors
+			}
+
+			type_of_schema_column, type_of_schema_column_errors := temp_table_schema_map.GetString("type")
+			if type_of_schema_column_errors != nil {
+				return nil, nil, type_of_schema_column_errors
+			}
+
+			type_of_record_column_map, type_of_record_column_map_errors := record.GetMap(record_column)
+			if type_of_record_column_map_errors != nil {
+				return nil, nil, type_of_record_column_map_errors
+			}
+
+			type_of_record_column := type_of_record_column_map.GetType("value")
 			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
@@ -229,7 +269,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		auto_increment_columns := 0
 		for _, valid_column := range *valid_columns {
-			column_definition := table_schema.M(valid_column)
+			column_definition, column_definition_errors := table_schema.GetMap(valid_column)
+			if column_definition_errors != nil {
+				errors = append(errors, column_definition_errors...) 
+				continue
+			}
 
 			if !column_definition.IsBool("primary_key") || !column_definition.IsBool("auto_increment") {
 				continue
@@ -278,7 +322,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			parameter := record.M(record_column)
+			parameter, paramter_errors := record.GetMap(record_column)
+			if paramter_errors != nil {
+				errors = append(errors, paramter_errors...)
+				continue
+			}
+
 			if !parameter.HasKey("value") {
 				errors = append(errors, fmt.Errorf("table: %s column: %s does not have value attribute", table.GetTableName(), record_column))
 				continue
@@ -317,7 +366,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, errors
 		}
 
-		table := getTable()
+		table, table_errors := getTable()
+		if table_errors != nil {
+			return nil, nil, table_errors
+		}
+
 		table_schema, table_schema_errors := table.GetData()
 
 		if table_schema_errors != nil {
@@ -348,8 +401,22 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				}
 			}
 
-			type_of_schema_column, _ := ((*table_schema).M(record_column)).GetString("type")
-			type_of_record_column := record.M(record_column).GetType("value")
+			type_of_schema_column_map, type_of_schema_column_map_errors := table_schema.GetMap(record_column)
+			if type_of_schema_column_map_errors != nil {
+				return nil, nil, type_of_schema_column_map_errors
+			}
+
+			type_of_schema_column, type_of_schema_column_errors := type_of_schema_column_map.GetString("type")
+			if type_of_schema_column_errors != nil {
+				return nil, nil, type_of_schema_column_errors
+			}
+
+			type_of_record_column_map, type_of_record_column_map_errors := record.GetMap(record_column)
+			if type_of_record_column_map_errors != nil {
+				return nil, nil, type_of_record_column_map_errors
+			}
+
+			type_of_record_column := type_of_record_column_map.GetType("value")
 			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
 				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
 			}
@@ -399,7 +466,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, errors
 		}
 
-		(*(record.M("last_modified_date")))["value"] = GetTimeNow()
+		last_modified_date_map, last_modified_date_map_errors := record.GetMap("last_modified_date")
+		if last_modified_date_map_errors != nil {
+			return nil, nil, last_modified_date_map_errors
+		}
+
+		last_modified_date_map.SetObject("value", GetTimeNow())
+		//(*(record.M("last_modified_date")))["value"] = GetTimeNow()
 
 		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table.GetTableName()))
 
@@ -407,7 +480,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
 			sql_command += EscapeString(record_non_identity_column) + "="
-			column_data := record.M(record_non_identity_column)
+			column_data, column_data_errors := record.GetMap(record_non_identity_column)
+
+			if column_data_errors != nil {
+				errors = append(errors, column_data_errors...)
+				continue
+			}
+
 			record_non_identity_column_type := column_data.GetType("value")
 
 			if column_data.IsNil("value") {
@@ -456,7 +535,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		for index, identity_column := range *identity_columns {
 			sql_command += EscapeString(identity_column) + " = "
 
-			column_data := record.M(identity_column)
+			column_data, column_data_errors := record.GetMap(identity_column)
+			if column_data_errors != nil {
+				errors = append(errors, column_data_errors...)
+				continue
+			}
+
 			record_identity_column_type := column_data.GetType("value")
 
 			if column_data.IsNil("value") {
@@ -517,10 +601,18 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 			copyied_record := Map{}
 			for _, cloned_record_key := range cloned_data.Keys() {
-				copyied_record[cloned_record_key] = (*(cloned_data.M(cloned_record_key)))["value"]
+				clone_data_map_column, clone_data_map_column_errors := cloned_data.GetMap(cloned_record_key)
+				if clone_data_map_column_errors != nil {
+					return nil, clone_data_map_column_errors
+				}
+				copyied_record[cloned_record_key] = clone_data_map_column.GetObject("value")
 			}
 
-			return NewRecord(getTable(), copyied_record)
+			temp_table, temp_table_errors := getTable()
+			if temp_table_errors != nil {
+				return nil, temp_table_errors
+			}
+			return NewRecord(temp_table, copyied_record)
 		},
 		Create: func() []error {
 			sql, options, errors := getInsertSQL()
@@ -528,7 +620,22 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return errors
 			}
 
-			json_array, errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
+			temp_table, temp_table_errors := getTable()
+			if temp_table_errors != nil {
+				return temp_table_errors
+			}
+
+			temp_database, temp_database_errors := temp_table.GetDatabase()
+			if temp_database_errors != nil {
+				return temp_database_errors
+			}
+
+			temp_client, temp_client_errors := temp_database.GetClient()
+			if temp_client_errors != nil {
+				return temp_client_errors
+			}
+
+			json_array, errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql, options)
 
 			if len(errors) > 0 {
 				return errors
@@ -562,7 +669,22 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return generate_sql_errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getTable().GetDatabase().GetClient(), sql, options)
+			temp_table, temp_table_errors := getTable()
+			if temp_table_errors != nil {
+				return temp_table_errors
+			}
+
+			temp_database, temp_database_errors := temp_table.GetDatabase()
+			if temp_database_errors != nil {
+				return temp_database_errors
+			}
+
+			temp_client, temp_client_errors := temp_database.GetClient()
+			if temp_client_errors != nil {
+				return temp_client_errors
+			}
+
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql, options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -575,17 +697,31 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			if cloned_data_errors != nil {
 				return nil, cloned_data_errors
 			}
-			return cloned_data.M(field).GetInt64("value")
+			cloned_data_map, cloned_data_map_errors := cloned_data.GetMap(field)
+			if cloned_data_map_errors != nil {
+				return nil, cloned_data_map_errors
+			}
+			return cloned_data_map.GetInt64("value")
 		},
-		SetInt64: func(field string, value *int64) {
-			data.M(field).SetInt64("value", value)
+		SetInt64: func(field string, value *int64) []error {
+			temp_map_field, temp_map_field_errors := data.GetMap(field)
+			if temp_map_field_errors != nil {
+				return temp_map_field_errors
+			}
+			temp_map_field.SetInt64("value", value)
+			return nil
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
 			cloned_data, cloned_data_errors := getData()
 			if cloned_data_errors != nil {
 				return nil, cloned_data_errors
 			}
-			return cloned_data.M(field).GetUInt64("value")
+			
+			cloned_data_map, cloned_data_map_errors := cloned_data.GetMap(field)
+			if cloned_data_map_errors != nil {
+				return nil, cloned_data_map_errors
+			}
+			return cloned_data_map.GetUInt64("value")
 		},
 		ToJSONString: func() (*string, []error) {
 			data_cloned, data_cloned_errors := data.Clone()
