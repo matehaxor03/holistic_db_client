@@ -177,7 +177,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Record")
+		return ValidateData(getData(), "Record")
 	}
 
 	getInsertSQL := func() (*string, Map, []error) {
@@ -603,7 +603,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 					return errors
 				}
 
-				last_insert_id, _ := (*json_array)[0].(*Map).GetString("LAST_INSERT_ID()")
+				last_insert_id, last_insert_id_errors := (*json_array)[0].(Map).GetString("LAST_INSERT_ID()")
+				if last_insert_id_errors != nil {
+					errors = append(errors, last_insert_id_errors...)
+					return errors
+				}
+
 				count, count_err := strconv.ParseUint(*last_insert_id, 10, 64)
 				if count_err != nil {
 					errors = append(errors, count_err)

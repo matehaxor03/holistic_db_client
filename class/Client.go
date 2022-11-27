@@ -87,7 +87,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Client")
+		return ValidateData(getData(), "Client")
 	}
 
 	setClient := func(client *Client) {

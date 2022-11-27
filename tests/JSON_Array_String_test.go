@@ -40,8 +40,8 @@ func TestCanParseArrayContainingSingleString(t *testing.T) {
 			t.Errorf("GetArray is nil")
 		} else if len(*value) != 1 {
 			t.Errorf("expected: length=1 actual: length=%d", len(*value))
-		} else if (*value)[0].(string) != "value" {
-			t.Errorf("expected \"value\" actual: \"%s\"", (*value)[0].(string))
+		} else if (*(*value)[0].(*string)) != "value" {
+			t.Errorf("expected \"value\" actual: \"%s\"", (*(*value)[0].(*string)))
 		}
 	}	
 }
@@ -62,8 +62,8 @@ func TestCanParseMultipleArraysContainingSingleString(t *testing.T) {
 			t.Errorf("GetArray is nil")
 		} else if len(*value) != 1 {
 			t.Errorf("expected: length=1 actual: length=%d", len(*value))
-		} else if (*value)[0].(string) != "value" {
-			t.Errorf("expected \"value\" actual: \"%s\"", (*value)[0].(string))
+		} else if (*(*value)[0].(*string)) != "value" {
+			t.Errorf("expected \"value\" actual: \"%s\"", (*(*value)[0].(*string)))
 		}
 	}
 
@@ -80,8 +80,8 @@ func TestCanParseMultipleArraysContainingSingleString(t *testing.T) {
 			t.Errorf("GetArray is nil")
 		} else if len(*value) != 1 {
 			t.Errorf("expected: length=1 actual: length=%d", len(*value))
-		} else if (*value)[0].(string) != "value2" {
-			t.Errorf("expected \"value2\" actual: \"%s\"", (*value)[0].(string))
+		} else if (*(*value)[0].(*string)) != "value2" {
+			t.Errorf("expected \"value2\" actual: \"%s\"", (*(*value)[0].(*string)))
 		}
 	}
 }
@@ -102,10 +102,10 @@ func TestCanParseArrayContainingMultipleStrings(t *testing.T) {
 			t.Errorf("GetArray is nil")
 		} else if len(*value) != 2 {
 			t.Errorf("expected: length=2 actual: length=%d", len(*value))
-		} else if (*value)[0].(string) != "value" {
-			t.Errorf("expected \"value\" actual: \"%s\"", (*value)[0].(string))
-		} else if (*value)[1].(string) != "value2" {
-			t.Errorf("expected \"value2\" actual: \"%s\"", (*value)[0].(string))
+		} else if (*(*value)[0].(*string)) != "value" {
+			t.Errorf("expected \"value\" actual: \"%s\"", (*(*value)[0].(*string)))
+		} else if (*(*value)[1].(*string)) != "value2" {
+			t.Errorf("expected \"value2\" actual: \"%s\"", (*(*value)[0].(*string)))
 		}
 	}
 }

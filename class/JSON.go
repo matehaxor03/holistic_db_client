@@ -564,7 +564,6 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	}
 
 	if fmt.Sprintf("%T", list.Front().Value) == "*class.Array" {
-		//fmt.Println("adding array value " + data_type + " " + *string_value)
 		data_array := list.Front().Value.(*Array)
 		if data_type == "string" {
 			*data_array = append(*data_array, string_value)
@@ -596,8 +595,6 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	}
 
 	if fmt.Sprintf("%T", list.Front().Value) == "*class.Map" {
-		//fmt.Println("adding map value " + temp_key + " " + *string_value)
-
 		if data_type == "string" {
 			list.Front().Value.(*Map).SetString(temp_key, string_value)
 		} else if data_type == "bool" {

@@ -94,7 +94,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Host")
+		return ValidateData(getData(), "Host")
 	}
 
 	errors := validate()

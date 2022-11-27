@@ -25,7 +25,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "DomainName")
+		return ValidateData(getData(), "DomainName")
 	}
 
 	getDomainName := func() (*string, []error) {

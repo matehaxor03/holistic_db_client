@@ -135,7 +135,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "*class.Table")
+		return ValidateData(getData(), "*class.Table")
 	}
 
 	getDatabase := func() (*Database, []error) {
@@ -154,25 +154,6 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	getTable := func() *Table {
 		return this_table
-	}
-
-	setTableName := func(new_table_name string) []error {
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-		_, new_table_errors := NewTable(temp_database, new_table_name, schema)
-		if new_table_errors != nil {
-			return new_table_errors
-		}
-
-		temp_database_name_map, temp_database_name_map_errors := data.GetMap("[table_name]")
-		if temp_database_name_map_errors != nil {
-			return temp_database_name_map_errors
-		}
-
-		temp_database_name_map.SetObject("value", new_table_name)
-		return nil
 	}
 
 	exists := func() (*bool, []error) {
@@ -250,6 +231,259 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return errors
 		}
 
+		return nil
+	}
+
+	getSchema := func() (*Map, []error) {
+		var errors []error
+		validate_errors := validate()
+		
+		if validate_errors != nil {
+			errors = append(errors, validate_errors...)
+			return nil, errors
+		}
+
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			return nil, temp_table_name_errors
+		}
+		
+		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(*temp_table_name))
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return nil, temp_client_errors
+		}
+
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "json_output": true})
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+			return nil, errors
+		}
+
+		if json_array == nil {
+			errors = append(errors, fmt.Errorf("show columns returned nil records"))
+			return nil, errors
+		}
+
+		if len(*json_array) == 0 {
+			errors = append(errors, fmt.Errorf("show columns did not return any records"))
+			return nil, errors
+		}
+
+		schema := Map{}
+		for _, column_details := range *json_array {
+			column_map := column_details.(Map)
+			column_attributes := column_map.Keys()
+
+			column_schema := Map{}
+			default_value := ""
+			field_name := ""
+			is_nullable := true
+			is_primary_key := false
+			is_mandatory := false
+			extra_value := ""
+			for _, column_attribute := range column_attributes {
+				switch column_attribute {
+				case "Key":
+					key_value, _ := column_map.GetString("Key")
+					switch *key_value {
+					case "PRI":
+						is_primary_key = true
+						is_mandatory = true
+						is_nullable = false
+						column_schema.SetBool("primary_key", &is_primary_key)
+						column_schema.SetBool("mandatory", &is_mandatory)
+					case "":
+					default:
+						errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", *key_value))
+					}
+				case "Field":
+					field_name_value, _ := column_map.GetString("Field")
+					field_name = *field_name_value
+				case "Type":
+					type_of_value, _ := column_map.GetString("Type")
+					switch *type_of_value {
+					case "bigint unsigned", "int unsigned", "smallint unsigned":
+						data_type := "uint64"
+						unsigned := true
+						column_schema.SetString("type", &data_type)
+						column_schema.SetBool("unsigned", &unsigned)
+					case "bigint", "int", "smallint":
+						data_type := "int64"
+						column_schema.SetString("type", &data_type)
+					case "timestamp(6)", "timestamp":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+					case "tinyint(1)":
+						data_type := "bool"
+						column_schema.SetString("type", &data_type)
+					case "text", "blob", "json":
+						data_type := "string"
+						column_schema.SetString("type", &data_type)
+					default:
+						if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
+							data_type := "string"
+							column_schema.SetString("type", &data_type)
+						} else if strings.HasPrefix(*type_of_value, "varchar(") && strings.HasSuffix(*type_of_value, ")") {
+							data_type := "string"
+							column_schema.SetString("type", &data_type)
+						} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
+							type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
+							parts := strings.Split(type_of_value_values, ",")
+							if len(parts) == 0 {
+								errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", *type_of_value))
+							} else {
+								part := parts[0]
+								if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
+									data_type := "string"
+									column_schema.SetString("type", &data_type)
+								} else {
+									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
+								}
+							}
+						} else {
+							errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", *type_of_value))
+						}
+					}
+				case "Null":
+					null_value, _ := column_map.GetString("Null")
+					switch *null_value {
+					case "YES":
+						if !is_primary_key {
+							is_mandatory = false
+							is_nullable = true
+							column_schema.SetBool("mandatory", &is_mandatory)
+						}
+					case "NO":
+						is_nullable = false
+						is_mandatory = true
+						column_schema.SetBool("mandatory", &is_mandatory)
+					default:
+						errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", *null_value))
+					}
+				case "Default":
+					default_val, _ := column_map.GetString("Default")
+					default_value = *default_val
+				case "Extra":
+					extra_val, _ := column_map.GetString("Extra")
+					extra_value = *extra_val
+					switch extra_value {
+					case "auto_increment":
+						auto_increment := true
+						column_schema.SetBool("auto_increment", &auto_increment)
+					case "DEFAULT_GENERATED":
+					case "":
+					default:
+						errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
+					}
+				default:
+					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
+				}
+			}
+
+			if column_schema.IsNil("type") {
+				errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", temp_table_name, field_name))
+			}
+
+			if len(errors) > 0 {
+				continue
+			}
+
+			dt, _ := column_schema.GetString("type")
+
+		
+			if default_value == "NULL" {
+			} else {
+				if *dt == "string" {
+					column_schema.SetString("default", &default_value)
+				} else if *dt == "uint64" && default_value != "" {
+					number, err := strconv.ParseUint(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						column_schema.SetUInt64("default", &number)
+					}
+				} else if *dt == "int64" && default_value != "" {
+					number, err := strconv.ParseInt(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						column_schema.SetInt64("default", &number)
+					}
+				} else if *dt == "bool" && default_value != "" {
+					number, err := strconv.ParseInt(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						if number == 0 {
+							boolean_value := false
+							column_schema.SetBool("default", &boolean_value)
+						} else if number == 1 {
+							boolean_value := true
+							column_schema.SetBool("default", &boolean_value)
+						} else {
+							errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
+						}
+					}
+				} else if *dt == "time.Time" && default_value != "" {
+					if (default_value == "CURRENT_TIMESTAMP(6)" || 
+						default_value == "CURRENT_TIMESTAMP(3)" ||
+						default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
+						now := "now"
+						column_schema.SetString("default", &now)
+					} else {
+						errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
+					}
+				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "string" || *dt == "uint64") && default_value != "" {
+					errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
+				}
+			}
+			
+
+			if is_nullable {
+				adjusted_type := "*" + *dt
+				column_schema.SetString("type", &adjusted_type)
+			}
+
+			schema[field_name] = column_schema
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return &schema, nil
+	}
+
+	setTableName := func(new_table_name string) []error {
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return temp_database_errors
+		}
+
+		temp_schema, temp_schema_errors := getSchema()
+		if temp_schema_errors != nil {
+			return temp_schema_errors
+		}
+
+		_, new_table_errors := NewTable(temp_database, new_table_name, *temp_schema)
+		if new_table_errors != nil {
+			return new_table_errors
+		}
+
+		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[table_name]")
+		if temp_database_name_map_errors != nil {
+			return temp_database_name_map_errors
+		}
+
+		temp_database_name_map.SetObject("value", new_table_name)
 		return nil
 	}
 
@@ -783,236 +1017,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return exists()
 		},
 		GetSchema: func() (*Map, []error) {
-			var errors []error
-			validate_errors := validate()
-			
-			if validate_errors != nil {
-				errors = append(errors, validate_errors...)
-				return nil, errors
-			}
-
-			temp_table_name, temp_table_name_errors := getTableName()
-			if temp_table_name_errors != nil {
-				return nil, temp_table_name_errors
-			}
-			
-			sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(*temp_table_name))
-
-			temp_database, temp_database_errors := getDatabase()
-			if temp_database_errors != nil {
-				return nil, temp_database_errors
-			}
-
-			temp_client, temp_client_errors := temp_database.GetClient()
-			if temp_client_errors != nil {
-				return nil, temp_client_errors
-			}
-
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "json_output": true})
-
-			if sql_errors != nil {
-				errors = append(errors, sql_errors...)
-				return nil, errors
-			}
-
-			if json_array == nil {
-				errors = append(errors, fmt.Errorf("show columns returned nil records"))
-				return nil, errors
-			}
-
-			if len(*json_array) == 0 {
-				errors = append(errors, fmt.Errorf("show columns did not return any records"))
-				return nil, errors
-			}
-
-			schema := Map{}
-			for _, column_details := range *json_array {
-				column_map := column_details.(*Map)
-				column_attributes := column_map.Keys()
-
-				column_schema := Map{}
-				default_value := ""
-				field_name := ""
-				is_nullable := true
-				is_primary_key := false
-				is_mandatory := false
-				extra_value := ""
-				for _, column_attribute := range column_attributes {
-					switch column_attribute {
-					case "Key":
-						key_value, _ := column_map.GetString("Key")
-						switch *key_value {
-						case "PRI":
-							is_primary_key = true
-							is_mandatory = true
-							is_nullable = false
-							column_schema.SetBool("primary_key", &is_primary_key)
-							column_schema.SetBool("mandatory", &is_mandatory)
-						case "":
-						default:
-							errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", *key_value))
-						}
-					case "Field":
-						field_name_value, _ := column_map.GetString("Field")
-						field_name = *field_name_value
-					case "Type":
-						type_of_value, _ := column_map.GetString("Type")
-						switch *type_of_value {
-						case "bigint unsigned", "int unsigned", "smallint unsigned":
-							data_type := "uint64"
-							unsigned := true
-							column_schema.SetString("type", &data_type)
-							column_schema.SetBool("unsigned", &unsigned)
-						case "bigint", "int", "smallint":
-							data_type := "int64"
-							column_schema.SetString("type", &data_type)
-						case "timestamp(6)", "timestamp":
-							data_type := "time.Time"
-							column_schema.SetString("type", &data_type)
-						case "tinyint(1)":
-							data_type := "bool"
-							column_schema.SetString("type", &data_type)
-						case "text", "blob", "json":
-							data_type := "string"
-							column_schema.SetString("type", &data_type)
-						default:
-							if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
-								data_type := "string"
-								column_schema.SetString("type", &data_type)
-							} else if strings.HasPrefix(*type_of_value, "varchar(") && strings.HasSuffix(*type_of_value, ")") {
-								data_type := "string"
-								column_schema.SetString("type", &data_type)
-							} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
-								type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
-								parts := strings.Split(type_of_value_values, ",")
-								if len(parts) == 0 {
-									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", *type_of_value))
-								} else {
-									part := parts[0]
-									if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
-										data_type := "string"
-										column_schema.SetString("type", &data_type)
-									} else {
-										errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
-									}
-								}
-							} else {
-								errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", *type_of_value))
-							}
-						}
-					case "Null":
-						null_value, _ := column_map.GetString("Null")
-						switch *null_value {
-						case "YES":
-							if !is_primary_key {
-								is_mandatory = false
-								is_nullable = true
-								column_schema.SetBool("mandatory", &is_mandatory)
-							}
-						case "NO":
-							is_nullable = false
-							is_mandatory = true
-							column_schema.SetBool("mandatory", &is_mandatory)
-						default:
-							errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", *null_value))
-						}
-					case "Default":
-						default_val, _ := column_map.GetString("Default")
-						default_value = *default_val
-					case "Extra":
-						extra_val, _ := column_map.GetString("Extra")
-						extra_value = *extra_val
-						switch extra_value {
-						case "auto_increment":
-							auto_increment := true
-							column_schema.SetBool("auto_increment", &auto_increment)
-						case "DEFAULT_GENERATED":
-						case "":
-						default:
-							errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
-						}
-					default:
-						errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
-					}
-				}
-
-				if column_schema.IsNil("type") {
-					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", temp_table_name, field_name))
-				}
-
-				if len(errors) > 0 {
-					continue
-				}
-
-				dt, _ := column_schema.GetString("type")
-
-			
-				if default_value == "NULL" {
-				} else {
-					if *dt == "string" {
-						column_schema.SetString("default", &default_value)
-					} else if *dt == "uint64" && default_value != "" {
-						number, err := strconv.ParseUint(default_value, 10, 64)
-						if err != nil {
-							errors = append(errors, err)
-						} else {
-							column_schema.SetUInt64("default", &number)
-						}
-					} else if *dt == "int64" && default_value != "" {
-						number, err := strconv.ParseInt(default_value, 10, 64)
-						if err != nil {
-							errors = append(errors, err)
-						} else {
-							column_schema.SetInt64("default", &number)
-						}
-					} else if *dt == "bool" && default_value != "" {
-						number, err := strconv.ParseInt(default_value, 10, 64)
-						if err != nil {
-							errors = append(errors, err)
-						} else {
-							if number == 0 {
-								boolean_value := false
-								column_schema.SetBool("default", &boolean_value)
-							} else if number == 1 {
-								boolean_value := true
-								column_schema.SetBool("default", &boolean_value)
-							} else {
-								errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
-							}
-						}
-					} else if *dt == "time.Time" && default_value != "" {
-						if (default_value == "CURRENT_TIMESTAMP(6)" || 
-							default_value == "CURRENT_TIMESTAMP(3)" ||
-							default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
-							now := "now"
-							column_schema.SetString("default", &now)
-						} else {
-							errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
-						}
-					} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "string" || *dt == "uint64") && default_value != "" {
-						errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
-					}
-				}
-				
-
-				if is_nullable {
-					adjusted_type := "*" + *dt
-					column_schema.SetString("type", &adjusted_type)
-				}
-
-				schema[field_name] = column_schema
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
-			return &schema, nil
+			return getSchema()
 		},
-		/*
-		GetData: func() (*Map, []error) {
-			return getData()
-		},*/
 		GetTableName: func() (string, []error) {
 			table_name_ptr, table_name_ptr_errors := getTableName()
 			if table_name_ptr_errors != nil {

@@ -24,8 +24,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		"[domain_name]": Map{"value": domain_name, "mandatory": true},
 	}
 
+	getData := func() *Map {
+		return &data
+	}
+
 	validate := func() []error {
-		return ValidateData(data, "User")
+		return ValidateData(getData(), "User")
 	}
 
 	getClient := func() (*Client, []error) {
@@ -182,7 +186,7 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 			}
 
-			validate_password_errors := ValidateData(password_data, "NewUserPassword")
+			validate_password_errors := ValidateData(&password_data, "NewUserPassword")
 			if validate_password_errors != nil {
 				errors = append(errors, validate_password_errors...)
 			}

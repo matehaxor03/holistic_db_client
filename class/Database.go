@@ -41,6 +41,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()},
 							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}},
 		"[database_create_options]": Map{"value": database_create_options, "mandatory": false},
+		"[has_been_validated]": Map{"value": false, "mandatory": true},
 	}
 
 	getData := func() (*Map) {
@@ -48,7 +49,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Database")
+		return ValidateData(getData(), "Database")
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
@@ -245,7 +246,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		var table_names []string
 		column_name := "Tables_in_" + EscapeString(temp_database_name)
 		for _, record := range *records {
-			table_name, table_name_errors := record.(*Map).GetString(column_name)
+			table_name, table_name_errors := record.(Map).GetString(column_name)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
 				continue

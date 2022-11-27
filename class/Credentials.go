@@ -158,7 +158,7 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "Credentials")
+		return ValidateData(getData(), "Credentials")
 	}
 
 	getUsername := func() (*string, []error) {

@@ -48,7 +48,7 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	validate := func() []error {
-		return ValidateData(data, "DatabaseCreateOptions")
+		return ValidateData(getData(), "DatabaseCreateOptions")
 	}
 
 	get_character_set := func() (*string, []error) {
