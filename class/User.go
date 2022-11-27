@@ -15,9 +15,9 @@ func CloneUser(user *User) *User {
 type User struct {
 	Validate       func() []error
 	Create         func() []error
-	GetCredentials func() *Credentials
-	GetClient func() *Client
-	GetDomainName  func() *DomainName
+	GetCredentials func() (*Credentials, []error)
+	GetClient func() (*Client, []error)
+	GetDomainName  func() (*DomainName, []error)
 	Clone          func() *User
 	UpdatePassword func(new_password string) []error
 	Exists 		   func() (*bool, []error)
@@ -36,16 +36,38 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		return ValidateData(data, "User")
 	}
 
-	getClient := func() *Client {
-		return CloneClient(data.M("[client]").GetObject("value").(*Client))
+	getClient := func() (*Client, []error) {
+		temp_client_map, temp_client_map_errors := data.GetMap("[client]")
+		if temp_client_map_errors != nil {
+			return nil, temp_client_map_errors
+		}
+
+		temp_client := temp_client_map.GetObject("value").(*Client)
+		return CloneClient(temp_client), nil
 	}
 
-	getCredentials := func() *Credentials {
-		return CloneCredentials(data.M("[credentials]").GetObject("value").(*Credentials))
+	getCredentials := func() (*Credentials, []error) {
+		temp_credentials_map, temp_credentials_map_errors := data.GetMap("[credentials]")
+		if temp_credentials_map_errors != nil {
+			return nil, temp_credentials_map_errors
+		}
+
+		temp_credentails := temp_credentials_map.GetObject("value").(*Credentials)
+		return CloneCredentials(temp_credentails), nil
+
+		//return CloneCredentials(data.M("[credentials]").GetObject("value").(*Credentials))
 	}
 
-	getDomainName := func() *DomainName {
-		return CloneDomainName(data.M("[domain_name]").GetObject("value").(*DomainName))
+	getDomainName := func() (*DomainName, []error) {
+		temp_domain_name_map, temp_domain_name_map_errors := data.GetMap("[domain_name]")
+		if temp_domain_name_map_errors != nil {
+			return nil, temp_domain_name_map_errors
+		}
+
+		temp_domain_name := temp_domain_name_map.GetObject("value").(*DomainName)
+		return CloneDomainName(temp_domain_name), nil
+
+		//return CloneDomainName(data.M("[domain_name]").GetObject("value").(*DomainName))
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {
@@ -95,13 +117,13 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			cloned, _ := NewUser(getClient(), getCredentials(), getDomainName())
 			return cloned
 		},
-		GetCredentials: func() *Credentials {
+		GetCredentials: func() (*Credentials, []error) {
 			return getCredentials()
 		},
-		GetClient: func() *Client {
+		GetClient: func() (*Client, []error) {
 			return getClient()
 		},
-		GetDomainName: func() *DomainName {
+		GetDomainName: func() (*DomainName, []error) {
 			return getDomainName()
 		},
 		Exists: func() (*bool, []error) {

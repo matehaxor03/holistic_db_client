@@ -300,7 +300,10 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 				return nil, errors
 			}
 
-			client := user.GetClient()
+			client, client_errors := user.GetClient()
+			if client_errors != nil {
+				return nil, client_errors
+			}
 
 			database, use_database_errors := client.UseDatabaseByName("mysql")
 			if use_database_errors != nil {

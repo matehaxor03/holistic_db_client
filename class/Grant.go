@@ -87,28 +87,69 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 		return ValidateData(*data_cloned, "Grant")
 	}
 
-	getClient := func() *Client {
-		return CloneClient(data.M("[client]").GetObject("value").(*Client))
+	getClient := func() (*Client, []error) {
+		temp_client_map, temp_client_map_errors := data.GetMap("[client]")
+		if temp_client_map_errors != nil {
+			return nil, temp_client_map_errors
+		}
+
+		temp_client_value := temp_client_map.GetObject("value").(*Client)
+		return CloneClient(temp_client_value), nil
 	}
 
-	getUser := func() *User {
-		return CloneUser(data.M("[user]").GetObject("value").(*User))
+	getUser := func() (*User, []error) {
+		temp_user_map, temp_user_map_errors := data.GetMap("[user]")
+		if temp_user_map_errors != nil {
+			return nil, temp_user_map_errors
+		}
+
+		temp_user_value := temp_user_map.GetObject("value").(*User)
+		return CloneUser(temp_user_value), nil
+		//return CloneUser(data.M("[user]").GetObject("value").(*User))
 	}
 
-	getGrantValue := func() string {
-		grant, _ := data.M("[grant]").GetString("value")
-		g := CloneString(grant)
-		return *g
+	getGrantValue := func() (string, []error) {
+		temp_grant_map, temp_grant_map_errors := data.GetMap("[grant]")
+		if temp_grant_map_errors != nil {
+			return "", temp_grant_map_errors
+		}
+
+		temp_grant_value, temp_grant_value_errors := temp_grant_map.GetString("value")
+		if temp_grant_value_errors != nil {
+			return "", temp_grant_value_errors
+		}
+		//grant, _ := data.M("[grant]").GetString("value")
+		g := CloneString(temp_grant_value)
+		return *g, nil
 	}
 
-	getDatabaseFilter := func() *string {
-		database_filter, _ := data.M("[database_filter]").GetString("value")
-		return CloneString(database_filter)
+	getDatabaseFilter := func() (*string, []error) {
+		database_filter_map, database_filter_map_errors := data.GetMap("[database_filter]")
+		if database_filter_map_errors != nil {
+			return nil, database_filter_map_errors
+		}
+		
+		database_filter_value, database_filter_value_errors := database_filter_map.GetString("value")
+		if database_filter_value_errors != nil {
+			return nil, database_filter_value_errors
+		}
+		//database_filter, _ := data.M("[database_filter]").GetString("value")
+		return CloneString(database_filter_value), nil
 	}
 
-	getTableFilter := func() *string {
-		table_filter, _ := data.M("[table_filter]").GetString("value")
-		return CloneString(table_filter)
+	getTableFilter := func() (*string, []error) {
+		table_filter_map, table_filter_map_errors := data.GetMap("[table_filter]")
+		if table_filter_map_errors != nil {
+			return nil, table_filter_map_errors
+		}
+
+		table_filter_value, table_filter_value_errors := table_filter_map.GetString("value")
+		if table_filter_value_errors != nil {
+			return nil, table_filter_value_errors
+		}
+		
+		//table_filter, _ := data.M("[table_filter]").GetString("value")
+		return CloneString(table_filter_value), nil
 	}
 
 	getSQL := func() (*string, []error) {
@@ -117,29 +158,58 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 			return nil, errors
 		}
 
-		user := getUser()
-		credentials := (*user).GetCredentials()
-		domain_name := (*user).GetDomainName()
+		user, user_errors := getUser()
+		if user_errors != nil {
+			return nil, user_errors
+		}
 
-		grant_value := getGrantValue()
-		username_value := *((*credentials).GetUsername())
-		domain_name_value := *((*domain_name).GetDomainName())
+		credentials, credentials_errors := (*user).GetCredentials()
+		if credentials_errors != nil {
+			return nil, credentials_errors
+		}
+		
+		domain_name, domain_name_errors := (*user).GetDomainName()
+		if domain_name_errors != nil {
+			return nil, domain_name_errors
+		}
 
-		database_filter := getDatabaseFilter()
-		table_filter := getTableFilter()
+		grant_value, grant_value_errors := getGrantValue()
+		if grant_value_errors != nil {
+			return nil, grant_value_errors
+		}
+
+		username_value, username_value_errors := (*credentials).GetUsername()
+		if username_value_errors != nil {
+			return nil, username_value_errors
+		}
+
+		domain_name_value, domain_name_value_errors := (*domain_name).GetDomainName()
+		if domain_name_value_errors != nil {
+			return nil, domain_name_value_errors
+		}
+
+		database_filter, database_filter_errors := getDatabaseFilter()
+		if database_filter_errors != nil {
+			return nil, database_filter_errors
+		}
+		
+		table_filter, table_filter_errors := getTableFilter()
+		if table_filter_errors != nil{
+			return nil, table_filter_errors
+		}
 
 		sql := ""
 		if database_filter != nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s.%s ", grant_value, *database_filter, *table_filter)
+			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
 		} else if database_filter != nil && table_filter == nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *database_filter)
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*database_filter))
 		} else if database_filter == nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *table_filter)
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*table_filter))
 		} else {
 			errors = append(errors, fmt.Errorf("Grant: getSQL: both database_filter and table_filter were nil"))
 		}
 
-		sql += fmt.Sprintf("To '%s'@'%s';", username_value, domain_name_value)
+		sql += fmt.Sprintf("To '%s'@'%s';", EscapeString(*username_value), EscapeString(*domain_name_value))
 
 		if len(errors) > 0 {
 			return nil, errors
@@ -155,7 +225,12 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 			return sql_command_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, Map{"use_file": true})
+		temp_client, temp_client_errors := getClient()
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file": true})
 
 		if execute_errors != nil {
 			return execute_errors
@@ -179,7 +254,12 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 			return validate()
 		},
 		Clone: func() *Grant {
-			cloned, _ := NewGrant(getClient(), getUser(), getGrantValue(), getDatabaseFilter(), getTableFilter())
+			temp_client, _ := getClient()
+			temp_user, _ := getUser()
+			temp_grant_value, _ := getGrantValue()
+			temp_database_filter, _ := getDatabaseFilter()
+			temp_table_filter, _ := getTableFilter()
+			cloned, _ := NewGrant(temp_client, temp_user, temp_grant_value, temp_database_filter, temp_table_filter)
 			return cloned
 		},
 		Grant: func() []error {

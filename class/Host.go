@@ -4,8 +4,8 @@ type Host struct {
 	Validate      func() []error
 	ToJSONString  func() (*string, []error)
 	Clone         func() *Host
-	GetHostName   func() string
-	GetPortNumber func() string
+	GetHostName   func() (string, []error)
+	GetPortNumber func() (string, []error)
 }
 
 func CloneHost(host *Host) *Host {
@@ -81,16 +81,30 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
 	}
 
-	getHostName := func() string {
-		host_name, _ := data.M("[host_name]").GetString("value")
-		c := CloneString(host_name)
-		return *c
+	getHostName := func() (string, []error) {
+		temp_host_name_map, temp_host_name_map_errors := data.GetMap("[host_name]")
+		if temp_host_name_map_errors != nil {
+			return "", temp_host_name_map_errors
+		}
+		temp_host_name, temp_host_name_errors := temp_host_name_map.GetString("value")
+		if temp_host_name_errors != nil {
+			return "", temp_host_name_errors
+		}
+		c := CloneString(temp_host_name)
+		return *c, nil
 	}
 
-	getPortNumber := func() string {
-		port_number, _ := data.M("[port_number]").GetString("value")
-		c := CloneString(port_number)
-		return *c
+	getPortNumber := func() (string, []error) {
+		temp_port_number_map, temp_port_number_map_errors := data.GetMap("[port_number]")
+		if temp_port_number_map_errors != nil {
+			return "", temp_port_number_map_errors
+		}
+		temp_port_number, temp_port_number_errors := temp_port_number_map.GetString("value")
+		if temp_port_number_errors != nil {
+			return "", temp_port_number_errors
+		}
+		c := CloneString(temp_port_number)
+		return *c, nil
 	}
 
 	validate := func() []error {
@@ -121,13 +135,15 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 			return data_cloned.ToJSONString()
 		},
 		Clone: func() *Host {
-			cloned, _ := NewHost(getHostName(), getPortNumber())
+			temp_host_name, _ := getHostName()
+			temp_port_number, _ :=  getPortNumber()
+			cloned, _ := NewHost(temp_host_name, temp_port_number)
 			return cloned
 		},
-		GetHostName: func() string {
+		GetHostName: func() (string, []error) {
 			return getHostName()
 		},
-		GetPortNumber: func() string {
+		GetPortNumber: func() (string, []error) {
 			return getPortNumber()
 		},
 	}
