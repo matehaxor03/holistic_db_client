@@ -24,7 +24,7 @@ type Client struct {
 	UseDatabaseByName   func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username string) []error
 	GetUser             func(username string) (*User, []error)
-	CreateUser          func(username *string, password *string, domain_name *string) (*User, []error)
+	CreateUser          func(username string, password string, domain_name string) (*User, []error)
 	UserExists          func(username string) (*bool, []error)
 	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() (*Host, []error)
@@ -131,7 +131,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := NewCredentials(&db_username, &db_password)
+		credentials, credentials_errors := NewCredentials(db_username, db_password)
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
@@ -141,7 +141,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := NewDomainName(&db_hostname)
+		domain_name, domain_name_errors := NewDomainName(db_hostname)
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
@@ -204,7 +204,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		GetUser: func(username string) (*User, []error) {
 			return getUser(username)
 		},
-		CreateUser: func(username *string, password *string, domain_name *string) (*User, []error) {
+		CreateUser: func(username string, password string, domain_name string) (*User, []error) {
 			credentials, credentail_errors := NewCredentials(username, password)
 			if credentail_errors != nil {
 				return nil, credentail_errors

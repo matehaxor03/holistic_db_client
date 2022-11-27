@@ -60,9 +60,9 @@ func main() {
 	character_set, _ := params[CLS_CHARACTER_SET]
 	collate, _ := params[CLS_COLLATE]
 
-	user_username, _ := params[CLS_USER_USERNAME]
-	user_password, _ := params[CLS_USER_PASSWORD]
-	user_domain_name, _ := params[CLS_USER_DOMAIN_NAME]
+	user_username, user_username_found := params[CLS_USER_USERNAME]
+	user_password, user_password_found := params[CLS_USER_PASSWORD]
+	user_domain_name, user_domain_name_found := params[CLS_USER_DOMAIN_NAME]
 
 	command_pt, command_found := params[CLS_COMMAND]
 	command_value := ""
@@ -144,11 +144,27 @@ func main() {
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
-			_, user_errors := client.CreateUser(user_username, user_password, user_domain_name)
+			if user_username_found && user_password_found && user_domain_name_found {
+				_, user_errors := client.CreateUser(*user_username, *user_password, *user_domain_name)
 
-			if user_errors != nil {
-				context.LogErrors(user_errors)
-				os.Exit(1)
+				if user_errors != nil {
+					context.LogErrors(user_errors)
+					os.Exit(1)
+				}
+
+			} else {
+				
+				if !user_username_found {
+					context.LogError(fmt.Errorf("user_username is a mandatory field"))
+				}
+
+				if !user_password_found {
+					context.LogError(fmt.Errorf("user_password is a mandatory field"))
+				}
+
+				if !user_domain_name_found {
+					context.LogError(fmt.Errorf("user_domain_name is a mandatory field"))
+				}
 			}
 		} else {
 			fmt.Printf("class: %s is not supported", class_value)
@@ -178,8 +194,7 @@ func main() {
 		errors = append(errors, fmt.Errorf("command: %s is not supported", command_value))
 	}
 
-	if len(errors) > 0 {
-		context.LogErrors(errors)
+	if context.HasErrors() {
 		os.Exit(1)
 	}
 

@@ -1,11 +1,12 @@
 package tests
  
 import (
-    "testing"
+    //"testing"
 )
 
 //json := ParseJSONSuccessfully(t, "{\"key\":{\"key2\":\"value2\"},\"key3\":\"value3\"}")
 
+/*
 func TestCanParseEmptyMap(t *testing.T) {
 	json := ParseJSONSuccessfully(t, "{\"key\":{}}")
 
@@ -24,7 +25,7 @@ func TestCanParseEmptyMap(t *testing.T) {
 			t.Errorf("expected key length: length=0 actual: length=%d", len(*value.Keys()))
 		}
 	}
-}
+}*/
 
 /*
 func TestCanParseArrayContainingSingleString(t *testing.T) {

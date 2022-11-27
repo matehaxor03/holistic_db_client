@@ -19,13 +19,13 @@ func GET_ALLOWED_DOMAIN_NAMES() Map {
 type DomainName struct {
 	Clone         func() *DomainName
 	Validate      func() []error
-	GetDomainName func() (*string, []error)
+	GetDomainName func() (string, []error)
 }
 
-func NewDomainName(domain_name *string) (*DomainName, []error) {
+func NewDomainName(domain_name string) (*DomainName, []error) {
 
 	data := Map{
-		"[domain_name]": Map{"value": CloneString(domain_name), "mandatory": true,
+		"[domain_name]": Map{"value": CloneString(&domain_name), "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 	}
 
@@ -38,16 +38,16 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 		return ValidateData(*data_cloned, "DomainName")
 	}
 
-	getDomainName := func() (*string, []error) {
+	getDomainName := func() (string, []error) {
 		domain_name_map, domain_name_map_errors := data.GetMap("[domain_name]")
 		if domain_name_map_errors != nil {
-			return nil, domain_name_map_errors
+			return "", domain_name_map_errors
 		}
 		temp_domain_name, temp_domain_name_errors := domain_name_map.GetString("value")
 		if temp_domain_name_errors != nil {
-			return nil, temp_domain_name_errors
+			return "", temp_domain_name_errors
 		}
-		return CloneString(temp_domain_name), nil
+		return *(CloneString(temp_domain_name)), nil
 	}
 
 	errors := validate()
@@ -60,7 +60,7 @@ func NewDomainName(domain_name *string) (*DomainName, []error) {
 		Validate: func() []error {
 			return validate()
 		},
-		GetDomainName: func() (*string, []error) {
+		GetDomainName: func() (string, []error) {
 			return getDomainName()
 		},
 		Clone: func() *DomainName {

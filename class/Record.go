@@ -237,9 +237,14 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, record_columns_errors
 		}
 
+		table_name, table_name_errors := table.GetTableName() 
+		if table_name_errors != nil {
+			return nil, nil, table_name_errors
+		}
+
 		for _, record_column := range *record_columns {
 			if !Contains(*valid_columns, record_column) {
-				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table.GetTableName(), valid_columns))
+				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table_name, valid_columns))
 			} else {
 				if strings.HasPrefix(record_column, "credential") {
 					options["use_file"] = true
@@ -305,14 +310,14 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 
 		if auto_increment_columns > 1 {
-			errors = append(errors, fmt.Errorf("table: %s can only have 1 auto_increment primary_key column, found: %s", table.GetTableName(), auto_increment_columns))
+			errors = append(errors, fmt.Errorf("table: %s can only have 1 auto_increment primary_key column, found: %s", table_name, auto_increment_columns))
 		}
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
 
-		sql_command := fmt.Sprintf("INSERT INTO %s ", EscapeString(table.GetTableName()))
+		sql_command := fmt.Sprintf("INSERT INTO %s ", EscapeString(table_name))
 		sql_command += "("
 		for index, record_column := range *record_columns {
 			sql_command += EscapeString(record_column)
@@ -329,7 +334,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 
 			if !parameter.HasKey("value") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have value attribute", table.GetTableName(), record_column))
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have value attribute", table_name, record_column))
 				continue
 			}
 
@@ -371,6 +376,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, table_errors
 		}
 
+		table_name, table_name_errors := table.GetTableName()
+		if table_name_errors != nil {
+			return nil, nil, table_name_errors
+		}
+
 		table_schema, table_schema_errors := table.GetData()
 
 		if table_schema_errors != nil {
@@ -394,7 +404,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		for _, record_column := range *record_columns {
 			if !Contains(*valid_columns, record_column) {
-				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table.GetTableName(), valid_columns))
+				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table_name, valid_columns))
 			} else {
 				if strings.HasPrefix(record_column, "credential") {
 					options["use_file"] = true
@@ -474,7 +484,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		last_modified_date_map.SetObject("value", GetTimeNow())
 		//(*(record.M("last_modified_date")))["value"] = GetTimeNow()
 
-		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table.GetTableName()))
+		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table_name))
 
 		sql_command += "SET "
 

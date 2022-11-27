@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"strings"
+	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -264,7 +265,11 @@ func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 				t.Errorf("SetDatabaseName should return error when database_name is blacklisted")
 			}
 
-			database_name := database.GetDatabaseName()
+			database_name, database_name_errors := database.GetDatabaseName()
+			if database_name_errors != nil {
+				t.Errorf(fmt.Sprintf("%s", database_name_errors))
+			}
+
 			if database_name == blacklist_database_name {
 				t.Errorf("database_name was updated to the blacklisted database_name")
 			}

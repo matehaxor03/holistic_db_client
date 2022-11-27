@@ -209,7 +209,7 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 			errors = append(errors, fmt.Errorf("Grant: getSQL: both database_filter and table_filter were nil"))
 		}
 
-		sql += fmt.Sprintf("To '%s'@'%s';", EscapeString(*username_value), EscapeString(*domain_name_value))
+		sql += fmt.Sprintf("To '%s'@'%s';", EscapeString(username_value), EscapeString(domain_name_value))
 
 		if len(errors) > 0 {
 			return nil, errors

@@ -78,11 +78,36 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			return nil, nil, errors
 		}
 
+		temp_credentials, temp_credentials_errors := getCredentials()
+		if temp_credentials_errors != nil {
+			return nil, nil, temp_credentials_errors
+		}
+
+		temp_username, temp_username_errors := temp_credentials.GetUsername()
+		if temp_username_errors != nil {
+			return nil, nil, temp_username_errors
+		}
+
+		temp_password, temp_password_errors := temp_credentials.GetPassword()
+		if temp_password_errors != nil {
+			return nil, nil, temp_password_errors
+		}
+
+		temp_domain_name, temp_domain_name_errors := getDomainName()
+		if temp_domain_name_errors != nil {
+			return nil, nil, temp_domain_name_errors
+		}
+
+		temp_domain_name_value, temp_domain_name_value_errors := temp_domain_name.GetDomainName()
+		if temp_domain_name_value_errors != nil {
+			return nil, nil, temp_domain_name_value_errors
+		}
+
 		sql_command := "CREATE USER "
-		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetUsername())))
-		sql_command += fmt.Sprintf("@'%s' ", EscapeString(*((*getDomainName()).GetDomainName())))
+		sql_command += fmt.Sprintf("'%s'", EscapeString(temp_username))
+		sql_command += fmt.Sprintf("@'%s' ", EscapeString(temp_domain_name_value))
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'", EscapeString(*((*getCredentials()).GetPassword())))
+		sql_command += fmt.Sprintf("'%s'", EscapeString(temp_password))
 
 		sql_command += ";"
 		return &sql_command, options, nil
@@ -105,7 +130,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 				return sql_command_errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), sql_command, options)
+			temp_client, temp_client_errors := getClient()
+			if temp_client_errors != nil {
+				return temp_client_errors
+			}
+
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -114,7 +144,10 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			return nil
 		},
 		Clone: func() *User {
-			cloned, _ := NewUser(getClient(), getCredentials(), getDomainName())
+			temp_client, _ := getClient()
+			temp_credentails, _ := getCredentials()
+			temp_domain_name, _ := getDomainName()
+			cloned, _ := NewUser(temp_client, temp_credentails, temp_domain_name)
 			return cloned
 		},
 		GetCredentials: func() (*Credentials, []error) {
@@ -127,7 +160,22 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			return getDomainName()
 		},
 		Exists: func() (*bool, []error) {
-			return getClient().UserExists(*(getCredentials().GetUsername()))
+			temp_client, temp_client_errors := getClient()
+			if temp_client != nil {
+				return nil, temp_client_errors
+			}
+
+			temp_credentials, temp_credentials_errors := getCredentials() 
+			if temp_credentials_errors != nil {
+				return nil, temp_credentials_errors
+			}
+
+			temp_username, temp_username_errors := temp_credentials.GetUsername()
+			if temp_username_errors != nil {
+				return nil, temp_username_errors
+			}
+
+			return temp_client.UserExists(temp_username)
 		},
 		UpdatePassword: func(new_password string) []error {
 			var errors []error
@@ -160,13 +208,32 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 				return errors
 			}
 
-			client := getClient()
-			host := client.GetHost()
-			host_name := host.GetHostName()
-			credentials := getCredentials()
-			username := credentials.GetUsername()
+			temp_client, temp_client_errors := getClient()
+			if temp_client_errors != nil {
+				return temp_client_errors
+			}
 
-			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", *username, host_name, new_password)
+			temp_host, temp_host_errors := temp_client.GetHost()
+			if temp_host_errors != nil {
+				return temp_host_errors
+			}
+
+			temp_host_name, temp_host_name_errors := temp_host.GetHostName()
+			if temp_host_name_errors != nil {
+				return temp_host_name_errors
+			}
+
+			temp_credentials, temp_credentials_errors := getCredentials()
+			if temp_credentials_errors != nil {
+				return temp_credentials_errors
+			}
+
+			temp_username, temp_username_errors := temp_credentials.GetUsername()
+			if temp_username_errors != nil {
+				return temp_username_errors
+			}
+
+			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", EscapeString(temp_username), EscapeString(temp_host_name), EscapeString(new_password))
 
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
 
