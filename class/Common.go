@@ -25,6 +25,33 @@ func CloneString(value *string) *string {
 	return &temp
 }
 
+func IsNil(object interface{}) bool {
+	if object == nil {
+		return true
+	}
+
+	string_value := fmt.Sprintf("%s", object)
+
+	if string_value == "<nil>" {
+		return true
+	}
+
+	rep := fmt.Sprintf("%T", object)
+
+	if string_value == "%!s("+rep+"=<nil>)" {
+		return true
+	}
+
+	return false
+}
+
+func GetType(object interface{}) string {
+	if IsNil(object) {
+		return "nil"
+	}
+	return fmt.Sprintf("%T", object)
+}
+
 func FIELD_NAME_VALIDATION_FUNCTIONS() string {
 	return "validation_functions"
 }
@@ -122,6 +149,262 @@ func BlackListString(m Map) []error {
 	}
 
 	return nil
+}
+
+
+func GetFields(m *Map) (*Map, []error) {
+	var errors []error
+	if IsNil(m) {
+		errors = append(errors, fmt.Errorf("data is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	
+	fields_map, fields_map_errors := m.GetMap("[fields]")
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
+	} else if IsNil(fields_map) {
+		errors = append(errors, fmt.Errorf("[fields] is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return fields_map, nil
+}
+
+func GetSchemas(m *Map) (*Map, []error) {
+	var errors []error
+	if IsNil(m) {
+		errors = append(errors, fmt.Errorf("data is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	
+	fields_map, fields_map_errors := m.GetMap("[schema]")
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
+	} else if IsNil(fields_map) {
+		errors = append(errors, fmt.Errorf("[schema] is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return fields_map, nil
+}
+
+func GetField(m *Map, field string) (interface{}, []error) {
+	var errors []error
+
+	fields_map, fields_map_errors := GetFields(m)
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
+	} else if !fields_map.HasKey(field) {
+		available_fields := fields_map.Keys()
+		errors = append(errors, fmt.Errorf("field does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if fields_map.IsNil(field) {
+		return nil, nil
+	}
+
+	return fields_map.GetObject(field), nil
+}
+
+func SetField(m *Map, field string, object interface{}) ([]error) {
+	var errors []error
+
+	fields_map, fields_map_errors := GetFields(m)
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
+	} 
+
+	schema_map, schema_map_errors := GetSchema(m, field)
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+	
+	if len(errors) > 0 {
+		return errors
+	}
+	
+	schema_type, schema_type_errors  := schema_map.GetString("type")
+	if schema_type_errors != nil {
+		errors = append(errors, schema_type_errors...)
+	} else if schema_type == nil {
+		errors = append(errors, fmt.Errorf("schema is nil for field: %s", field))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	object_type := GetType(object)
+	if object_type != "nil" {
+		if *schema_type != object_type {
+			errors = append(errors, fmt.Errorf("field: %s schema type: %s object type: %s are not a match", field, *schema_type, object_type))
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	fields_map.SetObject(field, object)
+	return nil
+}
+
+func GetSchema(m *Map, field string) (*Map, []error) {
+	var errors []error
+
+	schema_map, schema_map_errors := GetSchemas(m)
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	} else if !schema_map.HasKey(field) {
+		available_fields := schema_map.Keys()
+		errors = append(errors, fmt.Errorf("schema does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	if schema_map.IsNil(field) {
+		errors = append(errors, fmt.Errorf("schema exists: %s however data of schema is nil", field))
+		return nil, errors
+	}
+
+	schema_map_data, schema_map_data_errors := schema_map.GetMap(field)
+	if schema_map_data_errors != nil {
+		errors = append(errors, schema_map_data_errors...)
+	} else if IsNil(schema_map_data) {
+		errors = append(errors, fmt.Errorf("schema is nil: %s"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return schema_map_data, nil
+}
+
+func GetSchemaType(m *Map, field string) (*string, []error) {
+	var errors []error
+	schema_map, schema_map_errors := GetSchema(m, field)
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	} else if !schema_map.HasKey("type") {
+		errors = append(errors, fmt.Errorf("field: %s schema does not have atrribute: type", field))
+	} else if !schema_map.IsString("type") {
+		errors = append(errors, fmt.Errorf("field: %s schema is not a string", field))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return schema_map.GetString("type")
+}
+
+func GetStringField(m *Map, field string) (*string, []error) {
+	var errors []error
+	var value *string
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*string":
+			value = object_value.(*string)
+		case "string":
+		temp := object_value.(string)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetStringField: field: %s type: %s not in [*string, string, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
+func GetHostField(m *Map, field string) (*Host, []error) {
+	var errors []error
+	var value *Host
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.Host":
+			value = object_value.(*Host)
+		case "class.Host":
+		temp := object_value.(Host)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetHostField: field: %s type: %s not in [*class.Host, class.Host, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
+func GetDatabaseField(m *Map, field string) (*Database, []error) {
+	var errors []error
+	var value *Database
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.Database":
+			value = object_value.(*Database)
+		case "class.Database":
+		temp := object_value.(Database)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetHostField: field: %s type: %s not in [*class.Database, class.Database, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
 }
 
 func BlackListStringToUpper(m Map) []error {

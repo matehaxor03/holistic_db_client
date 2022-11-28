@@ -30,10 +30,11 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	var this_client *Client
 
 	data := Map{
-		"[host]": Map{"value": host, "mandatory": false, "validated":false},
-		"[database_username]": Map{"value": database_username, "mandatory": false, "validated":false,
-			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-		"[database]": Map{"value": database, "mandatory": false, "validated":false},
+		"[fields]":Map{"host": host, "database": database, "database_username": database_username },
+		"[schema]":Map{"host": Map{"type":"*class.Host", "mandatory": false, "validated":false},
+					   "database": Map{"type":"*class.Database", "mandatory": false, "validated":false},
+					   "database_username": Map{"type":"*string", "mandatory":false, "validated":false,
+					   FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
 	}
 
 	getData := func() *Map {
@@ -41,40 +42,19 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	}
 
 	getHost := func() (*Host, []error) {
-		temp_host_map, temp_host_error_map := getData().GetMap("[host]")
-		if temp_host_error_map != nil {
-			return nil, temp_host_error_map
-		}
-		temp_host := temp_host_map.GetObject("value").(*Host)
-		return temp_host, nil
+		return GetHostField(getData(), "host")
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		temp_database_username_map, temp_database_username_map_errors := getData().GetMap("[database_username]")
-		if temp_database_username_map_errors != nil {
-			return nil, temp_database_username_map_errors
-		}
-
-		return temp_database_username_map.GetString("value")
+		return GetStringField(getData(), "database_username")
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
-		if temp_database_map_errors != nil {
-			return nil, temp_database_map_errors
-		}
-
-		temp_database := temp_database_map.GetObject("value").(*Database)
-		return temp_database, nil
+		return GetDatabaseField(getData(), "database")
 	}
 
 	setDatabase := func(database *Database) []error {
-		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
-		if temp_database_map_errors != nil {
-			return temp_database_map_errors
-		}
-		temp_database_map.SetObject("value", database)
-		return nil
+		return SetField(getData(), "database", database)
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
