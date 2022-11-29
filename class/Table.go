@@ -31,41 +31,41 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	SQLCommand := NewSQLCommand()
 	var errors []error
 
+	schema_is_nil := false
 	if schema == nil {
-		schema = Map{}
-		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true, "validated": false}
-	} else {
-		schema["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true, "validated": false}
+		schema_is_nil = true
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
 
-	data := schema
-	
-	(data)["[database]"] = Map{"value": database, "mandatory": true, "validated": false}
-	(data)["[table_name]"] = Map{"type": "*string", "value": &table_name, "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
+	data := Map{"[fields]":Map{"[database]":database, "[table_name]":table_name},
+				"[schema]":schema}
+
+	schema["[database]"] =  Map{"type":"*class.Database", "mandatory": true, "validated": false}
+	schema["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
 		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
-	(data)["active"] = Map{"type": "*bool", "mandatory": true, "default": true, "validated": false}
-	(data)["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false, "validated": false}
-	(data)["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
-	(data)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
-	(data)["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+	if schema_is_nil {
+		schema["active"] = Map{"type": "*bool", "mandatory": true, "default": true, "validated": false}
+		schema["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false, "validated": false}
+		schema["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+		schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+		schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
+		data["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true, "validated": false}
+	} else {
+		data["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true, "validated": false}
+	}
+	
 
 	getData := func() (*Map) {
 		return &data
 	}
 
 	getTableName := func() (*string, []error) {
-		table_name_map, table_name_map_errors := getData().GetMap("[table_name]")
-		if table_name_map_errors != nil {
-			return nil, table_name_map_errors
-		}
-
-		return table_name_map.GetString("value")
+		return GetStringField(getData(), "[table_name]")
 	}
 
 	getTableColumns := func() (*[]string, []error) {
@@ -139,13 +139,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_database_map, temp_database_map_errors := getData().GetMap("[database]")
-		if temp_database_map_errors != nil {
-			return nil, temp_database_map_errors
-		}
-
-		temp_database := temp_database_map.GetObject("value").(*Database)
-		return temp_database, nil
+		return GetDatabaseField(getData(), "[database]")
 	}
 
 	setTable := func(table *Table) {

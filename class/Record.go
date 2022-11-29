@@ -45,9 +45,9 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	data := Map{"[fields]": record_data}
-	data["[fields]"].(Map)["table"] = table
+	data["[fields]"].(Map)["[table]"] = table
 	data["[schema]"] = table_schema
-	data["[schema]"].(Map)["table"] =  Map{"type":"*class.Table", "mandatory": true}
+	data["[schema]"].(Map)["[table]"] =  Map{"type":"*class.Table", "mandatory": true}
 
 
 	getData := func() (*Map) {
@@ -87,7 +87,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getTable := func() (*Table, []error) {
-		return GetTableField(getData(), "table")
+		return GetTableField(getData(), "[table]")
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
