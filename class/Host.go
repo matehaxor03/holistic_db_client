@@ -66,10 +66,13 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	}
 
 	data := Map{
-		"[host_name]": Map{"value": &host_name, "mandatory": true, "validated":false,
+		"[fields]": Map{"host_name":host_name, "port_number":port_number},
+		"[schema]": Map{
+			"hostname":Map{"type":"*string","mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-		"[port_number]": Map{"value": &port_number, "mandatory": true, "validated":false,
+			"port_number": Map{"type":"*string", "mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
+		},
 	}
 
 	getData := func() *Map {
@@ -77,20 +80,11 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	}
 
 	getHostName := func() (*string, []error) {
-		temp_host_name_map, temp_host_name_map_errors := getData().GetMap("[host_name]")
-		if temp_host_name_map_errors != nil {
-			return nil, temp_host_name_map_errors
-		}
-		
-		return temp_host_name_map.GetString("value")
+		return GetStringField(getData(), "host_name")
 	}
 
 	getPortNumber := func() (*string, []error) {
-		temp_port_number_map, temp_port_number_map_errors := getData().GetMap("[port_number]")
-		if temp_port_number_map_errors != nil {
-			return nil, temp_port_number_map_errors
-		}
-		return temp_port_number_map.GetString("value")
+		return GetStringField(getData(), "port_number")
 	}
 
 	validate := func() []error {
