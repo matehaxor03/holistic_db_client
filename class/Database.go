@@ -35,12 +35,14 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 		return this_database
 	}
 
-	data := Map{
-		"[client]": Map{"value": client, "mandatory": true, "validated":false},
-		"[database_name]": Map{"value": &database_name, "mandatory": true, "min_length":2, "not_empty_string_value": true, "validated":false,
-			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()},
-							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}},
-		"[database_create_options]": Map{"value": database_create_options, "mandatory": false, "validated":false},
+	data := Map{"fields": Map{
+		"client":client, "database_name":database_name,"database_create_options":database_create_options},
+				"schema": Map{
+		"client":Map{"type":"*class.Client","mandatory": true,"validated":false},
+		"database_name":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,"validated":false,
+			FILTERS(): Array{Map{"values":GetDatabaseNameWhitelistCharacters(),"function":getWhitelistCharactersFunc()},
+							 Map{"values":GetMySQLKeywordsAndReservedWordsInvalidWords(),"function":getBlacklistStringToUpperFunc()}}},
+		"database_create_options":Map{"type":"*class.DatabaseCreateOptions","mandatory":false,"validated":false}},
 	}
 
 	getData := func() (*Map) {
@@ -52,43 +54,28 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		temp_database_create_options_map, temp_database_create_options_map_errors := getData().GetMap("[database_create_options]")
-		if temp_database_create_options_map_errors != nil {
-			return nil, temp_database_create_options_map_errors
-		}
-
-		return temp_database_create_options_map.GetObject("value").(*DatabaseCreateOptions), nil
+		return GetDatabaseCreateOptionsField(getData(), "database_create_options")
 	}
 
-	getClient := func() (*Client,[]error) {
-		temp_client_map, temp_client_map_errors := getData().GetMap("[client]")
-		if temp_client_map_errors != nil {
-			return nil, temp_client_map_errors
-		}
-
-		return temp_client_map.GetObject("value").(*Client), nil
+	getClient := func() (*Client, []error) {
+		return GetClientField(getData(), "client")
 	}
 
-	setClient := func(client *Client) []error {
-		temp_client_map, temp_client_map_errors := getData().GetMap("[client]")
-		if temp_client_map_errors != nil {
-			return temp_client_map_errors
-		}
-		temp_client_map.SetObject("value", client)
-		return nil
+	setClient := func(new_client *Client) []error {
+		return SetField(getData(), "client", new_client)
 	}
 
 	getDatabaseName := func() (string, []error) {
-		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[database_name]")
-		if temp_database_name_map_errors != nil {
-			return "", temp_database_name_map_errors
-		}
-		temp_database_name, temp_database_name_errors := temp_database_name_map.GetString("value")
+		var errors []error
+		temp_database_name, temp_database_name_errors := GetStringField(getData(), "database_name")
 		if temp_database_name_errors != nil {
 			return "", temp_database_name_errors
+		} else if IsNil(temp_database_name) {
+			errors = append(errors, fmt.Errorf("database_name is nil"))
+			return "", errors
 		}
-		n := CloneString(temp_database_name)
-		return *n, nil
+
+		return *temp_database_name, nil
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
@@ -108,12 +95,12 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return new_database_errors
 		}
 
-		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[database_name]")
-		if temp_database_name_map_errors != nil {
-			return temp_database_name_map_errors
+		temp_fields_map, temp_fields_map_errors := GetFields(getData())
+		if temp_fields_map_errors != nil {
+			return temp_fields_map_errors
 		}
 
-		temp_database_name_map.SetString("value", &new_database_name)
+		temp_fields_map.SetString("database_name", &new_database_name)
 		return nil
 	}
 

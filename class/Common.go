@@ -458,6 +458,66 @@ func GetDatabaseField(m *Map, field string) (*Database, []error) {
 	return value, nil
 }
 
+func GetDatabaseCreateOptionsField(m *Map, field string) (*DatabaseCreateOptions, []error) {
+	var errors []error
+	var value *DatabaseCreateOptions
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.DatabaseCreateOptions":
+			value = object_value.(*DatabaseCreateOptions)
+		case "class.DatabaseCreateOptions":
+		temp := object_value.(DatabaseCreateOptions)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("DatabaseCreateOptions: field: %s type: %s not in [*class.DatabaseCreateOptions, class.DatabaseCreateOptions, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
+func GetClientField(m *Map, field string) (*Client, []error) {
+	var errors []error
+	var value *Client
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.Client":
+			value = object_value.(*Client)
+		case "class.Client":
+		temp := object_value.(Client)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetClientField: field: %s type: %s not in [*class.Client, class.Client, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
 func BlackListStringToUpper(m Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")

@@ -37,10 +37,12 @@ type DatabaseCreateOptions struct {
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 
 	data := Map{
-		"[character_set]": Map{"value": CloneString(character_set), "mandatory": false, "validated":false,
+		"fields":Map{"character_set":character_set, "collate":collate},
+		"schema":Map{"character_set":Map{"type":"*string","mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-		"[collate]": Map{"value": CloneString(collate), "mandatory": false, "validated":false,
+			"collate": Map{"type":"*string","mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
+		},
 	}
 
 	getData := func() *Map {
@@ -52,23 +54,11 @@ func NewDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	get_character_set := func() (*string, []error) {
-		character_set_map, character_set_map_errors := data.GetMap("[character_set]")
-		
-		if character_set_map_errors != nil {
-			return nil, character_set_map_errors
-		}
-
-		return character_set_map.GetString("value")
+		return GetStringField(getData(), "character_set")
 	}
 
 	get_collate := func() (*string, []error) {
-		collate_map, colalte_map_errors := data.GetMap("[collate]")
-		
-		if colalte_map_errors != nil {
-			return nil, colalte_map_errors
-		}
-
-		return collate_map.GetString("value")
+		return GetStringField(getData(), "collate")
 	}
 
 	getSQL := func() (*string, []error) {

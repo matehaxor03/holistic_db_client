@@ -146,12 +146,13 @@ func GetCredentialPasswordValidCharacters() Map {
 
 func NewCredentials(username string, password string) (*Credentials, []error) {
 
-	data := Map{
-		"[username]": Map{"value": CloneString(&username), "mandatory": true, "validated":false,
+	data := Map{"[fields]":Map{"username":username,"password":password},
+				"[schema]":Map{"username":Map{"type":"*string","mandatory": true, "validated":false, 
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-		"[password]": Map{"value": CloneString(&password), "mandatory": true, "validated":false,
+							 "password": Map{"type":"*string","mandatory": true, "validated":false, 
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-	}
+							},
+			    }
 
 	getData := func() *Map {
 		return &data
@@ -162,19 +163,11 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 	}
 
 	getUsername := func() (*string, []error) {
-		temp_username_map, temp_username_map_errors := getData().GetMap("[username]")
-		if temp_username_map_errors != nil {
-			return nil, temp_username_map_errors
-		}
-		return temp_username_map.GetString("value")
+		return GetStringField(getData(), "username")
 	}
 
 	getPassword := func() (*string, []error) {
-		temp_password_map, temp_password_map_errors := data.GetMap("[password]")
-		if temp_password_map_errors != nil {
-			return nil, temp_password_map_errors
-		}
-		return temp_password_map.GetString("value")
+		return GetStringField(getData(), "password")
 	}
 
 	x := Credentials{
