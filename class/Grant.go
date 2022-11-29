@@ -38,29 +38,29 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 	SQLCommand := NewSQLCommand()
 
 	data := Map{
-		"[client]": Map{"value": client, "mandatory": true, "validated":false},
-		"[user]":   Map{"value": user, "mandatory": true, "validated":false},
-		"[grant]": Map{"value": &grant_value, "mandatory": true, "validated":false,
+		"[fields]": Map{"client":client, "user":user, "grant_value":grant_value},
+		"[schema]": Map{"client":Map{"type":"*class.Client", "mandatory": true, "validated":false},
+						"user":Map{"type":"*class.User", "value":user, "mandatory": true, "validated":false},
+						"grant": Map{"type":"*string", "value":grant_value, "mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
+		},
 	}
 
 	if database_filter != nil {
+		data["[fields]"].(Map)["database_filter"] = database_filter
 		if *database_filter == "*" {
-			data["[database_filter]"] = Map{"value": database_filter, "mandatory": true,
-			FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["database_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[database_filter]"] = Map{"type": "*string", "value":database_filter, "mandatory": true,
-			FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["database_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
 	if table_filter != nil {
+		data["[fields]"].(Map)["table_filter"] = table_filter
 		if *table_filter == "*" {
-			data["[table_filter]"] = Map{"value": table_filter, "mandatory": true,
-			FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["table_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[table_filter]"] = Map{"type": "*string", "value":table_filter, "mandatory": true,
-			FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["table_filter"] = Map{"type":"*string","mandatory": true, FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
@@ -78,36 +78,15 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 	}
 
 	getClient := func() (*Client, []error) {
-		temp_client_map, temp_client_map_errors := getData().GetMap("[client]")
-		if temp_client_map_errors != nil {
-			return nil, temp_client_map_errors
-		}
-
-		temp_client_value := temp_client_map.GetObject("value").(*Client)
-		return temp_client_value, nil
+		return GetClientField(getData(), "client")
 	}
 
 	getUser := func() (*User, []error) {
-		temp_user_map, temp_user_map_errors := getData().GetMap("[user]")
-		if temp_user_map_errors != nil {
-			return nil, temp_user_map_errors
-		}
-
-		temp_user_value := temp_user_map.GetObject("value").(*User)
-		return temp_user_value, nil
+		return GetUserField(getData(), "user")
 	}
 
-	getGrantValue := func() (string, []error) {
-		temp_grant_map, temp_grant_map_errors := getData().GetMap("[grant]")
-		if temp_grant_map_errors != nil {
-			return "", temp_grant_map_errors
-		}
-
-		temp_grant_value, temp_grant_value_errors := temp_grant_map.GetString("value")
-		if temp_grant_value_errors != nil {
-			return "", temp_grant_value_errors
-		}
-		return *temp_grant_value, nil
+	getGrantValue := func() (*string, []error) {
+		return GetStringField(getData(), "grant")
 	}
 
 	getDatabaseFilter := func() (*string, []error) {
@@ -176,11 +155,11 @@ func NewGrant(client *Client, user *User, grant_value string, database_filter *s
 
 		sql := ""
 		if database_filter != nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(*grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
 		} else if database_filter != nil && table_filter == nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*database_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(*grant_value), EscapeString(*database_filter))
 		} else if database_filter == nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(*grant_value), EscapeString(*table_filter))
 		} else {
 			errors = append(errors, fmt.Errorf("Grant: getSQL: both database_filter and table_filter were nil"))
 		}

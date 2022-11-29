@@ -428,6 +428,36 @@ func GetHostField(m *Map, field string) (*Host, []error) {
 	return value, nil
 }
 
+func GetUserField(m *Map, field string) (*User, []error) {
+	var errors []error
+	var value *User
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.User":
+			value = object_value.(*User)
+		case "class.User":
+		temp := object_value.(User)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetHostField: field: %s type: %s not in [*class.User, class.User, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
 func GetDatabaseField(m *Map, field string) (*Database, []error) {
 	var errors []error
 	var value *Database
