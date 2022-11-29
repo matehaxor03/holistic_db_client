@@ -114,6 +114,19 @@ func (m Map) IsString(s string) bool {
 	return false
 }
 
+func (m Map) IsMap(s string) bool {
+	if m.IsNil(s) {
+		return false
+	}
+
+	type_of := m.GetType(s)
+	if type_of == "*class.Map" || type_of == "class.Map" {
+		return true
+	}
+
+	return false
+}
+
 func (m Map) IsBoolTrue(s string) bool {
 	if m.IsNil(s) {
 		return false

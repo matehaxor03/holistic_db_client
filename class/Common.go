@@ -211,12 +211,60 @@ func GetField(m *Map, field string) (interface{}, []error) {
 		errors = append(errors, fmt.Errorf("field does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
 	}
 
+	schemas_map, schemas_map_errors := GetSchemas(m)
+	if schemas_map_errors != nil {
+		errors = append(errors, schemas_map_errors...)
+	} else if !schemas_map.HasKey(field) {
+		available_fields := schemas_map.Keys()
+		errors = append(errors, fmt.Errorf("field schema does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+	} else if !schemas_map.IsMap(field) {
+		errors = append(errors, fmt.Errorf("field schema: %s is not a map", field))
+	} 
+
 	if len(errors) > 0 {
 		return nil, errors
 	}
 
+	schema_map, schema_map_errors := schemas_map.GetMap(field)
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	} else if schema_map == nil {
+		errors = append(errors, fmt.Errorf("schema map is nil"))
+	} else if !schema_map.HasKey("type") {
+		available_fields := schemas_map.Keys()
+		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute does not exist available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+	} else if !schema_map.IsString("type") {
+		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute value is not a string it's %s", field, schema_map.GetType("type")))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	schema_type_value, schema_type_value_errors := schema_map.GetString("type")
+	if schema_type_value_errors != nil {
+		errors = append(errors, schema_type_value_errors...)
+	} else if schema_type_value == nil {
+		errors = append(errors, fmt.Errorf("field: %s schema type is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	// todo check mandatory/default
+
 	if fields_map.IsNil(field) {
 		return nil, nil
+	}
+
+	object_type := fields_map.GetType(field)
+	if object_type != *schema_type_value {
+		errors = append(errors, fmt.Errorf("field: %s schema type: %s object type: %s are not a match", field, *schema_type_value, object_type))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
 	}
 
 	return fields_map.GetObject(field), nil
@@ -249,6 +297,9 @@ func SetField(m *Map, field string, object interface{}) ([]error) {
 	if len(errors) > 0 {
 		return errors
 	}
+
+    // todo check mandatory/default
+
 
 	object_type := GetType(object)
 	if object_type != "nil" {
