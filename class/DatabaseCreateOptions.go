@@ -37,8 +37,8 @@ type DatabaseCreateOptions struct {
 func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 
 	data := Map{
-		"fields":Map{"character_set":character_set, "collate":collate},
-		"schema":Map{"character_set":Map{"type":"*string","mandatory": false, "validated":false,
+		"[fields]":Map{"character_set":character_set, "collate":collate},
+		"[schema]":Map{"character_set":Map{"type":"*string","mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
 			"collate": Map{"type":"*string","mandatory": false, "validated":false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
