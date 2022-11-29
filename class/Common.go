@@ -458,6 +458,36 @@ func GetUserField(m *Map, field string) (*User, []error) {
 	return value, nil
 }
 
+func GetTableField(m *Map, field string) (*Table, []error) {
+	var errors []error
+	var value *Table
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.Table":
+			value = object_value.(*Table)
+		case "class.Table":
+		temp := object_value.(Table)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetTableField: field: %s type: %s not in [*class.Table, class.Table, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
 func GetDatabaseField(m *Map, field string) (*Database, []error) {
 	var errors []error
 	var value *Database

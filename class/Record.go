@@ -35,44 +35,19 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 	table_schema, table_schema_errors := table.GetSchema()
 	if table_schema_errors != nil {
-		return nil, table_schema_errors
+		errors = append(errors, table_schema_errors...)
+	} else if IsNil(table_schema) {
+		errors = append(errors, fmt.Errorf("table schema is nil"))
 	}
 
-	data := Map{}
-	for _, column := range record_data.Keys() {
-		mapped_field := Map{"value": record_data[column], "validated": false}
-
-		if !table_schema.HasKey(column) {
-			errors = append(errors, fmt.Errorf("Record.newRecord table schema does not have column: %s", column))
-			continue
-		}
-
-		if table_schema.GetType(column) != "class.Map" {
-			errors = append(errors, fmt.Errorf("Record.newRecord table schema column: %s is not a map", column))
-			continue
-		}
-
-		table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)
-		if table_schema_column_map_errors != nil {
-			return nil, table_schema_column_map_errors
-		}
-
-		for _, schema_column_data := range (*table_schema_column_map).Keys() {
-			switch schema_column_data {
-			case "type", "default", "filters", "mandatory", "primary_key", "auto_increment", "unsigned":
-				mapped_field[schema_column_data] = (*table_schema_column_map)[schema_column_data]
-			case "value", "validated":
-
-			default:
-				errors = append(errors, fmt.Errorf("Record.newRecord table schema column: attribute not supported please implement: %s", schema_column_data))
-			}
-		}
-		
-		
-		data[column] = mapped_field
+	if len(errors) > 0 {
+		return nil, errors
 	}
 
-	data["[table]"] = Map{"value": table, "mandatory": true}
+	data := Map{"[fields]": record_data}
+	data["[fields]"].(Map)["table"] = table
+	data["[schema]"] = table_schema
+	data["[schema]"].(Map)["table"] =  Map{"type":"*class.Table", "mandatory": true}
 
 
 	getData := func() (*Map) {
@@ -84,7 +59,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		for _, column := range (*getData()).Keys() {
+		table_schema_map, table_schema_map_errors := GetSchemas(getData())
+		if table_schema_map_errors != nil {
+			return nil, table_schema_map_errors
+		}
+
+		for _, column := range (*table_schema_map).Keys() {
 			if getData().GetType(column) != "class.Map" {
 				continue
 			}
@@ -107,13 +87,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getTable := func() (*Table, []error) {
-		temp_table_map, temp_table_map_errors := getData().GetMap("[table]")
-		if temp_table_map_errors != nil {
-			return nil, temp_table_map_errors
-		}
-
-		temp_table := temp_table_map.GetObject("value").(*Table)
-		return temp_table, nil
+		return GetTableField(getData(), "table")
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
