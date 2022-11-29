@@ -54,9 +54,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		schema["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
 		schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
 		schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
-		data["[schema_is_nil]"] = Map{"type": "*bool", "value": true, "mandatory": true, "validated": false}
+		data["[schema_is_nil]"] = true
 	} else {
-		data["[schema_is_nil]"] = Map{"type": "*bool", "value": false, "mandatory": true, "validated": false}
+		data["[schema_is_nil]"] = false
 	}
 	
 

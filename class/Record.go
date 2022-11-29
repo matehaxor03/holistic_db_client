@@ -59,13 +59,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		table_schema_map, table_schema_map_errors := GetSchemas(getData())
-		if table_schema_map_errors != nil {
-			return nil, table_schema_map_errors
+		table_schemas_map, table_schemas_map_errors := GetSchemas(getData())
+		if table_schemas_map_errors != nil {
+			return nil, table_schemas_map_errors
 		}
 
-		for _, column := range (*table_schema_map).Keys() {
-			if getData().GetType(column) != "class.Map" {
+		for _, column := range (*table_schemas_map).Keys() {
+			if table_schemas_map.GetType(column) != "class.Map" {
 				continue
 			}
 
