@@ -19,9 +19,11 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	SQLCommand := NewSQLCommand()
 
 	data := Map{
-		"[client]":      Map{"value": client, "mandatory": true, "validated": false},
-		"[credentials]": Map{"value": credentials, "mandatory": true, "validated": false},
-		"[domain_name]": Map{"value": domain_name, "mandatory": true, "validated": false},
+		"[fields]": Map{"client":client, "credentials":credentials, "domain_name":domain_name},
+		"[schema]": Map{"client":Map{"mandatory": true, "validated": false},
+		                "credentials":Map{"mandatory": true, "validated": false},
+						"domain_name":Map{"mandatory": true, "validated": false},
+		},
 	}
 
 	getData := func() *Map {
@@ -33,33 +35,15 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	}
 
 	getClient := func() (*Client, []error) {
-		temp_client_map, temp_client_map_errors := data.GetMap("[client]")
-		if temp_client_map_errors != nil {
-			return nil, temp_client_map_errors
-		}
-
-		temp_client := temp_client_map.GetObject("value").(*Client)
-		return temp_client, nil
+		return GetClientField(getData(), "client")
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		temp_credentials_map, temp_credentials_map_errors := data.GetMap("[credentials]")
-		if temp_credentials_map_errors != nil {
-			return nil, temp_credentials_map_errors
-		}
-
-		temp_credentails := temp_credentials_map.GetObject("value").(*Credentials)
-		return temp_credentails, nil
+		return GetCredentialsField(getData(), "domain_name")
 	}
 
 	getDomainName := func() (*DomainName, []error) {
-		temp_domain_name_map, temp_domain_name_map_errors := data.GetMap("[domain_name]")
-		if temp_domain_name_map_errors != nil {
-			return nil, temp_domain_name_map_errors
-		}
-
-		temp_domain_name := temp_domain_name_map.GetObject("value").(*DomainName)
-		return temp_domain_name, nil
+		return GetDomainNameField(getData(), "domain_name")
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {

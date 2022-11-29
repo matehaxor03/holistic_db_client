@@ -428,6 +428,66 @@ func GetHostField(m *Map, field string) (*Host, []error) {
 	return value, nil
 }
 
+func GetCredentialsField(m *Map, field string) (*Credentials, []error) {
+	var errors []error
+	var value *Credentials
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.Credentials":
+			value = object_value.(*Credentials)
+		case "class.Credentials":
+		temp := object_value.(Credentials)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetCredentialsField: field: %s type: %s not in [*class.Credentials, class.Credentials, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
+func GetDomainNameField(m *Map, field string) (*DomainName, []error) {
+	var errors []error
+	var value *DomainName
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.DomainName":
+			value = object_value.(*DomainName)
+		case "class.DomainName":
+		temp := object_value.(DomainName)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetDomainNameField: field: %s type: %s not in [*class.DomainName, class.DomainName, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
 func GetUserField(m *Map, field string) (*User, []error) {
 	var errors []error
 	var value *User
@@ -717,30 +777,6 @@ func IsDatabaseColumn(value string) bool {
 	column_name_errors := WhitelistCharacters(column_name_params)
 	return column_name_errors == nil
 }
-
-/*
-func resetValidation(fields *Map, structType string) []error {
-	if !fields.HasKey("[validated]") {
-		errors = append(errors, fmt.Errorf("table: %s does not have [validated] attribute", structType))
-		return errors
-	} else {
-		validated_map, validated_map_errors := fields.GetMap("[validated]")
-		if validated_map_errors != nil {
-			errors = append(errors, fmt.Errorf("table: %s had errors getting map: %s", structType, fmt.Sprintf("%s", validated_map_errors)))
-		} else if !validated_map.IsBool("value") {
-			errors = append(errors, fmt.Errorf("table: %s attribute: [validated] is not a bool", structType))
-		} else {
-			bool_false := false
-			validated_map.SetBool("value", &bool_false)
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}*/
 
 func ValidateData(fields *Map, structType string) []error {	
 	var errors []error
