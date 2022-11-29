@@ -73,7 +73,13 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		for _, column := range (*getData()).Keys() {
+
+		schema_map, schema_map_errors := GetSchemas(getData())
+		if schema_map_errors != nil {
+			return nil, schema_map_errors
+		}
+
+		for _, column := range (*schema_map).Keys() {
 			if getData().GetType(column) != "class.Map" {
 				continue
 			}
@@ -96,36 +102,60 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	getIdentityColumns := func() (*[]string, []error) {
+		var errors []error
 		var columns []string
-		table_columns, table_columns_errors := getTableColumns()
-		if table_columns_errors != nil {
-			return nil, table_columns_errors
+
+		schema_map, schema_map_errors := GetSchemas(getData())
+		if schema_map_errors != nil {
+			errors = append(errors, schema_map_errors...)
 		}
 
-		for _, column := range *table_columns {
-			columnSchema := (*getData())[column].(Map)
+		if len(errors) > 0 {
+			return nil, errors
+		}
 
-			if columnSchema.IsBoolFalse("primary_key") {
+		for _, column := range schema_map.Keys() {
+			column_schema, column_schema_errors := GetSchema(getData(), column)
+			if column_schema_errors != nil {
+				errors = append(errors, column_schema_errors...)
+				continue
+			}
+
+			if column_schema.IsBoolFalse("primary_key") {
 				continue
 			}
 
 			columns = append(columns, column)
 		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
 		return &columns, nil
 	}
 
 	getNonIdentityColumns := func() (*[]string, []error) {
+		var errors []error
 		var columns []string
-		
-		table_columns, table_columns_errors := getTableColumns()
-		if table_columns_errors != nil {
-			return nil, table_columns_errors
+
+		schema_map, schema_map_errors := GetSchemas(getData())
+		if schema_map_errors != nil {
+			errors = append(errors, schema_map_errors...)
 		}
 
-		for _, column := range *table_columns {
-			columnSchema := (*getData())[column].(Map)
+		if len(errors) > 0 {
+			return nil, errors
+		}
 
-			if columnSchema.IsBoolTrue("primary_key") {
+		for _, column := range schema_map.Keys() {
+			column_schema, column_schema_errors := GetSchema(getData(), column)
+			if column_schema_errors != nil {
+				errors = append(errors, column_schema_errors...)
+				continue
+			}
+
+			if column_schema.IsBoolTrue("primary_key") {
 				continue
 			}
 
