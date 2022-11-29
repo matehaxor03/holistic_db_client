@@ -74,13 +74,13 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
 
-		schema_map, schema_map_errors := GetSchemas(getData())
-		if schema_map_errors != nil {
-			return nil, schema_map_errors
+		schemas_map, schemas_map_errors := GetSchemas(getData())
+		if schemas_map_errors != nil {
+			return nil, schemas_map_errors
 		}
 
-		for _, column := range (*schema_map).Keys() {
-			if getData().GetType(column) != "class.Map" {
+		for _, column := range (*schemas_map).Keys() {
+			if schemas_map.GetType(column) != "class.Map" {
 				continue
 			}
 
@@ -139,16 +139,16 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		var errors []error
 		var columns []string
 
-		schema_map, schema_map_errors := GetSchemas(getData())
-		if schema_map_errors != nil {
-			errors = append(errors, schema_map_errors...)
+		schemas_map, schemas_map_errors := GetSchemas(getData())
+		if schemas_map_errors != nil {
+			errors = append(errors, schemas_map_errors...)
 		}
 
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		for _, column := range schema_map.Keys() {
+		for _, column := range schemas_map.Keys() {
 			column_schema, column_schema_errors := GetSchema(getData(), column)
 			if column_schema_errors != nil {
 				errors = append(errors, column_schema_errors...)

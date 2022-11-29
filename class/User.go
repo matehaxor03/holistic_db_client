@@ -10,7 +10,6 @@ type User struct {
 	GetCredentials func() (*Credentials, []error)
 	GetClient func() (*Client, []error)
 	GetDomainName  func() (*DomainName, []error)
-	Clone          func() *User
 	UpdatePassword func(new_password string) []error
 	Exists 		   func() (*bool, []error)
 }
@@ -118,13 +117,6 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			}
 
 			return nil
-		},
-		Clone: func() *User {
-			temp_client, _ := getClient()
-			temp_credentails, _ := getCredentials()
-			temp_domain_name, _ := getDomainName()
-			cloned, _ := NewUser(temp_client, temp_credentails, temp_domain_name)
-			return cloned
 		},
 		GetCredentials: func() (*Credentials, []error) {
 			return getCredentials()
