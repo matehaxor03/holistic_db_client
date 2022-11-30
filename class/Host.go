@@ -68,7 +68,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	data := Map{
 		"[fields]": Map{"host_name":host_name, "port_number":port_number},
 		"[schema]": Map{
-			"hostname":Map{"type":"*string","mandatory": true, "validated":false,
+			"host_name":Map{"type":"*string","mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 			"port_number": Map{"type":"*string", "mandatory": true, "validated":false,
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},

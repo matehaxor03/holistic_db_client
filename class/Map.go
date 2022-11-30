@@ -39,6 +39,10 @@ func (m Map) SetMap(s string, zap *Map) {
 	m[s] = zap
 }
 
+func (m Map) SetMapValue(s string, zap Map) {
+	m[s] = &zap
+}
+
 func (m Map) IsNil(s string) bool {
 	if m[s] == nil {
 		return true
@@ -965,8 +969,14 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 		//todo: parse for null
 		value1, value_errors1 := time.Parse("2006-01-02 15:04:05.000000", *(m[s].(*string)))
 		value2, value_errors2 := time.Parse("2006-01-02 15:04:05", *(m[s].(*string)))
+		var value3 *time.Time
+		if *(m[s].(*string)) == "now" {
+			value3 = GetTimeNow()
+		} else {
+			value3 = nil
+		}
 
-		if value_errors1 != nil && value_errors2 != nil {
+		if value_errors1 != nil && value_errors2 != nil && value3 == nil {
 			errors = append(errors, value_errors1)
 		}
 
@@ -977,6 +987,38 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 		if value_errors2 == nil {
 			result = &value2
 		}
+
+		if value3 != nil {
+			result = value3
+		}
+
+	case "string":
+		//todo: parse for null
+		value1, value_errors1 := time.Parse("2006-01-02 15:04:05.000000", (m[s].(string)))
+		value2, value_errors2 := time.Parse("2006-01-02 15:04:05", (m[s].(string)))
+		var value3 *time.Time
+		if (m[s].(string)) == "now" {
+			value3 = GetTimeNow()
+		} else {
+			value3 = nil
+		}
+
+		if value_errors1 != nil && value_errors2 != nil && value3 == nil {
+			errors = append(errors, value_errors1)
+		}
+
+		if value_errors1 == nil {
+			result = &value1
+		}
+
+		if value_errors2 == nil {
+			result = &value2
+		}
+
+		if value3 != nil {
+			result = value3
+		}
+
 	default:
 		errors = append(errors, fmt.Errorf("Map.GetTime: type %s is not supported please implement", rep))
 	}

@@ -36,7 +36,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	data := Map{"[fields]": Map{
-		"client":client, "database_name":database_name,"database_create_options":database_create_options},
+		"client":client, "database_name":&database_name,"database_create_options":database_create_options},
 				"[schema]": Map{
 		"client":Map{"type":"*class.Client","mandatory": true,"validated":false},
 		"database_name":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,"validated":false,

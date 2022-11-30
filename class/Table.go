@@ -19,7 +19,6 @@ type Table struct {
 	GetIdentityColumns    func() (*[]string, []error)
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
-	//GetData               func() (*Map, []error)
 	CreateRecord          func(record Map) (*Record, []error)
 	Select                func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
@@ -34,6 +33,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	schema_is_nil := false
 	if schema == nil {
 		schema_is_nil = true
+		schema = Map{}
 	}
 
 	if len(errors) > 0 {
@@ -80,7 +80,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}
 
 		for _, column := range (*schemas_map).Keys() {
-			if schemas_map.GetType(column) != "class.Map" {
+			if !schemas_map.IsMap(column) {
 				continue
 			}
 
@@ -534,10 +534,20 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 		sql_command += "("
 		for index, column := range *valid_columns {
-			columnSchema := (*getData())[column].(Map)
+			columnSchema, columnSchema_errors := GetSchema(getData(), column)
+			if columnSchema_errors != nil {
+				errors = append(errors, columnSchema_errors...)
+				continue
+			}
+
 			sql_command += EscapeString(column)
 
-			typeOf, _ := columnSchema.GetString("type")
+			typeOf, type_of_errors := columnSchema.GetString("type")
+			if type_of_errors != nil {
+				errors = append(errors, type_of_errors...)
+				continue
+			}
+
 			switch *typeOf {
 			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
 				sql_command += " BIGINT"
@@ -835,7 +845,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			}
 
 			if filters != nil {
-				table_columns,table_columns_errors := getTableColumns()
+				table_columns, table_columns_errors := getTableColumns()
 				if table_columns_errors != nil {
 					return nil, table_columns_errors
 				}

@@ -45,30 +45,26 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	data := Map{"[fields]": record_data}
-	data["[fields]"].(Map)["[table]"] = table
+	record_data.SetObject("[table]", table)
 	data["[schema]"] = table_schema
-	data["[schema]"].(Map)["[table]"] =  Map{"type":"*class.Table", "mandatory": true}
+	table_schema.SetMapValue("[table]", Map{"type":"*class.Table", "mandatory": true})
 
 
 	getData := func() (*Map) {
 		return &data
 	}
 
-	getTableColumns := func() (*[]string, []error) {
+	getRecordColumns := func() (*[]string, []error) {
 		var columns []string
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
 
-		table_schemas_map, table_schemas_map_errors := GetSchemas(getData())
-		if table_schemas_map_errors != nil {
-			return nil, table_schemas_map_errors
+		fields_map, fields_map_errors := GetFields(getData())
+		if fields_map_errors != nil {
+			return nil, fields_map_errors
 		}
 
-		for _, column := range (*table_schemas_map).Keys() {
-			if table_schemas_map.GetType(column) != "class.Map" {
-				continue
-			}
-
+		for _, column := range (*fields_map).Keys() {
 			column_name_whitelist_params.SetString("value", &column)
 			column_name_whiltelist_errors := WhitelistCharacters(column_name_whitelist_params)
 			if column_name_whiltelist_errors != nil {
@@ -91,7 +87,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
-		record_columns, record_columns_errors := getTableColumns()
+		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, record_columns_errors
 		}
@@ -125,7 +121,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	getIdentityColumns := func() (*[]string, []error) {
-		record_columns, record_columns_errors := getTableColumns()
+		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, record_columns_errors
 		}
@@ -153,7 +149,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "Record")
+		return ValidateData(getData(), "*class.Record")
 	}
 
 	getInsertSQL := func() (*string, Map, []error) {
@@ -181,7 +177,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		if valid_columns_errors != nil {
 			return nil, nil, valid_columns_errors
 		}
-		record_columns, record_columns_errors := getTableColumns()
+		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, nil, record_columns_errors
 		}
@@ -192,32 +188,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 
 		for _, record_column := range *record_columns {
-			if !Contains(*valid_columns, record_column) {
-				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table_name, valid_columns))
-			} else {
-				if strings.HasPrefix(record_column, "credential") {
-					options["use_file"] = true
-				}
-			}
-
-			temp_table_schema_map, temp_table_schema_map_errors := table_schema.GetMap(record_column)
-			if temp_table_schema_map_errors != nil {
-				return nil, nil, temp_table_schema_map_errors
-			}
-
-			type_of_schema_column, type_of_schema_column_errors := temp_table_schema_map.GetString("type")
-			if type_of_schema_column_errors != nil {
-				return nil, nil, type_of_schema_column_errors
-			}
-
-			type_of_record_column_map, type_of_record_column_map_errors := record.GetMap(record_column)
-			if type_of_record_column_map_errors != nil {
-				return nil, nil, type_of_record_column_map_errors
-			}
-
-			type_of_record_column := type_of_record_column_map.GetType("value")
-			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
-				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
+			if strings.HasPrefix(record_column, "credential") {
+				options["use_file"] = true
 			}
 		}
 
@@ -330,7 +302,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, table_name_errors
 		}
 
-		table_schema, table_schema_errors := table.GetSchema()
+		_, table_schema_errors := table.GetSchema()
 
 		if table_schema_errors != nil {
 			return nil, nil, table_schema_errors
@@ -338,43 +310,19 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		record := getData()
 
-		valid_columns, valid_columns_errors := table.GetTableColumns()
+		_, valid_columns_errors := table.GetTableColumns()
 		if valid_columns_errors != nil {
 			return nil, nil, valid_columns_errors
 		}
 
-		record_columns, record_columns_errors := getTableColumns()
+		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, nil, record_columns_errors
 		}
 
 		for _, record_column := range *record_columns {
-			if !Contains(*valid_columns, record_column) {
-				errors = append(errors, fmt.Errorf("column: %s does not exist for table: %s valid column names are: %s", record_column, table_name, valid_columns))
-			} else {
-				if strings.HasPrefix(record_column, "credential") {
-					options["use_file"] = true
-				}
-			}
-
-			type_of_schema_column_map, type_of_schema_column_map_errors := table_schema.GetMap(record_column)
-			if type_of_schema_column_map_errors != nil {
-				return nil, nil, type_of_schema_column_map_errors
-			}
-
-			type_of_schema_column, type_of_schema_column_errors := type_of_schema_column_map.GetString("type")
-			if type_of_schema_column_errors != nil {
-				return nil, nil, type_of_schema_column_errors
-			}
-
-			type_of_record_column_map, type_of_record_column_map_errors := record.GetMap(record_column)
-			if type_of_record_column_map_errors != nil {
-				return nil, nil, type_of_record_column_map_errors
-			}
-
-			type_of_record_column := type_of_record_column_map.GetType("value")
-			if strings.Replace(type_of_record_column, "*", "", -1) != strings.Replace(*type_of_schema_column, "*", "", -1) {
-				errors = append(errors, fmt.Errorf("table schema for column: %s has type: %s however record has type: %s", record_column, type_of_schema_column, type_of_record_column))
+			if strings.HasPrefix(record_column, "credential") {
+				options["use_file"] = true
 			}
 		}
 
@@ -428,7 +376,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		}
 
 		last_modified_date_map.SetObject("value", GetTimeNow())
-		//(*(record.M("last_modified_date")))["value"] = GetTimeNow()
 
 		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table_name))
 
