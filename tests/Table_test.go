@@ -10,11 +10,6 @@ import (
 func GetTestTableName() string {
 	return "holistic_test_table"
 }
-
-func GetTestTableNameWithString() string {
-	return "holistic_test_table_with_string"
-}
-
 func GetTestTablePrimaryKeyName() string {
 	return "test_table_id"
 }
@@ -23,17 +18,8 @@ func GetTestTablePrimaryKeyName2() string {
 	return "test_table_id2"
 }
 
-func GetTestTableStringColumnName() string {
-	return "string_column"
-}
-
 func GetTestSchema() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
-}
-
-func GetTestSchemaStringColumn() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableStringColumnName(): class.Map {"type": "string", "mandatory":true, "max_length":100}}
 }
 
 func GetTestSchemaColumn() class.Map {
@@ -72,58 +58,6 @@ func GetTestTable(t *testing.T) (*class.Table) {
 	}
 
 	table, table_errors := class.NewTable(database, GetTestTableName(), GetTestSchema())
-	if table_errors != nil {
-		errors = append(errors, table_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	table_delete_errors := table.DeleteIfExists()
-	if table_delete_errors != nil {
-		errors = append(errors, table_delete_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return table
-}
-
-func GetTestTableWithString(t *testing.T) (*class.Table) {
-	var errors []error
-
-	database := GetTestDatabase(t)
-
-	if database == nil {
-		t.Error(fmt.Errorf("database is nil"))
-		t.FailNow()
-		return nil
-	}
-
-	database_create_errors := database.Create()
-	if database_create_errors != nil {
-		errors = append(errors, database_create_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	use_database_errors := database.UseDatabase() 
-	if use_database_errors != nil {
-		errors = append(errors, use_database_errors...)
-	}
-
-	table, table_errors := class.NewTable(database, GetTestTableNameWithString(), GetTestSchemaStringColumn())
 	if table_errors != nil {
 		errors = append(errors, table_errors...)
 	}

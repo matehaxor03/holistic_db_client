@@ -595,7 +595,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
 					}
 				}
-			case "*time.Time":
+			case "*time.Time", "time.Time":
 				sql_command += " TIMESTAMP(6)"
 
 				if !strings.HasPrefix(*typeOf, "*") {
