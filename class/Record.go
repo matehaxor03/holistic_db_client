@@ -532,17 +532,30 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 					return errors
 				}
 
-				count, count_err := strconv.ParseUint(*last_insert_id, 10, 64)
+				last_insert_id_value, count_err := strconv.ParseUint(*last_insert_id, 10, 64)
 				if count_err != nil {
 					errors = append(errors, count_err)
 					return errors
 				}
 
-
 				if !options.IsNil("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
-					auto_increment_column_name, _ := options.GetString("auto_increment_column_name")
-					auto_increment_column_schema := Map{"type": "uint64", "value": count, "auto_increment": true, "primary_key": true}
-					data.SetMap(*auto_increment_column_name, &auto_increment_column_schema)
+					auto_increment_column_name, auto_increment_column_name_errors := options.GetString("auto_increment_column_name")
+					if auto_increment_column_name_errors != nil {
+						errors = append(errors, auto_increment_column_name_errors...)
+					} else if IsNil(auto_increment_column_name) {
+						errors = append(errors, fmt.Errorf("auto_increment_column_name is nil"))
+					}
+
+					fields_map, fields_map_errors := GetFields(getData())
+					if fields_map_errors != nil { 
+						errors = append(errors, fields_map_errors...)
+					}
+
+					if len(errors) > 0 {
+						return errors
+					}
+
+					fields_map.SetUInt64(*auto_increment_column_name, &last_insert_id_value)
 				}
 			}
 			return nil
@@ -577,26 +590,21 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil
 		},
 		GetInt64: func(field string) (*int64, []error) {
-			cloned_data_map, cloned_data_map_errors := getData().GetMap(field)
-			if cloned_data_map_errors != nil {
-				return nil, cloned_data_map_errors
+			field_value, field_value_errors := GetField(getData(), field)
+			if field_value_errors != nil {
+				return nil, field_value_errors
 			}
-			return cloned_data_map.GetInt64("value")
+			return field_value.(*int64), nil
 		},
 		SetInt64: func(field string, value *int64) []error {
-			temp_map_field, temp_map_field_errors := getData().GetMap(field)
-			if temp_map_field_errors != nil {
-				return temp_map_field_errors
-			}
-			temp_map_field.SetInt64("value", value)
-			return nil
+			return SetField(getData(), field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
-			cloned_data_map, cloned_data_map_errors := getData().GetMap(field)
-			if cloned_data_map_errors != nil {
-				return nil, cloned_data_map_errors
+			field_value, field_value_errors := GetField(getData(), field)
+			if field_value_errors != nil {
+				return nil, field_value_errors
 			}
-			return cloned_data_map.GetUInt64("value")
+			return field_value.(*uint64), nil
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()
