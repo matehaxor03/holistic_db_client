@@ -14,6 +14,7 @@ type Record struct {
 	GetInt64  func(field string) (*int64, []error)
 	SetInt64  func(field string, value *int64) []error
 	GetUInt64 func(field string) (*uint64, []error)
+	GetString func(field string) (*string, []error)
 	ToJSONString  func() (*string, []error)
 }
 
@@ -171,8 +172,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, table_schema_errors
 		}
 
-		record := getData()
-
 		valid_columns, valid_columns_errors := table.GetTableColumns()
 		if valid_columns_errors != nil {
 			return nil, nil, valid_columns_errors
@@ -246,28 +245,22 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				sql_command += ", "
 			}
 		}
+
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			parameter, paramter_errors := record.GetMap(record_column)
+			parameter, paramter_errors := GetField(getData(), record_column)
 			if paramter_errors != nil {
 				errors = append(errors, paramter_errors...)
 				continue
 			}
 
-			if !parameter.HasKey("value") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have value attribute", table_name, record_column))
-				continue
-			}
-
-			value := parameter.GetObject("value")
-			rep := parameter.GetType("value")
+			rep := GetType(parameter)
 			switch rep {
 			case "string":
-				sql_command += "\"" + EscapeString(value.(string)) + "\""
+				sql_command += "\"" + EscapeString(parameter.(string)) + "\""
 			case "*string":
-				sql_command += "\"" + EscapeString(*(value.(*string))) + "\""
+				sql_command += "\"" + EscapeString(*(parameter.(*string))) + "\""
 			default:
-				//EscapeString
 				errors = append(errors, fmt.Errorf("type: %s not supported for table please implement", rep))
 			}
 
@@ -605,6 +598,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return nil, field_value_errors
 			}
 			return field_value.(*uint64), nil
+		},
+		GetString: func(field string) (*string, []error) {
+			field_value, field_value_errors := GetField(getData(), field)
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			}
+			return field_value.(*string), nil
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()

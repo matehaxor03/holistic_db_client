@@ -348,8 +348,6 @@ func GetField(m *Map, field string) (interface{}, []error) {
 		return nil, errors
 	}
 
-	// todo check mandatory/default
-
 	if fields_map.IsNil(field) {
 		return nil, nil
 	}
@@ -361,6 +359,14 @@ func GetField(m *Map, field string) (interface{}, []error) {
 
 	if len(errors) > 0 {
 		return nil, errors
+	}
+
+	type_of := fields_map.GetType(field)
+	switch type_of {
+	case "string":
+		temp := fields_map.GetObject(field)
+		string_value := temp.(string)
+		return &string_value , nil
 	}
 
 	return fields_map.GetObject(field), nil
@@ -424,6 +430,7 @@ func GetValidSchemaFields() Map {
 		"filters": nil,
 		"not_empty_string_value":nil,
 		"min_length": nil,
+		"max_length": nil,
 	}
 }
 
@@ -1011,10 +1018,6 @@ func ValidateData(data *Map, struct_type string) []error {
 			}
 		}
 
-		if value_is_null && default_is_null && !value_is_mandatory {
-			continue
-		}
-
 		type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
 		if type_of_parameter_schema_value_errors != nil {
 			errors = append(errors, fmt.Errorf("struct: %s column: %s error getting type for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
@@ -1024,6 +1027,13 @@ func ValidateData(data *Map, struct_type string) []error {
 			continue
 		}
 
+		if (struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter) {
+			value_is_mandatory = false
+		}
+
+		if value_is_null && default_is_null && !value_is_mandatory {
+			continue
+		}
 
 		var value_to_validate interface{}
 		value_to_validate = nil
@@ -1063,9 +1073,11 @@ func ValidateData(data *Map, struct_type string) []error {
 			type_of_parameter_value = "*time.Time"
 		}
 
-		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
-			errors = append(errors, fmt.Errorf("table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
-			continue
+		if !((struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter)) {
+			if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+				continue
+			}
 		}
 
 		switch type_of_parameter_value {
