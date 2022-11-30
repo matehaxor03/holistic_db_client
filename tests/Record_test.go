@@ -100,4 +100,25 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 	}
 }
 
+func TestRecordCanUpdateRecordWithString(t *testing.T) {
+	table := GetTestTableCreatedWithString(t)
+
+    record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():"hello world"})
+	if record_errors != nil {
+		t.Error(record_errors)
+	} else if record == nil {
+		t.Errorf("record is nil")
+	} else {
+		set_string_errors := record.SetStringValue(GetTestTableStringColumnName(), "hello world2")
+		if set_string_errors != nil {
+			t.Error(set_string_errors)
+		} else {
+			update_errors := record.Update()
+			if update_errors != nil {
+				t.Error(update_errors)
+			}
+		}
+	}
+}
+
 

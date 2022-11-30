@@ -16,6 +16,8 @@ type Record struct {
 	SetInt64  func(field string, value *int64) []error
 	GetUInt64 func(field string) (*uint64, []error)
 	GetString func(field string) (*string, []error)
+	SetString func(field string, value *string) []error 
+	SetStringValue func(field string, value string) []error 
 	ToJSONString  func() (*string, []error)
 }
 
@@ -107,8 +109,7 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		var record_non_identity_columns []string
 		for _, record_column := range *record_columns {
 			if record_column == "created_date" ||
-				record_column == "archieved_date" ||
-				record_column == "active" {
+				record_column == "archieved_date" {
 				continue
 			}
 
@@ -302,8 +303,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, table_schema_errors
 		}
 
-		record := getData()
-
 		_, valid_columns_errors := table.GetTableColumns()
 		if valid_columns_errors != nil {
 			return nil, nil, valid_columns_errors
@@ -325,6 +324,11 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			return nil, nil, identity_columns_errors
 		}
 
+		table_non_identity_columns, table_non_identity_columns_errors := table.GetNonIdentityColumns()
+		if table_non_identity_columns_errors != nil {
+			return nil, nil, table_non_identity_columns_errors
+		}
+
 		record_identity_columns, record_identity_columns_errors := getIdentityColumns()
 		if record_identity_columns_errors != nil {
 			return nil, nil, record_identity_columns_errors
@@ -343,6 +347,8 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			}
 		}
 
+		SetField(getData(), "last_modified_date", GetTimeNow())
+
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
 		if record_non_identity_columns_errors != nil {
 			return nil, nil, record_non_identity_columns_errors
@@ -356,20 +362,13 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 			errors = append(errors, fmt.Errorf("table schema has no identity columns"))
 		}
 
-		if !Contains(*record_non_identity_columns, "last_modified_date") {
-			errors = append(errors, fmt.Errorf("table record does not have last_modified_date"))
+		if !Contains(*table_non_identity_columns, "last_modified_date") {
+			errors = append(errors, fmt.Errorf("table schema does not have last_modified_date"))
 		}
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
-
-		last_modified_date_map, last_modified_date_map_errors := record.GetMap("last_modified_date")
-		if last_modified_date_map_errors != nil {
-			return nil, nil, last_modified_date_map_errors
-		}
-
-		last_modified_date_map.SetObject("value", GetTimeNow())
 
 		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table_name))
 
@@ -383,7 +382,6 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				errors = append(errors, column_data_errors...)
 				continue
 			}
-
 
 			if IsNil(column_data) {
 				sql_command += "NULL"
@@ -616,6 +614,12 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 				return nil, field_value_errors
 			}
 			return field_value.(*string), nil
+		},
+		SetString: func(field string, value *string) []error {
+			return SetField(getData(), field, value)
+		},
+		SetStringValue: func(field string, value string) []error {
+			return SetField(getData(), field, value)
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()

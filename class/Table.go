@@ -49,15 +49,16 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
 
 	if schema_is_nil {
-		schema["active"] = Map{"type": "*bool", "mandatory": true, "default": true, "validated": false}
-		schema["archieved"] = Map{"type": "*bool", "mandatory": true, "default": false, "validated": false}
-		schema["created_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
-		schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
-		schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": true, "default": "now", "validated": false}
 		data["[schema_is_nil]"] = true
 	} else {
 		data["[schema_is_nil]"] = false
 	}
+
+	schema["active"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
+	schema["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
+	schema["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+	schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+	schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
 	
 
 	getData := func() (*Map) {
@@ -457,7 +458,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						}
 					}
 				} else if *dt == "time.Time" && default_value != "" {
-					if (default_value == "CURRENT_TIMESTAMP(6)" || 
+					if default_value == "NULL" {
+						column_schema.SetNil("default")
+					} else if (default_value == "CURRENT_TIMESTAMP(6)" || 
 						default_value == "CURRENT_TIMESTAMP(3)" ||
 						default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
 						now := "now"
@@ -600,16 +603,16 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				}
 
 				if columnSchema.HasKey("default") {
-					default_value, _ := columnSchema.GetString("default")
-					if columnSchema.IsNil("default") {
-						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
-						continue
-					} else if *default_value != "now" {
+					default_value, default_value_errors := columnSchema.GetString("default")
+					if default_value_errors != nil {
+						errors = append(errors, default_value_errors...)
+					} else if default_value == nil {
+						sql_command += " DEFAULT NULL"
+					} else if *default_value == "now" {
+						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
+					} else {
 						errors = append(errors, fmt.Errorf("column: %s had default value it did not understand", column))
-						continue
 					}
-
-					sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 				}
 			case "*bool", "bool":
 				sql_command += " BOOLEAN"
