@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Record struct {
@@ -376,47 +377,49 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
 			sql_command += EscapeString(record_non_identity_column) + "="
-			column_data, column_data_errors := record.GetMap(record_non_identity_column)
+			column_data, column_data_errors := GetField(getData(), record_non_identity_column)
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
 				continue
 			}
 
-			record_non_identity_column_type := column_data.GetType("value")
 
-			if column_data.IsNil("value") {
+			if IsNil(column_data) {
 				sql_command += "NULL"
 			} else {
+				record_non_identity_column_type := GetType(column_data)
 				switch record_non_identity_column_type {
-				case "uint64", "*uint64":
-					value, value_errors := column_data.GetUInt64("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatUint(*value, 10)
-					}
-				case "*int64", "int64":
-					value, value_errors := column_data.GetInt64("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatInt(*value, 10)
-					}
-				case "*int", "int":
-					value, value_errors := column_data.GetInt("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
-					}
-				case "*time.Time", "time.Time":
-					value, value_errors := column_data.GetTime("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += "'" + FormatTime(*value) + "'"
-					}
+				case "*uint64":
+					value := column_data.(*uint64)
+					sql_command += strconv.FormatUint(*value, 10)
+				case "uint64":
+					value := column_data.(uint64)
+					sql_command += strconv.FormatUint(value, 10)
+				case "*int64":
+					value := column_data.(*int64)
+					sql_command += strconv.FormatInt(*value, 10)
+				case "int64":
+					value := column_data.(int64)
+					sql_command += strconv.FormatInt(value, 10)
+				case "*int":
+					value := column_data.(*int)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int":
+					value := column_data.(int)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*time.Time":
+					value := column_data.(*time.Time)
+					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+				case "time.Time":
+					value := column_data.(time.Time)
+					sql_command += "'" + EscapeString(FormatTime(value)) + "'"
+				case "*string":
+					value := column_data.(*string)
+					sql_command += "'" + EscapeString(*value) + "'"
+				case "string":
+					value := column_data.(string)
+					sql_command += "'" + EscapeString(value) + "'"
 				default:
 					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
@@ -430,42 +433,50 @@ func NewRecord(table *Table, record_data Map) (*Record, []error) {
 		sql_command += " WHERE "
 		for index, identity_column := range *identity_columns {
 			sql_command += EscapeString(identity_column) + " = "
+			column_data, column_data_errors := GetField(getData(), identity_column)
 
-			column_data, column_data_errors := record.GetMap(identity_column)
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
 				continue
 			}
 
-			record_identity_column_type := column_data.GetType("value")
-
-			if column_data.IsNil("value") {
-				errors = append(errors, fmt.Errorf("identity column is nil %s", identity_column))
+			if IsNil(column_data) {
+				sql_command += "NULL"
 			} else {
-				switch record_identity_column_type {
-				case "uint64", "*uint64":
-					value, value_errors := column_data.GetUInt64("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatUint(*value, 10)
-					}
-				case "*int64", "int64":
-					value, value_errors := column_data.GetInt64("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatInt(*value, 10)
-					}
-				case "*int", "int":
-					value, value_errors := column_data.GetInt("value")
-					if value_errors != nil {
-						errors = append(errors, value_errors...)
-					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
-					}
+				record_non_identity_column_type := GetType(column_data)
+				switch record_non_identity_column_type {
+				case "*uint64":
+					value := column_data.(*uint64)
+					sql_command += strconv.FormatUint(*value, 10)
+				case "uint64":
+					value := column_data.(uint64)
+					sql_command += strconv.FormatUint(value, 10)
+				case "*int64":
+					value := column_data.(*int64)
+					sql_command += strconv.FormatInt(*value, 10)
+				case "int64":
+					value := column_data.(int64)
+					sql_command += strconv.FormatInt(value, 10)
+				case "*int":
+					value := column_data.(*int)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int":
+					value := column_data.(int)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*time.Time":
+					value := column_data.(*time.Time)
+					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+				case "time.Time":
+					value := column_data.(time.Time)
+					sql_command += "'" + EscapeString(FormatTime(value)) + "'"
+				case "*string":
+					value := column_data.(*string)
+					sql_command += "'" + EscapeString(*value) + "'"
+				case "string":
+					value := column_data.(string)
+					sql_command += "'" + EscapeString(value) + "'"
 				default:
-					errors = append(errors, fmt.Errorf("update record type is not supported please implement for where clause: %s", record_identity_column_type))
+					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
 			}
 
