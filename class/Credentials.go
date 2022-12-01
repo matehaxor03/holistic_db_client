@@ -144,12 +144,12 @@ func GetCredentialPasswordValidCharacters() Map {
 	return temp
 }
 
-func NewCredentials(username string, password string) (*Credentials, []error) {
+func NewCredentials(username string, password *string) (*Credentials, []error) {
 
 	data := Map{"[fields]":Map{"username":username,"password":password},
 				"[schema]":Map{"username":Map{"type":"*string","mandatory": true, "validated":false, 
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-							 "password": Map{"type":"*string","mandatory": true, "validated":false, 
+							 "password": Map{"type":"*string","mandatory": false, "validated":false, 
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 							},
 			    }

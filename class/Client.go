@@ -1,10 +1,10 @@
 package class
 
 import (
-	"bufio"
+	//"bufio"
 	"fmt"
 	"io/ioutil"
-	"os"
+	//"os"
 	"strings"
 )
 
@@ -98,7 +98,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 
 	getUser := func(username string) (*User, []error) {
-		db_hostname, db_port_number, db_name, db_username, db_password, details_errors := GetCredentialDetails(username)
+		db_hostname, db_port_number, db_name, db_username, details_errors := GetCredentialDetails(username)
 		if details_errors != nil {
 			return nil, details_errors
 		}
@@ -113,7 +113,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := NewCredentials(db_username, db_password)
+		credentials, credentials_errors := NewCredentials(db_username, nil)
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
@@ -183,7 +183,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return getUser(username)
 		},
 		CreateUser: func(username string, password string, domain_name string) (*User, []error) {
-			credentials, credentail_errors := NewCredentials(username, password)
+			credentials, credentail_errors := NewCredentials(username, &password)
 			if credentail_errors != nil {
 				return nil, credentail_errors
 			}
@@ -326,7 +326,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 func GetDatabaseClient(label string) (*Client, []error) {
 	var errors []error
-	db_hostname, db_port_number, db_name, db_username, _, details_errors := GetCredentialDetails(label)
+	db_hostname, db_port_number, db_name, db_username, details_errors := GetCredentialDetails(label)
 	if details_errors != nil {
 		errors = append(errors, details_errors...)
 	}
@@ -378,13 +378,13 @@ func GetDatabase(label string) (*Database, []error) {
 	return temp_database, nil
 }
 
-func GetCredentialDetails(label string) (string, string, string, string, string, []error) {
+func GetCredentialDetails(label string) (string, string, string, string, []error) {
 	var errors []error
 
 	files, err := ioutil.ReadDir("./")
 	if err != nil {
 		errors = append(errors, err)
-		return "", "", "", "", "", errors
+		return "", "", "", "", errors
 	}
 
 	filename := ""
@@ -407,22 +407,23 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 
 	if filename == "" {
 		errors = append(errors, fmt.Errorf("database config for %s not found filename is empty: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
-		return "", "", "", "", "", errors
+		return "", "", "", "", errors
 	}
 
 	parts := strings.Split(filename, ":")
 	if len(parts) != 5 {
 		errors = append(errors, fmt.Errorf("database config for %s not found filename is in wrong format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
-		return "", "", "", "", "", errors
+		return "", "", "", "", errors
 	}
 
 	ip_address := parts[1]
 	port_number := parts[2]
 	database_name := parts[3]
+	username := parts[4]
+	//password := ""
+	//username := ""
 
-	password := ""
-	username := ""
-
+	/*
 	file, err_file := os.Open(filename)
 
 	if err_file != nil {
@@ -459,7 +460,7 @@ func GetCredentialDetails(label string) (string, string, string, string, string,
 
 	if len(errors) > 0 {
 		return "", "", "", "", "", errors
-	}
+	}*/
 
-	return ip_address, port_number, database_name, username, password, errors
+	return ip_address, port_number, database_name, username, errors
 }
