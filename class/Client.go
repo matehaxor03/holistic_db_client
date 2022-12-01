@@ -53,7 +53,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	}
 
 	getDatabaseInterface := func(database_name string, character_set *string, collate *string) (*Database, []error) {
-		temp_database_create_options, temp_database_create_options_errors := NewDatabaseCreateOptions(character_set, collate)
+		temp_database_create_options, temp_database_create_options_errors := newDatabaseCreateOptions(character_set, collate)
 		if temp_database_create_options_errors != nil {
 			return nil, temp_database_create_options_errors
 		}

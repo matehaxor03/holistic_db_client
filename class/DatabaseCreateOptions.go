@@ -34,7 +34,7 @@ type DatabaseCreateOptions struct {
 	Validate     func() []error
 }
 
-func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
+func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 
 	data := Map{
 		"[fields]":Map{"character_set":character_set, "collate":collate},

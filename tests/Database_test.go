@@ -11,13 +11,6 @@ func GetTestDatabaseName() string {
 	return "holistic_test"
 }
 
-func GetTestDatabaseCreateOptions() (*class.DatabaseCreateOptions) {
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
-	database_create_options, _ :=  class.NewDatabaseCreateOptions(&character_set, &collate)
-	return database_create_options
-}
-
 func ensureDatabaseIsDeleted(t *testing.T, database *class.Database) {
 	database_delete_errors := database.DeleteIfExists()
 	
