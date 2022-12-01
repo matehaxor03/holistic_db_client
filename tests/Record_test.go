@@ -9,7 +9,7 @@ import (
 func GetTestTableCreated(t *testing.T) (*class.Table) {
 	var errors []error
 
-	table := GetTestTable(t)
+	table := GetTestTableBasicWithCreatedDatabase(t)
 
 	if table == nil {
 		t.Error(fmt.Errorf("table is nil"))

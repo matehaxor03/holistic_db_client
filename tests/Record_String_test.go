@@ -9,7 +9,7 @@ import (
 func GetTestTableCreatedWithStringColumn(t *testing.T) (*class.Table) {
 	var errors []error
 
-	table := GetTestTableWithStringColumn(t)
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
 
 	if table == nil {
 		t.Error(fmt.Errorf("table is nil"))

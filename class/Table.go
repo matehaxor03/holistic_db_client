@@ -10,56 +10,60 @@ type Table struct {
 	Validate              func() []error
 	Exists                func() (*bool, []error)
 	Create                func() []error
+	Read                func() []error
 	Delete                func() []error
 	DeleteIfExists        func() []error
 	GetSchema             func() (*Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
+	GetSchemaColumns       func() (*[]string, []error)
 	GetTableColumns       func() (*[]string, []error)
 	GetIdentityColumns    func() (*[]string, []error)
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
 	CreateRecord          func(record Map) (*Record, []error)
-	Select                func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
+	ReadRecords         func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
+	GetSchemaDataType     func(field string) (*string, []error)
 	ToJSONString          func() (*string, []error)
 }
 
 func NewTable(database *Database, table_name string, schema Map) (*Table, []error) {
-	var this_table *Table
 	SQLCommand := NewSQLCommand()
 	var errors []error
-
-	schema_is_nil := false
-	if schema == nil {
-		schema_is_nil = true
-		schema = Map{}
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	data := Map{"[fields]":Map{"[database]":database, "[table_name]":table_name},
-				"[schema]":schema}
-
-	schema["[database]"] =  Map{"type":"*class.Database", "mandatory": true, "validated": false}
-	schema["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
-		FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
-						 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
-
-	if schema_is_nil {
-		data["[schema_is_nil]"] = true
-	} else {
-		data["[schema_is_nil]"] = false
-	}
-
-	schema["active"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
-	schema["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
-	schema["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-	schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-	schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
+	var this_table *Table
 	
+	setupData := func(b *Database, n string, s Map) (Map) {
+		schema_is_nil := false
+		if schema == nil {
+			schema_is_nil = true
+			s = Map{}
+		}
+	
+		d := Map{"[fields]":Map{"[database]":b, "[table_name]":n},
+				 "[schema]":s}
+	
+		s["[database]"] = Map{"type":"*class.Database", "mandatory": true, "validated": false}
+		s["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
+			FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
+							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
+	
+		if schema_is_nil {
+			d["[schema_is_nil]"] = true
+		} else {
+			d["[schema_is_nil]"] = false
+		}
+	
+		s["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
+		s["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
+		s["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		s["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		s["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
+	
+		return d
+	}
+
+	data := setupData(database, table_name, schema)
 
 	getData := func() (*Map) {
 		return &data
@@ -70,6 +74,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 	}
 
 	getTableColumns := func() (*[]string, []error) {
+		var errors []error
 		var columns []string
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
@@ -82,6 +87,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 		for _, column := range (*schemas_map).Keys() {
 			if !schemas_map.IsMap(column) {
+				errors = append(errors, fmt.Errorf("Table.getTableColumns schema field: %s is not a map", column))
 				continue
 			}
 
@@ -99,6 +105,11 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 			columns = append(columns, column)
 		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
 		return &columns, nil
 	}
 
@@ -335,15 +346,47 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				case "Type":
 					type_of_value, _ := column_map.GetString("Type")
 					switch *type_of_value {
-					case "bigint unsigned", "int unsigned", "smallint unsigned":
+					case "bigint unsigned":
 						data_type := "uint64"
 						unsigned := true
 						column_schema.SetString("type", &data_type)
 						column_schema.SetBool("unsigned", &unsigned)
-					case "bigint", "int", "smallint":
+					case "int unsigned":
+						data_type := "uint32"
+						unsigned := true
+						column_schema.SetString("type", &data_type)
+						column_schema.SetBool("unsigned", &unsigned)
+					case "mediumint unsigned":
+						data_type := "uint32"
+						unsigned := true
+						column_schema.SetString("type", &data_type)
+						column_schema.SetBool("unsigned", &unsigned)
+					case "smallint unsigned":
+						data_type := "uint16"
+						unsigned := true
+						column_schema.SetString("type", &data_type)
+						column_schema.SetBool("unsigned", &unsigned)
+					case "tinyint unsigned":
+						data_type := "uint8"
+						unsigned := true
+						column_schema.SetString("type", &data_type)
+						column_schema.SetBool("unsigned", &unsigned)
+					case "bigint":
 						data_type := "int64"
 						column_schema.SetString("type", &data_type)
-					case "timestamp(6)", "timestamp":
+					case "int":
+						data_type := "int32"
+						column_schema.SetString("type", &data_type)
+					case "mediumint":
+						data_type := "int32"
+						column_schema.SetString("type", &data_type)
+					case "smallint":
+						data_type := "int16"
+						column_schema.SetString("type", &data_type)
+					case "tinyint":
+						data_type := "int8"
+						column_schema.SetString("type", &data_type)
+					case "timestamp(6)", "timestamp(5)", "timestamp(4)", "timestamp(3)", "timestamp(2)", "timestamp(1)", "timestamp":
 						data_type := "time.Time"
 						column_schema.SetString("type", &data_type)
 					case "tinyint(1)":
@@ -486,6 +529,8 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return nil, errors
 		}
 
+
+
 		return &schema, nil
 	}
 
@@ -552,13 +597,34 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			}
 
 			switch *typeOf {
-			case "*uint64", "*int64", "*int", "uint64", "uint", "int64", "int":
-				sql_command += " BIGINT"
+			case "*uint64", "uint64","*int64", "int64", "*uint32", "uint32", "*int32","int32", "*uint16", "uint16", "*int16","int16",  "*uint8", "uint8", "*int8","int8":
+				switch *typeOf {
+				case "*uint64", "*int64", "uint64", "int64":
+					sql_command += " BIGINT"
+				case "*uint32", "*int32", "uint32", "int32":
+					sql_command += " INT"
+				case "*uint16", "*int16", "uint16", "int16":
+					sql_command += " SMALLINT"
+				case "*uint8", "*int8", "uint8", "int8":
+					sql_command += " TINYINT"
+				default:
+					errors = append(errors, fmt.Errorf("Table.getCreateSQL number type not mapped: %s", *typeOf))
+				}
 
-				if *typeOf == "*uint64" ||
-					*typeOf == "*uint" ||
-					*typeOf == "uint64" ||
-					*typeOf == "uint" {
+				unsigned_number := false
+				switch *typeOf {
+				case "*uint64", "uint64":
+					unsigned_number = true
+				case "*uint32", "uint32":
+					unsigned_number = true
+				case "*uint16", "uint16":
+					unsigned_number = true
+				case "*uint8","uint8":
+					unsigned_number = true
+				default:
+				}
+
+				if unsigned_number {
 					sql_command += " UNSIGNED"
 				}
 
@@ -722,6 +788,66 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		return nil
 	}
 
+	read := func() []error {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			errors = append(errors, temp_database_errors...)
+		} else if IsNil(temp_database) {
+			errors = append(errors, fmt.Errorf("Table.read database is nil"))
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			errors = append(errors, temp_table_name_errors...)
+		} else if IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("Table.read table_name is nil"))
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		temp_schema, temp_schema_errors := getSchema()
+		if temp_schema_errors != nil {
+			errors = append(errors, temp_schema_errors...)
+		} else if IsNil(temp_schema) {
+			errors = append(errors, fmt.Errorf("Table.read schema is nil"))
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		data = setupData(temp_database, *temp_table_name, *temp_schema)
+		return nil
+	}
+
+	getSchemaColumns := func()  (*[]string, []error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		schema_map, schema_map_errors := GetSchemas(getData())
+		if schema_map_errors != nil {
+			return nil, schema_map_errors
+		}
+
+		schema_column_names := schema_map.Keys()
+		return &schema_column_names, nil
+	}
+
 	x := Table{
 		Validate: func() []error {
 			return validate()
@@ -731,6 +857,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		},
 		GetTableColumns: func() (*[]string, []error) {
 			return getTableColumns()
+		},
+		GetSchemaColumns: func() (*[]string, []error) {
+			return getSchemaColumns()
 		},
 		GetIdentityColumns: func() (*[]string, []error) {
 			return getIdentityColumns()
@@ -796,6 +925,9 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		Delete: func() []error {
 			return delete()
 		},
+		Read: func() []error {
+			return read()
+		},
 		DeleteIfExists: func() []error {
 			errors := validate()
 
@@ -832,7 +964,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 			return record, nil
 		},
-		Select: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
 			var errors []error
 			validate_errors := validate()
 			if errors != nil {
@@ -856,7 +988,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(*table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *temp_table_name, *table_columns))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *temp_table_name, *table_columns))
 					}
 				}
 
@@ -872,7 +1004,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 					 
 					if table_schema.IsNil(filter_column) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
 						continue
 					}
 
@@ -883,14 +1015,14 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 
 					if table_schema_column.IsNil("type") {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
 						continue
 					}
 
 
 					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
-						errors = append(errors, fmt.Errorf("SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
@@ -926,7 +1058,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 						filer_value, _ := filters.GetString(column_filter)
 						sql += fmt.Sprintf("'%s' ", EscapeString(*filer_value))
 					default:
-						errors = append(errors, fmt.Errorf("Table: Select: filter type not supported please implement: %s", type_of))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
@@ -1065,6 +1197,58 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		},
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)
+		},
+		GetSchemaDataType: func(field string) (*string, []error) {
+			var errors []error
+			temp_fields_map, temp_fields_map_errors := GetSchemas(getData())
+			if temp_fields_map_errors != nil {
+				errors = append(errors, temp_fields_map_errors...)
+				return nil, errors
+			} 
+
+			if !temp_fields_map.HasKey(field) {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s does not exist", field))
+			} else if !temp_fields_map.IsMap(field) {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s is not a mapt", field))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			temp_field_schema_field, temp_field_schema_field_errors := temp_fields_map.GetMap(field)
+			if temp_field_schema_field_errors != nil {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s error getting map %s", field, fmt.Sprintf("%s", temp_field_schema_field_errors)))
+			} else if IsNil(temp_field_schema_field) {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s is nil", field))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			if !temp_field_schema_field.HasKey("type") {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s does not have type attribute"))
+			} else if !temp_field_schema_field.IsString("type") {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s type attribute is not a string: %s", temp_field_schema_field.GetType("tyoe")))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			type_string_value, type_string_value_errors := temp_field_schema_field.GetString("type")
+			if type_string_value_errors != nil {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s error getting type string attibute %s", field, fmt.Sprintf("%s", type_string_value_errors)))
+			} else if IsNil(type_string_value) {
+				errors = append(errors, fmt.Errorf("Table.GetSchemaDataType schema field: %s type attribute is nil", field))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return type_string_value, nil
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()
