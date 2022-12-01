@@ -9,7 +9,8 @@ import (
 )
 
 type Client struct {
-	CreateDatabase      func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error)
+	CreateDatabase      func(database_name string, character_set *string, collate *string) (*Database, []error)
+	GetDatabaseInterface func(database_name string, character_set *string, collate *string) (*Database, []error)
 	DeleteDatabase      func(database_name string) []error
 	DatabaseExists      func(database_name string) (*bool, []error)
 	UseDatabase         func(database *Database) []error
@@ -29,6 +30,14 @@ type Client struct {
 func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
 
+	setClient := func(client *Client) {
+		this_client = client
+	}
+
+	getClient := func() *Client {
+		return this_client
+	}
+
 	data := Map{
 		"[fields]":Map{
 			"host": host, "database": database, "database_username": database_username },
@@ -41,6 +50,20 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 	getData := func() *Map {
 		return &data
+	}
+
+	getDatabaseInterface := func(database_name string, character_set *string, collate *string) (*Database, []error) {
+		temp_database_create_options, temp_database_create_options_errors := NewDatabaseCreateOptions(character_set, collate)
+		if temp_database_create_options_errors != nil {
+			return nil, temp_database_create_options_errors
+		}
+		
+		database, errs := newDatabase(getClient(), database_name, temp_database_create_options)
+		if errs != nil {
+			return nil, errs
+		}
+
+		return database, nil
 	}
 
 	getHost := func() (*Host, []error) {
@@ -72,13 +95,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		return ValidateData(getData(), "Client")
 	}
 
-	setClient := func(client *Client) {
-		this_client = client
-	}
 
-	getClient := func() *Client {
-		return this_client
-	}
 
 	getUser := func(username string) (*User, []error) {
 		db_hostname, db_port_number, db_name, db_username, db_password, details_errors := GetCredentialDetails(username)
@@ -123,8 +140,11 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		Validate: func() []error {
 			return validate()
 		},
-		CreateDatabase: func(database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
-			database, errs := NewDatabase(getClient(), database_name, database_create_options)
+		GetDatabaseInterface: func(database_name string, character_set *string, collate *string) (*Database, []error) {
+			return getDatabaseInterface(database_name, character_set, collate)
+		},
+		CreateDatabase: func(database_name string, character_set *string, collate *string) (*Database, []error) {
+			database, errs := getDatabaseInterface(database_name, character_set, collate)
 			if errs != nil {
 				return nil, errs
 			}
@@ -137,7 +157,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return database, nil
 		},
 		DeleteDatabase: func(database_name string) []error {
-			database, database_errors := NewDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -150,7 +170,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil
 		},
 		DatabaseExists: func(database_name string) (*bool, []error) {
-			database, database_errors := NewDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil)
 			if database_errors != nil {
 				return nil, database_errors
 			}
@@ -211,7 +231,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 			return nil
 		},
 		UseDatabaseByName: func(database_name string) (*Database, []error) {
-			database, database_errors := NewDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil)
 			if database_errors != nil {
 				return nil, database_errors
 			}

@@ -23,7 +23,7 @@ type Database struct {
 	UseDatabase     func() []error
 }
 
-func NewDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
+func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
 	SQLCommand := NewSQLCommand()
 	var this_database *Database
 
@@ -90,7 +90,7 @@ func NewDatabase(client *Client, database_name string, database_create_options *
 			return temp_database_create_options_errors
 		}
 
-		_, new_database_errors := NewDatabase(temp_client, new_database_name, temp_database_create_options)
+		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options)
 		if new_database_errors != nil {
 			return new_database_errors
 		}

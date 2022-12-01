@@ -33,25 +33,14 @@ func GetTestSchemaColumnPrimaryKeyAutoIncrement() class.Map {
 func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema class.Map) (*class.Table) {
 	var errors []error
 
-	database := GetTestDatabase(t)
+	database := GetTestDatabaseCreated(t)
 
 	if database == nil {
 		t.Error(fmt.Errorf("database is nil"))
 		t.FailNow()
 		return nil
 	}
-
-	database_create_errors := database.Create()
-	if database_create_errors != nil {
-		errors = append(errors, database_create_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
+	
 	use_database_errors := database.UseDatabase() 
 	if use_database_errors != nil {
 		errors = append(errors, use_database_errors...)

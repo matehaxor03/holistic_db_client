@@ -18,6 +18,16 @@ func GetTestDatabaseCreateOptions() (*class.DatabaseCreateOptions) {
 	return database_create_options
 }
 
+func ensureDatabaseIsDeleted(t *testing.T, database *class.Database) {
+	database_delete_errors := database.DeleteIfExists()
+	
+	if database_delete_errors != nil {
+		t.Error(database_delete_errors)
+		t.FailNow()
+		return
+	}
+}
+
 func GetTestHost(t *testing.T) (*class.Host) {
 	var errors []error
 	host_value := "127.0.0.1"
@@ -74,7 +84,9 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 		return nil
 	}
 
-	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	database, database_errors := client.GetDatabaseInterface(GetTestDatabaseName(), &character_set, &collate)
 	if database_errors != nil {
 		errors = append(errors, database_errors...)
 	}
@@ -85,6 +97,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 		return nil
 	}
 
+	/*
 	database_delete_errors := database.DeleteIfExists()
 	if database_delete_errors != nil {
 		errors = append(errors, database_delete_errors...)
@@ -94,7 +107,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 		t.Error(errors)
 		t.FailNow()
 		return nil
-	}
+	}*/
 
 	return database
 }
@@ -110,10 +123,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
 		return nil
 	}
 
-	database, database_errors := class.NewDatabase(client, GetTestDatabaseName(), GetTestDatabaseCreateOptions())
-	if database_errors != nil {
-		errors = append(errors, database_errors...)
-	}
+	database := GetTestDatabase(t)
 
 	if len(errors) > 0 {
 		t.Error(errors)
@@ -159,6 +169,7 @@ func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
  
 func TestDatabaseCreate(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
 
     database_errors := database.Create()
 	if database_errors != nil {
@@ -168,6 +179,8 @@ func TestDatabaseCreate(t *testing.T) {
 
 func TestDatabaseDelete(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
+
 
     database.Create()
 	database_errors := database.Delete()
@@ -178,6 +191,8 @@ func TestDatabaseDelete(t *testing.T) {
 
 func TestDatabaseExistsTrue(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
+
 
     database.Create()
 	exists, exists_errors := database.Exists()
@@ -196,6 +211,8 @@ func TestDatabaseExistsTrue(t *testing.T) {
 
 func TestDatabaseExistsFalse(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
+
 
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
@@ -213,6 +230,8 @@ func TestDatabaseExistsFalse(t *testing.T) {
 
 func TestDatabaseCreateWithExists(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
+
 
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
@@ -248,6 +267,9 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 
 func TestDatabaseDeleteWithExists(t *testing.T) {
 	database := GetTestDatabase(t)
+	ensureDatabaseIsDeleted(t, database)
+
+	
 	database.Create()
 
 	exists, exists_errors := database.Exists()
@@ -309,12 +331,14 @@ func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 
 func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			database, create_database_errors := class.NewDatabase(client, blacklist_database_name, database_create_options)
+			database, create_database_errors := client.CreateDatabase(blacklist_database_name, &character_set, &collate)
 			
 			if create_database_errors == nil {
 				t.Errorf("NewDatabase should return error when database_name is blacklisted")
@@ -329,12 +353,14 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 
 func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			database, create_database_errors := class.NewDatabase(client, strings.ToUpper(blacklist_database_name), database_create_options)
+			database, create_database_errors := client.CreateDatabase(strings.ToUpper(blacklist_database_name), &character_set, &collate)
 			
 			if create_database_errors == nil {
 				t.Errorf("NewDatabase should return error when database_name is blacklisted")
@@ -350,12 +376,14 @@ func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 
 func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			database, create_database_errors := class.NewDatabase(client, strings.ToLower(blacklist_database_name), database_create_options)
+			database, create_database_errors := client.CreateDatabase(strings.ToLower(blacklist_database_name), &character_set, &collate)
 			
 			if create_database_errors == nil {
 				t.Errorf("NewDatabase should return error when database_name is blacklisted")
@@ -370,14 +398,16 @@ func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 
 func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+
 	whitelist_map := class.GetDatabaseNameWhitelistCharacters()
 
 	for whitelist_database_character := range whitelist_map {
-		database, new_database_errors := class.NewDatabase(client, "a" + whitelist_database_character + "a", database_create_options)
+		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
 			
 		if new_database_errors != nil {
-			t.Errorf("NewDatabase should not return error when database_name character is whitelisted: %s", whitelist_database_character)
+			t.Errorf("NewDatabase should not return error when database_name character is whitelisted: %s errors: %s", whitelist_database_character, fmt.Sprintf("%s", new_database_errors))
 		} else if database == nil {
 			t.Errorf("NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
 		} else {
@@ -396,12 +426,14 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+
 	non_whitelist_map := class.Map{"(":nil, ")":nil}
 
 	for non_whitelist_characters := range non_whitelist_map {
 		t.Run(non_whitelist_characters, func(t *testing.T) {
-			database, new_database_errors := class.NewDatabase(client, "a" + non_whitelist_characters + "a", database_create_options)
+			database, new_database_errors := client.CreateDatabase("a" + non_whitelist_characters + "a", &character_set, &collate)
 			
 			if new_database_errors == nil {
 				t.Errorf("NewDatabase should return error when database_name character is non-whitelisted: %s", non_whitelist_characters)
@@ -414,12 +446,14 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
 	client := GetTestClient(t)
-	database_create_options :=  GetTestDatabaseCreateOptions()
+	character_set := class.GET_CHARACTER_SET_UTF8MB4()
+	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+
 	whitelist_map := class.GetDatabaseNameWhitelistCharacters()
 
 	for whitelist_database_character := range whitelist_map {
 		t.Run(whitelist_database_character, func(t *testing.T) {
-			database, new_database_errors := class.NewDatabase(client, whitelist_database_character, database_create_options)
+			database, new_database_errors := client.CreateDatabase(whitelist_database_character, &character_set, &collate)
 			
 			if new_database_errors == nil {
 				t.Errorf("NewDatabase should return error when database_name character is whitelisted and database_name is only one character long: %s", whitelist_database_character)
