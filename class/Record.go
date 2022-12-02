@@ -21,8 +21,8 @@ type Record struct {
 	ToJSONString  func() (*string, []error)
 }
 
-func NewRecord(table *Table, record_data Map) (*Record, []error) {
-	SQLCommand := NewSQLCommand()
+func newRecord(table *Table, record_data Map) (*Record, []error) {
+	SQLCommand := newSQLCommand()
 	var errors []error
 
 	if record_data == nil {

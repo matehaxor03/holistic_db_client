@@ -33,9 +33,9 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func NewGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string) (*Grant, []error) {
+func newGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string) (*Grant, []error) {
 	var errors []error
-	SQLCommand := NewSQLCommand()
+	SQLCommand := newSQLCommand()
 
 	data := Map{
 		"[fields]": Map{"client":client, "user":user, "grant_value":grant_value},

@@ -25,7 +25,7 @@ type Database struct {
 }
 
 func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
-	SQLCommand := NewSQLCommand()
+	SQLCommand := newSQLCommand()
 	var this_database *Database
 
 	setDatabase := func(database *Database) {

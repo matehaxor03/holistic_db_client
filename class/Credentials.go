@@ -144,7 +144,7 @@ func GetCredentialPasswordValidCharacters() Map {
 	return temp
 }
 
-func NewCredentials(username string, password *string) (*Credentials, []error) {
+func newCredentials(username string, password *string) (*Credentials, []error) {
 
 	data := Map{"[fields]":Map{"username":username,"password":password},
 				"[schema]":Map{"username":Map{"type":"*string","mandatory": true, "validated":false, 

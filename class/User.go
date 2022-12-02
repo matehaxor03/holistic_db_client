@@ -14,8 +14,8 @@ type User struct {
 	Exists 		   func() (*bool, []error)
 }
 
-func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
-	SQLCommand := NewSQLCommand()
+func newUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
+	SQLCommand := newSQLCommand()
 
 	data := Map{
 		"[fields]": Map{"client":client, "credentials":credentials, "domain_name":domain_name},

@@ -21,38 +21,8 @@ func ensureDatabaseIsDeleted(t *testing.T, database *class.Database) {
 	}
 }
 
-/*
-func GetTestHost(t *testing.T) (*class.Host) {
-	var errors []error
-	host_value := "127.0.0.1"
-	port_value := "3306"
-
-	host, host_errors := class.NewHost(host_value, port_value)
-	if host_errors != nil {
-		errors = append(errors, host_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return host
-}*/
-
 func GetTestClient(t *testing.T) (*class.Client) {
 	var errors []error
-	
-	/*
-	user_value := "root"
-	host := GetTestHost(t)
-
-	if host == nil {
-		t.Error(fmt.Errorf("host is nil"))
-		t.FailNow()
-		return nil
-	}*/
 
 	client_manager, client_manager_errors := class.NewClientManager()
 	if client_manager_errors != nil {

@@ -7,7 +7,7 @@ type Host struct {
 	GetPortNumber func() (string, []error)
 }
 
-func NewHost(host_name string, port_number string) (*Host, []error) {
+func newHost(host_name string, port_number string) (*Host, []error) {
 
 	getHostNameValidCharacters := func() Map {
 		temp := Map{"a": nil,

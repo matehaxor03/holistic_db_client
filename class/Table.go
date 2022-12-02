@@ -29,7 +29,7 @@ type Table struct {
 }
 
 func newTable(database *Database, table_name string, schema Map) (*Table, []error) {
-	SQLCommand := NewSQLCommand()
+	SQLCommand := newSQLCommand()
 	var errors []error
 	var this_table *Table
 	
@@ -979,7 +979,7 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return nil, errors
 			}
 
-			record, record_errors := NewRecord(getTable(), new_record_data)
+			record, record_errors := newRecord(getTable(), new_record_data)
 			if record_errors != nil {
 				return nil, record_errors
 			}
@@ -1195,7 +1195,7 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 					}
 				}
 
-				mapped_record_obj, mapped_record_obj_errors := NewRecord(getTable(), mapped_record)
+				mapped_record_obj, mapped_record_obj_errors := newRecord(getTable(), mapped_record)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
 				} else {

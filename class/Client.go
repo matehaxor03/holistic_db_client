@@ -111,7 +111,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, tuple_credentials_errors
 		}
 
-		host, host_errors := NewHost(*(tuple_credentials.host_name), *(tuple_credentials.port_number))
+		host, host_errors := newHost(*(tuple_credentials.host_name), *(tuple_credentials.port_number))
 		if host_errors != nil {
 			return nil, host_errors
 		}
@@ -121,7 +121,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := NewCredentials(*(tuple_credentials.database_username), nil)
+		credentials, credentials_errors := newCredentials(*(tuple_credentials.database_username), nil)
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
@@ -131,12 +131,12 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := NewDomainName(*(tuple_credentials.host_name))
+		domain_name, domain_name_errors := newDomainName(*(tuple_credentials.host_name))
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
 
-		user, user_errors := NewUser(client, credentials, domain_name)
+		user, user_errors := newUser(client, credentials, domain_name)
 		if user_errors != nil {
 			return nil, user_errors
 		}
@@ -191,17 +191,17 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return getUser(username)
 		},
 		CreateUser: func(username string, password string, domain_name string) (*User, []error) {
-			credentials, credentail_errors := NewCredentials(username, &password)
+			credentials, credentail_errors := newCredentials(username, &password)
 			if credentail_errors != nil {
 				return nil, credentail_errors
 			}
 
-			domain, domain_errors := NewDomainName(domain_name)
+			domain, domain_errors := newDomainName(domain_name)
 			if domain_errors != nil {
 				return nil, domain_errors
 			}
 
-			user, user_errors := NewUser(getClient(), credentials, domain)
+			user, user_errors := newUser(getClient(), credentials, domain)
 			if user_errors != nil {
 				return nil, user_errors
 			}
@@ -254,7 +254,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 		},
 		Grant: func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 			client := getClient()
-			grant_obj, grant_errors := NewGrant(client, user, grant, database_filter, table_filter)
+			grant_obj, grant_errors := newGrant(client, user, grant, database_filter, table_filter)
 
 			if grant_errors != nil {
 				return nil, grant_errors
@@ -331,145 +331,3 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 
 	return &x, nil
 }
-
-/*
-func GetDatabaseClient(label string) (*Client, []error) {
-	var errors []error
-	db_hostname, db_port_number, db_name, db_username, details_errors := GetCredentialDetails(label)
-	if details_errors != nil {
-		errors = append(errors, details_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	host, host_errors := NewHost(db_hostname, db_port_number)
-	client, client_errors := newClient(host, &db_username, nil)
-
-	if host_errors != nil {
-		errors = append(errors, host_errors...)
-	}
-
-	if client_errors != nil {
-		errors = append(errors, client_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	_, use_database_errors := client.UseDatabaseByName(db_name)
-	if use_database_errors != nil {
-		return nil, use_database_errors
-	}
-
-	return client, nil
-}
-
-func GetDatabase(label string) (*Database, []error) {
-	var errors []error
-	client, client_errors := GetDatabaseClient(label)
-	
-	if client_errors != nil {
-		errors = append(errors, client_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	temp_database, temp_database_errors := client.GetDatabase()
-	if temp_database_errors != nil {
-		return nil, temp_database_errors
-	}
-
-	return temp_database, nil
-}
-
-func GetCredentialDetails(label string) (string, string, string, string, []error) {
-	var errors []error
-
-	files, err := ioutil.ReadDir("./")
-	if err != nil {
-		errors = append(errors, err)
-		return "", "", "", "", errors
-	}
-
-	filename := ""
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-
-		currentFileName := file.Name()
-
-		if !strings.HasPrefix(currentFileName, "holistic_db_config:") {
-			continue
-		}
-
-		if !strings.HasSuffix(currentFileName, label+".config") {
-			continue
-		}
-		filename = currentFileName
-	}
-
-	if filename == "" {
-		errors = append(errors, fmt.Errorf("database config for %s not found filename is empty: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
-		return "", "", "", "", errors
-	}
-
-	parts := strings.Split(filename, ":")
-	if len(parts) != 5 {
-		errors = append(errors, fmt.Errorf("database config for %s not found filename is in wrong format: holistic_db_config|{database_ip_address}|{database_port_number}|{database_name}|{database_username}.config e.g holistic_db_config|127.0.0.1|3306|holistic|root.config", label))
-		return "", "", "", "", errors
-	}
-
-	ip_address := parts[1]
-	port_number := parts[2]
-	database_name := parts[3]
-	username := parts[4]
-	//password := ""
-	//username := ""
-
-	/*
-	file, err_file := os.Open(filename)
-
-	if err_file != nil {
-		errors = append(errors, err_file)
-		return "", "", "", "", "", errors
-	}
-
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	for scanner.Scan() {
-		currentText := scanner.Text()
-		if strings.HasPrefix(currentText, "password=") {
-			password = currentText[9:len(currentText)]
-		}
-
-		if strings.HasPrefix(currentText, "user=") {
-			username = currentText[5:len(currentText)]
-		}
-	}
-
-	if file_errs := scanner.Err(); err != nil {
-		errors = append(errors, file_errs)
-	}
-
-	if password == "" {
-		errors = append(errors, fmt.Errorf("password not found for file: %s", filename))
-	}
-
-	if username == "" {
-		errors = append(errors, fmt.Errorf("user not found for file: %s", filename))
-	}
-
-	if len(errors) > 0 {
-		return "", "", "", "", "", errors
-	}
-
-	return ip_address, port_number, database_name, username, errors
-}*/

@@ -76,7 +76,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		host, host_errors := NewHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
+		host, host_errors := newHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
 		client, client_errors := newClient(getClientManager(), host, temp_tuple_creds.database_username, nil)
 
 		if host_errors != nil {
