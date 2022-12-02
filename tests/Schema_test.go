@@ -2,6 +2,7 @@ package tests
  
 import (
     "testing"
+	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -30,10 +31,10 @@ func GetTestTableSchemaNoType() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
 }
 
-func TestSchemaCanNewTable(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestSchema())
+func TestSchemaCanCreateTable(t *testing.T) {
+	table, table_errors := GetTestDatabaseCreated(t).CreateTable(GetTestTableName(), GetTestSchema())
 	if table_errors != nil {
-		t.Errorf("expect table_errors to be nil")
+		t.Errorf("expect table_errors to be nil: %s", fmt.Sprintf("%s", table_errors))
 	}
 
 	if table == nil {
@@ -41,19 +42,8 @@ func TestSchemaCanNewTable(t *testing.T) {
 	}
 }
  
-func TestSchemaCanNewTableIfNil(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), nil)
-	if table_errors != nil {
-		t.Errorf("expect table_errors to be nil")
-	}
-
-	if table == nil {
-		t.Errorf("expect table to be not nil")
-	}
-}
-
-func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), class.Map{})
+func TestSchemaCannotCreateTableIfNil(t *testing.T) {
+	table, table_errors := GetTestDatabaseCreated(t).CreateTable(GetTestTableName(), nil)
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -63,8 +53,8 @@ func TestSchemaCannotNewTableIfNoColumns(t *testing.T) {
 	}
 }
 
-func TestSchemaCannotNewTableIfNoPrimaryKey(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
+func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), class.Map{})
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -74,8 +64,8 @@ func TestSchemaCannotNewTableIfNoPrimaryKey(t *testing.T) {
 	}
 }
 
-func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
+func TestSchemaCannotCreateTableNoPrimaryKey(t *testing.T) {
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -85,8 +75,8 @@ func TestSchemaCannotNewTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) 
 	}
 }
 
-func TestSchemaCannotNewTableIfNoTypeAttribute(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestTableSchemaNoType())
+func TestSchemaCannotCreateTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -96,8 +86,19 @@ func TestSchemaCannotNewTableIfNoTypeAttribute(t *testing.T) {
 	}
 }
 
-func TestSchemaCannotNewTableIfHasValueAttribute(t *testing.T) {
-	table, table_errors := class.NewTable(GetTestDatabase(t), GetTestTableName(), GetTestColumnSchemaWithValue())
+func TestSchemaCannotCreateTableIfNoTypeAttribute(t *testing.T) {
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaNoType())
+	if table_errors == nil {
+		t.Errorf("expect table_errors to be not nil")
+	}
+
+	if table != nil {
+		t.Errorf("expect table to be nil")
+	}
+}
+
+func TestSchemaCannotCreateTableIfHasValueAttribute(t *testing.T) {
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestColumnSchemaWithValue())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}

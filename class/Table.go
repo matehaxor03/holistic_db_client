@@ -28,7 +28,7 @@ type Table struct {
 	ToJSONString          func() (*string, []error)
 }
 
-func NewTable(database *Database, table_name string, schema Map) (*Table, []error) {
+func newTable(database *Database, table_name string, schema Map) (*Table, []error) {
 	SQLCommand := NewSQLCommand()
 	var errors []error
 	var this_table *Table
@@ -246,6 +246,42 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		}
 
 		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(*temp_table_name))
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return temp_database_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, Map{"use_file": false})
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
+	deleteIfExists := func() ([]error) {
+		errors := validate()
+		if errors != nil {
+			return errors
+		}
+
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			return temp_table_name_errors
+		}
+
+		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", EscapeString(*temp_table_name))
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -545,7 +581,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := NewTable(temp_database, new_table_name, *temp_schema)
+		_, new_table_errors := newTable(temp_database, new_table_name, *temp_schema)
 		if new_table_errors != nil {
 			return new_table_errors
 		}
@@ -750,7 +786,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("table: %s must have at least 1 primary key", EscapeString(*temp_table_name)))
+			errors = append(errors, fmt.Errorf("Table.getSQL: %s must have at least 1 primary key", EscapeString(*temp_table_name)))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -935,16 +971,7 @@ func NewTable(database *Database, table_name string, schema Map) (*Table, []erro
 				return errors
 			}
 
-			exists, exists_errors := exists()
-			if exists_errors != nil {
-				return exists_errors
-			}
-
-			if !(*exists) {
-				return nil
-			}
-
-			return delete()
+			return deleteIfExists()
 		},
 		CreateRecord: func(new_record_data Map) (*Record, []error) {
 			errors := validate()

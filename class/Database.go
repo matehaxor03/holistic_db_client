@@ -16,6 +16,7 @@ type Database struct {
 	SetClient       func(client *Client) []error
 	GetClient       func() (*Client, []error)
 	CreateTable     func(table_name string, schema Map) (*Table, []error)
+	GetTableInterface func(table_name string, schema Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() (*[]Table, []error)
 	GetTableNames   func() (*[]string, []error)
@@ -280,6 +281,39 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		return nil
 	}
 
+	deleteIfExists := func() ([]error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+
+		temp_database_name, temp_database_name_errors := getDatabaseName()
+		if temp_database_name_errors != nil {
+			return temp_database_name_errors
+		}
+
+		sql_command := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", EscapeString(temp_database_name))
+
+		temp_client, temp_client_errors := getClient()
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
 	getTable := func(table_name string) (*Table, []error) {
 		var errors []error
 		database := getDatabase()
@@ -296,7 +330,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}
 
-		table, table_errors := NewTable(getDatabase(), table_name, nil)
+		table, table_errors := newTable(getDatabase(), table_name, nil)
 		if table_errors != nil {
 			errors = append(errors, table_errors...)
 		}
@@ -319,7 +353,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := NewTable(getDatabase(), table_name, *table_schema)
+		get_table, get_table_errors := newTable(getDatabase(), table_name, *table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -359,16 +393,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return errors
 			}
 
-			exists, exists_errors := exists()
-			if exists_errors != nil {
-				return exists_errors
-			}
-
-			if !(*exists) {
-				return nil
-			}
-
-			return delete()
+			return deleteIfExists()
 		},
 		TableExists: func(table_name string) (*bool, []error) {
 			errors := validate()
@@ -377,13 +402,28 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, table_errors := NewTable(getDatabase(), table_name, nil)
+			table, table_errors := newTable(getDatabase(), table_name, nil)
 
 			if table_errors != nil {
 				return nil, table_errors
 			}
 
 			return table.Exists()
+		},
+		GetTableInterface: func(table_name string, schema Map) (*Table, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+			
+			table, new_table_errors := newTable(getDatabase(), table_name, schema)
+
+			if new_table_errors != nil {
+				return nil, new_table_errors
+			}
+
+			return table, nil
 		},
 		CreateTable: func(table_name string, schema Map) (*Table, []error) {
 			errors := validate()
@@ -392,7 +432,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := NewTable(getDatabase(), table_name, schema)
+			table, new_table_errors := newTable(getDatabase(), table_name, schema)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors

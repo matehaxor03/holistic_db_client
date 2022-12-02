@@ -7,6 +7,16 @@ import (
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
+func ensureTableIsDeleted(t *testing.T, table *class.Table) {
+	table_delete_errors := table.DeleteIfExists()
+	
+	if table_delete_errors != nil {
+		t.Error(table_delete_errors)
+		t.FailNow()
+		return
+	}
+}
+
 func GetTestTableName() string {
 	return "holistic_test_table"
 }
@@ -52,7 +62,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 		return nil
 	}
 
-	table, table_errors := class.NewTable(database, table_name, schema)
+	table, table_errors := database.CreateTable(table_name, schema)
 	if table_errors != nil {
 		errors = append(errors, table_errors...)
 	}
@@ -93,7 +103,7 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 		errors = append(errors, use_database_errors...)
 	}
 
-	table, table_errors := class.NewTable(database, table_name, schema)
+	table, table_errors := database.CreateTable(table_name, schema)
 	if table_errors != nil {
 		errors = append(errors, table_errors...)
 	}
@@ -273,14 +283,15 @@ func TestTableCannotCreateWithBlackListName(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, blacklist_table_name, GetTestSchema())
-			
-			if create_table_errors == nil {
-				t.Errorf("NewTable should return error when table_name is blacklisted")
+			t.Parallel()
+			table, get_table_interface_errors := database.GetTableInterface(blacklist_table_name, GetTestSchema())
+
+			if get_table_interface_errors == nil {
+				t.Errorf("database.GetTableInterface was expected to have errors")
 			}
 
 			if table != nil {
-				t.Errorf("NewTable should be nil when table_name is blacklisted")
+				t.Errorf("database.GetTableInterface table was not nil")
 			}
 		})
 	}
@@ -293,14 +304,15 @@ func TestTableCannotCreateWithBlackListNameUppercase(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, strings.ToUpper(blacklist_table_name), GetTestSchema())
-			
-			if create_table_errors == nil {
-				t.Errorf("NewTable should return error when table_name is blacklisted")
+			t.Parallel()
+			table, get_table_interface_errors := database.GetTableInterface(strings.ToUpper(blacklist_table_name), GetTestSchema())
+
+			if get_table_interface_errors == nil {
+				t.Errorf("database.GetTableInterface was expected to have errors")
 			}
 
 			if table != nil {
-				t.Errorf("NewTable should be nil when table_name is blacklisted")
+				t.Errorf("database.GetTableInterface table was not nil")
 			}
 		})
 	}
@@ -314,34 +326,37 @@ func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
 
 	for blacklist_table_name := range blacklist_map {
 		t.Run(blacklist_table_name, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, strings.ToLower(blacklist_table_name), GetTestSchema())
-			
-			if create_table_errors == nil {
-				t.Errorf("NewTable should return error when table_name is blacklisted")
+			t.Parallel()
+			table, get_table_interface_errors := database.GetTableInterface(strings.ToLower(blacklist_table_name), GetTestSchema())
+
+			if get_table_interface_errors == nil {
+				t.Errorf("database.GetTableInterface was expected to have errors")
 			}
 
 			if table != nil {
-				t.Errorf("NewTable should be nil when table_name is blacklisted")
+				t.Errorf("database.GetTableInterface table was not nil")
 			}
 		})
 	}
 }
 
 func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
-	database := GetTestDatabase(t)
+	database := GetTestDatabaseCreated(t)
 	
 	valid_characters_map := class.GetTableNameValidCharacters()
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, valid_character + valid_character, GetTestSchema())
+			table, get_table_interface_errors := database.GetTableInterface("a" + valid_character + "a", GetTestSchema())
+
+			if get_table_interface_errors != nil {
+				t.Errorf("database.GetTableInterface had errors %s", get_table_interface_errors)
+			}
+			ensureTableIsDeleted(t, table)
+			create_table_errors := table.Create()
 			
 			if create_table_errors != nil {
-				t.Errorf("NewTable should not return error when table_name is whitelisted")
-			}
-
-			if table == nil {
-				t.Errorf("NewTable should be not be nil when table_name is whitelisted")
+				t.Errorf("table.Create should not return error when table_name is whitelisted but has length 2. errors: %s", create_table_errors)
 			}
 		})
 	}
@@ -354,14 +369,15 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 	for invalid_character := range non_whitelist_map {
 		t.Run(invalid_character, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, invalid_character + invalid_character, GetTestSchema())
-			
-			if create_table_errors == nil {
-				t.Errorf("NewTable should return error when table_name is non-whitelisted")
+			t.Parallel()
+			table, get_table_interface_errors := database.GetTableInterface(invalid_character + invalid_character, GetTestSchema())
+
+			if get_table_interface_errors == nil {
+				t.Errorf("database.GetTableInterface was expected to have errors")
 			}
 
 			if table != nil {
-				t.Errorf("NewTable should be nil when table_name is non-whitelisted")
+				t.Errorf("database.GetTableInterface table was not nil")
 			}
 		})
 	}
@@ -374,14 +390,15 @@ func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {
-			table, create_table_errors := class.NewTable(database, valid_character, GetTestSchema())
-			
-			if create_table_errors == nil {
-				t.Errorf("NewTable should return error when table_name is whitelisted but has length 1")
+			t.Parallel()
+			table, get_table_interface_errors := database.GetTableInterface(valid_character, GetTestSchema())
+
+			if get_table_interface_errors == nil {
+				t.Errorf("database.GetTableInterface was expected to have errors")
 			}
 
 			if table != nil {
-				t.Errorf("NewTable should be nil when table_name is whitelisted but has length 1")
+				t.Errorf("database.GetTableInterface table was not nil")
 			}
 		})
 	}

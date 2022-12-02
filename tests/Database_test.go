@@ -373,7 +373,6 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors :=  GetTestClient(t).CreateDatabase(blacklist_database_name, &character_set, &collate)
 			
 			if create_database_errors == nil {
@@ -396,7 +395,6 @@ func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors :=  GetTestClient(t).CreateDatabase(strings.ToUpper(blacklist_database_name), &character_set, &collate)
 			
 			if create_database_errors == nil {
@@ -419,7 +417,6 @@ func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 
 	for blacklist_database_name := range blacklist_map {
 		t.Run(blacklist_database_name, func(t *testing.T) {
-			t.Parallel()
 			database, create_database_errors :=  GetTestClient(t).CreateDatabase(strings.ToLower(blacklist_database_name), &character_set, &collate)
 			
 			if create_database_errors == nil {
