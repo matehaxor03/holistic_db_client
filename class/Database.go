@@ -140,7 +140,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		return &sql_command, nil
 	}
 
-	createDatabase := func() []error {
+	create := func() []error {
 		sql_command, generate_sql_errors := getCreateSQL()
 
 		if generate_sql_errors != nil {
@@ -151,7 +151,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file": false})
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file":false, "creating_database":true})
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -179,7 +179,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "checking_database_exists":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -267,7 +267,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -339,7 +339,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return validate()
 		},
 		Create: func() []error {
-			errors := createDatabase()
+			errors := create()
 			if errors != nil {
 				return errors
 			}

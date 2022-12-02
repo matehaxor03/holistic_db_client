@@ -3,9 +3,9 @@ package class
 import (
 	//"bufio"
 	"fmt"
-	"io/ioutil"
+	//"io/ioutil"
 	//"os"
-	"strings"
+	//"strings"
 )
 
 type Client struct {
@@ -27,7 +27,7 @@ type Client struct {
 	ToJSONString        func() (*string, []error)
 }
 
-func NewClient(host *Host, database_username *string, database *Database) (*Client, []error) {
+func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
 
 	setClient := func(client *Client) {
@@ -40,8 +40,9 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 
 	data := Map{
 		"[fields]":Map{
-			"host": host, "database": database, "database_username": database_username },
+			"client_manager": client_manager, "host": host, "database": database, "database_username": database_username },
 		"[schema]":Map{
+			"client_manager": Map{"type":"*class.ClientManager", "mandatory": true, "validated":false},
 			"host": Map{"type":"*class.Host", "mandatory": false, "validated":false},
 			"database": Map{"type":"*class.Database", "mandatory": false, "validated":false},
 			"database_username": Map{"type":"*string", "mandatory":false, "validated":false,
@@ -78,6 +79,10 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		return GetDatabaseField(getData(), "database")
 	}
 
+	getClientManager := func() (*ClientManager, []error) {
+		return GetClientManagerField(getData(), "client_manager")
+	}
+
 	setDatabase := func(database *Database) []error {
 		return SetField(getData(), "database", database)
 	}
@@ -95,35 +100,38 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 		return ValidateData(getData(), "Client")
 	}
 
-
-
 	getUser := func(username string) (*User, []error) {
-		db_hostname, db_port_number, db_name, db_username, details_errors := GetCredentialDetails(username)
-		if details_errors != nil {
-			return nil, details_errors
+		temp_client_manager, temp_client_manager_errors := getClientManager()
+		if temp_client_manager_errors != nil {
+			return nil, temp_client_manager_errors
 		}
 
-		host, host_errors := NewHost(db_hostname, db_port_number)
+		tuple_credentials, tuple_credentials_errors := temp_client_manager.GetTupleCredentials(username)
+		if tuple_credentials_errors != nil {
+			return nil, tuple_credentials_errors
+		}
+
+		host, host_errors := NewHost(*(tuple_credentials.host_name), *(tuple_credentials.port_number))
 		if host_errors != nil {
 			return nil, host_errors
 		}
 
-		client, client_errors := NewClient(host, &db_username, nil)
+		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil)
 		if client_errors != nil {
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := NewCredentials(db_username, nil)
+		credentials, credentials_errors := NewCredentials(*(tuple_credentials.database_username), nil)
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
 
-		_, use_database_errors := client.UseDatabaseByName(db_name)
+		_, use_database_errors := client.UseDatabaseByName(*(tuple_credentials.database_name))
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := NewDomainName(db_hostname)
+		domain_name, domain_name_errors := NewDomainName(*(tuple_credentials.host_name))
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
@@ -324,6 +332,7 @@ func NewClient(host *Host, database_username *string, database *Database) (*Clie
 	return &x, nil
 }
 
+/*
 func GetDatabaseClient(label string) (*Client, []error) {
 	var errors []error
 	db_hostname, db_port_number, db_name, db_username, details_errors := GetCredentialDetails(label)
@@ -336,7 +345,7 @@ func GetDatabaseClient(label string) (*Client, []error) {
 	}
 
 	host, host_errors := NewHost(db_hostname, db_port_number)
-	client, client_errors := NewClient(host, &db_username, nil)
+	client, client_errors := newClient(host, &db_username, nil)
 
 	if host_errors != nil {
 		errors = append(errors, host_errors...)
@@ -460,7 +469,7 @@ func GetCredentialDetails(label string) (string, string, string, string, []error
 
 	if len(errors) > 0 {
 		return "", "", "", "", "", errors
-	}*/
+	}
 
 	return ip_address, port_number, database_name, username, errors
-}
+}*/

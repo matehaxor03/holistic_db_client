@@ -40,10 +40,16 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 		t.FailNow()
 		return nil
 	}
-	
+
 	use_database_errors := database.UseDatabase() 
 	if use_database_errors != nil {
 		errors = append(errors, use_database_errors...)
+	}
+
+	if len(errors) > 0 {
+		t.Error(errors)
+		t.FailNow()
+		return nil
 	}
 
 	table, table_errors := class.NewTable(database, table_name, schema)

@@ -38,23 +38,19 @@ func main() {
 	var USER_CLASS = "USER"
 
 	context := class.NewContext()
+	client_manager, client_manager_errors := class.NewClientManager()
+	if client_manager_errors != nil {
+		context.LogErrors(client_manager_errors)
+		os.Exit(1)
+	}
+
 	params, errors := getParams(os.Args[1:])
 	if errors != nil || len((errors)) > 0 {
 		context.LogErrors(errors)
 		os.Exit(1)
 	}
 
-	host_value, found_host_found := params[CLS_HOST]
-	if !found_host_found {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_HOST, CLS_HOST))
-	}
-
-	port_value, port_value_found := params[CLS_PORT]
-	if !port_value_found {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_PORT, CLS_PORT))
-	}
-
-	user_value, _ := params[CLS_USER]
+	database_username_value, database_username_value_found := params[CLS_USER]
 
 	database_name, _ := params[CLS_DATABASE_NAME]
 	character_set, _ := params[CLS_CHARACTER_SET]
@@ -76,17 +72,12 @@ func main() {
 		class_value = strings.ToUpper(*class_pt)
 	}
 
-	//_, if_exists := params[CLS_IF_EXISTS]
-	//_, if_not_exists := params[CLS_IF_NOT_EXISTS]
-
-	/*
-	if if_exists && if_not_exists {
-		context.LogError(fmt.Errorf("%s and %s cannot be used together", CLS_IF_EXISTS, CLS_IF_NOT_EXISTS))
-	}
-	*/
-
 	if command_pt == nil || !command_found {
 		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
+	}
+
+	if database_username_value == nil || !database_username_value_found {
+		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
 	}
 
 	if len(errors) > 0 {
@@ -94,12 +85,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	host, host_errors := class.NewHost(*host_value, *port_value)
-	if host_errors != nil {
-		errors = append(errors, host_errors...)
-	}
-
-	client, client_errors := class.NewClient(host, user_value, nil)
+	client, client_errors := client_manager.GetClient(*database_username_value)
 	if client_errors != nil {
 		errors = append(errors, client_errors...)
 	}
@@ -127,13 +113,7 @@ func main() {
 			}
 
 			if *database_exists == false {
-				database_create_options, database_create_options_errors := class.NewDatabaseCreateOptions(character_set, collate)
-				if database_create_options_errors != nil {
-					context.LogErrors(database_create_options_errors)
-					os.Exit(1)
-				}
-
-				_, database_errors := client.CreateDatabase(*database_name, database_create_options)
+				_, database_errors := client.CreateDatabase(*database_name, character_set, collate)
 
 				if database_errors != nil {
 					context.LogErrors(database_errors)
@@ -323,7 +303,7 @@ func testDatabaseName(client *class.Client) []error {
 			}
 		}
 
-		_, database_errors := client.CreateDatabase(string_value, nil)
+		_, database_errors := client.CreateDatabase(string_value, nil, nil)
 		if database_errors != nil {
 			fmt.Println(fmt.Sprintf("client.CreateDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			fmt.Println(database_errors)
@@ -381,7 +361,7 @@ func testTableName(client *class.Client) []error {
 		}
 	}
 
-	_, database_errors := client.CreateDatabase(database_name, nil)
+	_, database_errors := client.CreateDatabase(database_name, nil, nil)
 	if database_errors != nil {
 		return database_errors
 	}
@@ -467,7 +447,7 @@ func testColumnName(client *class.Client) []error {
 		}
 	}
 
-	_, database_errors := client.CreateDatabase(database_name, nil)
+	_, database_errors := client.CreateDatabase(database_name, nil, nil)
 	if database_errors != nil {
 		return database_errors
 	}

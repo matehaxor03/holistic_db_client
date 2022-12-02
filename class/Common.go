@@ -566,6 +566,36 @@ func GetHostField(m *Map, field string) (*Host, []error) {
 	return value, nil
 }
 
+func GetClientManagerField(m *Map, field string) (*ClientManager, []error) {
+	var errors []error
+	var value *ClientManager
+	
+	object_value, object_value_errors := GetField(m, field)
+	if object_value_errors != nil {
+		return nil, object_value_errors
+	} 
+
+	type_of := GetType(object_value)
+	
+	switch type_of {
+		case "*class.ClientManager":
+			value = object_value.(*ClientManager)
+		case "class.ClientManager":
+		temp := object_value.(ClientManager)
+		value = &temp
+		case "nil":
+		value = nil
+		default:
+			errors = append(errors, fmt.Errorf("GetClientManagerField: field: %s type: %s not in [*class.ClientManager, class.ClientManager, nil]" , field, type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return value, nil
+}
+
 func GetCredentialsField(m *Map, field string) (*Credentials, []error) {
 	var errors []error
 	var value *Credentials
@@ -1245,6 +1275,15 @@ func ValidateData(data *Map, struct_type string) []error {
 			errors_for_table := table.Validate()
 			if errors_for_table != nil {
 				errors = append(errors, errors_for_table...)
+			}
+
+			break
+		case "*class.ClientManager":
+			client_manager := value_to_validate.(*ClientManager)
+
+			errors_for_client_manager := client_manager.Validate()
+			if errors_for_client_manager != nil {
+				errors = append(errors, errors_for_client_manager...)
 			}
 
 			break

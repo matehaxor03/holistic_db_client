@@ -118,7 +118,9 @@ func NewSQLCommand() *SQLCommand {
 				if database_name_errors != nil {
 					errors = append(errors, database_name_errors...)
 				} else {
-					sql = fmt.Sprintf("USE %s;\n", database_name)
+					if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists")) {
+						sql = fmt.Sprintf("USE %s;\n", database_name)
+					}
 				}
 			}
 

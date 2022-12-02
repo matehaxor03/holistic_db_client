@@ -66,6 +66,12 @@ func NewUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		temp_password, temp_password_errors := temp_credentials.GetPassword()
 		if temp_password_errors != nil {
 			return nil, nil, temp_password_errors
+		} else if IsNil(temp_password) {
+			errors = append(errors, fmt.Errorf("User.getCreateSQL password is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
 		}
 
 		temp_domain_name, temp_domain_name_errors := getDomainName()
