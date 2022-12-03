@@ -343,7 +343,7 @@ func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
 func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 	database := GetTestDatabaseCreated(t)
 	
-	valid_characters_map := class.GetTableNameValidCharacters()
+	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {
@@ -386,7 +386,7 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T) {
 	database := GetTestDatabase(t)
 	
-	valid_characters_map := class.GetTableNameValidCharacters()
+	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
 	for valid_character := range valid_characters_map {
 		t.Run(valid_character, func(t *testing.T) {

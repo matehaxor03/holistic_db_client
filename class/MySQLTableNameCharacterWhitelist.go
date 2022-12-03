@@ -1,5 +1,5 @@
 package class
-func GetTableNameValidCharacters() Map {
+func GetMySQLTableNameWhitelistCharacters() Map {
 return Map{
     "$": nil,
     ".": nil,
