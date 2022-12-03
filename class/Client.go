@@ -27,7 +27,7 @@ type Client struct {
 	ToJSONString        func() (*string, []error)
 }
 
-func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
+func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords) (*Client, []error) {
 	var this_client *Client
 
 	setClient := func(client *Client) {
@@ -59,7 +59,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, temp_database_create_options_errors
 		}
 		
-		database, errs := newDatabase(getClient(), database_name, temp_database_create_options)
+		database, errs := newDatabase(getClient(), database_name, temp_database_create_options, database_reserved_words_obj)
 		if errs != nil {
 			return nil, errs
 		}
@@ -116,7 +116,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, host_errors
 		}
 
-		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil)
+		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -165,7 +165,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return database, nil
 		},
 		DeleteDatabase: func(database_name string) []error {
-			database, database_errors := newDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -178,7 +178,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil
 		},
 		DatabaseExists: func(database_name string) (*bool, []error) {
-			database, database_errors := newDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj)
 			if database_errors != nil {
 				return nil, database_errors
 			}
@@ -239,7 +239,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil
 		},
 		UseDatabaseByName: func(database_name string) (*Database, []error) {
-			database, database_errors := newDatabase(getClient(), database_name, nil)
+			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj)
 			if database_errors != nil {
 				return nil, database_errors
 			}

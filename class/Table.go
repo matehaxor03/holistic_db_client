@@ -28,7 +28,7 @@ type Table struct {
 	ToJSONString          func() (*string, []error)
 }
 
-func newTable(database *Database, table_name string, schema *Map) (*Table, []error) {
+func newTable(database *Database, table_name string, schema *Map, database_reserved_words_obj *DatabaseReservedWords) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 	var this_table *Table
@@ -42,7 +42,7 @@ func newTable(database *Database, table_name string, schema *Map) (*Table, []err
 	}
 
 	table_name_valid_characters := GetTableNameValidCharacters()
-	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
+	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	
 	setupData := func(b *Database, n string, s *Map) (Map) {
 		schema_is_nil := false
@@ -588,7 +588,7 @@ func newTable(database *Database, table_name string, schema *Map) (*Table, []err
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema)
+		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema, database_reserved_words_obj)
 		if new_table_errors != nil {
 			return new_table_errors
 		}

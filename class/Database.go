@@ -24,7 +24,7 @@ type Database struct {
 	UseDatabase     func() []error
 }
 
-func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {
+func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords) (*Database, []error) {
 	SQLCommand := newSQLCommand()
 	var this_database *Database
 
@@ -36,7 +36,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		return this_database
 	}
 
-	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
+	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 
 	data := Map{"[fields]": Map{
 		"client":client, "database_name":&database_name,"database_create_options":database_create_options},
@@ -93,7 +93,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return temp_database_create_options_errors
 		}
 
-		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options)
+		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options, database_reserved_words_obj)
 		if new_database_errors != nil {
 			return new_database_errors
 		}
@@ -332,7 +332,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}
 
-		table, table_errors := newTable(getDatabase(), table_name, nil)
+		table, table_errors := newTable(getDatabase(), table_name, nil, database_reserved_words_obj)
 		if table_errors != nil {
 			errors = append(errors, table_errors...)
 		}
@@ -355,7 +355,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(getDatabase(), table_name, table_schema)
+		get_table, get_table_errors := newTable(getDatabase(), table_name, table_schema, database_reserved_words_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -404,7 +404,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, table_errors := newTable(getDatabase(), table_name, nil)
+			table, table_errors := newTable(getDatabase(), table_name, nil, database_reserved_words_obj)
 
 			if table_errors != nil {
 				return nil, table_errors
@@ -419,7 +419,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, &schema)
+			table, new_table_errors := newTable(getDatabase(), table_name, &schema, database_reserved_words_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -434,7 +434,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, &schema)
+			table, new_table_errors := newTable(getDatabase(), table_name, &schema, database_reserved_words_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors

@@ -33,6 +33,7 @@ func NewClientManager() (*ClientManager, []error) {
 	lock_client := &sync.Mutex{}
 	lock_tuple := &sync.Mutex{}
 	tuple := make(map[string]TupleCredentials)
+	database_reserved_words_obj := newDatabaseReservedWords()
 
 	/*
 	data := Map{
@@ -79,7 +80,7 @@ func NewClientManager() (*ClientManager, []error) {
 		}
 
 		host, host_errors := newHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
-		client, client_errors := newClient(getClientManager(), host, temp_tuple_creds.database_username, nil)
+		client, client_errors := newClient(getClientManager(), host, temp_tuple_creds.database_username, nil, database_reserved_words_obj)
 
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
