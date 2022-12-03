@@ -1014,6 +1014,11 @@ func ValidateData(data *Map, struct_type string) []error {
 			continue
 		}
 
+		var value_to_validate interface{}
+		value_to_validate = parameters.GetObject(parameter)
+
+
+
 		value_is_mandatory := true
 		
 		value_is_set := false
@@ -1093,13 +1098,13 @@ func ValidateData(data *Map, struct_type string) []error {
 			continue
 		}
 
-		var value_to_validate interface{}
-		value_to_validate = nil
+		//var value_to_validate interface{}
+		//value_to_validate = nil
 		if value_is_set && !value_is_null {
-			value_to_validate = parameters.GetObject(parameter)
+			//value_to_validate = parameters.GetObject(parameter)
 		} else if value_is_set && value_is_null {
 			if default_set && default_is_null {
-				value_to_validate = parameters.GetObject(parameter)
+				//value_to_validate = parameters.GetObject(parameter)
 			} else if default_set && !default_is_null {
 				value_to_validate = schema_of_parameter.GetObject("default")
 			} else if !default_set { //todo check if schema allows nulls
