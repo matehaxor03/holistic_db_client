@@ -28,7 +28,7 @@ type Table struct {
 	ToJSONString          func() (*string, []error)
 }
 
-func newTable(database *Database, table_name string, schema *Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
+func newTable(database *Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 	var this_table *Table
@@ -46,22 +46,20 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b *Database, n string, s *Map) (Map) {
+	setupData := func(b *Database, n string, s Map) (Map) {
 		schema_is_nil := false
-		var new_schema *Map
+		var new_schema Map
 		if IsNil(s) {
 			schema_is_nil = true
-			new_map := Map{}
-			new_schema = &new_map
+			new_schema = Map{}
 		} else {
 			new_schema = s
 		}
 	
-		d := Map{"[fields]":Map{"[database]":b, "[table_name]":n},
-				 "[schema]":new_schema}
+		d := Map{"[fields]":Map{"[database]":b, "[table_name]":n}}
 	
-		(*new_schema)["[database]"] = Map{"type":"*class.Database", "mandatory": true, "validated": false}
-		(*new_schema)["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
+		(new_schema)["[database]"] = Map{"type":"*class.Database", "mandatory": true, "validated": false}
+		(new_schema)["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
 			FILTERS(): Array{Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
 							 Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}}
 	
@@ -71,12 +69,13 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 			d["[schema_is_nil]"] = false
 		}
 	
-		(*new_schema)["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
-		(*new_schema)["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
-		(*new_schema)["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-		(*new_schema)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-		(*new_schema)["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
+		new_schema["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
+		new_schema["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
+		new_schema["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		new_schema["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		new_schema["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
 	
+		d["[schema]"] = new_schema
 		return d
 	}
 
@@ -590,7 +589,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		_, new_table_errors := newTable(temp_database, new_table_name, *temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if new_table_errors != nil {
 			return new_table_errors
 		}
@@ -873,7 +872,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 			return errors
 		}
 
-		data = setupData(temp_database, *temp_table_name, temp_schema)
+		data = setupData(temp_database, *temp_table_name, *temp_schema)
 		return nil
 	}
 

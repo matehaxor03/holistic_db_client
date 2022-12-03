@@ -977,6 +977,7 @@ func IsDatabaseColumn(value string) bool {
 func ValidateData(data *Map, struct_type string) []error {	
 	var errors []error
 	var ignore_identity_errors = false
+	
 	primary_key_count := 0
 	auto_increment_count := 0
 
@@ -1000,40 +1001,48 @@ func ValidateData(data *Map, struct_type string) []error {
 		}
 	}
 
-	//todo check schema mandatory fields not in parameters
-
 	for _, parameter := range (*schemas).Keys() {
+		
 		if !schemas.IsMap(parameter) {
 			errors = append(errors, fmt.Errorf("struct: %s schema column: %s is not a map type: ", struct_type, parameter, schemas.GetType(parameter)))
 			continue
 		}
-
+	
 		schema_of_parameter, schema_of_parameter_errors := GetSchema(data, parameter)
 		if schema_of_parameter_errors != nil {
 			errors = append(errors, fmt.Errorf("struct: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
 			continue
 		}
 
-		var value_to_validate interface{}
-		value_to_validate = parameters.GetObject(parameter)
-
-
-
 		value_is_mandatory := true
-		
 		value_is_set := false
 		value_is_null := false
 
-		default_set := false
-		default_is_null := false
-
-		if schema_of_parameter.HasKey("default") {
-			default_set = true
-			if schema_of_parameter.IsNil("default") {
-				default_is_null = true
+		if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
+			if schema_of_parameter.IsBoolTrue("primary_key") {
+				value_is_mandatory = true
+				primary_key_count++ 
+	
+				if schema_of_parameter.IsBoolTrue("auto_increment") {
+					value_is_mandatory = false
+					auto_increment_count++
+				}
 			}
+		}
+		
+		if !schema_of_parameter.HasKey("validated") {
+			bool_true := true
+			schema_of_parameter.SetBool("validated", &bool_true)
 		} else {
-			default_is_null = true
+				if !schema_of_parameter.IsBool("validated") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
+				continue
+			} else if schema_of_parameter.IsBoolTrue("validated") {
+				continue
+			} else {
+				bool_true := true
+				schema_of_parameter.SetBool("validated", &bool_true)
+			}
 		}
 
 		if parameters.HasKey(parameter) {
@@ -1045,283 +1054,13 @@ func ValidateData(data *Map, struct_type string) []error {
 			value_is_null = true
 		}
 
-		if schema_of_parameter.HasKey("mandatory") {
-		    if !schema_of_parameter.IsBool("mandatory") {
-				errors = append(errors, fmt.Errorf("struct: %s column: %s had mandatory schema field however was not a bool: %s", struct_type, parameter, schema_of_parameter.GetType("mandatory")))
-				continue
-			} else if schema_of_parameter.IsBoolFalse("mandatory") {
-				value_is_mandatory = false
-			}
-		}  
+		var value_to_validate interface{}
+		value_to_validate = parameters.GetObject(parameter)
 
-		if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
-			if schema_of_parameter.IsBoolTrue("primary_key") {
-				value_is_mandatory = true
-				primary_key_count += 1
+		value_errors := ValidateParameterData(struct_type, schemas, parameter, value_to_validate, value_is_mandatory, value_is_set, value_is_null)
 
-				if schema_of_parameter.IsBoolTrue("auto_increment") {
-					value_is_mandatory = false
-					auto_increment_count += 1
-				}
-			}
-		}
-
-		if !schema_of_parameter.HasKey("validated") {
-			bool_true := true
-			schema_of_parameter.SetBool("validated", &bool_true)
-		} else {
-		 	 if !schema_of_parameter.IsBool("validated") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
-				continue
-			} else if schema_of_parameter.IsBoolTrue("validated") {
-				continue
-			} else {
-				bool_true := true
-				schema_of_parameter.SetBool("validated", &bool_true)
-			}
-		}
-
-		type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
-		if type_of_parameter_schema_value_errors != nil {
-			errors = append(errors, fmt.Errorf("struct: %s column: %s error getting type for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
-			continue
-		} else if type_of_parameter_schema_value == nil {
-			errors = append(errors, fmt.Errorf("struct: %s column: %s error type of schema is nil", struct_type, parameter))
-			continue
-		}
-
-		if (struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter) {
-			value_is_mandatory = false
-		}
-
-		if value_is_null && default_is_null && !value_is_mandatory {
-			continue
-		}
-
-		//var value_to_validate interface{}
-		//value_to_validate = nil
-		if value_is_set && !value_is_null {
-			//value_to_validate = parameters.GetObject(parameter)
-		} else if value_is_set && value_is_null {
-			if default_set && default_is_null {
-				//value_to_validate = parameters.GetObject(parameter)
-			} else if default_set && !default_is_null {
-				value_to_validate = schema_of_parameter.GetObject("default")
-			} else if !default_set { //todo check if schema allows nulls
-				if value_is_mandatory {
-					errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
-					continue
-				} else {
-					value_to_validate = nil
-				}
-			}
-		} else if !value_is_set {
-			if default_set && default_is_null {
-				value_to_validate = schema_of_parameter.GetObject("default")
-			} else if default_set && !default_is_null {
-				value_to_validate = schema_of_parameter.GetObject("default")
-			} else if !default_set {
-				if value_is_mandatory {
-					errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
-					continue
-				} else {
-					value_to_validate = nil
-				}
-			}
-		}
-
-		type_of_parameter_value := GetType(value_to_validate)
-
-		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" && IsTime(value_to_validate) {
-			type_of_parameter_value = "*time.Time"
-		}
-
-		if !((struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter)) {
-			if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
-				continue
-			}
-		}
-
-		switch type_of_parameter_value {
-		case "*string", "string":
-			var string_value *string
-			if type_of_parameter_value == "*string" {
-				string_value = value_to_validate.(*string)
-			} else {
-				temp_string := value_to_validate.(string)
-				string_value = &temp_string
-			}
-
-			if schema_of_parameter.IsNumber("min_length") {
-				min_length, min_length_errors := schema_of_parameter.GetUInt64("min_length")
-				if min_length_errors != nil {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had an error parsing number", struct_type, parameter, "min_length"))
-				} else {
-					runes := []rune(*string_value)
-
-					if uint64(len(runes)) < *min_length {
-						errors = append(errors, fmt.Errorf("table: %s column: %s attribute: min_length did not meet minimum length requirements and had length: %d", struct_type, parameter, len(runes)))
-					}
-				}
-			}
-
-			if schema_of_parameter.IsBoolTrue("not_empty_string_value") {
-				if *string_value == "" {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s was an empty string", struct_type, parameter, "not_empty_string_value"))
-				}
-			}
-
-			if schema_of_parameter.IsNil(FILTERS()) {
-				continue
-			}
-			
-			if !schema_of_parameter.IsArray(FILTERS())  {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, FILTERS(), schema_of_parameter.GetType(FILTERS())))
-				continue
-			}
-
-			filters, filters_errors := schema_of_parameter.GetArray(FILTERS())
-			if filters_errors != nil {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, FILTERS(), filters_errors))
-				continue
-			}
-
-			if filters == nil {
-				continue
-			}
-
-			if len(*filters) == 0 {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s has no filters", struct_type, parameter, FILTERS()))
-				continue
-			}
-
-			for filter_index, filter := range *filters {
-				filter_map := filter.(Map)
-
-				if !filter_map.HasKey("function") {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, FILTERS(), filter_index))
-					continue
-				}
-
-				function := filter_map.Func("function")
-				if function == nil {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, FILTERS(), filter_index))
-					continue
-				}
-
-				if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, FILTERS(), filter_index))
-					continue
-				}
-
-				filter_map.SetString("value", string_value)
-				filter_map.SetString("data_type", &struct_type)
-				filter_map.SetString("label", &parameter)
-
-				temp_map := filter.(Map)
-				function_errors := function(temp_map)
-				if function_errors != nil {
-					errors = append(errors, function_errors...)
-				}
-			}
-
-			break
-		case "*int", "int":
-		case "*bool", "bool":
-		case "*int64", "int64":
-		case "*uint64", "uint64":
-		case "*time.Time":
-		case "*class.Database":
-			database := value_to_validate.(*Database)
-
-			errors_for_database := database.Validate()
-			if errors_for_database != nil {
-				errors = append(errors, errors_for_database...)
-			}
-			break
-		case "*class.DomainName":
-			domain_name := value_to_validate.(*DomainName)
-
-			errors_for_domain_name := domain_name.Validate()
-			if errors_for_domain_name != nil {
-				errors = append(errors, errors_for_domain_name...)
-			}
-			break
-		case "*class.Host":
-			host := value_to_validate.(*Host)
-
-			errors_for_host := host.Validate()
-			if errors_for_host != nil {
-				errors = append(errors, errors_for_host...)
-			}
-
-			break
-		case "*class.Credentials":
-			credentials := value_to_validate.(*Credentials)
-
-			errors_for_credentaials := credentials.Validate()
-			if errors_for_credentaials != nil {
-				errors = append(errors, errors_for_credentaials...)
-			}
-
-			break
-		case "*class.DatabaseCreateOptions":
-			database_create_options := value_to_validate.(*DatabaseCreateOptions)
-
-			errors_for_database_create_options := database_create_options.Validate()
-			if errors_for_database_create_options != nil {
-				errors = append(errors, errors_for_database_create_options...)
-			}
-
-			break
-		case "*class.Client":
-			client := value_to_validate.(*Client)
-
-			errors_for_client := client.Validate()
-			if errors_for_client != nil {
-				errors = append(errors, errors_for_client...)
-			}
-
-			break
-		case "*class.Grant":
-			grant := value_to_validate.(*Grant)
-
-			errors_for_grant := grant.Validate()
-			if errors_for_grant != nil {
-				errors = append(errors, errors_for_grant...)
-			}
-
-			break
-		case "*class.User":
-			user := value_to_validate.(*User)
-
-			errors_for_user := user.Validate()
-			if errors_for_user != nil {
-				errors = append(errors, errors_for_user...)
-			}
-
-			break
-		case "*class.Table":
-			table := value_to_validate.(*Table)
-
-			errors_for_table := table.Validate()
-			if errors_for_table != nil {
-				errors = append(errors, errors_for_table...)
-			}
-
-			break
-		case "*class.ClientManager":
-			client_manager := value_to_validate.(*ClientManager)
-
-			errors_for_client_manager := client_manager.Validate()
-			if errors_for_client_manager != nil {
-				errors = append(errors, errors_for_client_manager...)
-			}
-
-			break
-		default:
-			errors = append(errors, fmt.Errorf("class: %s column: %s type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", struct_type, parameter, type_of_parameter_value, value_is_null, value_is_mandatory, default_is_null))
+		if value_errors != nil {
+			errors = append(errors, value_errors...)
 		}
 	}
 
@@ -1333,6 +1072,310 @@ func ValidateData(data *Map, struct_type string) []error {
 		if auto_increment_count > 1 {
 			errors = append(errors, fmt.Errorf("table: %s had more than one auto_increment attribute on a column", struct_type))
 		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
+}
+
+func ValidateParameterData(struct_type string, schemas *Map, parameter string, value_to_validate interface{}, value_is_mandatory bool, value_is_set bool, value_is_null bool) ([]error) {
+	var errors []error
+
+	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
+	if schema_of_parameter_errors != nil {
+		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
+	} else if IsNil(schema_of_parameter) {
+		errors = append(errors, fmt.Errorf("struct: %s column: %s had nil schema", struct_type, parameter))
+	}
+
+	if len(errors) > 0 {
+		return errors
+	} 
+
+	default_set := false
+	default_is_null := false
+
+	if schema_of_parameter.HasKey("default") {
+		default_set = true
+		if schema_of_parameter.IsNil("default") {
+			default_is_null = true
+		}
+	} else {
+		default_is_null = true
+	}
+
+	if schema_of_parameter.HasKey("mandatory") {
+		if !schema_of_parameter.IsBool("mandatory") {
+			errors = append(errors, fmt.Errorf("struct: %s column: %s had mandatory schema field however was not a bool: %s", struct_type, parameter, schema_of_parameter.GetType("mandatory")))
+		} else if schema_of_parameter.IsBoolFalse("mandatory") {
+			value_is_mandatory = false
+		}
+	}  
+
+	type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
+	if type_of_parameter_schema_value_errors != nil {
+		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting type for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
+	} else if type_of_parameter_schema_value == nil {
+		errors = append(errors, fmt.Errorf("struct: %s column: %s error type of schema is nil", struct_type, parameter))
+	}
+
+	if (struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter) {
+		value_is_mandatory = false
+	}
+
+	if len(errors) > 0 {
+		return errors
+	} 
+
+	if value_is_null && default_is_null && !value_is_mandatory {
+		return nil
+	}
+
+	//var value_to_validate interface{}
+	//value_to_validate = nil
+	if value_is_set && !value_is_null {
+		//value_to_validate = nil
+	} else if value_is_set && value_is_null {
+		if default_set && default_is_null {
+			value_to_validate = nil
+		} else if default_set && !default_is_null {
+			value_to_validate = schema_of_parameter.GetObject("default")
+		} else if !default_set { //todo check if schema allows nulls
+			if value_is_mandatory {
+				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
+			} else {
+				value_to_validate = nil
+			}
+		}
+	} else if !value_is_set {
+		if default_set && default_is_null {
+			value_to_validate = schema_of_parameter.GetObject("default")
+		} else if default_set && !default_is_null {
+			value_to_validate = schema_of_parameter.GetObject("default")
+		} else if !default_set {
+			if value_is_mandatory {
+				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
+			} else {
+				value_to_validate = nil
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	} 
+
+	type_of_parameter_value := GetType(value_to_validate)
+
+	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" && IsTime(value_to_validate) {
+		type_of_parameter_value = "*time.Time"
+	}
+
+	if !((struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter)) {
+		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
+			errors = append(errors, fmt.Errorf("table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+		}
+	}
+
+	if len(errors) > 0 {
+		return errors
+	} 
+
+	switch type_of_parameter_value {
+	case "*string", "string":
+		var string_value *string
+		if type_of_parameter_value == "*string" {
+			string_value = value_to_validate.(*string)
+		} else {
+			temp_string := value_to_validate.(string)
+			string_value = &temp_string
+		}
+
+		if schema_of_parameter.IsNumber("min_length") {
+			min_length, min_length_errors := schema_of_parameter.GetUInt64("min_length")
+			if min_length_errors != nil {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had an error parsing number", struct_type, parameter, "min_length"))
+			} else {
+				runes := []rune(*string_value)
+
+				if uint64(len(runes)) < *min_length {
+					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: min_length did not meet minimum length requirements and had length: %d", struct_type, parameter, len(runes)))
+				}
+			}
+		}
+
+
+		if len(errors) > 0 {
+			return errors
+		} 
+
+
+		if schema_of_parameter.IsBoolTrue("not_empty_string_value") {
+			if *string_value == "" {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s was an empty string", struct_type, parameter, "not_empty_string_value"))
+			}
+		}
+
+
+		if len(errors) > 0 {
+			return errors
+		} 
+
+
+		if schema_of_parameter.IsNil(FILTERS()) {
+			return nil
+		}
+		
+		if !schema_of_parameter.IsArray(FILTERS())  {
+			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, FILTERS(), schema_of_parameter.GetType(FILTERS())))
+			return errors
+		}
+
+		filters, filters_errors := schema_of_parameter.GetArray(FILTERS())
+		if filters_errors != nil {
+			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, FILTERS(), filters_errors))
+		} else if filters == nil {
+			return nil
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		if len(*filters) == 0 {
+			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s has no filters", struct_type, parameter, FILTERS()))
+			return errors
+		}
+
+		for filter_index, filter := range *filters {
+			filter_map := filter.(Map)
+
+			if !filter_map.HasKey("function") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, FILTERS(), filter_index))
+				return errors
+			}
+
+			function := filter_map.Func("function")
+			if function == nil {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, FILTERS(), filter_index))
+				return errors
+			}
+
+			if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
+				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, FILTERS(), filter_index))
+				return errors
+			}
+
+			filter_map.SetString("value", string_value)
+			filter_map.SetString("data_type", &struct_type)
+			filter_map.SetString("label", &parameter)
+
+			temp_map := filter.(Map)
+			function_errors := function(temp_map)
+			if function_errors != nil {
+				errors = append(errors, function_errors...)
+			}
+		}
+
+		break
+	case "*int", "int":
+	case "*bool", "bool":
+	case "*int64", "int64":
+	case "*uint64", "uint64":
+	case "*time.Time":
+	case "*class.Database":
+		database := value_to_validate.(*Database)
+
+		errors_for_database := database.Validate()
+		if errors_for_database != nil {
+			errors = append(errors, errors_for_database...)
+		}
+		break
+	case "*class.DomainName":
+		domain_name := value_to_validate.(*DomainName)
+
+		errors_for_domain_name := domain_name.Validate()
+		if errors_for_domain_name != nil {
+			errors = append(errors, errors_for_domain_name...)
+		}
+		break
+	case "*class.Host":
+		host := value_to_validate.(*Host)
+
+		errors_for_host := host.Validate()
+		if errors_for_host != nil {
+			errors = append(errors, errors_for_host...)
+		}
+
+		break
+	case "*class.Credentials":
+		credentials := value_to_validate.(*Credentials)
+
+		errors_for_credentaials := credentials.Validate()
+		if errors_for_credentaials != nil {
+			errors = append(errors, errors_for_credentaials...)
+		}
+
+		break
+	case "*class.DatabaseCreateOptions":
+		database_create_options := value_to_validate.(*DatabaseCreateOptions)
+
+		errors_for_database_create_options := database_create_options.Validate()
+		if errors_for_database_create_options != nil {
+			errors = append(errors, errors_for_database_create_options...)
+		}
+
+		break
+	case "*class.Client":
+		client := value_to_validate.(*Client)
+
+		errors_for_client := client.Validate()
+		if errors_for_client != nil {
+			errors = append(errors, errors_for_client...)
+		}
+
+		break
+	case "*class.Grant":
+		grant := value_to_validate.(*Grant)
+
+		errors_for_grant := grant.Validate()
+		if errors_for_grant != nil {
+			errors = append(errors, errors_for_grant...)
+		}
+
+		break
+	case "*class.User":
+		user := value_to_validate.(*User)
+
+		errors_for_user := user.Validate()
+		if errors_for_user != nil {
+			errors = append(errors, errors_for_user...)
+		}
+
+		break
+	case "*class.Table":
+		table := value_to_validate.(*Table)
+
+		errors_for_table := table.Validate()
+		if errors_for_table != nil {
+			errors = append(errors, errors_for_table...)
+		}
+
+		break
+	case "*class.ClientManager":
+		client_manager := value_to_validate.(*ClientManager)
+
+		errors_for_client_manager := client_manager.Validate()
+		if errors_for_client_manager != nil {
+			errors = append(errors, errors_for_client_manager...)
+		}
+
+		break
+	default:
+		errors = append(errors, fmt.Errorf("class: %s column: %s type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", struct_type, parameter, type_of_parameter_value, value_is_null, value_is_mandatory, default_is_null))
 	}
 
 	if len(errors) > 0 {

@@ -351,12 +351,13 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 
 			if get_table_interface_errors != nil {
 				t.Errorf("database.GetTableInterface had errors %s", get_table_interface_errors)
-			}
-			ensureTableIsDeleted(t, table)
-			create_table_errors := table.Create()
-			
-			if create_table_errors != nil {
-				t.Errorf("table.Create should not return error when table_name is whitelisted but has length 2. errors: %s", create_table_errors)
+			} else {
+				ensureTableIsDeleted(t, table)
+				create_table_errors := table.Create()
+				
+				if create_table_errors != nil {
+					t.Errorf("table.Create should not return error when table_name is whitelisted but has length 2. errors: %s", create_table_errors)
+				}
 			}
 		})
 	}
