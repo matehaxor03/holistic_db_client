@@ -36,13 +36,15 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		return this_database
 	}
 
+	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
+
 	data := Map{"[fields]": Map{
 		"client":client, "database_name":&database_name,"database_create_options":database_create_options},
 				"[schema]": Map{
 		"client":Map{"type":"*class.Client","mandatory": true,"validated":false},
 		"database_name":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,"validated":false,
 			FILTERS(): Array{Map{"values":GetDatabaseNameWhitelistCharacters(),"function":getWhitelistCharactersFunc()},
-							 Map{"values":GetMySQLKeywordsAndReservedWordsInvalidWords(),"function":getBlacklistStringToUpperFunc()}}},
+							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
 		"database_create_options":Map{"type":"*class.DatabaseCreateOptions","mandatory":false,"validated":false}},
 	}
 
@@ -353,7 +355,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(getDatabase(), table_name, *table_schema)
+		get_table, get_table_errors := newTable(getDatabase(), table_name, table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -417,7 +419,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, schema)
+			table, new_table_errors := newTable(getDatabase(), table_name, &schema)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -432,7 +434,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, schema)
+			table, new_table_errors := newTable(getDatabase(), table_name, &schema)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors

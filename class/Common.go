@@ -8,7 +8,12 @@ import (
 	"math/rand"
     "path/filepath"
 	"runtime"
+	"reflect"
 )
+
+type Null struct {
+
+}
 
 func EscapeString(value string) string {
 	value = strings.ReplaceAll(value, "\\", "\\\\")
@@ -29,7 +34,20 @@ func IsNil(object interface{}) bool {
 	if object == nil {
 		return true
 	}
+	
+	string_value := fmt.Sprintf("%s", object) 
 
+	if string_value == "&map[]" {
+		return true
+	}
+
+	switch reflect.TypeOf(object).Kind() {
+		case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+			return reflect.ValueOf(object).IsNil()
+	}
+
+	return false
+	/*
 	string_value := fmt.Sprintf("%s", object)
 
 	if string_value == "<nil>" {
@@ -42,7 +60,7 @@ func IsNil(object interface{}) bool {
 		return true
 	}
 
-	return false
+	return false*/
 }
 
 func IsTime(object interface{}) bool {

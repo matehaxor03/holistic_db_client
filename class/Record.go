@@ -48,6 +48,8 @@ func newRecord(table *Table, record_data Map) (*Record, []error) {
 		return nil, errors
 	}
 
+	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
+
 	data := Map{"[fields]": record_data}
 	record_data.SetObject("[table]", table)
 	data["[schema]"] = table_schema
@@ -61,7 +63,7 @@ func newRecord(table *Table, record_data Map) (*Record, []error) {
 	getRecordColumns := func() (*[]string, []error) {
 		var columns []string
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
-		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
+		column_name_blacklist_params := Map{"values": database_reserved_words, "value": nil, "label": "column_name", "data_type": "Column"}
 
 		fields_map, fields_map_errors := GetFields(getData())
 		if fields_map_errors != nil {

@@ -28,25 +28,40 @@ type Table struct {
 	ToJSONString          func() (*string, []error)
 }
 
-func newTable(database *Database, table_name string, schema Map) (*Table, []error) {
+func newTable(database *Database, table_name string, schema *Map) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 	var this_table *Table
+
+	setTable := func(table *Table) {
+		this_table = table
+	}
+
+	getTable := func() *Table {
+		return this_table
+	}
+
+	table_name_valid_characters := GetTableNameValidCharacters()
+	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
 	
-	setupData := func(b *Database, n string, s Map) (Map) {
+	setupData := func(b *Database, n string, s *Map) (Map) {
 		schema_is_nil := false
-		if schema == nil {
+		var new_schema *Map
+		if IsNil(s) {
 			schema_is_nil = true
-			s = Map{}
+			new_map := Map{}
+			new_schema = &new_map
+		} else {
+			new_schema = s
 		}
 	
 		d := Map{"[fields]":Map{"[database]":b, "[table_name]":n},
-				 "[schema]":s}
+				 "[schema]":new_schema}
 	
-		s["[database]"] = Map{"type":"*class.Database", "mandatory": true, "validated": false}
-		s["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
-			FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()},
-							 Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "function": getBlacklistStringToUpperFunc()}}}
+		(*new_schema)["[database]"] = Map{"type":"*class.Database", "mandatory": true, "validated": false}
+		(*new_schema)["[table_name]"] = Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,  "validated": false,
+			FILTERS(): Array{Map{"values": table_name_valid_characters, "function": getWhitelistCharactersFunc()},
+							 Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}}
 	
 		if schema_is_nil {
 			d["[schema_is_nil]"] = true
@@ -54,11 +69,11 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 			d["[schema_is_nil]"] = false
 		}
 	
-		s["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
-		s["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
-		s["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-		s["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
-		s["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
+		(*new_schema)["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true, "validated": false}
+		(*new_schema)["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false, "validated": false}
+		(*new_schema)["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		(*new_schema)["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now", "validated": false}
+		(*new_schema)["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil, "validated": false}
 	
 		return d
 	}
@@ -77,7 +92,7 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 		var errors []error
 		var columns []string
 		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
-		column_name_blacklist_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": nil, "label": "column_name", "data_type": "Column"}
+		column_name_blacklist_params := Map{"values": database_reserved_words, "value": nil, "label": "column_name", "data_type": "Column"}
 
 
 		schemas_map, schemas_map_errors := GetSchemas(getData())
@@ -182,14 +197,6 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 
 	getDatabase := func() (*Database, []error) {
 		return GetDatabaseField(getData(), "[database]")
-	}
-
-	setTable := func(table *Table) {
-		this_table = table
-	}
-
-	getTable := func() *Table {
-		return this_table
 	}
 
 	exists := func() (*bool, []error) {
@@ -581,7 +588,7 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := newTable(temp_database, new_table_name, *temp_schema)
+		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema)
 		if new_table_errors != nil {
 			return new_table_errors
 		}
@@ -864,7 +871,7 @@ func newTable(database *Database, table_name string, schema Map) (*Table, []erro
 			return errors
 		}
 
-		data = setupData(temp_database, *temp_table_name, *temp_schema)
+		data = setupData(temp_database, *temp_table_name, temp_schema)
 		return nil
 	}
 

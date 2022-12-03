@@ -34,14 +34,16 @@ func NewClientManager() (*ClientManager, []error) {
 	lock_tuple := &sync.Mutex{}
 	tuple := make(map[string]TupleCredentials)
 
+	/*
 	data := Map{
-		"[fields]":Map{},
-		"[schema]":Map{},
-	}
+		"[fields]":nil,
+		"[schema]":nil,
+	}*/
 
+	/*
 	getData := func() *Map {
 		return &data
-	}
+	}*/
 
 	getTupleCredentials := func(label string) (*TupleCredentials, []error) {
 		if value, found_value := tuple[label]; found_value {
@@ -100,7 +102,8 @@ func NewClientManager() (*ClientManager, []error) {
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "ClientManager")
+		return nil
+		//return ValidateData(getData(), "ClientManager")
 	}
 
 	x := ClientManager{

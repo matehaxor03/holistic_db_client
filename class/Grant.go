@@ -36,6 +36,8 @@ type Grant struct {
 func newGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string) (*Grant, []error) {
 	var errors []error
 	SQLCommand := newSQLCommand()
+	
+	table_name_valid_characters := GetTableNameValidCharacters()
 
 	data := Map{
 		"[fields]": Map{"client":client, "user":user, "grant_value":grant_value},
@@ -60,7 +62,7 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 		if *table_filter == "*" {
 			data["[schema]"].(Map)["table_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[schema]"].(Map)["table_filter"] = Map{"type":"*string","mandatory": true, FILTERS(): Array{Map{"values": GetTableNameValidCharacters(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["table_filter"] = Map{"type":"*string","mandatory": true, FILTERS(): Array{Map{"values": table_name_valid_characters, "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
