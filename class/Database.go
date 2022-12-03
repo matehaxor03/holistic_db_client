@@ -84,29 +84,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
-		temp_client, temp_client_errors := getClient()
-		
-		if temp_client_errors != nil {
-			return temp_client_errors
-		}
-
-		temp_database_create_options, temp_database_create_options_errors := getDatabaseCreateOptions()
-		if temp_database_create_options_errors != nil {
-			return temp_database_create_options_errors
-		}
-
-		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
-		if new_database_errors != nil {
-			return new_database_errors
-		}
-
-		temp_fields_map, temp_fields_map_errors := GetFields(getData())
-		if temp_fields_map_errors != nil {
-			return temp_fields_map_errors
-		}
-
-		temp_fields_map.SetString("database_name", &new_database_name)
-		return nil
+		return SetField(struct_type, getData(), "database_name", &new_database_name)
 	}
 
 	getCreateSQL := func() (*string, []error) {
