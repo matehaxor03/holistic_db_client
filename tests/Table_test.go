@@ -103,7 +103,7 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 		errors = append(errors, use_database_errors...)
 	}
 
-	table, table_errors := database.CreateTable(table_name, schema)
+	table, table_errors := database.GetTableInterface(table_name, schema)
 	if table_errors != nil {
 		errors = append(errors, table_errors...)
 	}
@@ -248,160 +248,141 @@ func TestTableDeleteWithExists(t *testing.T) {
 }
 
 func TestTableCannotSetTableNameWithBlackListName(t *testing.T) {
+	t.Parallel()
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	table := GetTestTableBasic(t)
 
 	for blacklist_database_name := range blacklist_map {
-		t.Run(blacklist_database_name, func(t *testing.T) {
-			set_table_name_errors := table.SetTableName(blacklist_database_name)
-			
-			if set_table_name_errors == nil {
-				t.Errorf("SetTableName should return error when table_name is blacklisted")
-			}
+		set_table_name_errors := table.SetTableName(blacklist_database_name)
+		
+		if set_table_name_errors == nil {
+			t.Errorf("SetTableName should return error when table_name is blacklisted")
+		}
 
-			table_name, table_name_errors := table.GetTableName()
-			if table_name_errors != nil {
-				t.Errorf(fmt.Sprintf("%s", table_name_errors))
-			}
+		table_name, table_name_errors := table.GetTableName()
+		if table_name_errors != nil {
+			t.Errorf(fmt.Sprintf("%s", table_name_errors))
+		}
 
-			if table_name == blacklist_database_name {
-				t.Errorf("table_name was updated to the blacklisted table_name")
-			}
+		if table_name == blacklist_database_name {
+			t.Errorf("table_name was updated to the blacklisted table_name")
+		}
 
-			if table_name != GetTestTableName() {
-				t.Errorf("table_name is '%s' and should be '%s'", table_name,  GetTestTableName())
-			}
-		})
+		if table_name != GetTestTableName() {
+			t.Errorf("table_name is '%s' and should be '%s'", table_name,  GetTestTableName())
+		}
 	}
 }
 
 
 func TestTableCannotCreateWithBlackListName(t *testing.T) {
+	t.Parallel()
 	database := GetTestDatabase(t)
-	
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
-			table, get_table_interface_errors := database.GetTableInterface(blacklist_table_name, GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface(blacklist_table_name, GetTestSchema())
 
-			if get_table_interface_errors == nil {
-				t.Errorf("database.GetTableInterface was expected to have errors")
-			}
+		if get_table_interface_errors == nil {
+			t.Errorf("database.GetTableInterface was expected to have errors")
+		}
 
-			if table != nil {
-				t.Errorf("database.GetTableInterface table was not nil")
-			}
-		})
+		if table != nil {
+			t.Errorf("database.GetTableInterface table was not nil")
+		}
 	}
 }
 
 func TestTableCannotCreateWithBlackListNameUppercase(t *testing.T) {
+	t.Parallel()
 	database := GetTestDatabase(t)
-	
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
-			table, get_table_interface_errors := database.GetTableInterface(strings.ToUpper(blacklist_table_name), GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface(strings.ToUpper(blacklist_table_name), GetTestSchema())
 
-			if get_table_interface_errors == nil {
-				t.Errorf("database.GetTableInterface was expected to have errors")
-			}
+		if get_table_interface_errors == nil {
+			t.Errorf("database.GetTableInterface was expected to have errors")
+		}
 
-			if table != nil {
-				t.Errorf("database.GetTableInterface table was not nil")
-			}
-		})
+		if table != nil {
+			t.Errorf("database.GetTableInterface table was not nil")
+		}
 	}
 }
 
 
 func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
+	t.Parallel()
 	database := GetTestDatabase(t)
-	
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
-		t.Run(blacklist_table_name, func(t *testing.T) {
-			t.Parallel()
-			table, get_table_interface_errors := database.GetTableInterface(strings.ToLower(blacklist_table_name), GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface(strings.ToLower(blacklist_table_name), GetTestSchema())
 
-			if get_table_interface_errors == nil {
-				t.Errorf("database.GetTableInterface was expected to have errors")
-			}
+		if get_table_interface_errors == nil {
+			t.Errorf("database.GetTableInterface was expected to have errors")
+		}
 
-			if table != nil {
-				t.Errorf("database.GetTableInterface table was not nil")
-			}
-		})
+		if table != nil {
+			t.Errorf("database.GetTableInterface table was not nil")
+		}
 	}
 }
 
 func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 	database := GetTestDatabaseCreated(t)
-	
 	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
 	for valid_character := range valid_characters_map {
-		t.Run(valid_character, func(t *testing.T) {
-			table, get_table_interface_errors := database.GetTableInterface("a" + valid_character + "a", GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface("a" + valid_character + "a", GetTestSchema())
 
-			if get_table_interface_errors != nil {
-				t.Errorf("database.GetTableInterface had errors %s", get_table_interface_errors)
-			} else {
-				ensureTableIsDeleted(t, table)
-				create_table_errors := table.Create()
-				
-				if create_table_errors != nil {
-					t.Errorf("table.Create should not return error when table_name is whitelisted but has length 2. errors: %s", create_table_errors)
-				}
+		if get_table_interface_errors != nil {
+			t.Errorf("database.GetTableInterface had errors %s", get_table_interface_errors)
+		} else {
+			ensureTableIsDeleted(t, table)
+			create_table_errors := table.Create()
+			
+			if create_table_errors != nil {
+				t.Errorf("table.Create should not return error when table_name is whitelisted but has length 2. errors: %s", create_table_errors)
 			}
-		})
+		}
 	}
 }
 
 func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
+	t.Parallel()
 	database := GetTestDatabase(t)
-	
 	non_whitelist_map := class.Map{"(":nil, ")":nil}
 
 	for invalid_character := range non_whitelist_map {
-		t.Run(invalid_character, func(t *testing.T) {
-			t.Parallel()
-			table, get_table_interface_errors := database.GetTableInterface(invalid_character + invalid_character, GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface(invalid_character + invalid_character, GetTestSchema())
 
-			if get_table_interface_errors == nil {
-				t.Errorf("database.GetTableInterface was expected to have errors")
-			}
+		if get_table_interface_errors == nil {
+			t.Errorf("database.GetTableInterface was expected to have errors")
+		}
 
-			if table != nil {
-				t.Errorf("database.GetTableInterface table was not nil")
-			}
-		})
+		if table != nil {
+			t.Errorf("database.GetTableInterface table was not nil")
+		}
 	}
 }
 
 func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T) {
+	t.Parallel()
 	database := GetTestDatabase(t)
-	
 	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
 	for valid_character := range valid_characters_map {
-		t.Run(valid_character, func(t *testing.T) {
-			t.Parallel()
-			table, get_table_interface_errors := database.GetTableInterface(valid_character, GetTestSchema())
+		table, get_table_interface_errors := database.GetTableInterface(valid_character, GetTestSchema())
 
-			if get_table_interface_errors == nil {
-				t.Errorf("database.GetTableInterface was expected to have errors")
-			}
+		if get_table_interface_errors == nil {
+			t.Errorf("database.GetTableInterface was expected to have errors")
+		}
 
-			if table != nil {
-				t.Errorf("database.GetTableInterface table was not nil")
-			}
-		})
+		if table != nil {
+			t.Errorf("database.GetTableInterface table was not nil")
+		}
 	}
 }
 
