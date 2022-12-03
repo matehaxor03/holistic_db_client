@@ -390,49 +390,72 @@ func GetField(m *Map, field string) (interface{}, []error) {
 	return fields_map.GetObject(field), nil
 }
 
-func SetField(m *Map, field string, object interface{}) ([]error) {
+func SetField(struct_type string, m *Map, parameter string, object interface{}) ([]error) {
 	var errors []error
 
-	fields_map, fields_map_errors := GetFields(m)
-	if fields_map_errors != nil {
-		errors = append(errors, fields_map_errors...)
-	} 
+	fields, fields_errors := GetFields(m) 
+	if fields_errors != nil {
+		errors = append(errors, fields_errors...)
+	}
 
-	schema_map, schema_map_errors := GetSchema(m, field)
-	if schema_map_errors != nil {
-		errors = append(errors, schema_map_errors...)
+	schemas, schemas_errors := GetSchemas(m)
+	if schemas_errors != nil {
+		errors = append(errors, schemas_errors...)
+	}
+
+	schema_of_parameter, schema_of_parameter_errors := GetSchema(m, parameter)
+	if schema_of_parameter_errors != nil {
+		errors = append(errors, schema_of_parameter_errors...)
 	}
 	
 	if len(errors) > 0 {
 		return errors
 	}
 	
-	schema_type, schema_type_errors  := schema_map.GetString("type")
+	schema_type, schema_type_errors  := schema_of_parameter.GetString("type")
 	if schema_type_errors != nil {
 		errors = append(errors, schema_type_errors...)
 	} else if schema_type == nil {
-		errors = append(errors, fmt.Errorf("schema is nil for field: %s", field))
+		errors = append(errors, fmt.Errorf("schema type attribute is nil for field: %s", parameter))
 	}
 
 	if len(errors) > 0 {
 		return errors
 	}
 
-    // todo check mandatory/default
+	value_is_mandatory := true
+	value_is_set := false
+	value_is_null := false
 
+	if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
+		if schema_of_parameter.IsBoolTrue("primary_key") {
+			value_is_mandatory = true
 
-	object_type := GetType(object)
-	if object_type != "nil" {
-		if *schema_type != object_type {
-			errors = append(errors, fmt.Errorf("field: %s schema type: %s object type: %s are not a match", field, *schema_type, object_type))
+			if schema_of_parameter.IsBoolTrue("auto_increment") {
+				value_is_mandatory = false
+			}
 		}
 	}
 
+	value_is_set = true
+	if IsNil(object) {
+		value_is_null = true
+	} else {
+		value_is_null = false
+	}
+
+	validate_parameters_errors := ValidateParameterData(struct_type, schemas, parameter, object, value_is_mandatory, value_is_set, value_is_null)
+	if validate_parameters_errors != nil {
+		errors = append(errors, validate_parameters_errors...)
+	}
+
 	if len(errors) > 0 {
 		return errors
 	}
 
-	fields_map.SetObject(field, object)
+	fields.SetObject(parameter, object)
+	validated_false := false
+	schema_of_parameter.SetObject("validated", validated_false)
 	return nil
 }
 
@@ -1134,16 +1157,15 @@ func ValidateParameterData(struct_type string, schemas *Map, parameter string, v
 		return nil
 	}
 
-	//var value_to_validate interface{}
-	//value_to_validate = nil
+
 	if value_is_set && !value_is_null {
-		//value_to_validate = nil
+
 	} else if value_is_set && value_is_null {
 		if default_set && default_is_null {
 			value_to_validate = nil
 		} else if default_set && !default_is_null {
 			value_to_validate = schema_of_parameter.GetObject("default")
-		} else if !default_set { //todo check if schema allows nulls
+		} else if !default_set { 
 			if value_is_mandatory {
 				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
 			} else {

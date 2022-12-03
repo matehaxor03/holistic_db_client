@@ -24,6 +24,7 @@ type Record struct {
 func newRecord(table *Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
+	struct_type := "*class.Record"
 
 	if record_data == nil {
 		errors = append(errors, fmt.Errorf("record_data is nil"))
@@ -156,7 +157,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "*class.Record")
+		return ValidateData(getData(), struct_type)
 	}
 
 	getInsertSQL := func() (*string, Map, []error) {
@@ -351,7 +352,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			}
 		}
 
-		SetField(getData(), "last_modified_date", GetTimeNow())
+		SetField(struct_type, getData(), "last_modified_date", GetTimeNow())
 
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
 		if record_non_identity_columns_errors != nil {
@@ -603,7 +604,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return field_value.(*int64), nil
 		},
 		SetInt64: func(field string, value *int64) []error {
-			return SetField(getData(), field, value)
+			return SetField(struct_type, getData(), field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
 			field_value, field_value_errors := GetField(getData(), field)
@@ -620,10 +621,10 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return field_value.(*string), nil
 		},
 		SetString: func(field string, value *string) []error {
-			return SetField(getData(), field, value)
+			return SetField(struct_type, getData(), field, value)
 		},
 		SetStringValue: func(field string, value string) []error {
-			return SetField(getData(), field, value)
+			return SetField(struct_type, getData(), field, value)
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()

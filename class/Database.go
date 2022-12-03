@@ -27,6 +27,7 @@ type Database struct {
 func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
 	SQLCommand := newSQLCommand()
 	var this_database *Database
+	struct_type := "*class.Database"
 
 	setDatabase := func(database *Database) {
 		this_database = database
@@ -54,7 +55,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "Database")
+		return ValidateData(getData(), struct_type)
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
@@ -66,7 +67,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setClient := func(new_client *Client) []error {
-		return SetField(getData(), "client", new_client)
+		return SetField(struct_type, getData(), "client", new_client)
 	}
 
 	getDatabaseName := func() (string, []error) {

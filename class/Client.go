@@ -29,6 +29,7 @@ type Client struct {
 
 func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
 	var this_client *Client
+	stuct_type := "*class.Client"
 
 	setClient := func(client *Client) {
 		this_client = client
@@ -84,7 +85,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	setDatabase := func(database *Database) []error {
-		return SetField(getData(), "database", database)
+		return SetField(stuct_type, getData(), "database", database)
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
@@ -97,7 +98,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "Client")
+		return ValidateData(getData(), stuct_type)
 	}
 
 	getUser := func(username string) (*User, []error) {
