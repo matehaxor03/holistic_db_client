@@ -959,9 +959,19 @@ func IsLower(s string) bool {
 }
 
 func IsDatabaseColumn(value string) bool {
-	column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
+	column_name_params := Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
 	column_name_errors := WhitelistCharacters(column_name_params)
-	return column_name_errors == nil
+	if column_name_errors != nil {
+		return false
+	}
+
+	blacklist_column_name_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": value, "label": "column_name", "data_type": "Table"}
+	blacklist_column_name_errors := BlackListStringToUpper(blacklist_column_name_params)
+	if blacklist_column_name_errors != nil {
+		return false
+	}
+
+	return true
 }
 
 func ValidateData(data *Map, struct_type string) []error {	

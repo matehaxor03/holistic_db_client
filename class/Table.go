@@ -28,7 +28,7 @@ type Table struct {
 	ToJSONString          func() (*string, []error)
 }
 
-func newTable(database *Database, table_name string, schema *Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Table, []error) {
+func newTable(database *Database, table_name string, schema *Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 	var this_table *Table
@@ -41,8 +41,10 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 		return this_table
 	}
 
-	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
+	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
+	
 	
 	setupData := func(b *Database, n string, s *Map) (Map) {
 		schema_is_nil := false
@@ -91,7 +93,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 	getTableColumns := func() (*[]string, []error) {
 		var errors []error
 		var columns []string
-		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
+		column_name_whitelist_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": database_reserved_words, "value": nil, "label": "column_name", "data_type": "Column"}
 
 
@@ -588,7 +590,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj)
+		_, new_table_errors := newTable(temp_database, new_table_name, temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if new_table_errors != nil {
 			return new_table_errors
 		}
@@ -986,7 +988,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(getTable(), new_record_data)
+			record, record_errors := newRecord(getTable(), new_record_data, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 			if record_errors != nil {
 				return nil, record_errors
 			}
@@ -1073,7 +1075,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 					sql += "WHERE "
 				}
 
-				column_name_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name", "data_type": "Table"}
+				column_name_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
 				for index, column_filter := range filters.Keys() {
 					column_name_params.SetString("value", &column_filter)
 					column_name_errors := WhitelistCharacters(column_name_params)
@@ -1202,7 +1204,7 @@ func newTable(database *Database, table_name string, schema *Map, database_reser
 					}
 				}
 
-				mapped_record_obj, mapped_record_obj_errors := newRecord(getTable(), mapped_record)
+				mapped_record_obj, mapped_record_obj_errors := newRecord(getTable(), mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
 				} else {

@@ -431,8 +431,8 @@ func testColumnName(client *class.Client) []error {
 	max_value = 127
 
 	package_name := "class"
-	filename := fmt.Sprintf("./%s/ColumnNameWhitelist.go", package_name)
-	method_name := "GetColumnNameValidCharacters()"
+	filename := fmt.Sprintf("./%s/MySQLColumnNameWhitelistCharacters.go", package_name)
+	method_name := "GetMySQLColumnNameWhitelistCharacters()"
 	database_name := "holistic_test"
 
 	database_exists, database_exists_errors := client.DatabaseExists(database_name)

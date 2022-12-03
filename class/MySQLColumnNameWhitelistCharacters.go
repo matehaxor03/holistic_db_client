@@ -1,5 +1,5 @@
 package class
-func GetColumnNameValidCharacters() Map {
+func GetMySQLColumnNameWhitelistCharacters() Map {
 return Map{
     "0": nil,
     "1": nil,

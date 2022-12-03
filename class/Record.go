@@ -21,7 +21,7 @@ type Record struct {
 	ToJSONString  func() (*string, []error)
 }
 
-func newRecord(table *Table, record_data Map) (*Record, []error) {
+func newRecord(table *Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 
@@ -48,7 +48,9 @@ func newRecord(table *Table, record_data Map) (*Record, []error) {
 		return nil, errors
 	}
 
-	database_reserved_words := GetMySQLKeywordsAndReservedWordsInvalidWords()
+	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
+	
 
 	data := Map{"[fields]": record_data}
 	record_data.SetObject("[table]", table)
@@ -62,7 +64,7 @@ func newRecord(table *Table, record_data Map) (*Record, []error) {
 
 	getRecordColumns := func() (*[]string, []error) {
 		var columns []string
-		column_name_whitelist_params := Map{"values": GetColumnNameValidCharacters(), "value": nil, "label": "column_name_character", "data_type": "Column"}
+		column_name_whitelist_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name_character", "data_type": "Column"}
 		column_name_blacklist_params := Map{"values": database_reserved_words, "value": nil, "label": "column_name", "data_type": "Column"}
 
 		fields_map, fields_map_errors := GetFields(getData())
