@@ -485,10 +485,10 @@ func (m Map) SetNil(s string) {
 }
 
 func (m Map) Keys() []string {
-	var keys []string
-	for a, _ := range m {
-		keys = append(keys, a)
-	}
+	keys := make([]string, 0, len(m))
+    for k := range m {
+        keys = append(keys, k)
+    }
 	return keys
 }
 
