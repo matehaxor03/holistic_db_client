@@ -1,5 +1,5 @@
 package class
-func GetDatabaseNameWhitelistCharacters() Map {
+func GetMySQLDatabaseNameWhitelistCharacters() Map {
 return Map{
     "#": nil,
     "$": nil,

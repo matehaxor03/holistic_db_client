@@ -33,9 +33,12 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
+func newGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
 	var errors []error
 	SQLCommand := newSQLCommand()
+
+	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 	
 	data := Map{
 		"[fields]": Map{"client":client, "user":user, "grant_value":grant_value},
@@ -51,7 +54,7 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 		if *database_filter == "*" {
 			data["[schema]"].(Map)["database_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[schema]"].(Map)["database_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GetDatabaseNameWhitelistCharacters(), "function": getWhitelistCharactersFunc()}}}
+			data["[schema]"].(Map)["database_filter"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
 		}
 	}
 

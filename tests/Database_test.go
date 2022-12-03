@@ -405,7 +405,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	whitelist_map := class.GetDatabaseNameWhitelistCharacters()
+	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
 
 	for whitelist_database_character := range whitelist_map {
 		t.Run(whitelist_database_character, func(t *testing.T) {
@@ -456,7 +456,7 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	whitelist_map := class.GetDatabaseNameWhitelistCharacters()
+	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
 
 	for whitelist_database_character := range whitelist_map {
 		t.Run(whitelist_database_character, func(t *testing.T) {

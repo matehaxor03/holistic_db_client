@@ -24,7 +24,7 @@ type Database struct {
 	UseDatabase     func() []error
 }
 
-func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Database, []error) {
+func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Database, []error) {
 	SQLCommand := newSQLCommand()
 	var this_database *Database
 
@@ -37,13 +37,14 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
 	data := Map{"[fields]": Map{
 		"client":client, "database_name":&database_name,"database_create_options":database_create_options},
 				"[schema]": Map{
 		"client":Map{"type":"*class.Client","mandatory": true,"validated":false},
 		"database_name":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,"validated":false,
-			FILTERS(): Array{Map{"values":GetDatabaseNameWhitelistCharacters(),"function":getWhitelistCharactersFunc()},
+			FILTERS(): Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
 							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
 		"database_create_options":Map{"type":"*class.DatabaseCreateOptions","mandatory":false,"validated":false}},
 	}
@@ -93,7 +94,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return temp_database_create_options_errors
 		}
 
-		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options, database_reserved_words_obj, table_name_whitelist_characters_obj)
+		_, new_database_errors := newDatabase(temp_client, new_database_name, temp_database_create_options, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj)
 		if new_database_errors != nil {
 			return new_database_errors
 		}

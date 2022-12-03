@@ -268,8 +268,8 @@ func testDatabaseName(client *class.Client) []error {
 	package_name := "class"
 
 	valid_runes := map[uint64]bool{}
-	filename_whitelist := fmt.Sprintf("./%s/DatabaseNameWhitelistCharacters.go", package_name)
-	method_name_whitelist := "GetDatabaseNameWhitelistCharacters()"
+	filename_whitelist := fmt.Sprintf("./%s/MySQLDatabaseNameWhitelistCharacters.go", package_name)
+	method_name_whitelist := "GetMySQLDatabaseNameWhitelistCharacters()"
 
 
 	for current_value <= max_value {
@@ -345,8 +345,8 @@ func testTableName(client *class.Client) []error {
 	max_value = 127
 
 	package_name := "class"
-	filename := fmt.Sprintf("./%s/TableNameWhitelist.go", package_name)
-	method_name := "GetTableNameValidCharacters()"
+	filename := fmt.Sprintf("./%s/MySQLTableNameCharacterWhitelist.go", package_name)
+	method_name := "GetMySQLTableNameWhitelistCharacters()"
 	database_name := "holistic_test"
 
 	database_exists, database_exists_errors := client.DatabaseExists(database_name)
