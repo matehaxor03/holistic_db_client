@@ -13,7 +13,7 @@ type DomainName struct {
 	GetDomainName func() (string, []error)
 }
 
-func newDomainName(domain_name string) (*DomainName, []error) {
+func NewDomainName(domain_name string) (*DomainName, []error) {
 	struct_type := "*DomainName"
 
 	data := Map{
