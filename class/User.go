@@ -43,7 +43,7 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.Credentials")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "*class.Credentials")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
