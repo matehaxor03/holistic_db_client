@@ -18,7 +18,7 @@ type Record struct {
 	GetString func(field string) (*string, []error)
 	SetString func(field string, value *string) []error 
 	SetStringValue func(field string, value string) []error 
-	ToJSONString  func() (*string, []error)
+	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
 func newRecord(table *Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
@@ -610,12 +610,12 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 		SetStringValue: func(field string, value string) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
-		ToJSONString: func() (*string, []error) {
+		ToJSONString: func(json *strings.Builder) ([]error) {
 			fields_map, fields_map_errors := GetFields(struct_type, getData(), "[fields]")
 			if fields_map_errors != nil {
-				return nil, fields_map_errors
+				return fields_map_errors
 			}
-			return fields_map.ToJSONString()
+			return fields_map.ToJSONString(json)
 		},
 	}
 

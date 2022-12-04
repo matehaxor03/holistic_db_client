@@ -632,258 +632,256 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	return nil
 }
 
-func ConvertInterfaceValueToJSONStringValue(value interface{}) (*string, []error) {
+func ConvertInterfaceValueToJSONStringValue(json *strings.Builder, value interface{}) ([]error) {
 	var errors []error
-	result := "null"
+	if json == nil {
+		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		return errors
+	}
 
 	if value == nil {
-		return &result, nil
+		json.WriteString("null")
+		return nil
 	}
 
 	string_value := fmt.Sprintf("%s", value)
 
 	if string_value == "<nil>" {
-		return &result, nil
+		json.WriteString("null")
+		return nil
 	}
 
 	rep := fmt.Sprintf("%T", value)
 
 	if string_value == "%!s("+rep+"=<nil>)" {
-		return &result, nil
+		json.WriteString("null")
+		return nil
 	}
 	
 	switch rep {
 	case "string":
-		result = "\"" + strings.ReplaceAll(value.(string), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(value.(string), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "*string":
-		result = "\"" + strings.ReplaceAll(*(value.(*string)), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(*(value.(*string)), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "error":
-		result = "\"" + strings.ReplaceAll(value.(error).Error(), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(value.(error).Error(), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "*error":
-		result = "\"" + strings.ReplaceAll((*(value.(*error))).Error(), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll((*(value.(*error))).Error(), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "*url.Error":
-		result = "\"" + strings.ReplaceAll((*(value.(*url.Error))).Error(), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll((*(value.(*url.Error))).Error(), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "exec.ExitError":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "*exec.ExitError":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "errors.errorString":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "*errors.errorString":
-		result = "\"" + strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\"") + "\""
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(fmt.Sprintf("%s", value), "\"", "\\\""))
+		json.WriteString( "\"")
 	case "bool":
-		temp := value.(bool)
-		if temp {
-			result = "true"
+		if value.(bool) {
+			json.WriteString("true")
 		} else {
-			result = "false"
+			json.WriteString("false")
 		}
 	case "*bool":
-		temp := *(value.(*bool))
-		if temp {
-			result = "true"
+		if *(value.(*bool)) {
+			json.WriteString("true")
 		} else {
-			result = "false"
+			json.WriteString("false")
 		}
 	case "class.Map":
-		x, x_error := value.(Map).ToJSONString()
+		x_error := value.(Map).ToJSONString(json)
 		if x_error != nil {
 			errors = append(errors, x_error...)
-		} else {
-			result = *x
 		}
 	case "*class.Map":
-		x, x_error := (*value.(*Map)).ToJSONString()
+		x_error := (*value.(*Map)).ToJSONString(json)
 		if x_error != nil {
 			errors = append(errors, x_error...)
-		} else {
-			result = *x
 		}
 	case "class.Array":
-		x, x_error := value.(Array).ToJSONString()
+		x_error := value.(Array).ToJSONString(json)
 		if x_error != nil {
 			errors = append(errors, x_error...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Array":
-		x, x_error := (*(value.(*Array))).ToJSONString()
+		x_error := (*(value.(*Array))).ToJSONString(json)
 		if x_error != nil {
 			errors = append(errors, x_error...)
-		} else {
-			result = *x
 		}
 	case "[]string":
-		result = "["
+		json.WriteString("[")
 		array_length := len(value.([]string))
 		for array_index, array_value := range value.([]string) {
-			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			string_conversion_error := ConvertInterfaceValueToJSONStringValue(json, array_value)
 			if string_conversion_error != nil {
 				errors = append(errors, string_conversion_error...)
-			} else {
-				result += *string_conversion
-			}
+			} 
+
 			if array_index < (array_length - 1) {
-				result += ","
+				json.WriteString(",")
 			}
 		}
-		result += "]"
+		json.WriteString("]")
 	case "*[]string":
-		result = "["
+		json.WriteString("[")
 		array_length := len(*(value.(*[]string)))
 		for array_index, array_value := range *(value.(*[]string)) {
-			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			string_conversion_error := ConvertInterfaceValueToJSONStringValue(json, array_value)
 			if string_conversion_error != nil {
 				errors = append(errors, string_conversion_error...)
-			} else {
-				result += *string_conversion
 			}
+
 			if array_index < (array_length - 1) {
-				result += ","
+				json.WriteString(",")
 			}
 		}
-		result += "]"
+		json.WriteString("]")
 	case "[]error":
-		result = "["
+		json.WriteString("[")
 		array_length := len(value.([]error))
 		for array_index, array_value := range value.([]error) {
-			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			string_conversion_error := ConvertInterfaceValueToJSONStringValue(json, array_value)
 			if string_conversion_error != nil {
 				errors = append(errors, string_conversion_error...)
-			} else {
-				result += *string_conversion
-			}
+			} 
+
 			if array_index < (array_length - 1) {
-				result += ","
+				json.WriteString(",")
 			}
 		}
-		result += "]"
+		json.WriteString("]")
 	case "*[]error":
-		result = "["
+		json.WriteString("[")
 		array_length := len(*(value.(*[]error)))
 		for array_index, array_value := range *(value.(*[]error)) {
-			string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(array_value)
+			string_conversion_error := ConvertInterfaceValueToJSONStringValue(json, array_value)
 			if string_conversion_error != nil {
 				errors = append(errors, string_conversion_error...)
-			} else {
-				result += *string_conversion
-			}
+			} 
+
 			if array_index < (array_length - 1) {
-				result += ","
+				json.WriteString(",")
 			}
 		}
-		result += "]"
+		json.WriteString("]")
 	case "func(string, *string, string, string) []error", "func(class.Map) []error", "*func(class.Map) []error":
-		result = fmt.Sprintf("\"%s\"", rep)
+		json.WriteString(strings.ReplaceAll(fmt.Sprintf("%s", rep), "\"", "\\\""))
 	case "*class.Host":
-		x, x_errors := (*(value.(*Host))).ToJSONString()
+		x_errors := (*(value.(*Host))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Credentials":
-		x, x_errors := (*(value.(*Credentials))).ToJSONString()
+		x_errors := (*(value.(*Credentials))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.DatabaseCreateOptions":
-		x, x_errors := (*(value.(*DatabaseCreateOptions))).ToJSONString()
+		x_errors := (*(value.(*DatabaseCreateOptions))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Database":
-		x, x_errors := (*(value.(*Database))).ToJSONString()
+		x_errors := (*(value.(*Database))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Client":
-		x, x_errors := (*(value.(*Client))).ToJSONString()
+		x_errors := (*(value.(*Client))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Table":
-		x, x_errors := (*(value.(*Table))).ToJSONString()
+		x_errors := (*(value.(*Table))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*class.Record":
-		x, x_errors := (*(value.(*Record))).ToJSONString()
+		x_errors := (*(value.(*Record))).ToJSONString(json)
 		if x_errors != nil {
 			errors = append(errors, x_errors...)
-		} else {
-			result = *x
-		}
+		} 
 	case "*time.Time":
-		result = "\"" + (*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000") + "\""
+		json.WriteString("\"")
+		json.WriteString((*(value.(*time.Time))).Format("2006-01-02 15:04:05.000000"))
+		json.WriteString("\"")
 	case "map[string]map[string][][]string":
-		result = "\"map[string]map[string][][]string\""
+		json.WriteString("\"map[string]map[string][][]string\"")
 	case "*uint64":
-		result = strconv.FormatUint(*(value.(*uint64)), 10)
+		json.WriteString(strconv.FormatUint(*(value.(*uint64)), 10))
 	case "uint64":
-		result = strconv.FormatUint(value.(uint64), 10)
+		json.WriteString(strconv.FormatUint(value.(uint64), 10))
 	case "*uint32":
-		result = strconv.FormatUint(uint64(*(value.(*uint32))), 10)
+		json.WriteString(strconv.FormatUint(uint64(*(value.(*uint32))), 10))
 	case "uint32":
-		result = strconv.FormatUint(uint64(value.(uint32)), 10)
+		json.WriteString(strconv.FormatUint(uint64(value.(uint32)), 10))
 	case "*uint16":
-		result = strconv.FormatUint(uint64(*(value.(*uint16))), 10)
+		json.WriteString(strconv.FormatUint(uint64(*(value.(*uint16))), 10))
 	case "uint16":
-		result = strconv.FormatUint(uint64(value.(uint16)), 10)
+		json.WriteString(strconv.FormatUint(uint64(value.(uint16)), 10))
 	case "*uint8":
-		result = strconv.FormatUint(uint64(*(value.(*uint8))), 10)
+		json.WriteString(strconv.FormatUint(uint64(*(value.(*uint8))), 10))
 	case "uint8":
-		result = strconv.FormatUint(uint64(value.(uint8)), 10)
+		json.WriteString(strconv.FormatUint(uint64(value.(uint8)), 10))
 	case "*uint":
-		result = strconv.FormatUint(uint64(*(value.(*uint))), 10)
+		json.WriteString(strconv.FormatUint(uint64(*(value.(*uint))), 10))
 	case "uint":
-		result = strconv.FormatUint(uint64(value.(uint)), 10)
+		json.WriteString(strconv.FormatUint(uint64(value.(uint)), 10))
 	case "*int64":
-		result = strconv.FormatInt(*(value.(*int64)), 10)
+		json.WriteString(strconv.FormatInt(*(value.(*int64)), 10))
 	case "int64":
-		result = strconv.FormatInt(value.(int64), 10)
+		json.WriteString(strconv.FormatInt(value.(int64), 10))
 	case "*int32":
-		result = strconv.FormatInt(int64(*(value.(*int32))), 10)
+		json.WriteString(strconv.FormatInt(int64(*(value.(*int32))), 10))
 	case "int32":
-		result = strconv.FormatInt(int64((value.(int32))), 10)
+		json.WriteString(strconv.FormatInt(int64((value.(int32))), 10))
 	case "*int16":
-		result = strconv.FormatInt(int64(*(value.(*int16))), 10)
+		json.WriteString(strconv.FormatInt(int64(*(value.(*int16))), 10))
 	case "int16":
-		result = strconv.FormatInt(int64((value.(int16))), 10)
+		json.WriteString(strconv.FormatInt(int64((value.(int16))), 10))
 	case "*int8":
-		result = strconv.FormatInt(int64(*(value.(*int8))), 10)
+		json.WriteString(strconv.FormatInt(int64(*(value.(*int8))), 10))
 	case "int8":
-		result = strconv.FormatInt(int64((value.(int8))), 10)
+		json.WriteString(strconv.FormatInt(int64((value.(int8))), 10))
 	case "*int":
-		result = strconv.FormatInt(int64(*(value.(*int))), 10)
+		json.WriteString(strconv.FormatInt(int64(*(value.(*int))), 10))
 	case "int":
-		result = strconv.FormatInt(int64(value.(int)), 10)
+		json.WriteString(strconv.FormatInt(int64(value.(int)), 10))
 	case "*float64":
-		result = fmt.Sprintf("%f", *(value.(*float64)))
+		json.WriteString(fmt.Sprintf("%f", *(value.(*float64))))
 	case "float64":
-		result = fmt.Sprintf("%f", (value.(float64)))
+		json.WriteString(fmt.Sprintf("%f", (value.(float64))))
 	case "*float32":
-		result = fmt.Sprintf("%f", *(value.(*float32)))
+		json.WriteString(fmt.Sprintf("%f", *(value.(*float32))))
 	case "float32":
-		result = fmt.Sprintf("%f", (value.(float32)))
+		json.WriteString(fmt.Sprintf("%f", (value.(float32))))
 	default:
 		errors = append(errors, fmt.Errorf("JSON.ConvertInterfaceValueToJSONStringValue: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
-		return nil, errors
+		return errors
 	}
 
 
-	return &result, nil
+	return nil
 }

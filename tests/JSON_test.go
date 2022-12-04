@@ -2,6 +2,7 @@ package tests
  
 import (
     "testing"
+	"strings"
 	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
@@ -26,15 +27,13 @@ func PrintJSON(t *testing.T, json *class.Map) {
 		t.Errorf("json is nil")
 		t.FailNow()
 	} else {
-		json_string, json_string_errors := json.ToJSONString()
+		var json_string strings.Builder
+		json_string_errors := json.ToJSONString(&json_string)
 		if json_string_errors != nil {
 			t.Errorf("%s", json_string_errors)
 			t.FailNow()
-		} else if json_string == nil {
-			t.Errorf("json_string is nil")
-			t.FailNow()
 		} else {
-			fmt.Println(*json_string)
+			fmt.Println(json_string.String())
 		}
 	}
 }

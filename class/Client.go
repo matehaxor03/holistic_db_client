@@ -5,7 +5,7 @@ import (
 	"fmt"
 	//"io/ioutil"
 	//"os"
-	//"strings"
+	"strings"
 )
 
 type Client struct {
@@ -23,8 +23,8 @@ type Client struct {
 	GetHost             func() (*Host, []error)
 	GetDatabase         func() (*Database, []error)
 	Validate            func() []error
+	ToJSONString        func(json *strings.Builder) []error
 	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
-	ToJSONString        func() (*string, []error)
 }
 
 func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
@@ -294,8 +294,8 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 
 			return grant_obj, nil
 		},
-		ToJSONString: func() (*string, []error) {
-			return data.ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return data.ToJSONString(json)
 		},
 		UserExists: func(username string) (*bool, []error) {
 			errors := validate()

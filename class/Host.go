@@ -1,8 +1,12 @@
 package class
 
+import (
+	"strings"
+)
+
 type Host struct {
 	Validate      func() []error
-	ToJSONString  func() (*string, []error)
+	ToJSONString  func(json *strings.Builder) ([]error)
 	GetHostName   func() (string, []error)
 	GetPortNumber func() (string, []error)
 }
@@ -106,8 +110,8 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		Validate: func() []error {
 			return validate()
 		},
-		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return getData().ToJSONString(json)
 		},
 		GetHostName: func() (string, []error) {
 			return getHostName()

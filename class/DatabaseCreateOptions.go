@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 )
 
 func GET_CHARACTER_SET_UTF8() string {
@@ -30,7 +31,7 @@ func GET_COLLATES() Map {
 
 type DatabaseCreateOptions struct {
 	GetSQL       func() (*string, []error)
-	ToJSONString func() (*string, []error)
+	ToJSONString func(json *strings.Builder) ([]error)
 	Validate     func() []error
 }
 
@@ -99,8 +100,8 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		GetSQL: func() (*string, []error) {
 			return getSQL()
 		},
-		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return getData().ToJSONString(json)
 		},
 		Validate: func() []error {
 			return validate()

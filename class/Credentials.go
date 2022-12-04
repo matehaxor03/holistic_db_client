@@ -1,10 +1,14 @@
 package class
 
+import (
+	"strings"
+)
+
 type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() (string, []error)
 	GetPassword  func() (*string, []error)
-	ToJSONString func() (*string, []error)
+	ToJSONString func(json *strings.Builder) ([]error)
 	Clone        func() *Credentials
 }
 
@@ -186,8 +190,8 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 		GetPassword: func() (*string, []error) {
 			return getPassword()
 		},
-		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return getData().ToJSONString(json)
 		},
 	}
 

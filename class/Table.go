@@ -24,7 +24,7 @@ type Table struct {
 	CreateRecord          func(record Map) (*Record, []error)
 	ReadRecords         func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
-	ToJSONString          func() (*string, []error)
+	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
 func newTable(database *Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
@@ -1218,8 +1218,8 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)
 		},
-		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return getData().ToJSONString(json)
 		},
 	}
 	setTable(&x)

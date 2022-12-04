@@ -157,38 +157,50 @@ func (m Map) IsBoolFalse(s string) bool {
 	return *value == false
 }
 
-func (m Map) ToJSONString() (*string, []error) {
+func (m Map) ToJSONString(json *strings.Builder) ([]error) {
 	var errors []error
-	keys := m.Keys()
-	length := len(keys)
+	if json == nil {
+		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		return errors
+	}
+	/*
+	var b strings.Builder
+	for i := 0; i < len(keys); i++ {
+	  b.WriteString(keys[i])
+	}
+	return b.String()*/
+	length := len(m)
 	
-	json := ""
 	if length == 0 {
-		json = "{}"
-		return &json, nil
+		json.WriteString("{}")
+		return nil
 	}
 
-	json += "{\n"
-	for i, key := range keys {
-		json = json + "\"" + strings.ReplaceAll(key, "\"", "\\\"") + "\":"
-		string_conversion, string_conversion_errors := ConvertInterfaceValueToJSONStringValue(m[key])
+	keys := m.Keys()
+	
+
+	json.WriteString("{\n")
+	for i := 0; i < length; i++ {
+		key := keys[i]
+		json.WriteString("\"")
+		json.WriteString(strings.ReplaceAll(key, "\"", "\\\""))
+		json.WriteString("\":")
+		string_conversion_errors := ConvertInterfaceValueToJSONStringValue(json, m[key])
 		if string_conversion_errors != nil {
 			errors = append(errors, string_conversion_errors...)
-		} else {
-			json += *string_conversion
 		}
 
 		if i < length - 1 {
-			json += ","
+			json.WriteString(",")
 		}
-		json += "\n"
+		json.WriteString("\n")
 	}
-	json += "}"
+	json.WriteString("}")
 
 	if len(errors) > 0 {
-		return nil, errors
+		return errors
 	}
-	return &json, nil
+	return nil
 }
 
 func (m Map) SetArray(s string, array *Array) {

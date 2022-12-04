@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Array []interface{}
@@ -34,36 +35,39 @@ func ToArray(a interface{}) (*Array, []error) {
 	return &array, nil
 }
 
-func (a Array) ToJSONString() (*string, []error) {
+func (a Array) ToJSONString(json *strings.Builder) ([]error) {
 	var errors []error
+	
+	if json == nil {
+		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		return errors
+	}
+	
 	length := len(a)
 
-	json := ""
 	if length == 0 {
-		json = "[]"
-		return &json, nil
+		json.WriteString("[]")
+		return nil
 	}
 
-	json += "[\n"
+	json.WriteString("[\n")
 	for i, value := range a {
-		string_conversion, string_conversion_error := ConvertInterfaceValueToJSONStringValue(value)
+		string_conversion_error := ConvertInterfaceValueToJSONStringValue(json, value)
 		if string_conversion_error != nil {
 			errors = append(errors, string_conversion_error...)
-		} else {
-			json += *string_conversion
-		}
+		} 
 
 		if i < length - 1 {
-			json += ","
+			json.WriteString(",")
 		}
 
-		json += "\n"
+		json.WriteString("\n")
 	}
-	json += "]"
+	json.WriteString("]")
 
 	if len(errors) > 0 {
-		return nil, errors
+		return errors
 	}
 
-	return &json, nil
+	return nil
 }

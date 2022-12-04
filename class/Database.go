@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Database struct {
@@ -20,7 +21,7 @@ type Database struct {
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() (*[]Table, []error)
 	GetTableNames   func() (*[]string, []error)
-	ToJSONString    func() (*string, []error)
+	ToJSONString    func(json *strings.Builder) ([]error)
 	UseDatabase     func() []error
 }
 
@@ -537,8 +538,8 @@ func newDatabase(client *Client, database_name string, database_create_options *
 
 			return temp_client.UseDatabase(temp_database)
 		},
-		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+		ToJSONString: func(json *strings.Builder) ([]error) {
+			return getData().ToJSONString(json)
 		},
 	}
 	setDatabase(&x)
