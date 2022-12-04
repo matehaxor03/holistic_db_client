@@ -661,7 +661,7 @@ func (m Map) GetUInt8(s string) (*uint8, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -688,7 +688,7 @@ func (m Map) GetUInt8Value(s string) (uint8, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -769,7 +769,7 @@ func (m Map) GetUInt16(s string) (*uint16, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -796,7 +796,7 @@ func (m Map) GetUInt16Value(s string) (uint16, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -897,7 +897,7 @@ func (m Map) GetUInt32(s string) (*uint32, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -924,7 +924,7 @@ func (m Map) GetUInt32Value(s string) (uint32, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -951,7 +951,7 @@ func (m Map) GetUInt64Value(s string) (uint64, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
