@@ -510,7 +510,55 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					} else {
 						column_schema.SetInt64("default", &number)
 					}
-				} else if *dt == "bool" && default_value != "" {
+				} else if *dt == "uint32" && default_value != "" {
+					number, err := strconv.ParseUint(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := uint32(number)
+						column_schema.SetUInt32("default", &converted)
+					}
+				} else if *dt == "int32" && default_value != "" {
+					number, err := strconv.ParseInt(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := int32(number)
+						column_schema.SetInt32("default", &converted)
+					}
+				} else if *dt == "uint16" && default_value != "" {
+					number, err := strconv.ParseUint(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := uint16(number)
+						column_schema.SetUInt16("default", &converted)
+					}
+				} else if *dt == "int16" && default_value != "" {
+					number, err := strconv.ParseInt(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := int16(number)
+						column_schema.SetInt16("default", &converted)
+					}
+				} else if *dt == "uint8" && default_value != "" {
+					number, err := strconv.ParseUint(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := uint8(number)
+						column_schema.SetUInt8("default", &converted)
+					}
+				} else if *dt == "int8" && default_value != "" {
+					number, err := strconv.ParseInt(default_value, 10, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := int8(number)
+						column_schema.SetInt8("default", &converted)
+					}
+				}  else if *dt == "bool" && default_value != "" {
 					number, err := strconv.ParseInt(default_value, 10, 64)
 					if err != nil {
 						errors = append(errors, err)
@@ -536,7 +584,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					} else {
 						errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
 					}
-				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "string" || *dt == "uint64") && default_value != "" {
+				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string") && default_value != "" {
 					errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
 				}
 			}
