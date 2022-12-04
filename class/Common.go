@@ -932,9 +932,9 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 	type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
 	if type_of_parameter_schema_value_errors != nil {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting type for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
+		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting \"type\" attribute for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
 	} else if type_of_parameter_schema_value == nil {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s error type of schema is nil", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("struct: %s column: %s \"type\" attribute of schema is nil", struct_type, parameter))
 	}
 
 	if (struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter) {

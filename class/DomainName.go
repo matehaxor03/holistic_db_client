@@ -20,7 +20,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]": Map{"[domain_name]": domain_name},
-		"[system_schema]": Map{"[domain_name]":Map{"mandatory": true,
+		"[system_schema]": Map{"[domain_name]":Map{"type":"string", "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -35,7 +35,10 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 
 	getDomainName := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "string")
-		return temp_value.(string), temp_value_errors
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		}
+		return temp_value.(string), nil
 	}
 
 	errors := validate()
