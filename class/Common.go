@@ -1098,7 +1098,13 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 	case "*int", "int":
 	case "*bool", "bool":
 	case "*int64", "int64":
+	case "*int32", "int32":
+	case "*int16", "int16":
+	case "*int8", "int8":
 	case "*uint64", "uint64":
+	case "*uint32", "uint32":
+	case "*uint16", "uint16":
+	case "*uint8", "uint8":
 	case "*time.Time":
 	case "*class.Database":
 		database := value_to_validate.(*Database)
