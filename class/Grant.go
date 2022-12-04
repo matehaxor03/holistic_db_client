@@ -99,24 +99,27 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 		return temp_value.(string), temp_value_errors
 	}
 
-	// todo fix
 	getDatabaseFilter := func() (*string, []error) {
-		database_filter_map, database_filter_map_errors := getData().GetMap("[database_filter]")
-		if database_filter_map_errors != nil {
-			return nil, database_filter_map_errors
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_filter]", "*string")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
 		}
 		
-		return database_filter_map.GetString("value")
+		return temp_value.(*string), nil
 	}
 
-	// todo fix
 	getTableFilter := func() (*string, []error) {
-		table_filter_map, table_filter_map_errors := getData().GetMap("[table_filter]")
-		if table_filter_map_errors != nil {
-			return nil, table_filter_map_errors
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_filter]", "*string")
+		
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
 		}
-
-		return table_filter_map.GetString("value")
+		
+		return temp_value.(*string), nil
 	}
 
 	getSQL := func() (*string, []error) {
