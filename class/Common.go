@@ -4,15 +4,26 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"unicode"
 	"math/rand"
     "path/filepath"
 	"runtime"
-	"reflect"
+	//"reflect"
 )
 
-type Null struct {
-
+func GetValidSchemaFields() Map {
+	return Map{
+		"type": nil,
+		"primary_key": nil,
+		"unsigned":nil,
+		"auto_increment": nil,
+		"mandatory": nil,
+		"default": nil,
+		"validated": nil,
+		"filters": nil,
+		"not_empty_string_value":nil,
+		"min_length": nil,
+		"max_length": nil,
+	}
 }
 
 func EscapeString(value string) string {
@@ -37,14 +48,25 @@ func IsNil(object interface{}) bool {
 	
 	string_value := fmt.Sprintf("%s", object) 
 
-	if string_value == "&map[]" {
+	if string_value == "<nil>" {
 		return true
 	}
 
+	if string_value == "map[]" {
+		return true
+	}
+
+	rep := fmt.Sprintf("%T", object)
+
+	if string_value == "%!s("+rep+"=<nil>)" {
+		return true
+	}
+
+	/*
 	switch reflect.TypeOf(object).Kind() {
 		case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
 			return reflect.ValueOf(object).IsNil()
-	}
+	}*/
 
 	return false
 	/*
@@ -266,73 +288,95 @@ func BlackListString(m Map) []error {
 }
 
 
-func GetFields(m *Map) (*Map, []error) {
+func GetFields(struct_type string, m *Map, field_type string) (*Map, []error) {
 	var errors []error
-	if IsNil(m) {
-		errors = append(errors, fmt.Errorf("data is nil"))
+	if !(field_type == "[fields]" || field_type == "[system_fields]") {
+		available_fields := m.Keys()
+		errors = append(errors, fmt.Errorf("%s %s is not a valid root field, available root fields: %s", struct_type, field_type, available_fields))
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
 	
-	fields_map, fields_map_errors := m.GetMap("[fields]")
+	fields_map, fields_map_errors := m.GetMap(field_type)
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	} else if IsNil(fields_map) {
-		errors = append(errors, fmt.Errorf("[fields] is nil"))
-	}
+		errors = append(errors, fmt.Errorf("%s %s is nil", struct_type, field_type))
+	} 
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
-
+	
 	return fields_map, nil
 }
 
-func GetSchemas(m *Map) (*Map, []error) {
+func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) {
 	var errors []error
-	if IsNil(m) {
-		errors = append(errors, fmt.Errorf("data is nil"))
+	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
+		available_fields := m.Keys()
+		errors = append(errors, fmt.Errorf("%s, %s is not a valid root system schema, available root fields: %s", struct_type, schema_type, available_fields))
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
 	
-	fields_map, fields_map_errors := m.GetMap("[schema]")
-	if fields_map_errors != nil {
-		errors = append(errors, fields_map_errors...)
-	} else if IsNil(fields_map) {
-		errors = append(errors, fmt.Errorf("[schema] is nil"))
+	schemas_map, schemas_map_errors := m.GetMap(schema_type)
+	if schemas_map_errors != nil {
+		errors = append(errors, schemas_map_errors...)
+	} else if IsNil(schemas_map) {
+		errors = append(errors, fmt.Errorf("%s %s is nil", struct_type, schema_type))
+	} else {
+		schema_paramters := schemas_map.Keys()
+		for _, schema_paramter := range schema_paramters {
+			if !schemas_map.IsMap(schema_paramter) {
+				errors = append(errors, fmt.Errorf("%s %s %s is not a map", struct_type, schema_type, schema_paramter))
+			} else {
+				schema_paramter_map, schema_paramter_map_errors := schemas_map.GetMap(schema_paramter) 
+				if schema_paramter_map_errors != nil {
+					errors = append(errors, fmt.Errorf("%s %s %s had errors getting map: %s", struct_type, schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
+				} else {
+					attributes := schema_paramter_map.Keys()
+					valid_attributes_map := GetValidSchemaFields()
+					for _, attribute := range attributes {
+						if !valid_attributes_map.HasKey(attribute) {
+							errors = append(errors, fmt.Errorf("%s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.Keys()))
+						}
+					}
+				}
+			}
+		}
 	}
 
 	if len(errors) > 0 {
 		return nil, errors
 	}
-
-	return fields_map, nil
+	
+	return schemas_map, nil
 }
 
-func GetField(m *Map, field string) (interface{}, []error) {
+func GetField(struct_type string, m *Map, schema_type string, field_type string, field string) (interface{}, []error) {
 	var errors []error
-
-	fields_map, fields_map_errors := GetFields(m)
-	if fields_map_errors != nil {
-		errors = append(errors, fields_map_errors...)
-	} else if !fields_map.HasKey(field) {
-		available_fields := fields_map.Keys()
-		errors = append(errors, fmt.Errorf("field does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
-	}
-
-	schemas_map, schemas_map_errors := GetSchemas(m)
+	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	} else if !schemas_map.HasKey(field) {
 		available_fields := schemas_map.Keys()
-		errors = append(errors, fmt.Errorf("field schema does not exist: %s available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("Common.GetField %s schema_type: %s field: %s does not exist available fields are: %s", struct_type, schema_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schemas_map.IsMap(field) {
-		errors = append(errors, fmt.Errorf("field schema: %s is not a map", field))
+		errors = append(errors, fmt.Errorf("Common.GetField %s schema_type: %s field: %s is not a map and has type: %s", struct_type, schema_type, field, schemas_map.GetType(field)))
+	} 
+
+	if len(errors) > 0 { 
+		return nil, errors
+	}
+
+	fields_map, fields_map_errors := GetFields(struct_type, m, field_type)
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
 	} 
 
 	if len(errors) > 0 {
@@ -343,12 +387,12 @@ func GetField(m *Map, field string) (interface{}, []error) {
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	} else if schema_map == nil {
-		errors = append(errors, fmt.Errorf("schema map is nil"))
+		errors = append(errors, fmt.Errorf("%s %s map is nil", struct_type, schema_type))
 	} else if !schema_map.HasKey("type") {
 		available_fields := schemas_map.Keys()
-		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute does not exist available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("%s field: %s schema \"type\" attribute does not exist available fields are: %s", struct_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_map.IsString("type") {
-		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute value is not a string it's %s", field, schema_map.GetType("type")))
+		errors = append(errors, fmt.Errorf("%s field: %s schema \"type\" attribute value is not a string it's %s", struct_type, field, schema_map.GetType("type")))
 	}
 
 	if len(errors) > 0 {
@@ -390,61 +434,48 @@ func GetField(m *Map, field string) (interface{}, []error) {
 	return fields_map.GetObject(field), nil
 }
 
-func SetField(struct_type string, m *Map, parameter string, object interface{}) ([]error) {
+func SetField(struct_type string, m *Map, schema_type string, field_type string, parameter string, object interface{}) ([]error) {
 	var errors []error
 
-	fields, fields_errors := GetFields(m) 
-	if fields_errors != nil {
-		errors = append(errors, fields_errors...)
+	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
+	if schemas_map_errors != nil {
+		errors = append(errors, schemas_map_errors...)
 	}
 
-	schemas, schemas_errors := GetSchemas(m)
-	if schemas_errors != nil {
-		errors = append(errors, schemas_errors...)
-	}
-
-	schema_of_parameter, schema_of_parameter_errors := GetSchema(m, parameter)
-	if schema_of_parameter_errors != nil {
-		errors = append(errors, schema_of_parameter_errors...)
-	}
-	
-	if len(errors) > 0 {
-		return errors
-	}
-	
-	schema_type, schema_type_errors  := schema_of_parameter.GetString("type")
-	if schema_type_errors != nil {
-		errors = append(errors, schema_type_errors...)
-	} else if schema_type == nil {
-		errors = append(errors, fmt.Errorf("schema type attribute is nil for field: %s", parameter))
+	fields_map, fields_map_errors := GetFields(struct_type, m, field_type) 
+	if fields_map_errors != nil {
+		errors = append(errors, fields_map_errors...)
 	}
 
 	if len(errors) > 0 {
 		return errors
 	}
-
-	value_is_mandatory := true
-	value_is_set := false
-	value_is_null := false
-
-	if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
-		if schema_of_parameter.IsBoolTrue("primary_key") {
-			value_is_mandatory = true
-
-			if schema_of_parameter.IsBoolTrue("auto_increment") {
-				value_is_mandatory = false
-			}
-		}
+	
+	schema_of_parameter_map, schema_of_parameter_map_errors := schemas_map.GetMap(parameter)
+	if schema_of_parameter_map_errors != nil {
+		errors = append(errors, schema_of_parameter_map_errors...)
+	} else if schema_of_parameter_map == nil {
+		errors = append(errors, fmt.Errorf("field: %s schema map is nil", parameter))
+	} else if !schema_of_parameter_map.HasKey("type") {
+		available_fields := schema_of_parameter_map.Keys()
+		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute does not exist available fields are: %s", parameter, fmt.Sprintf("%s", available_fields)))
+	} else if !schema_of_parameter_map.IsString("type") {
+		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute value is not a string it's %s", parameter, schema_of_parameter_map.GetType("type")))
 	}
 
-	value_is_set = true
-	if IsNil(object) {
-		value_is_null = true
-	} else {
-		value_is_null = false
+	if len(errors) > 0 {
+		return errors
 	}
 
-	validate_parameters_errors := ValidateParameterData(struct_type, schemas, parameter, object, value_is_mandatory, value_is_set, value_is_null)
+	var primary_key_count *int
+	primary_key_count_value := 0 
+	primary_key_count = &primary_key_count_value
+	
+	var auto_increment_count *int
+	auto_increment_count_value := 0 
+	auto_increment_count = &auto_increment_count_value
+
+	validate_parameters_errors := ValidateParameterData(struct_type, schemas_map, nil, parameter, object, primary_key_count, auto_increment_count)
 	if validate_parameters_errors != nil {
 		errors = append(errors, validate_parameters_errors...)
 	}
@@ -453,105 +484,17 @@ func SetField(struct_type string, m *Map, parameter string, object interface{}) 
 		return errors
 	}
 
-	fields.SetObject(parameter, object)
-	validated_false := false
-	schema_of_parameter.SetObject("validated", validated_false)
+	fields_map.SetObject(parameter, object)
+	validated_true := true
+	schema_of_parameter_map.SetObject("validated", validated_true)
 	return nil
 }
 
-func GetValidSchemaFields() Map {
-	return Map{
-		"type": nil,
-		"primary_key": nil,
-		"unsigned":nil,
-		"auto_increment": nil,
-		"mandatory": nil,
-		"default": nil,
-		"validated": nil,
-		"filters": nil,
-		"not_empty_string_value":nil,
-		"min_length": nil,
-		"max_length": nil,
-	}
-}
-
-func GetSchema(m *Map, field string) (*Map, []error) {
-	var errors []error
-
-	schema_map, schema_map_errors := GetSchemas(m)
-	if schema_map_errors != nil {
-		errors = append(errors, schema_map_errors...)
-	} else if !schema_map.HasKey(field) {
-		available_fields := schema_map.Keys()
-		errors = append(errors, fmt.Errorf("schema attribute does not exist: %s available attributes are: %s", field, fmt.Sprintf("%s", available_fields)))
-	} 
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	if schema_map.IsNil(field) {
-		errors = append(errors, fmt.Errorf("schema exists: %s however data of schema is nil", field))
-		return nil, errors
-	}
-
-	schema_map_data, schema_map_data_errors := schema_map.GetMap(field)
-	if schema_map_data_errors != nil {
-		errors = append(errors, schema_map_data_errors...)
-	} else if IsNil(schema_map_data) {
-		errors = append(errors, fmt.Errorf("schema is nil: %s"))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	valid_schema_attributes := GetValidSchemaFields()
-	for _, schema_attribute := range (*schema_map_data).Keys() {
-		if !valid_schema_attributes.HasKey(schema_attribute) {
-			available_fields := valid_schema_attributes.Keys()
-			errors = append(errors, fmt.Errorf("schema attribute is not a valid attribute: %s available attributes are: %s", schema_attribute, fmt.Sprintf("%s", available_fields)))
-		}
-	}
-
-	if !schema_map_data.HasKey("type") {
-		errors = append(errors, fmt.Errorf("schema does not have type attribute"))
-	} else if !schema_map_data.IsString("type") {
-		errors = append(errors, fmt.Errorf("schema type attribute type is not a string actual: %s", schema_map_data.GetType("type")))
-	} else {
-		//todo validate types default etc
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return schema_map_data, nil
-}
-
-func GetSchemaType(m *Map, field string) (*string, []error) {
-	var errors []error
-	schema_map, schema_map_errors := GetSchema(m, field)
-	if schema_map_errors != nil {
-		errors = append(errors, schema_map_errors...)
-	} else if !schema_map.HasKey("type") {
-		errors = append(errors, fmt.Errorf("field: %s schema does not have atrribute: type", field))
-	} else if !schema_map.IsString("type") {
-		errors = append(errors, fmt.Errorf("field: %s schema is not a string", field))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return schema_map.GetString("type")
-}
-
-func GetStringField(m *Map, field string) (*string, []error) {
+func GetStringField(struct_type string, m *Map, schema_type string, field_type string, field string) (*string, []error) {
 	var errors []error
 	var value *string
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -577,11 +520,11 @@ func GetStringField(m *Map, field string) (*string, []error) {
 	return value, nil
 }
 
-func GetHostField(m *Map, field string) (*Host, []error) {
+func GetHostField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Host, []error) {
 	var errors []error
 	var value *Host
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -607,11 +550,11 @@ func GetHostField(m *Map, field string) (*Host, []error) {
 	return value, nil
 }
 
-func GetClientManagerField(m *Map, field string) (*ClientManager, []error) {
+func GetClientManagerField(struct_type string, m *Map, schema_type string, field_type string, field string) (*ClientManager, []error) {
 	var errors []error
 	var value *ClientManager
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -637,11 +580,11 @@ func GetClientManagerField(m *Map, field string) (*ClientManager, []error) {
 	return value, nil
 }
 
-func GetCredentialsField(m *Map, field string) (*Credentials, []error) {
+func GetCredentialsField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Credentials, []error) {
 	var errors []error
 	var value *Credentials
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -667,11 +610,11 @@ func GetCredentialsField(m *Map, field string) (*Credentials, []error) {
 	return value, nil
 }
 
-func GetDomainNameField(m *Map, field string) (*DomainName, []error) {
+func GetDomainNameField(struct_type string, m *Map, schema_type string, field_type string, field string) (*DomainName, []error) {
 	var errors []error
 	var value *DomainName
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -697,11 +640,11 @@ func GetDomainNameField(m *Map, field string) (*DomainName, []error) {
 	return value, nil
 }
 
-func GetUserField(m *Map, field string) (*User, []error) {
+func GetUserField(struct_type string, m *Map, schema_type string, field_type string, field string) (*User, []error) {
 	var errors []error
 	var value *User
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -727,11 +670,11 @@ func GetUserField(m *Map, field string) (*User, []error) {
 	return value, nil
 }
 
-func GetTableField(m *Map, field string) (*Table, []error) {
+func GetTableField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Table, []error) {
 	var errors []error
 	var value *Table
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -757,11 +700,11 @@ func GetTableField(m *Map, field string) (*Table, []error) {
 	return value, nil
 }
 
-func GetDatabaseField(m *Map, field string) (*Database, []error) {
+func GetDatabaseField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Database, []error) {
 	var errors []error
 	var value *Database
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -787,11 +730,11 @@ func GetDatabaseField(m *Map, field string) (*Database, []error) {
 	return value, nil
 }
 
-func GetDatabaseCreateOptionsField(m *Map, field string) (*DatabaseCreateOptions, []error) {
+func GetDatabaseCreateOptionsField(struct_type string, m *Map, schema_type string, field_type string, field string) (*DatabaseCreateOptions, []error) {
 	var errors []error
 	var value *DatabaseCreateOptions
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -817,11 +760,11 @@ func GetDatabaseCreateOptionsField(m *Map, field string) (*DatabaseCreateOptions
 	return value, nil
 }
 
-func GetClientField(m *Map, field string) (*Client, []error) {
+func GetClientField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Client, []error) {
 	var errors []error
 	var value *Client
 	
-	object_value, object_value_errors := GetField(m, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -885,33 +828,6 @@ func BlackListStringToUpper(m Map) []error {
 	return nil
 }
 
-func ArraysContainsArraysOrdered(a [][]string, b [][]string, label string, typeof string) []error {
-	var errors []error
-
-	for _, b_value := range b {
-		var current = strings.Join(b_value, "")
-		var found = false
-		for _, a_value := range a {
-			var compare = strings.Join(a_value, "")
-
-			if current == compare {
-				found = true
-				break
-			}
-		}
-
-		if !found {
-			errors = append(errors, fmt.Errorf("%s %s has value '%s' expected to have value in '%s", typeof, label, b_value, a))
-		}
-	}
-
-	if len(errors) > 0 {
-		return errors
-	}
-
-	return nil
-}
-
 func getWhitelistCharactersFunc() *func(m Map) []error {
 	funcValue := WhitelistCharacters
 	return &funcValue
@@ -963,24 +879,6 @@ func WhitelistCharacters(m Map) []error {
 	return nil
 }
 
-func IsUpper(s string) bool {
-	for _, r := range s {
-		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
-			return false
-		}
-	}
-	return true
-}
-
-func IsLower(s string) bool {
-	for _, r := range s {
-		if !unicode.IsLower(r) && unicode.IsLetter(r) {
-			return false
-		}
-	}
-	return true
-}
-
 func IsDatabaseColumn(value string) bool {
 	column_name_params := Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
 	column_name_errors := WhitelistCharacters(column_name_params)
@@ -1001,18 +899,13 @@ func ValidateData(data *Map, struct_type string) []error {
 	var errors []error
 	var ignore_identity_errors = false
 	
-	primary_key_count := 0
-	auto_increment_count := 0
-
-	parameters, parameters_errors := GetFields(data)
-	if parameters_errors != nil {
-		errors = append(errors, parameters_errors...)
-	}
-
-	schemas, schemas_errors := GetSchemas(data)
-	if schemas_errors != nil {
-		errors = append(errors, schemas_errors...)
-	}
+	var primary_key_count *int
+	primary_key_count_value := 0 
+	primary_key_count = &primary_key_count_value
+	
+	var auto_increment_count *int
+	auto_increment_count_value := 0 
+	auto_increment_count = &auto_increment_count_value
 
 	if len(errors) > 0 {
 		return errors
@@ -1024,75 +917,61 @@ func ValidateData(data *Map, struct_type string) []error {
 		}
 	}
 
-	for _, parameter := range (*schemas).Keys() {
-		
-		if !schemas.IsMap(parameter) {
-			errors = append(errors, fmt.Errorf("struct: %s schema column: %s is not a map type: ", struct_type, parameter, schemas.GetType(parameter)))
-			continue
-		}
-	
-		schema_of_parameter, schema_of_parameter_errors := GetSchema(data, parameter)
-		if schema_of_parameter_errors != nil {
-			errors = append(errors, fmt.Errorf("struct: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
-			continue
-		}
+	var field_errors []error
+	field_parameters, field_parameters_errors := GetFields(struct_type, data, "[fields]")
+	if field_parameters_errors != nil {
+		field_errors = append(field_errors, field_parameters_errors...)
+	}
 
-		value_is_mandatory := true
-		value_is_set := false
-		value_is_null := false
+	schemas, schemas_errors := GetSchemas(struct_type, data, "[schema]")
+	if schemas_errors != nil {
+		field_errors = append(field_errors, schemas_errors...)
+	}
 
-		if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
-			if schema_of_parameter.IsBoolTrue("primary_key") {
-				value_is_mandatory = true
-				primary_key_count++ 
-	
-				if schema_of_parameter.IsBoolTrue("auto_increment") {
-					value_is_mandatory = false
-					auto_increment_count++
-				}
+	if len(field_errors) == 0 {
+		for _, parameter := range (*schemas).Keys() {
+			value_errors := ValidateParameterData(struct_type, schemas, field_parameters, parameter, nil, primary_key_count, auto_increment_count)
+
+			if value_errors != nil {
+				field_errors = append(field_errors, value_errors...)
 			}
-		}
-		
-		if !schema_of_parameter.HasKey("validated") {
-			bool_true := true
-			schema_of_parameter.SetBool("validated", &bool_true)
-		} else {
-				if !schema_of_parameter.IsBool("validated") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
-				continue
-			} else if schema_of_parameter.IsBoolTrue("validated") {
-				continue
-			} else {
-				bool_true := true
-				schema_of_parameter.SetBool("validated", &bool_true)
-			}
-		}
-
-		if parameters.HasKey(parameter) {
-			value_is_set = true
-			if parameters.IsNil(parameter) {
-				value_is_null = true
-			}
-		} else {
-			value_is_null = true
-		}
-
-		var value_to_validate interface{}
-		value_to_validate = parameters.GetObject(parameter)
-
-		value_errors := ValidateParameterData(struct_type, schemas, parameter, value_to_validate, value_is_mandatory, value_is_set, value_is_null)
-
-		if value_errors != nil {
-			errors = append(errors, value_errors...)
 		}
 	}
 
+	if len(field_errors) > 0 {
+		errors = append(errors, field_errors...)
+	}
+
+	var system_field_errors []error
+	system_field_parameters, system_field_parameters_errors := GetFields(struct_type, data, "[system_fields]")
+	if system_field_parameters_errors != nil {
+		system_field_errors = append(system_field_errors, system_field_parameters_errors...)
+	}
+
+	system_schemas, system_schemas_errors := GetSchemas(struct_type, data, "[system_schema]")
+	if system_schemas_errors != nil {
+		system_field_errors = append(system_field_errors, system_schemas_errors...)
+	}
+	
+	if len(system_field_errors) == 0 {
+		for _, parameter := range (*system_schemas).Keys() {
+			value_errors := ValidateParameterData(struct_type, system_schemas, system_field_parameters, parameter, nil, primary_key_count, auto_increment_count)
+			if value_errors != nil {
+				system_field_errors = append(system_field_errors, value_errors...)
+			}
+		}
+	}
+
+	if len(system_field_errors) > 0 {
+		errors = append(errors, system_field_errors...)
+	}
+
 	if (struct_type == "*class.Table" || struct_type == "class.Table") && !ignore_identity_errors {
-		if primary_key_count <= 0 {
+		if *primary_key_count <= 0 {
 			errors = append(errors, fmt.Errorf("table: %s did not have any primary keys", struct_type))
 		}
 
-		if auto_increment_count > 1 {
+		if *auto_increment_count > 1 {
 			errors = append(errors, fmt.Errorf("table: %s had more than one auto_increment attribute on a column", struct_type))
 		}
 	}
@@ -1104,30 +983,66 @@ func ValidateData(data *Map, struct_type string) []error {
 	return nil
 }
 
-func ValidateParameterData(struct_type string, schemas *Map, parameter string, value_to_validate interface{}, value_is_mandatory bool, value_is_set bool, value_is_null bool) ([]error) {
+func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, parameter string, value_to_validate interface{}, primary_key_count *int,  auto_increment_count *int) ([]error) {
 	var errors []error
 
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
 	if schema_of_parameter_errors != nil {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
+		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
 	} else if IsNil(schema_of_parameter) {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s had nil schema", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s had nil schema", struct_type, parameter))
+	} else if !schemas.IsMap(parameter) {
+		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s is not a map", struct_type, parameter))
 	}
 
 	if len(errors) > 0 {
 		return errors
 	} 
 
-	default_set := false
-	default_is_null := false
+	//fmt.Println(fmt.Sprintf("%s %s %s %s %s", struct_type, schemas, parameters, parameter, value_to_validate))
+
+	var value_is_mandatory bool
+	var value_is_set bool
+	var value_is_null bool
+
+	value_is_mandatory = true
+	value_is_set = true
+	value_is_null = false
+
+	if !IsNil(parameters) {
+		if parameters.HasKey(parameter) {
+			value_is_set = true
+			if parameters.IsNil(parameter) {
+				value_is_null = true
+			} else {
+				value_to_validate = parameters.GetObject(parameter)
+				value_is_null = false
+			}
+		} else {
+			value_is_set = false
+			value_is_null = true
+		}
+	} else {
+		if IsNil(value_to_validate) {
+			value_is_null = true
+		} else {
+			value_is_null = false
+		}
+	}
+
+	var default_set bool
+	var default_is_null bool
 
 	if schema_of_parameter.HasKey("default") {
 		default_set = true
 		if schema_of_parameter.IsNil("default") {
 			default_is_null = true
+		} else {
+			default_is_null = false
 		}
 	} else {
 		default_is_null = true
+		default_set = false
 	}
 
 	if schema_of_parameter.HasKey("mandatory") {
@@ -1136,7 +1051,37 @@ func ValidateParameterData(struct_type string, schemas *Map, parameter string, v
 		} else if schema_of_parameter.IsBoolFalse("mandatory") {
 			value_is_mandatory = false
 		}
-	}  
+	} 
+ 
+	if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
+		if schema_of_parameter.IsBoolTrue("primary_key") {
+			value_is_mandatory = true
+			*primary_key_count++ 
+
+			if schema_of_parameter.IsBoolTrue("auto_increment") {
+				value_is_mandatory = false
+				*auto_increment_count++
+			}
+		}
+	}
+
+	if !IsNil(parameters) {
+		if !schema_of_parameter.HasKey("validated") {
+			bool_true := true
+			schema_of_parameter.SetBool("validated", &bool_true)
+		} else {
+				if !schema_of_parameter.IsBool("validated") {
+				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
+				return errors
+			} else if schema_of_parameter.IsBoolTrue("validated") {
+				return nil
+			} else {
+				bool_true := true
+				schema_of_parameter.SetBool("validated", &bool_true)
+			}
+		}
+	}
+
 
 	type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
 	if type_of_parameter_schema_value_errors != nil {

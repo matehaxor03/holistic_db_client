@@ -40,14 +40,17 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
-	data := Map{"[fields]": Map{
-		"client":client, "database_name":&database_name,"database_create_options":database_create_options},
-				"[schema]": Map{
-		"client":Map{"type":"*class.Client","mandatory": true,"validated":false},
-		"database_name":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,"validated":false,
+	data := Map{
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]": Map{
+			"[client]":client, "[database_name]":&database_name,"[database_create_options]":database_create_options},
+		"[system_schema]": Map{
+			"[client]":Map{"type":"*class.Client","mandatory": true},
+			"[database_name]":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,
 			FILTERS(): Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
 							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
-		"database_create_options":Map{"type":"*class.DatabaseCreateOptions","mandatory":false,"validated":false}},
+			"[database_create_options]":Map{"type":"*class.DatabaseCreateOptions","mandatory":false}},
 	}
 
 	getData := func() (*Map) {
@@ -59,20 +62,20 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		return GetDatabaseCreateOptionsField(getData(), "database_create_options")
+		return GetDatabaseCreateOptionsField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]")
 	}
 
 	getClient := func() (*Client, []error) {
-		return GetClientField(getData(), "client")
+		return GetClientField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]")
 	}
 
 	setClient := func(new_client *Client) []error {
-		return SetField(struct_type, getData(), "client", new_client)
+		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", new_client)
 	}
 
 	getDatabaseName := func() (string, []error) {
 		var errors []error
-		temp_database_name, temp_database_name_errors := GetStringField(getData(), "database_name")
+		temp_database_name, temp_database_name_errors := GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]")
 		if temp_database_name_errors != nil {
 			return "", temp_database_name_errors
 		} else if IsNil(temp_database_name) {
@@ -84,7 +87,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
-		return SetField(struct_type, getData(), "database_name", &new_database_name)
+		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", &new_database_name)
 	}
 
 	getCreateSQL := func() (*string, []error) {

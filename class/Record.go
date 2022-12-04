@@ -15,6 +15,7 @@ type Record struct {
 	GetInt64  func(field string) (*int64, []error)
 	SetInt64  func(field string, value *int64) []error
 	GetUInt64 func(field string) (*uint64, []error)
+	SetUInt64 func(field string, value *uint64) []error
 	GetString func(field string) (*string, []error)
 	SetString func(field string, value *string) []error 
 	SetStringValue func(field string, value string) []error 
@@ -49,50 +50,29 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 		return nil, errors
 	}
 
-	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
-	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
+	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 
-	data := Map{"[fields]": record_data}
-	record_data.SetObject("[table]", table)
+	data := Map{"[fields]": record_data, "[system_fields]": Map{"[table]": table}}
 	data["[schema]"] = table_schema
-	table_schema.SetMapValue("[table]", Map{"type":"*class.Table", "mandatory": true})
-
+	data["[system_schema]"] = Map{"[table]": Map{"type":"*class.Table", "mandatory": true}}
 
 	getData := func() (*Map) {
 		return &data
 	}
 
 	getRecordColumns := func() (*[]string, []error) {
-		var columns []string
-		column_name_whitelist_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name_character", "data_type": "Column"}
-		column_name_blacklist_params := Map{"values": database_reserved_words, "value": nil, "label": "column_name", "data_type": "Column"}
-
-		fields_map, fields_map_errors := GetFields(getData())
+		fields_map, fields_map_errors := GetFields(struct_type, getData(), "[fields]")
 		if fields_map_errors != nil {
 			return nil, fields_map_errors
 		}
-
-		for _, column := range (*fields_map).Keys() {
-			column_name_whitelist_params.SetString("value", &column)
-			column_name_whiltelist_errors := WhitelistCharacters(column_name_whitelist_params)
-			if column_name_whiltelist_errors != nil {
-				continue
-			}
-			
-			column_name_blacklist_params.SetString("value", &column)
-			column_name_blacklist_errors := BlackListStringToUpper(column_name_blacklist_params)
-			if column_name_blacklist_errors != nil {
-				continue
-			}	
-
-			columns = append(columns, column)
-		}
+		columns := fields_map.Keys()
 		return &columns, nil
 	}
 
 	getTable := func() (*Table, []error) {
-		return GetTableField(getData(), "[table]")
+		return GetTableField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]")
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
@@ -255,7 +235,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			parameter, paramter_errors := GetField(getData(), record_column)
+			parameter, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column)
 			if paramter_errors != nil {
 				errors = append(errors, paramter_errors...)
 				continue
@@ -352,7 +332,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			}
 		}
 
-		SetField(struct_type, getData(), "last_modified_date", GetTimeNow())
+		SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", GetTimeNow())
 
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
 		if record_non_identity_columns_errors != nil {
@@ -381,7 +361,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
 			sql_command += EscapeString(record_non_identity_column) + "="
-			column_data, column_data_errors := GetField(getData(), record_non_identity_column)
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column)
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -436,7 +416,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 		sql_command += " WHERE "
 		for index, identity_column := range *identity_columns {
 			sql_command += EscapeString(identity_column) + " = "
-			column_data, column_data_errors := GetField(getData(), identity_column)
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column)
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -533,7 +513,9 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 					return errors
 				}
 
-				last_insert_id, last_insert_id_errors := (*json_array)[0].(Map).GetString("LAST_INSERT_ID()")
+				record_from_db := (*json_array)[0].(Map)
+
+				last_insert_id, last_insert_id_errors := record_from_db.GetString("LAST_INSERT_ID()")
 				if last_insert_id_errors != nil {
 					errors = append(errors, last_insert_id_errors...)
 					return errors
@@ -553,18 +535,17 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 						errors = append(errors, fmt.Errorf("auto_increment_column_name is nil"))
 					}
 
-					fields_map, fields_map_errors := GetFields(getData())
-					if fields_map_errors != nil { 
-						errors = append(errors, fields_map_errors...)
+					set_auto_field_errors := SetField(struct_type, getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)
+					if set_auto_field_errors != nil {
+						errors = append(errors, set_auto_field_errors...)
 					}
-
-					if len(errors) > 0 {
-						return errors
-					}
-
-					fields_map.SetUInt64(*auto_increment_column_name, &last_insert_id_value)
 				}
 			}
+			
+			if len(errors) > 0 {
+				return errors
+			}
+
 			return nil
 		},
 		Update: func() []error {
@@ -597,34 +578,37 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return nil
 		},
 		GetInt64: func(field string) (*int64, []error) {
-			field_value, field_value_errors := GetField(getData(), field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*int64), nil
 		},
 		SetInt64: func(field string, value *int64) []error {
-			return SetField(struct_type, getData(), field, value)
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt64: func(field string, value *uint64) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
-			field_value, field_value_errors := GetField(getData(), field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*uint64), nil
 		},
 		GetString: func(field string) (*string, []error) {
-			field_value, field_value_errors := GetField(getData(), field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*string), nil
 		},
 		SetString: func(field string, value *string) []error {
-			return SetField(struct_type, getData(), field, value)
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		SetStringValue: func(field string, value string) []error {
-			return SetField(struct_type, getData(), field, value)
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()

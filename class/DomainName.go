@@ -14,10 +14,13 @@ type DomainName struct {
 }
 
 func newDomainName(domain_name string) (*DomainName, []error) {
+	struct_type := "*DomainName"
 
 	data := Map{
-		"[fields]": Map{"domain_name": domain_name},
-		"[schema]": Map{"domain_name":Map{"mandatory": true, "validated":false,
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]": Map{"[domain_name]": domain_name},
+		"[system_schema]": Map{"[domain_name]":Map{"mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -31,7 +34,7 @@ func newDomainName(domain_name string) (*DomainName, []error) {
 	}
 
 	getDomainName := func() (*string, []error) {
-		return GetStringField(getData(), "domain_name")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
 	}
 
 	errors := validate()

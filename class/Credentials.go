@@ -145,29 +145,33 @@ func GetCredentialPasswordValidCharacters() Map {
 }
 
 func newCredentials(username string, password *string) (*Credentials, []error) {
+	struct_type := "*Credentials"
 
-	data := Map{"[fields]":Map{"username":username,"password":password},
-				"[schema]":Map{"username":Map{"type":"*string","mandatory": true, "validated":false, 
+	data := Map{
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]":Map{"[username]":username,"[password]":password},
+		"[system_schema]":Map{"[username]":Map{"type":"*string","mandatory": true, 
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-							 "password": Map{"type":"*string","mandatory": false, "validated":false, 
+							 "password": Map{"type":"*string","mandatory": false, 
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 							},
-			    }
+	}
 
 	getData := func() *Map {
 		return &data
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "Credentials")
+		return ValidateData(getData(), struct_type)
 	}
 
 	getUsername := func() (*string, []error) {
-		return GetStringField(getData(), "username")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[username]")
 	}
 
 	getPassword := func() (*string, []error) {
-		return GetStringField(getData(), "password")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]")
 	}
 
 	x := Credentials{

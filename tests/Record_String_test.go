@@ -36,7 +36,7 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 
     record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
-		t.Error(record_errors)
+		t.Errorf(fmt.Sprintf("%s", record_errors))
 	}
 
 	if record == nil {
@@ -58,7 +58,7 @@ func TestRecordCanUpdateRecordWithString(t *testing.T) {
 
     record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
-		t.Error(record_errors)
+		t.Errorf(fmt.Sprintf("%s", record_errors))
 	} else if record == nil {
 		t.Errorf("record is nil")
 	} else {

@@ -15,13 +15,17 @@ type User struct {
 }
 
 func newUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
+	struct_type := "*User"
+	
 	SQLCommand := newSQLCommand()
 
 	data := Map{
-		"[fields]": Map{"client":client, "credentials":credentials, "domain_name":domain_name},
-		"[schema]": Map{"client":Map{"mandatory": true, "validated": false},
-		                "credentials":Map{"mandatory": true, "validated": false},
-						"domain_name":Map{"mandatory": true, "validated": false},
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]": Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
+		"[system_schema]": Map{"[client]":Map{"mandatory": true},
+		                "[credentials]":Map{"mandatory": true},
+						"[domain_name]":Map{"mandatory": true},
 		},
 	}
 
@@ -34,15 +38,15 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	}
 
 	getClient := func() (*Client, []error) {
-		return GetClientField(getData(), "client")
+		return GetClientField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]")
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		return GetCredentialsField(getData(), "domain_name")
+		return GetCredentialsField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
 	}
 
 	getDomainName := func() (*DomainName, []error) {
-		return GetDomainNameField(getData(), "domain_name")
+		return GetDomainNameField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {

@@ -29,7 +29,7 @@ type Client struct {
 
 func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
 	var this_client *Client
-	stuct_type := "*class.Client"
+	struct_type := "*class.Client"
 
 	setClient := func(client *Client) {
 		this_client = client
@@ -40,13 +40,15 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	data := Map{
-		"[fields]":Map{
-			"client_manager": client_manager, "host": host, "database": database, "database_username": database_username },
-		"[schema]":Map{
-			"client_manager": Map{"type":"*class.ClientManager", "mandatory": true, "validated":false},
-			"host": Map{"type":"*class.Host", "mandatory": false, "validated":false},
-			"database": Map{"type":"*class.Database", "mandatory": false, "validated":false},
-			"database_username": Map{"type":"*string", "mandatory":false, "validated":false,
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]":Map{
+			"[client_manager]": client_manager, "[host]": host, "[database]": database, "[database_username]": database_username },
+		"[system_schema]":Map{
+			"[client_manager]": Map{"type":"*class.ClientManager", "mandatory": true},
+			"[host]": Map{"type":"*class.Host", "mandatory": false},
+			"[database]": Map{"type":"*class.Database", "mandatory": false},
+			"[database_username]": Map{"type":"*string", "mandatory":false,
 				FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
 	}
 
@@ -69,23 +71,23 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	getHost := func() (*Host, []error) {
-		return GetHostField(getData(), "host")
+		return GetHostField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]")
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		return GetStringField(getData(), "database_username")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]")
 	}
 
 	getDatabase := func() (*Database, []error) {
-		return GetDatabaseField(getData(), "database")
+		return GetDatabaseField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]")
 	}
 
 	getClientManager := func() (*ClientManager, []error) {
-		return GetClientManagerField(getData(), "client_manager")
+		return GetClientManagerField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]")
 	}
 
 	setDatabase := func(database *Database) []error {
-		return SetField(stuct_type, getData(), "database", database)
+		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", database)
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
@@ -98,7 +100,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), stuct_type)
+		return ValidateData(getData(), struct_type)
 	}
 
 	getUser := func(username string) (*User, []error) {

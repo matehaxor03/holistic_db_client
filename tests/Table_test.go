@@ -414,7 +414,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 						t.Error(expected_schema_field_errors)
 						continue
 					} else if !expected_schema.IsMap(expected_schema_column_name) {
-						t.Errorf("field: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
+						t.Errorf("Table_test.CreateTableAndVerifySchema: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
 						continue
 					}
 

@@ -35,12 +35,15 @@ type DatabaseCreateOptions struct {
 }
 
 func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
+	struct_type := "*DatabaseCreateOptions"
 
 	data := Map{
-		"[fields]":Map{"character_set":character_set, "collate":collate},
-		"[schema]":Map{"character_set":Map{"type":"*string","mandatory": false, "validated":false,
+		"[fields]": Map{},
+		"[schema]": Map{},
+		"[system_fields]":Map{"[character_set]":character_set, "[collate]":collate},
+		"[system_schema]":Map{"[character_set]":Map{"type":"*string","mandatory": false,
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-			"collate": Map{"type":"*string","mandatory": false, "validated":false,
+			"[collate]": Map{"type":"*string","mandatory": false,
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -54,11 +57,11 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	get_character_set := func() (*string, []error) {
-		return GetStringField(getData(), "character_set")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[character_set]")
 	}
 
 	get_collate := func() (*string, []error) {
-		return GetStringField(getData(), "collate")
+		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[collate]")
 	}
 
 	getSQL := func() (*string, []error) {

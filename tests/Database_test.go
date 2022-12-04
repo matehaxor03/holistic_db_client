@@ -406,7 +406,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
 			
 		if new_database_errors != nil {
-			t.Errorf("NewDatabase should not return error when database_name character is whitelisted: %s errors: %s", whitelist_database_character, fmt.Sprintf("%s", new_database_errors))
+			t.Error(new_database_errors)
 		} else if database == nil {
 			t.Errorf("NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
 		} else {
