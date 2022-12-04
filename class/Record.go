@@ -611,7 +611,11 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func() (*string, []error) {
-			return getData().ToJSONString()
+			fields_map, fields_map_errors := GetFields(struct_type, getData(), "[fields]")
+			if fields_map_errors != nil {
+				return nil, fields_map_errors
+			}
+			return fields_map.ToJSONString()
 		},
 	}
 
