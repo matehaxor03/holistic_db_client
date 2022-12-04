@@ -13,8 +13,36 @@ type Record struct {
 	Update    func() []error
 	GetInt64  func(field string) (*int64, []error)
 	SetInt64  func(field string, value *int64) []error
+	GetInt32  func(field string) (*int32, []error)
+	SetInt32  func(field string, value *int32) []error
+	GetInt16  func(field string) (*int16, []error)
+	SetInt16  func(field string, value *int16) []error
+	GetInt8  func(field string) (*int8, []error)
+	SetInt8  func(field string, value *int8) []error
+	GetInt64Value  func(field string) (int64, []error)
+	SetInt64Value  func(field string, value int64) []error
+	GetInt32Value  func(field string) (int32, []error)
+	SetInt32Value  func(field string, value int32) []error
+	GetInt16Value  func(field string) (int16, []error)
+	SetInt16Value  func(field string, value int16) []error
+	GetInt8Value  func(field string) (int8, []error)
+	SetInt8Value  func(field string, value int8) []error
 	GetUInt64 func(field string) (*uint64, []error)
 	SetUInt64 func(field string, value *uint64) []error
+	GetUInt32 func(field string) (*uint32, []error)
+	SetUInt32 func(field string, value *uint32) []error
+	GetUInt16 func(field string) (*uint16, []error)
+	SetUInt16 func(field string, value *uint16) []error
+	GetUInt8 func(field string) (*uint8, []error)
+	SetUInt8 func(field string, value *uint8) []error
+	GetUInt64Value func(field string) (uint64, []error)
+	SetUInt64Value func(field string, value uint64) []error
+	GetUInt32Value func(field string) (uint32, []error)
+	SetUInt32Value func(field string, value uint32) []error
+	GetUInt16Value func(field string) (uint16, []error)
+	SetUInt16Value func(field string, value uint16) []error
+	GetUInt8Value func(field string) (uint8, []error)
+	SetUInt8Value func(field string, value uint8) []error
 	GetString func(field string) (*string, []error)
 	SetString func(field string, value *string) []error 
 	SetStringValue func(field string, value string) []error 
@@ -581,21 +609,177 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
 			}
 			return field_value.(*int64), nil
+		},
+		GetInt64Value: func(field string) (int64, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "int64")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(int64), nil
+		},
+		GetInt32: func(field string) (*int32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int32")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*int32), nil
+		},
+		GetInt32Value: func(field string) (int32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "int32")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(int32), nil
+		},
+		GetInt16: func(field string) (*int16, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int16")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*int16), nil
+		},
+		GetInt16Value: func(field string) (int16, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "int16")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(int16), nil
+		},
+		GetInt8: func(field string) (*int8, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int8")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*int8), nil
+		},
+		GetInt8Value: func(field string) (int8, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "int8")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(int8), nil
 		},
 		SetInt64: func(field string, value *int64) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
-		SetUInt64: func(field string, value *uint64) []error {
+		SetInt64Value: func(field string, value int64) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt32: func(field string, value *int32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt32Value: func(field string, value int32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt16: func(field string, value *int16) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt16Value: func(field string, value int16) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt8: func(field string, value *int8) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetInt8Value: func(field string, value int8) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
 			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
 			}
 			return field_value.(*uint64), nil
+		},
+		GetUInt64Value: func(field string) (uint64, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint64")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(uint64), nil
+		},
+		GetUInt32: func(field string) (*uint32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint32")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*uint32), nil
+		},
+		GetUInt32Value: func(field string) (uint32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint32")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(uint32), nil
+		},
+		GetUInt16: func(field string) (*uint16, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint16")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*uint16), nil
+		},
+		GetUInt16Value: func(field string) (uint16, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint16")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(uint16), nil
+		},
+		GetUInt8: func(field string) (*uint8, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint8")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			} else if field_value == nil {
+				return nil, nil
+			}
+			return field_value.(*uint8), nil
+		},
+		GetUInt8Value: func(field string) (uint8, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint8")
+			if field_value_errors != nil {
+				return 0, field_value_errors
+			}
+			return field_value.(uint8), nil
+		},
+		SetUInt64: func(field string, value *uint64) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt64Value: func(field string, value uint64) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt32: func(field string, value *uint32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt32Value: func(field string, value uint32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt16: func(field string, value *uint16) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt16Value: func(field string, value uint16) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt8: func(field string, value *uint8) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetUInt8Value: func(field string, value uint8) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		GetString: func(field string) (*string, []error) {
 			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*string")

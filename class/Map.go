@@ -303,6 +303,16 @@ func (m Map) GetString(s string) (*string, []error) {
 	return result, nil
 }
 
+func (m Map) GetStringValue(s string) (string, []error) {
+	string_value, string_value_errors := m.GetString(s)
+	if string_value_errors != nil {
+		return "", string_value_errors
+	} else if string_value == nil {
+		return "", nil
+	}
+	return *string_value, nil
+}
+
 func (m Map) GetFloat64(s string) (*float64, []error) {
 	if m[s] == nil {
 		return nil, nil
@@ -492,6 +502,11 @@ func (m Map) SetString(s string, value *string) {
 	m[s] = clone_string
 }
 
+func (m Map) SetStringValue(s string, value string) {
+	clone_string := CloneString(&value)
+	m[s] = clone_string
+}
+
 func (m Map) SetNil(s string) {
 	m[s] = nil
 }
@@ -613,6 +628,33 @@ func (m Map) GetInt8(s string) (*int8, []error) {
 	return result, nil
 }
 
+func (m Map) GetInt8Value(s string) (int8, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < -128 || *int64_value > 127 {
+		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int8_conv := int8(*int64_value)
+	result := int8_conv
+
+	return result, nil
+}
+
 func (m Map) GetUInt8(s string) (*uint8, []error) {
 	var errors []error
 	int64_value, int64_value_errors := m.GetUInt64(s)
@@ -636,6 +678,33 @@ func (m Map) GetUInt8(s string) (*uint8, []error) {
 
 	int8_conv := uint8(*int64_value)
 	result := &int8_conv
+
+	return result, nil
+}
+
+func (m Map) GetUInt8Value(s string) (uint8, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 255 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 255]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int8_conv := uint8(*int64_value)
+	result := int8_conv
 
 	return result, nil
 }
@@ -667,6 +736,33 @@ func (m Map) GetInt16(s string) (*int16, []error) {
 	return result, nil
 }
 
+func (m Map) GetInt16Value(s string) (int16, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < -32768 || *int64_value > 32767 {
+		errors = append(errors, fmt.Errorf("value is not in range [-32768, 32767]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int16_conv := int16(*int64_value)
+	result := int16_conv
+
+	return result, nil
+}
+
 func (m Map) GetUInt16(s string) (*uint16, []error) {
 	var errors []error
 	int64_value, int64_value_errors := m.GetUInt64(s)
@@ -690,6 +786,33 @@ func (m Map) GetUInt16(s string) (*uint16, []error) {
 
 	int16_conv := uint16(*int64_value)
 	result := &int16_conv
+
+	return result, nil
+}
+
+func (m Map) GetUInt16Value(s string) (uint16, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 65535 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 65535]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int16_conv := uint16(*int64_value)
+	result := int16_conv
 
 	return result, nil
 }
@@ -722,6 +845,52 @@ func (m Map) GetInt32(s string) (*int32, []error) {
 	return result, nil
 }
 
+func (m Map) GetInt32Value(s string) (int32, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < -2147483648 || *int64_value > 2147483647 {
+		errors = append(errors, fmt.Errorf("value is not in range [-2147483648, 2147483647]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int32_conv := int32(*int64_value)
+	result := int32_conv
+
+	return result, nil
+}
+
+func (m Map) GetInt64Value(s string) (int64, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int64_conv := int64(*int64_value)
+	result := int64_conv
+
+	return result, nil
+}
+
 func (m Map) GetUInt32(s string) (*uint32, []error) {
 	var errors []error
 	int64_value, int64_value_errors := m.GetUInt64(s)
@@ -745,6 +914,60 @@ func (m Map) GetUInt32(s string) (*uint32, []error) {
 
 	int32_conv := uint32(*int64_value)
 	result := &int32_conv
+
+	return result, nil
+}
+
+func (m Map) GetUInt32Value(s string) (uint32, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < 0 || *int64_value > 4294967295 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 4294967295]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int32_conv := uint32(*int64_value)
+	result := int32_conv
+
+	return result, nil
+}
+
+func (m Map) GetUInt64Value(s string) (uint64, []error) {
+	var errors []error
+	int64_value, int64_value_errors := m.GetUInt64(s)
+	if int64_value_errors != nil {
+		errors = append(errors, int64_value_errors...)
+	} else if int64_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetUInt64(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	if *int64_value < 0 {
+		errors = append(errors, fmt.Errorf("value is not in range [0, 18446744073709551615]"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int64_conv := uint64(*int64_value)
+	result := int64_conv
 
 	return result, nil
 }
@@ -785,6 +1008,25 @@ func (m Map) GetInt(s string) (*int, []error) {
 	return result, nil
 }
 
+func (m Map) GetIntValue(s string) (int, []error) {
+	var errors []error
+	int_value, int_value_errors := m.GetInt(s)
+	if int_value_errors != nil {
+		errors = append(errors, int_value_errors...)
+	} else if int_value == nil {
+		errors = append(errors, fmt.Errorf(" m.GetInt(s) returned nil"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	int_conv := int(*int_value)
+	result := int_conv
+
+	return result, nil
+}
+
 func (m Map) SetInt(s string, v *int) {
 	m[s] = v
 }
@@ -793,7 +1035,7 @@ func (m Map) SetInt64(s string, v *int64) {
 	m[s] = v
 }
 
-func (m Map) SetInt8(s string, v *int8) {
+func (m Map) SetInt32(s string, v *int32) {
 	m[s] = v
 }
 
@@ -801,9 +1043,78 @@ func (m Map) SetInt16(s string, v *int16) {
 	m[s] = v
 }
 
-func (m Map) SetInt32(s string, v *int32) {
+func (m Map) SetInt8(s string, v *int8) {
 	m[s] = v
 }
+
+///
+
+func (m Map) SetIntValue(s string, v int) {
+	m[s] = v
+}
+
+func (m Map) SetInt64Value(s string, v int64) {
+	m[s] = v
+}
+
+func (m Map) SetInt32Value(s string, v int32) {
+	m[s] = v
+}
+
+func (m Map) SetInt16Value(s string, v int16) {
+	m[s] = v
+}
+
+func (m Map) SetInt8Value(s string, v int8) {
+	m[s] = v
+}
+
+///
+
+func (m Map) SetUInt(s string, v *uint) {
+	m[s] = v
+}
+
+func (m Map) SetUInt64(s string, v *uint64) {
+	m[s] = v
+}
+
+func (m Map) SetUInt32(s string, v *uint32) {
+	m[s] = v
+}
+
+func (m Map) SetUInt16(s string, v *uint16) {
+	m[s] = v
+}
+
+func (m Map) SetUInt8(s string, v *uint8) {
+	m[s] = v
+}
+
+///
+
+func (m Map) SetUIntValue(s string, v uint) {
+	m[s] = v
+}
+
+func (m Map) SetUInt64Value(s string, v uint64) {
+	m[s] = v
+}
+
+func (m Map) SetUInt32Value(s string, v uint32) {
+	m[s] = v
+}
+
+func (m Map) SetUInt16Value(s string, v uint16) {
+	m[s] = v
+}
+
+func (m Map) SetUInt8Value(s string, v uint8) {
+	m[s] = v
+}
+
+///
+
 
 func (m Map) SetFloat64(s string, v *float64) {
 	m[s] = v
@@ -935,26 +1246,6 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 	}
 
 	return &uint64_value, nil
-}
-
-func (m Map) SetUInt64(s string, v *uint64) {
-	m[s] = v
-}
-
-func (m Map) SetUInt32(s string, v *uint32) {
-	m[s] = v
-}
-
-func (m Map) SetUInt16(s string, v *uint16) {
-	m[s] = v
-}
-
-func (m Map) SetUInt8(s string, v *uint8) {
-	m[s] = v
-}
-
-func (m Map) SetUInt64Value(s string, v uint64) {
-	m[s] = v
 }
 
 func (m Map) SetTime(s string, value *time.Time) {

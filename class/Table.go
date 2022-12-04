@@ -1196,26 +1196,133 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					}
 
 					switch *table_data_type {
-					case "*uint64", "uint64":
+					case "*uint64":
 						value, value_errors := current_record.GetUInt64(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
 						} else {
 							mapped_record.SetUInt64(column, value)
 						}
-					case "*int64", "int64":
+					case "uint64":
+						value, value_errors := current_record.GetUInt64Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetUInt64Value(column, value)
+						}
+					case "*uint32":
+						value, value_errors := current_record.GetUInt32(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetUInt32(column, value)
+						}
+					case "uint32":
+						value, value_errors := current_record.GetUInt32Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetUInt32Value(column, value)
+						}
+					case "*uint16":
+						value, value_errors := current_record.GetUInt16(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetUInt16(column, value)
+						}
+					case "uint16":
+						value, value_errors := current_record.GetUInt16Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetUInt16Value(column, value)
+						}
+					case "*uint8":
+						value, value_errors := current_record.GetUInt8(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetUInt8(column, value)
+						}
+					case "uint8":
+						value, value_errors := current_record.GetUInt8Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetUInt8Value(column, value)
+						}
+					case "*int64":
 						value, value_errors := current_record.GetInt64(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
 						} else {
 							mapped_record.SetInt64(column, value)
 						}
-					case "*int", "int":
-						value, value_errors := current_record.GetInt(column)
+					case "int64":
+						value, value_errors := current_record.GetInt64Value(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
 						} else {
-							mapped_record.SetInt(column, value)
+							mapped_record.SetInt64Value(column, value)
+						}
+					case "*int32":
+						value, value_errors := current_record.GetInt32(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetInt32(column, value)
+						}
+					case "int32":
+						value, value_errors := current_record.GetInt32Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetInt32Value(column, value)
+						}
+					case "*int16":
+						value, value_errors := current_record.GetInt16(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetInt16(column, value)
+						}
+					case "int16":
+						value, value_errors := current_record.GetInt16Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetInt16Value(column, value)
+						}
+					case "*int8":
+						value, value_errors := current_record.GetInt8(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetInt8(column, value)
+						}
+					case "int8":
+						value, value_errors := current_record.GetInt8Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetInt8Value(column, value)
 						}
 					case "*time.Time":
 						value, value_errors := current_record.GetTime(column)
@@ -1231,12 +1338,21 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 						} else {
 							mapped_record.SetBool(column, value)
 						}
-					case "*string", "string":
+					case "*string":
 						value, value_errors := current_record.GetString(column)
 						if value_errors != nil {
 							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
 						} else {
 							mapped_record.SetString(column, value)
+						}
+					case "string":
+						value, value_errors := current_record.GetStringValue(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetStringValue(column, value)
 						}
 					default:
 						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", temp_table_name, column, *table_data_type))
