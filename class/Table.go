@@ -1044,7 +1044,10 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, errors
 			}
 
-			table_schema := getData()
+			table_schema, table_schema_errors := getSchema()
+			if table_schema_errors != nil {
+				return nil, table_schema_errors
+			}
 
 			temp_table_name, temp_table_name_errors := getTableName()
 			if temp_table_name_errors != nil {
@@ -1060,7 +1063,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(*table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
+						errors = append(errors, fmt.Errorf("Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 					}
 				}
 
@@ -1076,7 +1079,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					}
 					 
 					if table_schema.IsNil(filter_column) {
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
+						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
 						continue
 					}
 
@@ -1087,14 +1090,14 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					}
 
 					if table_schema_column.IsNil("type") {
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
+						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
 						continue
 					}
 
 
 					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
@@ -1130,7 +1133,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 						filer_value, _ := filters.GetString(column_filter)
 						sql += fmt.Sprintf("'%s' ", EscapeString(*filer_value))
 					default:
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: filter type not supported please implement: %s", type_of))
+						errors = append(errors, fmt.Errorf("Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
