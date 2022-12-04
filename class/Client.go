@@ -128,12 +128,49 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	getUser := func(username string) (*User, []error) {
+		var errors []error
+
 		temp_client_manager, temp_client_manager_errors := getClientManager()
 		if temp_client_manager_errors != nil {
 			return nil, temp_client_manager_errors
 		}
 
-		tuple_credentials, tuple_credentials_errors := temp_client_manager.GetTupleCredentials(username)
+		temp_host, temp_host_errors := getHost()
+		if temp_host_errors != nil {
+			return nil, temp_host_errors
+		}
+
+		if temp_host == nil {
+			errors = append(errors, fmt.Errorf("Client.getHost returned nil host"))
+			return nil, errors
+		}
+
+		temp_host_name, temp_host_name_errors := temp_host.GetHostName()
+		if temp_host_name_errors != nil {
+			return nil, temp_host_name_errors
+		}
+
+		temp_port_number, temp_port_number_errors := temp_host.GetPortNumber()
+		if temp_port_number_errors != nil {
+			return nil, temp_port_number_errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+
+		temp_database_name := ""
+		if temp_database != nil {
+			temp_database_name_value, temp_database_name_value_errors := temp_database.GetDatabaseName()
+			if temp_database_name_value_errors != nil {
+				return nil, temp_database_name_value_errors
+			}
+			temp_database_name = temp_database_name_value
+		}
+
+		connection_string := "holistic_db_config:" + temp_host_name + ":" + temp_port_number + ":" + temp_database_name + ":" + username
+		tuple_credentials, tuple_credentials_errors := temp_client_manager.GetTupleCredentials(connection_string)
 		if tuple_credentials_errors != nil {
 			return nil, tuple_credentials_errors
 		}
