@@ -181,8 +181,12 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 			}
 
 			password_data := Map{
-				"password": Map{"value": new_password, "mandatory": true,
+				"[fields]": Map{},
+				"[schema]": Map{},
+				"[system_fields]":Map{"[password]":new_password},
+				"[system_schema]":Map{"[password]": Map{"type":"*string","mandatory": false, 
 					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+				},
 			}
 
 			validate_password_errors := ValidateData(&password_data, "NewUserPassword")
