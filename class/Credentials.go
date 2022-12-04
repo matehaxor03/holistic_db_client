@@ -172,12 +172,22 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 
 	getUsername := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[username]", "string")
-		return temp_value.(string), temp_value_errors
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		} else if temp_value == nil {
+			return "", temp_value_errors
+		}
+		return temp_value.(string), nil
 	}
 
 	getPassword := func() (*string, []error) {
-		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]", "*string")
-		return temp_value.(*string), temp_value_errors
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]", "string")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
+		return temp_value.(*string), nil
 	}
 
 	x := Credentials{
