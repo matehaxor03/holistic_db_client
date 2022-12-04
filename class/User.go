@@ -44,12 +44,22 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 
 	getCredentials := func() (*Credentials, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.Credentials")
-		return temp_value.(*Credentials), temp_value_errors
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
+		return temp_value.(*Credentials), nil
 	}
 
 	getDomainName := func() (*DomainName, []error) {
 		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.DomainName")
-		return temp_value.(*DomainName), temp_value_errors
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
+		return temp_value.(*DomainName), nil
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {
