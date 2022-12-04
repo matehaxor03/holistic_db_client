@@ -9,7 +9,6 @@ import (
 
 type Record struct {
 	Validate  func() []error
-	GetSQL    func(action string) (*string, []error)
 	Create    func() []error
 	Update    func() []error
 	GetInt64  func(field string) (*int64, []error)
