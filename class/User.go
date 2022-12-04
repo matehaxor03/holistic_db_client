@@ -23,9 +23,9 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]": Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
-		"[system_schema]": Map{"[client]":Map{"mandatory": true},
-		                "[credentials]":Map{"mandatory": true},
-						"[domain_name]":Map{"mandatory": true},
+		"[system_schema]": Map{"[client]":Map{"type":"*class.Client", "mandatory": true},
+		                "[credentials]":Map{"type":"*class.Credentials", "mandatory": true},
+						"[domain_name]":Map{"type":"*class.DomainName", "mandatory": true},
 		},
 	}
 
