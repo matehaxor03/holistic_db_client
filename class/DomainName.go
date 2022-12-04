@@ -33,8 +33,9 @@ func newDomainName(domain_name string) (*DomainName, []error) {
 		return ValidateData(getData(), "DomainName")
 	}
 
-	getDomainName := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
+	getDomainName := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
 	errors := validate()
@@ -48,11 +49,7 @@ func newDomainName(domain_name string) (*DomainName, []error) {
 			return validate()
 		},
 		GetDomainName: func() (string, []error) {
-			domain_name_ptr, domain_name_ptr_errors := getDomainName()
-			if domain_name_ptr_errors != nil {
-				return "", domain_name_ptr_errors
-			}
-			return *domain_name_ptr, nil
+			return getDomainName()
 		},
 	}
 

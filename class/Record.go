@@ -71,7 +71,8 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 	}
 
 	getTable := func() (*Table, []error) {
-		return GetTableField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*class.Table")
+		return temp_value.(*Table), temp_value_errors
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
@@ -234,7 +235,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			parameter, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column)
+			parameter, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column, "self")
 			if paramter_errors != nil {
 				errors = append(errors, paramter_errors...)
 				continue
@@ -360,7 +361,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
 			sql_command += EscapeString(record_non_identity_column) + "="
-			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column)
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column, "self")
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -415,7 +416,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 		sql_command += " WHERE "
 		for index, identity_column := range *identity_columns {
 			sql_command += EscapeString(identity_column) + " = "
-			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column)
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column, "self")
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -577,7 +578,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return nil
 		},
 		GetInt64: func(field string) (*int64, []error) {
-			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
@@ -590,14 +591,14 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
-			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*uint64), nil
 		},
 		GetString: func(field string) (*string, []error) {
-			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field)
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*string")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}

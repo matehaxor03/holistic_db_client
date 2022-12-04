@@ -3,7 +3,7 @@ package class
 type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() (string, []error)
-	GetPassword  func() (string, []error)
+	GetPassword  func() (*string, []error)
 	ToJSONString func() (*string, []error)
 	Clone        func() *Credentials
 }
@@ -166,12 +166,14 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 		return ValidateData(getData(), struct_type)
 	}
 
-	getUsername := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[username]")
+	getUsername := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[username]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
 	getPassword := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]")
+		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]", "*string")
+		return temp_value.(*string), temp_value_errors
 	}
 
 	x := Credentials{
@@ -179,18 +181,10 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 			return validate()
 		},
 		GetUsername: func() (string, []error) {
-			username_ptr, username_ptr_errors := getUsername() 
-			if username_ptr_errors != nil {
-				return "", username_ptr_errors
-			}
-			return *username_ptr, nil
+			return getUsername() 
 		},
-		GetPassword: func() (string, []error) {
-			password_ptr, password_ptr_errors := getPassword()
-			if password_ptr_errors != nil {
-				return "", password_ptr_errors
-			}
-			return *password_ptr, nil
+		GetPassword: func() (*string, []error) {
+			return getPassword()
 		},
 		ToJSONString: func() (*string, []error) {
 			return getData().ToJSONString()

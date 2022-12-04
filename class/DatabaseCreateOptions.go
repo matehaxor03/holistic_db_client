@@ -57,11 +57,13 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 	}
 
 	get_character_set := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[character_set]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[character_set]", "*string")
+		return temp_value.(*string), temp_value_errors
 	}
 
 	get_collate := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[collate]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[collate]", "*string")
+		return temp_value.(*string), temp_value_errors
 	}
 
 	getSQL := func() (*string, []error) {

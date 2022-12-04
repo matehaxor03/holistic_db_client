@@ -358,7 +358,7 @@ func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) 
 	return schemas_map, nil
 }
 
-func GetField(struct_type string, m *Map, schema_type string, field_type string, field string) (interface{}, []error) {
+func GetField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (interface{}, []error) {
 	var errors []error
 	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
 	if schemas_map_errors != nil {
@@ -410,9 +410,36 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		return nil, errors
 	}
 
+	var result interface{}
 	if fields_map.IsNil(field) {
-		return nil, nil
+		if schema_map.HasKey("default") && !schema_map.IsNil("default") {
+			result = schema_map.GetObject("default")
+		} else {
+			result = nil
+		}
+	} else {
+		result = fields_map.GetObject(field)
 	}
+
+
+	if IsNil(result) {
+		if schema_map.IsBoolTrue("auto_increment") && schema_map.IsBoolTrue("primary_key") {
+			return nil, nil
+		}
+
+		if schema_map.IsBoolTrue("primary_key") {
+			errors = append(errors,	fmt.Errorf("field: %s had nil value and default value but is a primary key"))
+			return nil, errors
+		}
+
+		if strings.HasPrefix(*schema_type_value, "*") {
+			return nil, nil
+		}
+
+		errors = append(errors,	fmt.Errorf("field: %s had nil value and default value but is not nullable"))
+		return nil, errors
+	}
+	
 
 	object_type := fields_map.GetType(field)
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
@@ -423,12 +450,132 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		return nil, errors
 	}
 
-	type_of := fields_map.GetType(field)
+	if desired_type == "self" {
+		return result, nil
+	}
+
+	type_of := GetType(result)
 	switch type_of {
 	case "string":
-		temp := fields_map.GetObject(field)
-		string_value := temp.(string)
-		return &string_value , nil
+		switch desired_type {
+		case "string":
+			return result.(string), nil
+		case "*string":
+			temp_value := result.(string)
+			return &temp_value, nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*string":
+		switch desired_type {
+		case "string":
+			return *(result.(*string)), nil
+		case "*string":
+			return result.(*string), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*uint64":
+		switch desired_type {
+		case "uint64":
+			return *(result.(*uint64)), nil
+		case "*uint64":
+			return result.(*uint64), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*time.Time":
+		switch desired_type {
+		case "time.Time":
+			return *(result.(*time.Time)), nil
+		case "*time.Time":
+			return result.(*time.Time), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.ClientManager":
+		switch desired_type {
+		case "*class.ClientManager":
+			return result.(*ClientManager), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Client":
+		switch desired_type {
+		case "*class.Client":
+			return result.(*Client), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Host":
+		switch desired_type {
+		case "*class.Host":
+			return result.(*Host), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Database":
+		switch desired_type {
+		case "*class.Database":
+			return result.(*Database), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Table":
+		switch desired_type {
+		case "*class.Table":
+			return result.(*Table), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Record":
+		switch desired_type {
+		case "*class.Record":
+			return result.(*Record), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.DomainName":
+		switch desired_type {
+		case "*class.DomainName":
+			return result.(*DomainName), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Grant":
+		switch desired_type {
+		case "*class.Grant":
+			return result.(*Grant), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.Credentials":
+		switch desired_type {
+		case "*class.Credentials":
+			return result.(*Credentials), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.User":
+		switch desired_type {
+		case "*class.User":
+			return result.(*User), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*class.DatabaseCreateOptions":
+		switch desired_type {
+		case "*class.DatabaseCreateOptions":
+			return result.(*DatabaseCreateOptions), nil
+		default:
+			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	default:
+		errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement: %s", type_of))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
 	}
 
 	return fields_map.GetObject(field), nil
@@ -490,11 +637,11 @@ func SetField(struct_type string, m *Map, schema_type string, field_type string,
 	return nil
 }
 
-func GetStringField(struct_type string, m *Map, schema_type string, field_type string, field string) (*string, []error) {
+func GetStringField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*string, []error) {
 	var errors []error
 	var value *string
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -520,11 +667,11 @@ func GetStringField(struct_type string, m *Map, schema_type string, field_type s
 	return value, nil
 }
 
-func GetHostField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Host, []error) {
+func GetHostField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*Host, []error) {
 	var errors []error
 	var value *Host
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -550,11 +697,11 @@ func GetHostField(struct_type string, m *Map, schema_type string, field_type str
 	return value, nil
 }
 
-func GetClientManagerField(struct_type string, m *Map, schema_type string, field_type string, field string) (*ClientManager, []error) {
+func GetClientManagerField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*ClientManager, []error) {
 	var errors []error
 	var value *ClientManager
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -580,11 +727,11 @@ func GetClientManagerField(struct_type string, m *Map, schema_type string, field
 	return value, nil
 }
 
-func GetCredentialsField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Credentials, []error) {
+func GetCredentialsField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*Credentials, []error) {
 	var errors []error
 	var value *Credentials
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -610,11 +757,11 @@ func GetCredentialsField(struct_type string, m *Map, schema_type string, field_t
 	return value, nil
 }
 
-func GetDomainNameField(struct_type string, m *Map, schema_type string, field_type string, field string) (*DomainName, []error) {
+func GetDomainNameField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*DomainName, []error) {
 	var errors []error
 	var value *DomainName
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -640,11 +787,11 @@ func GetDomainNameField(struct_type string, m *Map, schema_type string, field_ty
 	return value, nil
 }
 
-func GetUserField(struct_type string, m *Map, schema_type string, field_type string, field string) (*User, []error) {
+func GetUserField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*User, []error) {
 	var errors []error
 	var value *User
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -670,11 +817,11 @@ func GetUserField(struct_type string, m *Map, schema_type string, field_type str
 	return value, nil
 }
 
-func GetTableField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Table, []error) {
+func GetTableField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*Table, []error) {
 	var errors []error
 	var value *Table
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -700,11 +847,11 @@ func GetTableField(struct_type string, m *Map, schema_type string, field_type st
 	return value, nil
 }
 
-func GetDatabaseField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Database, []error) {
+func GetDatabaseField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*Database, []error) {
 	var errors []error
 	var value *Database
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -730,11 +877,11 @@ func GetDatabaseField(struct_type string, m *Map, schema_type string, field_type
 	return value, nil
 }
 
-func GetDatabaseCreateOptionsField(struct_type string, m *Map, schema_type string, field_type string, field string) (*DatabaseCreateOptions, []error) {
+func GetDatabaseCreateOptionsField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*DatabaseCreateOptions, []error) {
 	var errors []error
 	var value *DatabaseCreateOptions
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 
@@ -760,11 +907,11 @@ func GetDatabaseCreateOptionsField(struct_type string, m *Map, schema_type strin
 	return value, nil
 }
 
-func GetClientField(struct_type string, m *Map, schema_type string, field_type string, field string) (*Client, []error) {
+func GetClientField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (*Client, []error) {
 	var errors []error
 	var value *Client
 	
-	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field)
+	object_value, object_value_errors := GetField(struct_type, m, schema_type, field_type, field, desired_type)
 	if object_value_errors != nil {
 		return nil, object_value_errors
 	} 

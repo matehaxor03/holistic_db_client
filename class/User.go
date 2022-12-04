@@ -16,7 +16,7 @@ type User struct {
 
 func newUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
 	struct_type := "*User"
-	
+
 	SQLCommand := newSQLCommand()
 
 	data := Map{
@@ -38,15 +38,18 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 	}
 
 	getClient := func() (*Client, []error) {
-		return GetClientField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
+		return temp_value.(*Client), temp_value_errors
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		return GetCredentialsField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.Credentials")
+		return temp_value.(*Credentials), temp_value_errors
 	}
 
 	getDomainName := func() (*DomainName, []error) {
-		return GetDomainNameField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]")
+		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.DomainName")
+		return temp_value.(*DomainName), temp_value_errors
 	}
 
 	getCreateSQL := func() (*string, Map, []error) {
@@ -92,7 +95,7 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		sql_command += fmt.Sprintf("'%s'", EscapeString(temp_username))
 		sql_command += fmt.Sprintf("@'%s' ", EscapeString(temp_domain_name_value))
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'", EscapeString(temp_password))
+		sql_command += fmt.Sprintf("'%s'", EscapeString(*temp_password))
 
 		sql_command += ";"
 		return &sql_command, options, nil

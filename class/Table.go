@@ -89,8 +89,9 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 		return &data
 	}
 
-	getTableName := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]")
+	getTableName := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
 	getTableColumns := func() (*[]string, []error) {
@@ -176,7 +177,8 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 	}
 
 	getDatabase := func() (*Database, []error) {
-		return GetDatabaseField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*class.Database")
+		return temp_value.(*Database), temp_value_errors
 	}
 
 	exists := func() (*bool, []error) {
@@ -192,7 +194,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(*temp_table_name))
+		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(temp_table_name))
 		
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -232,7 +234,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_table_name_errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(*temp_table_name))
+		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(temp_table_name))
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -268,7 +270,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_table_name_errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", EscapeString(*temp_table_name))
+		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", EscapeString(temp_table_name))
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -307,7 +309,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(*temp_table_name))
+		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(temp_table_name))
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -594,7 +596,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return nil, temp_table_name_errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(*temp_table_name))
+		sql_command := fmt.Sprintf("CREATE TABLE %s", EscapeString(temp_table_name))
 
 		valid_columns, valid_columns_errors := getTableColumns()
 		if valid_columns_errors != nil {
@@ -781,7 +783,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("Table.getSQL: %s must have at least 1 primary key", EscapeString(*temp_table_name)))
+			errors = append(errors, fmt.Errorf("Table.getSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -859,7 +861,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return errors
 		}
 
-		data = setupData(temp_database, *temp_table_name, *temp_schema)
+		data = setupData(temp_database, temp_table_name, *temp_schema)
 		return nil
 	}
 
@@ -917,7 +919,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, temp_table_name_errors
 			}
 
-			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString(*temp_table_name))
+			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString(temp_table_name))
 
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
@@ -1010,7 +1012,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(*table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("Table.SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, *temp_table_name, *table_columns))
+						errors = append(errors, fmt.Errorf("Table.SelectRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 					}
 				}
 
@@ -1055,7 +1057,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(*temp_table_name))
+			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(temp_table_name))
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
 					sql += "WHERE "
@@ -1211,11 +1213,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return getSchema()
 		},
 		GetTableName: func() (string, []error) {
-			table_name_ptr, table_name_ptr_errors := getTableName()
-			if table_name_ptr_errors != nil {
-				return "", table_name_ptr_errors
-			}
-			return *table_name_ptr, nil
+			return getTableName()
 		},
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)

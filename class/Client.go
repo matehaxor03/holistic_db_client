@@ -71,19 +71,37 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	getHost := func() (*Host, []error) {
-		return GetHostField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]", "*class.Host")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*Host), nil
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*string), nil
 	}
 
 	getDatabase := func() (*Database, []error) {
-		return GetDatabaseField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]")
+		return GetDatabaseField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*class.Database")
 	}
 
 	getClientManager := func() (*ClientManager, []error) {
-		return GetClientManagerField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "*class.ClientManager")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*ClientManager), nil
 	}
 
 	setDatabase := func(database *Database) []error {

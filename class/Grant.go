@@ -85,15 +85,18 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 	}
 
 	getClient := func() (*Client, []error) {
-		return GetClientField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[client]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[client]", "*class.Client")
+		return temp_value.(*Client), temp_value_errors
 	}
 
 	getUser := func() (*User, []error) {
-		return GetUserField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "*class.User")
+		return temp_value.(*User), temp_value_errors
 	}
 
-	getGrantValue := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[grant]")
+	getGrantValue := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
 	// todo fix
@@ -164,11 +167,11 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 
 		sql := ""
 		if database_filter != nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(*grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
 		} else if database_filter != nil && table_filter == nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(*grant_value), EscapeString(*database_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*database_filter))
 		} else if database_filter == nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(*grant_value), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*table_filter))
 		} else {
 			errors = append(errors, fmt.Errorf("Grant: getSQL: both database_filter and table_filter were nil"))
 		}

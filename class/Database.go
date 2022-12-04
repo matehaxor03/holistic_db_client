@@ -62,11 +62,23 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		return GetDatabaseCreateOptionsField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*class.DatabaseCreateOptions")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*DatabaseCreateOptions), nil
 	}
 
 	getClient := func() (*Client, []error) {
-		return GetClientField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*Client), nil
 	}
 
 	setClient := func(new_client *Client) []error {
@@ -74,16 +86,13 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	}
 
 	getDatabaseName := func() (string, []error) {
-		var errors []error
-		temp_database_name, temp_database_name_errors := GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]")
-		if temp_database_name_errors != nil {
-			return "", temp_database_name_errors
-		} else if IsNil(temp_database_name) {
-			errors = append(errors, fmt.Errorf("database_name is nil"))
-			return "", errors
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		} else if IsNil(temp_value) {
+			return "", nil
 		}
-
-		return *temp_database_name, nil
+		return temp_value.(string), nil
 	}
 
 	setDatabaseName := func(new_database_name string) []error {

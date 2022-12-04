@@ -82,12 +82,14 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		return &data
 	}
 
-	getHostName := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host_name]")
+	getHostName := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host_name]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
-	getPortNumber := func() (*string, []error) {
-		return GetStringField(struct_type, getData(), "[system_schema]", "[system_fields]", "[port_number]")
+	getPortNumber := func() (string, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[port_number]", "string")
+		return temp_value.(string), temp_value_errors
 	}
 
 	validate := func() []error {
@@ -108,18 +110,10 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 			return getData().ToJSONString()
 		},
 		GetHostName: func() (string, []error) {
-			host_name_ptr, host_name_ptr_errors := getHostName()
-			if host_name_ptr_errors != nil {
-				return "", host_name_ptr_errors
-			}
-			return *host_name_ptr, nil
+			return getHostName()
 		},
 		GetPortNumber: func() (string, []error) {
-			port_number_ptr, port_number_ptr_errors := getPortNumber()
-			if port_number_ptr_errors != nil {
-				return "", port_number_ptr_errors
-			}
-			return *port_number_ptr, nil
+			return getPortNumber()
 		},
 	}
 
