@@ -91,7 +91,13 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	getDatabase := func() (*Database, []error) {
-		return GetDatabaseField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*class.Database")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*class.Database")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if IsNil(temp_value) {
+			return nil, nil
+		}
+		return temp_value.(*Database), nil
 	}
 
 	getClientManager := func() (*ClientManager, []error) {
