@@ -47,8 +47,8 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 		"[schema]": Map{},
 		"[system_fields]": Map{"[client]":client, "[user]":user, "[grant_value]":grant_value},
 		"[system_schema]": Map{"[client]":Map{"type":"*class.Client", "mandatory": true},
-						"[user]":Map{"type":"*class.User", "value":user, "mandatory": true},
-						"[grant]": Map{"type":"*string", "value":grant_value, "mandatory": true,
+						"[user]":Map{"type":"*class.User", "mandatory": true},
+						"[grant]": Map{"type":"*string", "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
