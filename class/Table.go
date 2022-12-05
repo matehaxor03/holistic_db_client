@@ -817,7 +817,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						if default_value_errors != nil {
 							errors = append(errors, fmt.Errorf("column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
 						} else {
-							sql_command += " DEFAULT \"" + EscapeString(*default_value) + "\""
+							sql_command += " DEFAULT '" + EscapeString(*default_value) + "'"
 						}
 					} 
 				}
