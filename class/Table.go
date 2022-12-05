@@ -808,11 +808,11 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					} else if !columnSchema.IsFloat("default") {
 						errors = append(errors, fmt.Errorf("error: column: %s had non-boolean default value", column))
 					} else if columnSchema.IsFloat("default") {
-						default_float_value, default_float_value_errors := columnSchema.GetFloat64("default")
+						default_float_value, default_float_value_errors := columnSchema.GetFloat32("default")
 						if default_float_value_errors != nil {
-							errors = append(errors, fmt.Errorf("error: column: %s had unknown error for float64 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
+							errors = append(errors, fmt.Errorf("error: column: %s had unknown error for float32 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
 						} else if default_float_value == nil {
-							errors = append(errors, fmt.Errorf("error: column: %s float64 default value returned nil", column))
+							errors = append(errors, fmt.Errorf("error: column: %s float32 default value returned nil", column))
 						} else {
 							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value) 
 						}
