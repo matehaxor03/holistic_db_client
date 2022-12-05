@@ -487,6 +487,21 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
+	case "bool":
+		switch desired_type {
+		case "*bool":
+			temp_value := result.(bool)
+			return &temp_value, nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*bool":
+		switch desired_type {
+		case "bool":
+			return *(result.(*bool)), nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
 	case "*time.Time":
 		switch desired_type {
 		case "time.Time":

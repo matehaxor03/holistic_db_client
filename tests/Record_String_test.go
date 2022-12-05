@@ -13,15 +13,15 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		string_value, string_value_errors := record.GetStringValue(GetTestTableStringColumnName())
 		if string_value_errors != nil {
 			t.Errorf(fmt.Sprintf("%s", string_value_errors))
 		} else if class.IsNil(string_value) {
-			t.Errorf("string value is nil")
+			t.Errorf("error:  value is nil")
 		} else if string_value != "hello world" {
-			t.Errorf(fmt.Sprintf("string value not equal expected: %s actual: %s", "hello world",  string_value))
+			t.Errorf(fmt.Sprintf("error:  value not equal expected: %s actual: %s", "hello world",  string_value))
 		}
 	}
 }
@@ -55,15 +55,15 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		string_value, string_value_errors := record.GetString(GetTestTableStringColumnNameNotMandatory())
 		if string_value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", string_value_errors))
 		} else if class.IsNil(string_value) {
-			t.Errorf("string value is nil")
+			t.Errorf("error:  value is nil")
 		} else if *string_value != "hello world" {
-			t.Errorf(fmt.Sprintf("string value not equal expected: %s actual: %s", "hello world",  *string_value))
+			t.Errorf(fmt.Sprintf("error:  value not equal expected: %s actual: %s", "hello world",  *string_value))
 		}
 	}
 }

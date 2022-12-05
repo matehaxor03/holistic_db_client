@@ -47,6 +47,10 @@ type Record struct {
 	GetStringValue func(field string) (string, []error)
 	SetString func(field string, value *string) []error 
 	SetStringValue func(field string, value string) []error 
+	GetBool func(field string) (*bool, []error)
+	GetBoolValue func(field string) (bool, []error)
+	SetBool func(field string, value *bool) []error 
+	SetBoolValue func(field string, value bool) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
@@ -337,8 +341,20 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				sql_command += "\"" + EscapeString(column_data.(string)) + "\""
 			case "*string":
 				sql_command += "\"" + EscapeString(*(column_data.(*string))) + "\""
+			case "bool":
+				if column_data.(bool) {
+					sql_command += "1"
+				} else {
+					sql_command += "0"
+				}
+			case "*bool":
+				if *(column_data.(*bool)) {
+					sql_command += "1"
+				} else {
+					sql_command += "0"
+				}
 			default:
-				errors = append(errors, fmt.Errorf("error: type: %s not supported for table please implement", rep))
+				errors = append(errors, fmt.Errorf("error: %s Record.getInsertSQL type: %s not supported for table please implement", struct_type, rep))
 			}
 
 			if index < (len(*record_columns) - 1) {
@@ -461,8 +477,8 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			if IsNil(column_data) {
 				sql_command += "NULL"
 			} else {
-				record_non_identity_column_type := GetType(column_data)
-				switch record_non_identity_column_type {
+				rep := GetType(column_data)
+				switch rep {
 				case "*uint64":
 					value := column_data.(*uint64)
 					sql_command += strconv.FormatUint(*value, 10)
@@ -529,8 +545,20 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				case "string":
 					value := column_data.(string)
 					sql_command += "'" + EscapeString(value) + "'"
+				case "bool":
+					if column_data.(bool) {
+						sql_command += "1"
+					} else {
+						sql_command += "0"
+					}
+				case "*bool":
+					if *(column_data.(*bool)) {
+						sql_command += "1"
+					} else {
+						sql_command += "0"
+					}
 				default:
-					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
+					errors = append(errors, fmt.Errorf("error: %s Record.getUpdateSQL type: %s not supported for table please implement", struct_type, rep))
 				}
 			}
 
@@ -620,6 +648,18 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				case "string":
 					value := column_data.(string)
 					sql_command += "'" + EscapeString(value) + "'"
+				case "bool":
+					if column_data.(bool) {
+						sql_command += "1"
+					} else {
+						sql_command += "0"
+					}
+				case "*bool":
+					if *(column_data.(*bool)) {
+						sql_command += "1"
+					} else {
+						sql_command += "0"
+					}
 				default:
 					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
@@ -933,6 +973,26 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		SetStringValue: func(field string, value string) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		GetBool: func(field string) (*bool, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*bool")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			}
+			return field_value.(*bool), nil
+		},
+		GetBoolValue: func(field string) (bool, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "bool")
+			if field_value_errors != nil {
+				return false, field_value_errors
+			}
+			return field_value.(bool), nil
+		},
+		SetBool: func(field string, value *bool) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetBoolValue: func(field string, value bool) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {

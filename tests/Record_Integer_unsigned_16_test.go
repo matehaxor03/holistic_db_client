@@ -14,7 +14,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		value, value_errors := record.GetUInt16Value(GetTestTableIntegerUnsigned16ColumnName())
 		if value_errors != nil {
@@ -55,9 +55,9 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing
 
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
-		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
+		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		value, value_errors := record.GetUInt16(GetTestTableIntegerUnsigned16ColumnNameNotMandatory())
 		if value_errors != nil {
