@@ -55,6 +55,10 @@ type Record struct {
 	GetFloat32Value func(field string) (float32, []error)
 	SetFloat32 func(field string, value *float32) []error 
 	SetFloat32Value func(field string, value float32) []error 
+	GetFloat64 func(field string) (*float64, []error)
+	GetFloat64Value func(field string) (float64, []error)
+	SetFloat64 func(field string, value *float64) []error 
+	SetFloat64Value func(field string, value float64) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
@@ -1041,6 +1045,26 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		SetFloat32Value: func(field string, value float32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		GetFloat64: func(field string) (*float64, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*float64")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			}
+			return field_value.(*float64), nil
+		},
+		GetFloat64Value: func(field string) (float64, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "float64")
+			if field_value_errors != nil {
+				return 0.0, field_value_errors
+			}
+			return field_value.(float64), nil
+		},
+		SetFloat64: func(field string, value *float64) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetFloat64Value: func(field string, value float64) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {

@@ -487,6 +487,44 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
+	case "uint64":
+		switch desired_type {
+		case "*uint64":
+			temp_value := (result.(uint64))
+			return &temp_value, nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*float32":
+		switch desired_type {
+		case "float32":
+			return *(result.(*float32)), nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "float32":
+		switch desired_type {
+		case "*float32":
+			temp_value := result.(float32)
+			return &temp_value, nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "*float64":
+		switch desired_type {
+		case "float64":
+			return *(result.(*float64)), nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
+	case "float64":
+		switch desired_type {
+		case "*float64":
+			temp_value := result.(float64)
+			return &temp_value, nil
+		default:
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+		}
 	case "bool":
 		switch desired_type {
 		case "*bool":

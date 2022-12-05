@@ -33,7 +33,7 @@ func TestRecordCanUpdateRecordWithFloat32(t *testing.T) {
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		set_errors := record.SetFloat32Value(GetTestTableFloat32ColumnName(), float32(987654321.987654321))
 		if set_errors != nil {

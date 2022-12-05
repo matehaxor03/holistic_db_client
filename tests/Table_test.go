@@ -391,18 +391,18 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 
     table_errors := table.Create()
 	if table_errors != nil {
-		t.Error(table_errors)
+		t.Errorf(fmt.Sprintf("error: %s", table_errors))
 	} else {
 		read_errors := table.Read()
 		if read_errors != nil {
-			t.Error(read_errors)
+			t.Errorf(fmt.Sprintf("error: %s", read_errors))
 		} else {
 			expected_schema_column_names := expected_schema.Keys()
 			actual_schema, actual_schema_errors := table.GetSchema()
 			if actual_schema_errors != nil {
-				t.Error(actual_schema_errors)
+				t.Errorf(fmt.Sprintf("error: %s", actual_schema_errors))
 			} else if class.IsNil(actual_schema) {
-				t.Errorf("actual schema is nil")
+				t.Errorf("error: actual schema is nil")
 			} else {
 				for _, expected_schema_column_name := range expected_schema_column_names {
 					if !class.IsDatabaseColumn(expected_schema_column_name) {
@@ -414,16 +414,16 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 						t.Error(expected_schema_field_errors)
 						continue
 					} else if !expected_schema.IsMap(expected_schema_column_name) {
-						t.Errorf("Table_test.CreateTableAndVerifySchema: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
+						t.Errorf("error: Table_test.CreateTableAndVerifySchema: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
 						continue
 					}
 
 					expected_schema_type, expected_schema_type_errors := expected_schema_field.GetString("type")
 					if expected_schema_type_errors != nil {
-						t.Error(expected_schema_type_errors)
+						t.Errorf(fmt.Sprintf("error: %s", expected_schema_type_errors))
 						continue
 					} else if class.IsNil(expected_schema_type) {
-						t.Errorf("field: %s expected_schem type is nil", expected_schema_column_name)
+						t.Errorf("error: field: %s expected_schem type is nil", expected_schema_column_name)
 						continue
 					}
 
@@ -432,7 +432,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 						t.Error(actual_schema_field_map_errors)
 						continue
 					} else if !actual_schema.IsMap(expected_schema_column_name) {
-						t.Errorf("field: %s actual schema is not a map: %s", expected_schema_column_name, actual_schema.GetType(expected_schema_column_name))
+						t.Errorf("error: field: %s actual schema is not a map: %s", expected_schema_column_name, actual_schema.GetType(expected_schema_column_name))
 						continue
 					}
 
@@ -441,12 +441,12 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 						t.Error(actual_schema_type_errors)
 						continue
 					} else if class.IsNil(actual_schema_type) {
-						t.Errorf("field: %s actual_schema is nil", expected_schema_column_name)
+						t.Errorf("error: field: %s actual_schema is nil", expected_schema_column_name)
 						continue
 					}
 
 					if *expected_schema_type != *actual_schema_type {
-						t.Errorf("schema types do not match expected: %s actual: %s", *expected_schema_type, *actual_schema_type)
+						t.Errorf("error: schema types do not match expected: %s actual: %s", *expected_schema_type, *actual_schema_type)
 					}
 				}
 			}

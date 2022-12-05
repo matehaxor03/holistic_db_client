@@ -426,6 +426,9 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					case "float":
 						data_type := "float32"
 						column_schema.SetString("type", &data_type)
+					case "double":
+						data_type := "float64"
+						column_schema.SetString("type", &data_type)
 					default:
 						if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
 							data_type := "string"
@@ -568,6 +571,14 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						converted := float32(number)
 						column_schema.SetFloat32("default", &converted)
 					}
+				} else if *dt == "float64" && default_value != "" {
+					number, err := strconv.ParseFloat(default_value, 64)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := float64(number)
+						column_schema.SetFloat64("default", &converted)
+					}
 				}  else if *dt == "bool" && default_value != "" {
 					number, err := strconv.ParseInt(default_value, 10, 64)
 					if err != nil {
@@ -594,7 +605,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					} else {
 						errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s please implement", default_value, *dt))
 					}
-				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string" || *dt == "float32") && default_value != "" {
+				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string" || *dt == "float32" || *dt == "float64") && default_value != "" {
 					errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported please implement: %s for type: %s", default_value, *dt))
 				}
 			}
@@ -675,7 +686,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				errors = append(errors, columnSchema_errors...)
 				continue
 			} else if IsNil(columnSchema) {
-				errors = append(errors, fmt.Errorf("error: %s column schema for column: %s is nil", struct_type, column))
+				errors = append(errors, fmt.Errorf("error: Table.getCreateSQL %s column schema for column: %s is nil", struct_type, column))
 				continue
 			}
 
@@ -729,7 +740,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							sql_command += " AUTO_INCREMENT"
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
 					}
 				}
 
@@ -740,7 +751,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							primary_key_count += 1
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
 					}
 				} 
 
@@ -753,7 +764,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
 					}
 				}
 			case "*time.Time", "time.Time":
@@ -772,7 +783,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					} else if *default_value == "now" {
 						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s had default value it did not understand", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
 					}
 				}
 			case "*bool", "bool":
@@ -784,15 +795,15 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
-						errors = append(errors, fmt.Errorf("error: column: %s had nil default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had nil default value", column))
 					} else if !columnSchema.IsBool("default") {
-						errors = append(errors, fmt.Errorf("error: column: %s had non-boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 					} else if columnSchema.IsBoolTrue("default") {
 						sql_command += " DEFAULT 1"
 					} else if columnSchema.IsBoolFalse("default") {
 						sql_command += " DEFAULT 0"
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s had unknown error for boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*float32", "float32":
@@ -806,32 +817,57 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					if columnSchema.IsNil("default") {
 						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsFloat("default") {
-						errors = append(errors, fmt.Errorf("error: column: %s had non-boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 					} else if columnSchema.IsFloat("default") {
 						default_float_value, default_float_value_errors := columnSchema.GetFloat32("default")
 						if default_float_value_errors != nil {
-							errors = append(errors, fmt.Errorf("error: column: %s had unknown error for float32 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for float32 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
 						} else if default_float_value == nil {
-							errors = append(errors, fmt.Errorf("error: column: %s float32 default value returned nil", column))
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s float32 default value returned nil", column))
 						} else {
 							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value) 
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("error: column: %s had unknown error for boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
+					}
+				}
+			case "*float64", "float64":
+				sql_command += " DOUBLE"
+
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
+				if columnSchema.HasKey("default") {
+					if columnSchema.IsNil("default") {
+						sql_command += " DEFAULT NULL"
+					} else if !columnSchema.IsFloat("default") {
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
+					} else if columnSchema.IsFloat("default") {
+						default_float_value, default_float_value_errors := columnSchema.GetFloat64("default")
+						if default_float_value_errors != nil {
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for float32 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
+						} else if default_float_value == nil {
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s float32 default value returned nil", column))
+						} else {
+							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value) 
+						}
+					} else {
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*string", "string":
 				sql_command += " VARCHAR("
 				if !columnSchema.HasKey("max_length") {
-					errors = append(errors, fmt.Errorf("error: column: %s did not specify length attribute", column))
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s did not specify length attribute", column))
 				} else if columnSchema.GetType("max_length") != "int" {
 					errors = append(errors, fmt.Errorf("error: column: %s specified length attribute however it's not an int", column))
 				} else {
 					max_length, max_length_errors := columnSchema.GetInt("max_length")
 					if max_length_errors != nil {
-						errors = append(errors, fmt.Errorf("error: column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
 					} else if *max_length <= 0 {
-						errors = append(errors, fmt.Errorf("error: column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
 					} else {
 						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
 						sql_command += fmt.Sprintf("%d", (4*(*max_length)))
@@ -847,11 +883,11 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					if columnSchema.IsNil("default") {
 						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsString("default") {
-						errors = append(errors, fmt.Errorf("error: column: %s had non-string default value", column))
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-string default value", column))
 					} else {
 						default_value, default_value_errors := columnSchema.GetString("default")
 						if default_value_errors != nil {
-							errors = append(errors, fmt.Errorf("error: column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
 						} else {
 							sql_command += " DEFAULT '" + EscapeString(*default_value) + "'"
 						}
@@ -860,7 +896,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 				
 			default:
-				errors = append(errors, fmt.Errorf("error: Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
+				errors = append(errors, fmt.Errorf("error: Table.getCreateSQL type: %s is not supported please implement for column %s", *typeOf, column))
 			}
 
 			if index < (len(*valid_columns) - 1) {
@@ -870,7 +906,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("error: Table.getSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
+			errors = append(errors, fmt.Errorf("error: Table.getCreateSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -1413,6 +1449,22 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetFloat32Value(column, value)
+						}
+					case "*float64":
+						value, value_errors := current_record.GetFloat64(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetFloat64(column, value)
+						}
+					case "float64":
+						value, value_errors := current_record.GetFloat64Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetFloat64Value(column, value)
 						}
 					default:
 						errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", temp_table_name, column, *table_data_type))
