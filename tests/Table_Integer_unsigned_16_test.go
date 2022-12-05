@@ -10,11 +10,15 @@ func GetTestTableNameWithIntegerUnsigned16ColumnName() string {
 	return "holistic_test_table_with_integer_unsigned_16"
 }
 
+func GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory() string {
+	return "holistic_test_table_with_integer_unsigned_16_not_mandatory"
+}
+
 func GetTestTableIntegerUnsigned16ColumnName() string {
 	return "integer_unsigned_16_column"
 }
 
-func GetTestTableInteger16UnsignedColumnNameNotMandatory() string {
+func GetTestTableIntegerUnsigned16ColumnNameNotMandatory() string {
 	return "integer_unsigned_16_column_not_mandatory"
 }
 
@@ -23,9 +27,9 @@ func GetTestSchemaWithIntegerUnsigned16Column() class.Map {
 					  GetTestTableIntegerUnsigned16ColumnName(): class.Map {"type": "uint16"}}
 }
 
-func GetTestSchemaWithIntegerUnsigned16NotMandatoryColumn() class.Map {
+func GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger16UnsignedColumnNameNotMandatory(): class.Map {"type": "*uint16"}}
+					  GetTestTableIntegerUnsigned16ColumnNameNotMandatory(): class.Map {"type": "*uint16"}}
 }
 
 func TestTableCreateWithIntegerUnsigned16Column(t *testing.T) {
@@ -34,6 +38,6 @@ func TestTableCreateWithIntegerUnsigned16Column(t *testing.T) {
 }
 
 func TestTableCreateWithIntegerUnsigned16NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerUnsigned16ColumnName(), GetTestSchemaWithIntegerUnsigned16NotMandatoryColumn())
+	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 }
  

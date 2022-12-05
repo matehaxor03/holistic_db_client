@@ -10,6 +10,11 @@ func GetTestTableNameWithIntegerUnsigned08ColumnName() string {
 	return "holistic_test_table_with_integer_unsigned_08"
 }
 
+func GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory() string {
+	return "holistic_test_table_with_integer_unsigned_08_not_mandatory"
+}
+
+
 func GetTestTableIntegerUnsigned08ColumnName() string {
 	return "integer_unsigned_08_column"
 }
@@ -33,6 +38,6 @@ func TestTableCreateWithIntegerUnsigned08Column(t *testing.T) {
 }
 
 func TestTableCreateWithIntegerUnsigned08NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerUnsigned08ColumnName(), GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
+	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 }
  

@@ -13,19 +13,17 @@ func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
-	}
-
-	if record == nil {
+	} else if record == nil {
 		t.Errorf("record is nil")
-	}
-
-	value, value_errors := record.GetInt16Value(GetTestTableIntegerSigned16ColumnName())
-	if value_errors != nil {
-		t.Error(fmt.Sprintf("error: %s", value_errors))
-	} else if class.IsNil(value_errors) {
-		t.Errorf("error: value is nil")
-	} else if value != int16(130) {
-		t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  value))
+	} else {
+		value, value_errors := record.GetInt16Value(GetTestTableIntegerSigned16ColumnName())
+		if value_errors != nil {
+			t.Error(fmt.Sprintf("error: %s", value_errors))
+		} else if class.IsNil(value_errors) {
+			t.Errorf("error: value is nil")
+		} else if value != int16(130) {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  value))
+		}
 	}
 }
 
@@ -58,19 +56,17 @@ func TestRecordCanCreateRecordWithIntegerSigned16ColumnNotMandatory(t *testing.T
     record, record_errors := table.CreateRecord(class.Map{GetTestTableInteger16SignedColumnNameNotMandatory(): &test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
-	}
-
-	if record == nil {
+	} else if record == nil {
 		t.Errorf("record is nil")
-	}
-
-	value, value_errors := record.GetInt16(GetTestTableInteger16SignedColumnNameNotMandatory())
-	if value_errors != nil {
-		t.Error(fmt.Sprintf("error: %s", value_errors))
-	} else if class.IsNil(value_errors) {
-		t.Errorf("error: value is nil")
-	} else if *value != int16(130) {
-		t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  *value))
+	} else {
+		value, value_errors := record.GetInt16(GetTestTableInteger16SignedColumnNameNotMandatory())
+		if value_errors != nil {
+			t.Error(fmt.Sprintf("error: %s", value_errors))
+		} else if class.IsNil(value_errors) {
+			t.Errorf("error: value is nil")
+		} else if *value != int16(130) {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  *value))
+		}
 	}
 }
 
