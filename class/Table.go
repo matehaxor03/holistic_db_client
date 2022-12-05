@@ -128,7 +128,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				errors = append(errors, column_schema_errors...)
 				continue
 			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("%s schema: %s is nill", struct_type, column))
+				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
 				continue
 			}
 
@@ -165,7 +165,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				errors = append(errors, column_schema_errors...)
 				continue
 			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("%s schema: %s is nill", struct_type, column))
+				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
 				continue
 			}
 
@@ -335,12 +335,12 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		}
 
 		if json_array == nil {
-			errors = append(errors, fmt.Errorf("show columns returned nil records"))
+			errors = append(errors, fmt.Errorf("error: show columns returned nil records"))
 			return nil, errors
 		}
 
 		if len(*json_array) == 0 {
-			errors = append(errors, fmt.Errorf("show columns did not return any records"))
+			errors = append(errors, fmt.Errorf("error: show columns did not return any records"))
 			return nil, errors
 		}
 
@@ -366,7 +366,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						column_schema.SetBool("primary_key", &is_primary_key)
 					case "":
 					default:
-						errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", *key_value))
+						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Key not implemented please implement: %s", *key_value))
 					}
 				case "Field":
 					field_name_value, _ := column_map.GetString("Field")
@@ -434,18 +434,18 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
 							parts := strings.Split(type_of_value_values, ",")
 							if len(parts) == 0 {
-								errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum had length of zero: %s", *type_of_value))
+								errors = append(errors, fmt.Errorf("error: Table: GetSchema: could not determine parts of enum had length of zero: %s", *type_of_value))
 							} else {
 								part := parts[0]
 								if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
 									data_type := "string"
 									column_schema.SetString("type", &data_type)
 								} else {
-									errors = append(errors, fmt.Errorf("Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
+									errors = append(errors, fmt.Errorf("error: Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
 								}
 							}
 						} else {
-							errors = append(errors, fmt.Errorf("Table: GetSchema: type not implemented please implement: %s", *type_of_value))
+							errors = append(errors, fmt.Errorf("error: Table: GetSchema: type not implemented please implement: %s", *type_of_value))
 						}
 					}
 				case "Null":
@@ -458,7 +458,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					case "NO":
 						is_nullable = false
 					default:
-						errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", *null_value))
+						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Null value not supported please implement: %s", *null_value))
 					}
 				case "Default":
 					default_val, _ := column_map.GetString("Default")
@@ -473,15 +473,15 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					case "DEFAULT_GENERATED":
 					case "":
 					default:
-						errors = append(errors, fmt.Errorf("Table: GetSchema: Extra value not supported please implement: %s", extra_value))
+						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Extra value not supported please implement: %s", extra_value))
 					}
 				default:
-					errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
+					errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
 				}
 			}
 
 			if column_schema.IsNil("type") {
-				errors = append(errors, fmt.Errorf("Table: %s GetSchema: column: %s attribute: type is nill", temp_table_name, field_name))
+				errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: column: %s attribute: type is nill", temp_table_name, field_name))
 			}
 
 			if len(errors) > 0 {
@@ -569,7 +569,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							boolean_value := true
 							column_schema.SetBool("default", &boolean_value)
 						} else {
-							errors = append(errors, fmt.Errorf("default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
+							errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
 						}
 					}
 				} else if *dt == "time.Time" && default_value != "" {
@@ -581,10 +581,10 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						now := "now"
 						column_schema.SetString("default", &now)
 					} else {
-						errors = append(errors, fmt.Errorf("default value not supported %s for type: %s please implement", default_value, *dt))
+						errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s please implement", default_value, *dt))
 					}
 				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string") && default_value != "" {
-					errors = append(errors, fmt.Errorf("default value not supported please implement: %s for type: %s", default_value, *dt))
+					errors = append(errors, fmt.Errorf("error: default value not supported please implement: %s for type: %s", default_value, *dt))
 				}
 			}
 			
@@ -664,7 +664,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				errors = append(errors, columnSchema_errors...)
 				continue
 			} else if IsNil(columnSchema) {
-				errors = append(errors, fmt.Errorf("%s column schema for column: %s is nil", struct_type, column))
+				errors = append(errors, fmt.Errorf("error: %s column schema for column: %s is nil", struct_type, column))
 				continue
 			}
 
@@ -688,7 +688,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				case "*uint8", "*int8", "uint8", "int8":
 					sql_command += " TINYINT"
 				default:
-					errors = append(errors, fmt.Errorf("Table.getCreateSQL number type not mapped: %s", *typeOf))
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL number type not mapped: %s", *typeOf))
 				}
 
 				unsigned_number := false
@@ -718,7 +718,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							sql_command += " AUTO_INCREMENT"
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
+						errors = append(errors, fmt.Errorf("error: column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
 					}
 				}
 
@@ -729,7 +729,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							primary_key_count += 1
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
+						errors = append(errors, fmt.Errorf("error: column: %s for attribute: primary_key contained a value which is not a bool: %s", column, columnSchema.GetType("primary_key")))
 					}
 				} 
 
@@ -742,7 +742,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
 						}
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
+						errors = append(errors, fmt.Errorf("error: column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
 					}
 				}
 			case "*time.Time", "time.Time":
@@ -761,7 +761,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					} else if *default_value == "now" {
 						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s had default value it did not understand", column))
+						errors = append(errors, fmt.Errorf("error: column: %s had default value it did not understand", column))
 					}
 				}
 			case "*bool", "bool":
@@ -773,29 +773,29 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
-						errors = append(errors, fmt.Errorf("column: %s had nil default value", column))
+						errors = append(errors, fmt.Errorf("error: column: %s had nil default value", column))
 					} else if !columnSchema.IsBool("default") {
-						errors = append(errors, fmt.Errorf("column: %s had non-boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: column: %s had non-boolean default value", column))
 					} else if columnSchema.IsBoolTrue("default") {
 						sql_command += " DEFAULT 1"
 					} else if columnSchema.IsBoolFalse("default") {
 						sql_command += " DEFAULT 0"
 					} else {
-						errors = append(errors, fmt.Errorf("column: %s had unknown error for boolean default value", column))
+						errors = append(errors, fmt.Errorf("error: column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*string", "string":
 				sql_command += " VARCHAR("
 				if !columnSchema.HasKey("max_length") {
-					errors = append(errors, fmt.Errorf("column: %s did not specify length attribute", column))
+					errors = append(errors, fmt.Errorf("error: column: %s did not specify length attribute", column))
 				} else if columnSchema.GetType("max_length") != "int" {
-					errors = append(errors, fmt.Errorf("column: %s specified length attribute however it's not an int", column))
+					errors = append(errors, fmt.Errorf("error: column: %s specified length attribute however it's not an int", column))
 				} else {
 					max_length, max_length_errors := columnSchema.GetInt("max_length")
 					if max_length_errors != nil {
-						errors = append(errors, fmt.Errorf("column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
+						errors = append(errors, fmt.Errorf("error: column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
 					} else if *max_length <= 0 {
-						errors = append(errors, fmt.Errorf("column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
+						errors = append(errors, fmt.Errorf("error: column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
 					} else {
 						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
 						sql_command += fmt.Sprintf("%d", (4*(*max_length)))
@@ -811,11 +811,11 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					if columnSchema.IsNil("default") {
 						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsString("default") {
-						errors = append(errors, fmt.Errorf("column: %s had non-string default value", column))
+						errors = append(errors, fmt.Errorf("error: column: %s had non-string default value", column))
 					} else {
 						default_value, default_value_errors := columnSchema.GetString("default")
 						if default_value_errors != nil {
-							errors = append(errors, fmt.Errorf("column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
+							errors = append(errors, fmt.Errorf("error: column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
 						} else {
 							sql_command += " DEFAULT '" + EscapeString(*default_value) + "'"
 						}
@@ -824,7 +824,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 				
 			default:
-				errors = append(errors, fmt.Errorf("Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
+				errors = append(errors, fmt.Errorf("error: Table.getSQL type: %s is not supported please implement for column %s", *typeOf, column))
 			}
 
 			if index < (len(*valid_columns) - 1) {
@@ -834,7 +834,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		sql_command += ");"
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("Table.getSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
+			errors = append(errors, fmt.Errorf("error: Table.getSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -883,7 +883,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		if temp_database_errors != nil {
 			errors = append(errors, temp_database_errors...)
 		} else if IsNil(temp_database) {
-			errors = append(errors, fmt.Errorf("Table.read database is nil"))
+			errors = append(errors, fmt.Errorf("error: Table.read database is nil"))
 		}
 
 		if len(errors) > 0 {
@@ -894,7 +894,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		if temp_table_name_errors != nil {
 			errors = append(errors, temp_table_name_errors...)
 		} else if IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("Table.read table_name is nil"))
+			errors = append(errors, fmt.Errorf("error: Table.read table_name is nil"))
 		}
 
 		if len(errors) > 0 {
@@ -905,7 +905,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		if temp_schema_errors != nil {
 			errors = append(errors, temp_schema_errors...)
 		} else if IsNil(temp_schema) {
-			errors = append(errors, fmt.Errorf("Table.read schema is nil"))
+			errors = append(errors, fmt.Errorf("error: Table.read schema is nil"))
 		}
 
 		if len(errors) > 0 {
@@ -993,7 +993,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			}
 
 			if len(*json_array) != 1 {
-				errors = append(errors, fmt.Errorf("count record does not exist"))
+				errors = append(errors, fmt.Errorf("error: count record does not exist"))
 				return nil, errors
 			}
 
@@ -1071,7 +1071,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
 					if !Contains(*table_columns, filter_column) {
-						errors = append(errors, fmt.Errorf("Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 					}
 				}
 
@@ -1087,7 +1087,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					}
 					 
 					if table_schema.IsNil(filter_column) {
-						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
 						continue
 					}
 
@@ -1098,14 +1098,14 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					}
 
 					if table_schema_column.IsNil("type") {
-						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
 						continue
 					}
 
 
 					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
-						errors = append(errors, fmt.Errorf("Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
@@ -1141,7 +1141,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						filer_value, _ := filters.GetString(column_filter)
 						sql += fmt.Sprintf("'%s' ", EscapeString(*filer_value))
 					default:
-						errors = append(errors, fmt.Errorf("Table.ReadRecords: filter type not supported please implement: %s", type_of))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
@@ -1363,7 +1363,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							mapped_record.SetStringValue(column, value)
 						}
 					default:
-						errors = append(errors, fmt.Errorf("SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", temp_table_name, column, *table_data_type))
+						errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", temp_table_name, column, *table_data_type))
 					}
 				}
 

@@ -136,7 +136,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		}
 
 		if temp_host == nil {
-			errors = append(errors, fmt.Errorf("Client.getHost returned nil host"))
+			errors = append(errors, fmt.Errorf("error: Client.getHost returned nil host"))
 			return nil, errors
 		}
 
@@ -364,7 +364,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			} else if (len(*records) == 1) {
 				exists = true
 			} else {
-				errors = append(errors, fmt.Errorf("User: Exists: %d records found with username %s", len(*records), EscapeString(username)))
+				errors = append(errors, fmt.Errorf("error: User: Exists: %d records found with username %s", len(*records), EscapeString(username)))
 			}
 
 			if len(errors) > 0 {

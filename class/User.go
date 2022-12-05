@@ -90,7 +90,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		if temp_password_errors != nil {
 			return nil, nil, temp_password_errors
 		} else if IsNil(temp_password) {
-			errors = append(errors, fmt.Errorf("User.getCreateSQL password is nil"))
+			errors = append(errors, fmt.Errorf("error: User.getCreateSQL password is nil"))
 		}
 
 		if len(errors) > 0 {
@@ -178,7 +178,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			var errors []error
 
 			if new_password == "" {
-				errors = append(errors, fmt.Errorf("new password is empty"))
+				errors = append(errors, fmt.Errorf("error: new password is empty"))
 			}
 
 			validate_errors := validate()

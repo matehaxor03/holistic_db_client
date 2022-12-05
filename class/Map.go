@@ -25,7 +25,7 @@ func (m Map) GetMap(s string) (*Map, []error) {
 		value := *(m[s].(*Map))
 		result = &value
 	default:
-		errors = append(errors, fmt.Errorf("Map.M: type %s is not supported please implement for key %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.M: type %s is not supported please implement for key %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -179,7 +179,7 @@ func (m Map) IsBoolFalse(s string) bool {
 func (m Map) ToJSONString(json *strings.Builder) ([]error) {
 	var errors []error
 	if json == nil {
-		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		errors = append(errors, fmt.Errorf("error: *strings.Builder is nil"))
 		return errors
 	}
 	/*
@@ -281,7 +281,7 @@ func (m Map) GetArray(s string) (*Array, []error) {
 		temp := m[s].(Array)
 		result = &temp
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetArray: type %s is not supported please implement for field: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetArray: type %s is not supported please implement for field: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -309,10 +309,10 @@ func (m Map) GetString(s string) (*string, []error) {
 			s := strings.Clone(*((m[s]).(*string)))
 			result = &s
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetString: *string value is null for attribute: %s", rep, s))
+			errors = append(errors, fmt.Errorf("error: Map.GetString: *string value is null for attribute: %s", rep, s))
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -350,10 +350,10 @@ func (m Map) GetFloat64(s string) (*float64, []error) {
 			new_value := *value
 			result = &new_value
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetFloat64: *float64 value is null for attribute: %s", rep, s))
+			errors = append(errors, fmt.Errorf("error: Map.GetFloat64: *float64 value is null for attribute: %s", rep, s))
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetFloat64: type %s is not supported please implement for attribute: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetFloat64: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -381,10 +381,10 @@ func (m Map) GetFloat32(s string) (*float32, []error) {
 			new_value := *value
 			result = &new_value
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetFloat32: *float32 value is null for attribute: %s", rep, s))
+			errors = append(errors, fmt.Errorf("error: Map.GetFloat32: *float32 value is null for attribute: %s", rep, s))
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetFloat32: type %s is not supported please implement for attribute: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetFloat32: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -412,10 +412,10 @@ func (m Map) GetRunes(s string) (*[]rune, []error) {
 			s := strings.Clone(*((m[s]).(*string)))
 			result = &s
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetString: *string value is null for attribute: %s", rep, s))
+			errors = append(errors, fmt.Errorf("error: Map.GetString: *string value is null for attribute: %s", rep, s))
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetString: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -477,7 +477,7 @@ func (m Map) GetBool(s string) (*bool, []error) {
 				boolean_result := false
 				result = &boolean_result
 			} else {
-				errors = append(errors, fmt.Errorf("Map.GetBool: unknown value for *string: %s", value))
+				errors = append(errors, fmt.Errorf("error: Map.GetBool: unknown value for *string: %s", value))
 				result = nil
 			}
 		} else {
@@ -493,11 +493,11 @@ func (m Map) GetBool(s string) (*bool, []error) {
 			boolean_result := false
 			result = &boolean_result
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetBool: unknown value for string: %s", value))
+			errors = append(errors, fmt.Errorf("error: Map.GetBool: unknown value for string: %s", value))
 			result = nil
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetBool: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: Map.GetBool: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -551,7 +551,7 @@ func (m Map) RemoveKey(key string) (*bool, []error) {
 	var result bool
 	if !m.HasKey(key) {
 		result = false
-		errors = append(errors, fmt.Errorf("key %s not found", key))
+		errors = append(errors, fmt.Errorf("error: key %s not found", key))
 		return &result, errors
 	}	
 
@@ -603,12 +603,12 @@ func (m Map) GetInt64(s string) (*int64, []error) {
 		case "*string":
 			value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, 64)
 			if value_error != nil {
-				errors = append(errors, fmt.Errorf("Map.GetInt64: cannot convert *string value to int64"))
+				errors = append(errors, fmt.Errorf("error: Map.GetInt64: cannot convert *string value to int64"))
 			} else {
 				temp_value = value
 			}
 		default:
-			errors = append(errors, fmt.Errorf("Map.GetInt64: type %s is not supported please implement", rep))
+			errors = append(errors, fmt.Errorf("error: Map.GetInt64: type %s is not supported please implement", rep))
 	}
 	
 	if len(errors) > 0 {
@@ -634,7 +634,7 @@ func (m Map) GetInt8(s string) (*int8, []error) {
 	}
 
 	if *int64_value < -128 || *int64_value > 127 {
-		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-128, 127]"))
 	}
 
 	if len(errors) > 0 {
@@ -653,7 +653,7 @@ func (m Map) GetInt8Value(s string) (int8, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("error: m.GetInt64(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
@@ -661,7 +661,7 @@ func (m Map) GetInt8Value(s string) (int8, []error) {
 	}
 
 	if *int64_value < -128 || *int64_value > 127 {
-		errors = append(errors, fmt.Errorf("value is not in range [-128, 127]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-128, 127]"))
 	}
 
 	if len(errors) > 0 {
@@ -688,7 +688,7 @@ func (m Map) GetUInt8(s string) (*uint8, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 255 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 255]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 255]"))
 	}
 
 	if len(errors) > 0 {
@@ -707,7 +707,7 @@ func (m Map) GetUInt8Value(s string) (uint8, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
+		errors = append(errors, fmt.Errorf("error: field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -715,7 +715,7 @@ func (m Map) GetUInt8Value(s string) (uint8, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 255 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 255]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 255]"))
 	}
 
 	if len(errors) > 0 {
@@ -742,7 +742,7 @@ func (m Map) GetInt16(s string) (*int16, []error) {
 	}
 
 	if *int64_value < -32768 || *int64_value > 32767 {
-		errors = append(errors, fmt.Errorf("value is not in range [-32768, 32767]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-32768, 32767]"))
 	}
 
 	if len(errors) > 0 {
@@ -761,7 +761,7 @@ func (m Map) GetInt16Value(s string) (int16, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("error:  m.GetInt64(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
@@ -769,7 +769,7 @@ func (m Map) GetInt16Value(s string) (int16, []error) {
 	}
 
 	if *int64_value < -32768 || *int64_value > 32767 {
-		errors = append(errors, fmt.Errorf("value is not in range [-32768, 32767]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-32768, 32767]"))
 	}
 
 	if len(errors) > 0 {
@@ -796,7 +796,7 @@ func (m Map) GetUInt16(s string) (*uint16, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 65535 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 65535]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 65535]"))
 	}
 
 	if len(errors) > 0 {
@@ -815,7 +815,7 @@ func (m Map) GetUInt16Value(s string) (uint16, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
+		errors = append(errors, fmt.Errorf("error: field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -823,7 +823,7 @@ func (m Map) GetUInt16Value(s string) (uint16, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 65535 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 65535]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 65535]"))
 	}
 
 	if len(errors) > 0 {
@@ -851,7 +851,7 @@ func (m Map) GetInt32(s string) (*int32, []error) {
 	}
 
 	if *int64_value < -2147483648 || *int64_value > 2147483647 {
-		errors = append(errors, fmt.Errorf("value is not in range [-2147483648, 2147483647]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-2147483648, 2147483647]"))
 	}
 
 	if len(errors) > 0 {
@@ -870,7 +870,7 @@ func (m Map) GetInt32Value(s string) (int32, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("error:  m.GetInt64(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
@@ -878,7 +878,7 @@ func (m Map) GetInt32Value(s string) (int32, []error) {
 	}
 
 	if *int64_value < -2147483648 || *int64_value > 2147483647 {
-		errors = append(errors, fmt.Errorf("value is not in range [-2147483648, 2147483647]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [-2147483648, 2147483647]"))
 	}
 
 	if len(errors) > 0 {
@@ -897,7 +897,7 @@ func (m Map) GetInt64Value(s string) (int64, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetInt64(s) returned nil"))
+		errors = append(errors, fmt.Errorf("error:  m.GetInt64(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
@@ -924,7 +924,7 @@ func (m Map) GetUInt32(s string) (*uint32, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 4294967295 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 4294967295]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 4294967295]"))
 	}
 
 	if len(errors) > 0 {
@@ -943,7 +943,7 @@ func (m Map) GetUInt32Value(s string) (uint32, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
+		errors = append(errors, fmt.Errorf("error: field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -951,7 +951,7 @@ func (m Map) GetUInt32Value(s string) (uint32, []error) {
 	}
 
 	if *int64_value < 0 || *int64_value > 4294967295 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 4294967295]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 4294967295]"))
 	}
 
 	if len(errors) > 0 {
@@ -970,7 +970,7 @@ func (m Map) GetUInt64Value(s string) (uint64, []error) {
 	if int64_value_errors != nil {
 		errors = append(errors, int64_value_errors...)
 	} else if int64_value == nil {
-		errors = append(errors, fmt.Errorf("field: %s m.GetUInt64(s) returned nil", s))
+		errors = append(errors, fmt.Errorf("error: field: %s m.GetUInt64(s) returned nil", s))
 	}
 
 	if len(errors) > 0 {
@@ -978,7 +978,7 @@ func (m Map) GetUInt64Value(s string) (uint64, []error) {
 	}
 
 	if *int64_value < 0 {
-		errors = append(errors, fmt.Errorf("value is not in range [0, 18446744073709551615]"))
+		errors = append(errors, fmt.Errorf("error: value is not in range [0, 18446744073709551615]"))
 	}
 
 	if len(errors) > 0 {
@@ -1011,13 +1011,13 @@ func (m Map) GetInt(s string) (*int, []error) {
 		bit_size := strconv.IntSize
 		value, value_error := strconv.ParseInt((*(m[s].(*string))), 10, bit_size)
 		if value_error != nil {
-			errors = append(errors, fmt.Errorf("Map.GetInt: cannot convert *string value to int"))
+			errors = append(errors, fmt.Errorf("error: Map.GetInt: cannot convert *string value to int"))
 		} else {
 			temp := int(value)
 			result = &temp
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetInt: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: Map.GetInt: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -1033,7 +1033,7 @@ func (m Map) GetIntValue(s string) (int, []error) {
 	if int_value_errors != nil {
 		errors = append(errors, int_value_errors...)
 	} else if int_value == nil {
-		errors = append(errors, fmt.Errorf(" m.GetInt(s) returned nil"))
+		errors = append(errors, fmt.Errorf("error:  m.GetInt(s) returned nil"))
 	}
 
 	if len(errors) > 0 {
@@ -1157,70 +1157,70 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int64":
 		x := m[s].(int64)
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int32":
 		x := *(m[s].(*int32))
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int32":
 		x := m[s].(int32)
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int16":
 		x := *(m[s].(*int16))
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int16":
 		x := m[s].(int16)
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int8":
 		x := *(m[s].(*int8))
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int8":
 		x := m[s].(int8)
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "int":
 		x := (m[s].(int))
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*int":
 		x := *(m[s].(*int))
 		if x >= 0 {
 			uint64_value = uint64(x)
 		} else {
-			errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert negative numbers for uint64"))
+			errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert negative numbers for uint64"))
 		}
 	case "*uint64":
 		uint64_value = *(m[s].(*uint64))
@@ -1251,13 +1251,13 @@ func (m Map) GetUInt64(s string) (*uint64, []error) {
 		} else {
 			value, value_error := strconv.ParseUint(*string_value, 10, 64)
 			if value_error != nil {
-				errors = append(errors, fmt.Errorf("Map.GetUInt64: cannot convert *string value to uint64"))
+				errors = append(errors, fmt.Errorf("error: Map.GetUInt64: cannot convert *string value to uint64"))
 			} else {
 				uint64_value = value
 			}
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetUInt64: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: Map.GetUInt64: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -1342,7 +1342,7 @@ func (m Map) GetTime(s string) (*time.Time, []error) {
 		}
 
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetTime: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: Map.GetTime: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {

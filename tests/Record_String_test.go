@@ -12,7 +12,7 @@ func GetTestTableCreatedWithStringColumn(t *testing.T) (*class.Table) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
 
 	if table == nil {
-		t.Error(fmt.Errorf("table is nil"))
+		t.Error(fmt.Errorf("error: table is nil"))
 		t.FailNow()
 		return nil
 	}

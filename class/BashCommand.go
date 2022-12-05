@@ -17,7 +17,7 @@ func newBashCommand() *BashCommand {
 			var errors []error
 
 			if command == nil {
-				errors = append(errors, fmt.Errorf("bash command is nil"))
+				errors = append(errors, fmt.Errorf("error: bash command is nil"))
 			}
 
 			if len(errors) > 0 {
@@ -40,7 +40,7 @@ func newBashCommand() *BashCommand {
 			}
 
 			if strings.TrimSpace(shell_output_errs) != "" {
-				errors = append(errors, fmt.Errorf(shell_output_errs))
+				errors = append(errors, fmt.Errorf("error: %s", fmt.Sprintf(shell_output_errs)))
 			}
 
 			if len(errors) > 0 {

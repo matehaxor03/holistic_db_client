@@ -25,7 +25,7 @@ func ToArray(a interface{}) (*Array, []error) {
 			array = append(array, value)
 		}
 	default:
-		errors = append(errors, fmt.Errorf("Array.ToArray: type is not supported please implement: %s", rep))
+		errors = append(errors, fmt.Errorf("error: Array.ToArray: type is not supported please implement: %s", rep))
 	}
 
 	if len(errors) > 0 {
@@ -39,7 +39,7 @@ func (a Array) ToJSONString(json *strings.Builder) ([]error) {
 	var errors []error
 	
 	if json == nil {
-		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		errors = append(errors, fmt.Errorf("error: *strings.Builder is nil"))
 		return errors
 	}
 	

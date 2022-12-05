@@ -73,7 +73,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 
 
 	if table_filter == nil && database_filter == nil {
-		errors = append(errors, fmt.Errorf("Grant: database_filter and table_filter are both nil"))
+		errors = append(errors, fmt.Errorf("error: Grant: database_filter and table_filter are both nil"))
 	}
 
 	getData := func() *Map {
@@ -185,7 +185,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		} else if database_filter == nil && table_filter != nil {
 			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*table_filter))
 		} else {
-			errors = append(errors, fmt.Errorf("Grant: getSQL: both database_filter and table_filter were nil"))
+			errors = append(errors, fmt.Errorf("error: Grant: getSQL: both database_filter and table_filter were nil"))
 		}
 
 		sql += fmt.Sprintf("To '%s'@'%s';", EscapeString(username_value), EscapeString(domain_name_value))

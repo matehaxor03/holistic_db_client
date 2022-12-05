@@ -46,7 +46,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	database := GetTestDatabaseCreated(t)
 
 	if database == nil {
-		t.Error(fmt.Errorf("database is nil"))
+		t.Error(fmt.Errorf("error: database is nil"))
 		t.FailNow()
 		return nil
 	}
@@ -93,7 +93,7 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 	database := GetTestDatabase(t)
 
 	if database == nil {
-		t.Error(fmt.Errorf("database is nil"))
+		t.Error(fmt.Errorf("error: database is nil"))
 		t.FailNow()
 		return nil
 	}

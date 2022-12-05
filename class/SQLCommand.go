@@ -31,7 +31,7 @@ func newSQLCommand() *SQLCommand {
 			if host_errors != nil {
 				errors = append(errors, host_errors...)
 			} else if host == nil {
-				errors = append(errors, fmt.Errorf("host is nil"))
+				errors = append(errors, fmt.Errorf("error: host is nil"))
 			} else {
 				host_errs := host.Validate()
 				if host_errs != nil {
@@ -41,7 +41,7 @@ func newSQLCommand() *SQLCommand {
 
 			database_username, _ := client.GetDatabaseUsername()
 			if database_username == nil {
-				errors = append(errors, fmt.Errorf("database_username is nil"))
+				errors = append(errors, fmt.Errorf("error: database_username is nil"))
 			}
 
 			database, database_errors := client.GetDatabase()
@@ -55,9 +55,9 @@ func newSQLCommand() *SQLCommand {
 			}
 
 			if sql_command == nil {
-				errors = append(errors, fmt.Errorf("sql command is nil"))
+				errors = append(errors, fmt.Errorf("error: sql command is nil"))
 			} else if *sql_command == "" {
-				errors = append(errors, fmt.Errorf("sql command is an empty string"))
+				errors = append(errors, fmt.Errorf("error: sql command is an empty string"))
 			}
 
 			directory, directory_errors := GetDirectoryOfExecutable()

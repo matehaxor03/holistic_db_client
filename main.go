@@ -73,11 +73,11 @@ func main() {
 	}
 
 	if command_pt == nil || !command_found {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
 	if database_username_value == nil || !database_username_value_found {
-		context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
 	}
 
 	if len(errors) > 0 {
@@ -97,12 +97,12 @@ func main() {
 
 	if command_value == COMMAND_CREATE {
 		if class_pt == nil || !class_found {
-			context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
+			context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_CLASS, CLS_CLASS))
 		}
 
 		if class_value == DATABASE_CLASS {
 			if database_name == nil || *database_name == "" {
-				context.LogError(fmt.Errorf("%s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
+				context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
 				os.Exit(1)
 			}
 
@@ -120,7 +120,7 @@ func main() {
 					os.Exit(1)
 				}
 			} else {
-				context.LogError(fmt.Errorf("database: %s exists: %b", *database_name, database_exists))
+				context.LogError(fmt.Errorf("error: database: %s exists: %b", *database_name, database_exists))
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
@@ -135,15 +135,15 @@ func main() {
 			} else {
 				
 				if !user_username_found {
-					context.LogError(fmt.Errorf("user_username is a mandatory field"))
+					context.LogError(fmt.Errorf("error: user_username is a mandatory field"))
 				}
 
 				if !user_password_found {
-					context.LogError(fmt.Errorf("user_password is a mandatory field"))
+					context.LogError(fmt.Errorf("error: user_password is a mandatory field"))
 				}
 
 				if !user_domain_name_found {
-					context.LogError(fmt.Errorf("user_domain_name is a mandatory field"))
+					context.LogError(fmt.Errorf("error: user_domain_name is a mandatory field"))
 				}
 			}
 		} else {
@@ -171,7 +171,7 @@ func main() {
 			errors = append(errors, generate_errors...)
 		}
 	} else {
-		errors = append(errors, fmt.Errorf("command: %s is not supported", command_value))
+		errors = append(errors, fmt.Errorf("error: command: %s is not supported", command_value))
 	}
 
 	if context.HasErrors() {
@@ -606,7 +606,7 @@ func getParams(params []string) (map[string]*string, []error) {
 
 		results := strings.SplitN(value, "=", 2)
 		if len(results) != 2 {
-			errors = append(errors, fmt.Errorf("invalid param found: %s must be in the format {paramName}={paramValue}", value))
+			errors = append(errors, fmt.Errorf("error: invalid param found: %s must be in the format {paramName}={paramValue}", value))
 			continue
 		}
 		m[results[0]] = &results[1]

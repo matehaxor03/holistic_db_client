@@ -34,7 +34,7 @@ func GetTestClient(t *testing.T) (*class.Client) {
 		if temp_client_manager_errors != nil {
 			errors = append(errors, temp_client_manager_errors...)
 		} else if temp_client_manager == nil {
-			errors = append(errors, fmt.Errorf("client_manager is nil"))
+			errors = append(errors, fmt.Errorf("error: client_manager is nil"))
 		}
 
 		if len(errors) > 0 {

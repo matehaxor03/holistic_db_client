@@ -55,7 +55,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 	struct_type := "*class.Record"
 
 	if record_data == nil {
-		errors = append(errors, fmt.Errorf("record_data is nil"))
+		errors = append(errors, fmt.Errorf("error: record_data is nil"))
 	}
 
 	if len(errors) > 0 {
@@ -66,7 +66,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 	if table_schema_errors != nil {
 		errors = append(errors, table_schema_errors...)
 	} else if IsNil(table_schema) {
-		errors = append(errors, fmt.Errorf("table schema is nil"))
+		errors = append(errors, fmt.Errorf("error: table schema is nil"))
 	}
 
 	if len(errors) > 0 {
@@ -246,7 +246,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		}
 
 		if auto_increment_columns > 1 {
-			errors = append(errors, fmt.Errorf("table: %s can only have 1 auto_increment primary_key column, found: %s", table_name, auto_increment_columns))
+			errors = append(errors, fmt.Errorf("error: table: %s can only have 1 auto_increment primary_key column, found: %s", table_name, auto_increment_columns))
 		}
 
 		if len(errors) > 0 {
@@ -264,20 +264,80 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 
 		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
-			parameter, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column, "self")
+			column_data, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column, "self")
 			if paramter_errors != nil {
 				errors = append(errors, paramter_errors...)
 				continue
 			}
 
-			rep := GetType(parameter)
+			rep := GetType(column_data)
 			switch rep {
+			case "*uint64":
+				value := column_data.(*uint64)
+				sql_command += strconv.FormatUint(*value, 10)
+			case "uint64":
+				value := column_data.(uint64)
+				sql_command += strconv.FormatUint(value, 10)
+			case "*int64":
+				value := column_data.(*int64)
+				sql_command += strconv.FormatInt(*value, 10)
+			case "int64":
+				value := column_data.(int64)
+				sql_command += strconv.FormatInt(value, 10)
+			case "*uint32":
+				value := column_data.(*uint32)
+				sql_command += strconv.FormatUint(uint64(*value), 10)
+			case "uint32":
+				value := column_data.(uint32)
+				sql_command += strconv.FormatUint(uint64(value), 10)
+			case "*int32":
+				value := column_data.(*int32)
+				sql_command += strconv.FormatInt(int64(*value), 10)
+			case "int32":
+				value := column_data.(int32)
+				sql_command += strconv.FormatInt(int64(value), 10)
+			case "*uint16":
+				value := column_data.(*uint16)
+				sql_command += strconv.FormatUint(uint64(*value), 10)
+			case "uint16":
+				value := column_data.(uint16)
+				sql_command += strconv.FormatUint(uint64(value), 10)
+			case "*int16":
+				value := column_data.(*int16)
+				sql_command += strconv.FormatInt(int64(*value), 10)
+			case "int16":
+				value := column_data.(int16)
+				sql_command += strconv.FormatInt(int64(value), 10)
+			case "*uint8":
+				value := column_data.(*uint8)
+				sql_command += strconv.FormatUint(uint64(*value), 10)
+			case "uint8":
+				value := column_data.(uint8)
+				sql_command += strconv.FormatUint(uint64(value), 10)
+			case "*int8":
+				value := column_data.(*int8)
+				sql_command += strconv.FormatInt(int64(*value), 10)
+			case "int8":
+				value := column_data.(int8)
+				sql_command += strconv.FormatInt(int64(value), 10)
+			case "*int":
+				value := column_data.(*int)
+				sql_command += strconv.FormatInt(int64(*value), 10)
+			case "int":
+				value := column_data.(int)
+				sql_command += strconv.FormatInt(int64(value), 10)
+			case "*time.Time":
+				value := column_data.(*time.Time)
+				sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+			case "time.Time":
+				value := column_data.(time.Time)
+				sql_command += "'" + EscapeString(FormatTime(value)) + "'"
 			case "string":
-				sql_command += "\"" + EscapeString(parameter.(string)) + "\""
+				sql_command += "\"" + EscapeString(column_data.(string)) + "\""
 			case "*string":
-				sql_command += "\"" + EscapeString(*(parameter.(*string))) + "\""
+				sql_command += "\"" + EscapeString(*(column_data.(*string))) + "\""
 			default:
-				errors = append(errors, fmt.Errorf("type: %s not supported for table please implement", rep))
+				errors = append(errors, fmt.Errorf("error: type: %s not supported for table please implement", rep))
 			}
 
 			if index < (len(*record_columns) - 1) {
@@ -357,7 +417,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 
 			if !found_identity_column {
-				errors = append(errors, fmt.Errorf("record did not contain identify column: %s", identity_column))
+				errors = append(errors, fmt.Errorf("error: record did not contain identify column: %s", identity_column))
 			}
 		}
 
@@ -369,15 +429,15 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		}
 
 		if len(*record_non_identity_columns) == 0 {
-			errors = append(errors, fmt.Errorf("no non-identity columns detected in record to update"))
+			errors = append(errors, fmt.Errorf("error: no non-identity columns detected in record to update"))
 		}
 
 		if len(*identity_columns) == 0 {
-			errors = append(errors, fmt.Errorf("table schema has no identity columns"))
+			errors = append(errors, fmt.Errorf("error: table schema has no identity columns"))
 		}
 
 		if !Contains(*table_non_identity_columns, "last_modified_date") {
-			errors = append(errors, fmt.Errorf("table schema does not have last_modified_date"))
+			errors = append(errors, fmt.Errorf("error: table schema does not have last_modified_date"))
 		}
 
 		if len(errors) > 0 {
@@ -410,10 +470,46 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 					sql_command += strconv.FormatUint(value, 10)
 				case "*int64":
 					value := column_data.(*int64)
-					sql_command += strconv.FormatInt(*value, 10)
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int64":
 					value := column_data.(int64)
-					sql_command += strconv.FormatInt(value, 10)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*uint32":
+					value := column_data.(*uint32)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint32":
+					value := column_data.(uint32)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int32":
+					value := column_data.(*int32)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int32":
+					value := column_data.(int32)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*uint16":
+					value := column_data.(*uint16)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint16":
+					value := column_data.(uint16)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int16":
+					value := column_data.(*int16)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int16":
+					value := column_data.(int16)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*uint8":
+					value := column_data.(*uint8)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint8":
+					value := column_data.(uint8)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int8":
+					value := column_data.(*int8)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int8":
+					value := column_data.(int8)
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*int":
 					value := column_data.(*int)
 					sql_command += strconv.FormatInt(int64(*value), 10)
@@ -433,7 +529,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 					value := column_data.(string)
 					sql_command += "'" + EscapeString(value) + "'"
 				default:
-					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
+					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
 			}
 
@@ -469,6 +565,42 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				case "int64":
 					value := column_data.(int64)
 					sql_command += strconv.FormatInt(value, 10)
+				case "*uint32":
+					value := column_data.(*uint32)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint32":
+					value := column_data.(uint32)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int32":
+					value := column_data.(*int32)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int32":
+					value := column_data.(int32)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*uint16":
+					value := column_data.(*uint16)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint16":
+					value := column_data.(uint16)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int16":
+					value := column_data.(*int16)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int16":
+					value := column_data.(int16)
+					sql_command += strconv.FormatInt(int64(value), 10)
+				case "*uint8":
+					value := column_data.(*uint8)
+					sql_command += strconv.FormatUint(uint64(*value), 10)
+				case "uint8":
+					value := column_data.(uint8)
+					sql_command += strconv.FormatUint(uint64(value), 10)
+				case "*int8":
+					value := column_data.(*int8)
+					sql_command += strconv.FormatInt(int64(*value), 10)
+				case "int8":
+					value := column_data.(int8)
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*int":
 					value := column_data.(*int)
 					sql_command += strconv.FormatInt(int64(*value), 10)
@@ -488,7 +620,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 					value := column_data.(string)
 					sql_command += "'" + EscapeString(value) + "'"
 				default:
-					errors = append(errors, fmt.Errorf("update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
+					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
 				}
 			}
 
@@ -538,7 +670,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 
 			if options["get_last_insert_id"].(bool) && options["auto_increment_column_name"] != "" {
 				if len(*json_array) != 1 {
-					errors = append(errors, fmt.Errorf("get_last_insert_id not found "))
+					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
 					return errors
 				}
 
@@ -561,7 +693,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 					if auto_increment_column_name_errors != nil {
 						errors = append(errors, auto_increment_column_name_errors...)
 					} else if IsNil(auto_increment_column_name) {
-						errors = append(errors, fmt.Errorf("auto_increment_column_name is nil"))
+						errors = append(errors, fmt.Errorf("error: auto_increment_column_name is nil"))
 					}
 
 					set_auto_field_errors := SetField(struct_type, getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)

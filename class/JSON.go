@@ -12,15 +12,15 @@ import (
 func ParseJSON(s string) (*Map, []error) {
 	var errors []error
 	if s == "" {
-		errors = append(errors, fmt.Errorf("value empty string"))
+		errors = append(errors, fmt.Errorf("error: value empty string"))
 	}
 
 	if !strings.HasPrefix(s, "{") {
-		errors = append(errors, fmt.Errorf("json does not start with {"))
+		errors = append(errors, fmt.Errorf("error: json does not start with {"))
 	}
 
 	if !strings.HasSuffix(s, "}") {
-		errors = append(errors, fmt.Errorf("json does not end with }"))
+		errors = append(errors, fmt.Errorf("error: json does not end with }"))
 	}
 
 	if len(errors) > 0 {
@@ -78,15 +78,15 @@ func ParseJSON(s string) (*Map, []error) {
 	}
 
 	if *opening_bracket_count != *closing_bracket_count {
-		errors = append(errors, fmt.Errorf("opening and closing brackets {} do not match, opening: %d closing: %d", *opening_bracket_count, *closing_bracket_count))
+		errors = append(errors, fmt.Errorf("error: opening and closing brackets {} do not match, opening: %d closing: %d", *opening_bracket_count, *closing_bracket_count))
 	}
 
 	if *opening_square_count != *closing_square_count {
-		errors = append(errors, fmt.Errorf("opening and closing squares [] do not match, opening: %d closing: %d", *opening_square_count, *closing_square_count))
+		errors = append(errors, fmt.Errorf("error: opening and closing squares [] do not match, opening: %d closing: %d", *opening_square_count, *closing_square_count))
 	}
 
 	if *opening_quote_count != *closing_quote_count {
-		errors = append(errors, fmt.Errorf("opening and closing quotes do not match, opening: %d closing: %d", *opening_quote_count, *closing_quote_count))
+		errors = append(errors, fmt.Errorf("error: opening and closing quotes do not match, opening: %d closing: %d", *opening_quote_count, *closing_quote_count))
 	}
 
 	if len(errors) > 0 {
@@ -100,9 +100,9 @@ func ParseJSON(s string) (*Map, []error) {
 func parseJSONMap(runes *[]rune, index *uint64, mode *string, list *list.List, metrics *Map) ([]error) {
 	var errors []error
 	if list == nil {
-		errors = append(errors, fmt.Errorf("list is nil"))
+		errors = append(errors, fmt.Errorf("error: list is nil"))
 	} else if (*list).Len() == 0 {
-		errors = append(errors, fmt.Errorf("list is empty"))
+		errors = append(errors, fmt.Errorf("error: list is empty"))
 	}
 
 	if len(errors) > 0 {
@@ -350,9 +350,9 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	var errors []error
 	
 	if list == nil {
-		errors = append(errors, fmt.Errorf("list is nil"))
+		errors = append(errors, fmt.Errorf("error: list is nil"))
 	} else if (*list).Len() == 0 {
-		errors = append(errors, fmt.Errorf("list is empty"))
+		errors = append(errors, fmt.Errorf("error: list is empty"))
 	}
 
 	if len(errors) > 0 {
@@ -388,9 +388,9 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 		dequoted_value := (*string_value)[1:(len(*string_value)-1)]
 		string_value = &dequoted_value	
 	} else if strings.HasPrefix(*string_value, "\"") && !strings.HasSuffix(*string_value, "\"") {
-		errors = append(errors, fmt.Errorf("value has \" as prefix but not \" as suffix"))
+		errors = append(errors, fmt.Errorf("error: value has \" as prefix but not \" as suffix"))
 	} else if !strings.HasPrefix(*string_value, "\"") && strings.HasSuffix(*string_value, "\"") {
-		errors = append(errors, fmt.Errorf("value has \" as suffix but not \" as prefix"))
+		errors = append(errors, fmt.Errorf("error: value has \" as suffix but not \" as prefix"))
 	} else {
 		// when parsing emtpy array []
 		if *string_value == "" {
@@ -413,12 +413,12 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 			if negative_number_count == 1 {
 				negative_number = true
 				if !strings.HasPrefix(*string_value, "-") {
-					errors = append(errors, fmt.Errorf("negative symbol is not at the start of the number"))
+					errors = append(errors, fmt.Errorf("error: negative symbol is not at the start of the number"))
 				}
 			} else if negative_number_count == 0 {
 				negative_number = false
 			} else {
-				errors = append(errors, fmt.Errorf("value contained %d negative symbols expected 1", negative_number_count))
+				errors = append(errors, fmt.Errorf("error: value contained %d negative symbols expected 1", negative_number_count))
 			}
 
 			var decimal_number bool
@@ -428,7 +428,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 			} else if decimal_count == 0 {
 				decimal_number = false
 			} else {
-				errors = append(errors, fmt.Errorf("value contained %d decimal points expected 1", decimal_count))
+				errors = append(errors, fmt.Errorf("error: value contained %d decimal points expected 1", decimal_count))
 			}
 
 			whitelist_characters := Map{"0":nil,"1":nil,"2":nil,"3":nil,"4":nil,"5":nil,"6":nil,"7":nil,"8":nil,"9":nil,".":nil,"-":nil}
@@ -446,7 +446,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 				data_type = "float64"
 				float64_temp, float64_temp_error := strconv.ParseFloat(*string_value, 64)
 				if float64_temp_error != nil {
-					errors = append(errors, fmt.Errorf("strconv.ParseFloat(*string_value, 64) error"))
+					errors = append(errors, fmt.Errorf("error: strconv.ParseFloat(*string_value, 64) error"))
 				} else {
 					float64_value = &float64_temp
 					
@@ -467,14 +467,14 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 					data_type = "int64"
 					int64_temp, int64_temp_error := strconv.ParseInt(*string_value, 10, 64)
 					if int64_temp_error != nil {
-						errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 64) error"))
+						errors = append(errors, fmt.Errorf("error: strconv.ParseInt(*string_value, 10, 64) error"))
 					} else {
 						int64_value = &int64_temp
 						if *int64_value >= -128 && *int64_value <= 127 {
 							data_type = "int8"
 							int8_temp, int8_temp_error := strconv.ParseInt(*string_value, 10, 8)
 							if int8_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 8) error"))
+								errors = append(errors, fmt.Errorf("error: strconv.ParseInt(*string_value, 10, 8) error"))
 							} else {
 								int8_conv := int8(int8_temp)
 								int8_value = &int8_conv
@@ -483,7 +483,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 							data_type = "int16"
 							int16_temp, int16_temp_error := strconv.ParseInt(*string_value, 10, 16)
 							if int16_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 16) error"))
+								errors = append(errors, fmt.Errorf("error: strconv.ParseInt(*string_value, 10, 16) error"))
 							} else {
 								int16_conv := int16(int16_temp)
 								int16_value = &int16_conv
@@ -492,7 +492,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 							data_type = "int32"
 							int32_temp, int32_temp_error := strconv.ParseInt(*string_value, 10, 32)
 							if int32_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseInt(*string_value, 10, 32) error"))
+								errors = append(errors, fmt.Errorf("error: strconv.ParseInt(*string_value, 10, 32) error"))
 							} else {
 								int32_conv := int32(int32_temp)
 								int32_value = &int32_conv
@@ -555,7 +555,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 	}
 
 	if data_type == "" {
-		errors = append(errors, fmt.Errorf("data_type is unknown please implement"))
+		errors = append(errors, fmt.Errorf("error: data_type is unknown please implement"))
 	}
 
 
@@ -635,7 +635,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 func ConvertInterfaceValueToJSONStringValue(json *strings.Builder, value interface{}) ([]error) {
 	var errors []error
 	if json == nil {
-		errors = append(errors, fmt.Errorf("*strings.Builder is nil"))
+		errors = append(errors, fmt.Errorf("error: *strings.Builder is nil"))
 		return errors
 	}
 
@@ -875,7 +875,7 @@ func ConvertInterfaceValueToJSONStringValue(json *strings.Builder, value interfa
 	case "float32":
 		json.WriteString(fmt.Sprintf("%f", (value.(float32))))
 	default:
-		errors = append(errors, fmt.Errorf("JSON.ConvertInterfaceValueToJSONStringValue: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: JSON.ConvertInterfaceValueToJSONStringValue: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {

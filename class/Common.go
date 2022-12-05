@@ -170,7 +170,7 @@ func GetTime(object interface{}) (*time.Time, []error) {
 		}
 
 	default:
-		errors = append(errors, fmt.Errorf("Map.GetTime: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: Map.GetTime: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -218,17 +218,17 @@ func WhiteListString(m Map) []error {
 	data_type, _ := m.GetString("data_type")
 
 	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if  map_values == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has nil map", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: has empty array", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -238,7 +238,7 @@ func WhiteListString(m Map) []error {
 	_, found := (*map_values)[*str]
 
 	if !found {
-		errors = append(errors, fmt.Errorf("%s: %s: WhiteListString: did not find value", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: did not find value", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -256,17 +256,17 @@ func BlackListString(m Map) []error {
 	data_type, _ := m.GetString("data_type")
 
 	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -276,7 +276,7 @@ func BlackListString(m Map) []error {
 	_, found := (*map_values)[*str]
 
 	if found {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value: %s", *data_type, *label, *str))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	
 	if len(errors) > 0 {
@@ -291,7 +291,7 @@ func GetFields(struct_type string, m *Map, field_type string) (*Map, []error) {
 	var errors []error
 	if !(field_type == "[fields]" || field_type == "[system_fields]") {
 		available_fields := m.Keys()
-		errors = append(errors, fmt.Errorf("%s %s is not a valid root field, available root fields: %s", struct_type, field_type, available_fields))
+		errors = append(errors, fmt.Errorf("error: %s %s is not a valid root field, available root fields: %s", struct_type, field_type, available_fields))
 	}
 
 	if len(errors) > 0 {
@@ -302,7 +302,7 @@ func GetFields(struct_type string, m *Map, field_type string) (*Map, []error) {
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	} else if IsNil(fields_map) {
-		errors = append(errors, fmt.Errorf("%s %s is nil", struct_type, field_type))
+		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, field_type))
 	} 
 
 	if len(errors) > 0 {
@@ -316,7 +316,7 @@ func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) 
 	var errors []error
 	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
 		available_fields := m.Keys()
-		errors = append(errors, fmt.Errorf("%s, %s is not a valid root system schema, available root fields: %s", struct_type, schema_type, available_fields))
+		errors = append(errors, fmt.Errorf("error: %s, %s is not a valid root system schema, available root fields: %s", struct_type, schema_type, available_fields))
 	}
 
 	if len(errors) > 0 {
@@ -327,22 +327,22 @@ func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) 
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	} else if IsNil(schemas_map) {
-		errors = append(errors, fmt.Errorf("%s %s is nil", struct_type, schema_type))
+		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, schema_type))
 	} else {
 		schema_paramters := schemas_map.Keys()
 		for _, schema_paramter := range schema_paramters {
 			if !schemas_map.IsMap(schema_paramter) {
-				errors = append(errors, fmt.Errorf("%s %s %s is not a map", struct_type, schema_type, schema_paramter))
+				errors = append(errors, fmt.Errorf("error: %s %s %s is not a map", struct_type, schema_type, schema_paramter))
 			} else {
 				schema_paramter_map, schema_paramter_map_errors := schemas_map.GetMap(schema_paramter) 
 				if schema_paramter_map_errors != nil {
-					errors = append(errors, fmt.Errorf("%s %s %s had errors getting map: %s", struct_type, schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
+					errors = append(errors, fmt.Errorf("error: %s %s %s had errors getting map: %s", struct_type, schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
 				} else {
 					attributes := schema_paramter_map.Keys()
 					valid_attributes_map := GetValidSchemaFields()
 					for _, attribute := range attributes {
 						if !valid_attributes_map.HasKey(attribute) {
-							errors = append(errors, fmt.Errorf("%s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.Keys()))
+							errors = append(errors, fmt.Errorf("error: %s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.Keys()))
 						}
 					}
 				}
@@ -364,9 +364,9 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		errors = append(errors, schemas_map_errors...)
 	} else if !schemas_map.HasKey(field) {
 		available_fields := schemas_map.Keys()
-		errors = append(errors, fmt.Errorf("Common.GetField %s schema_type: %s field: %s does not exist available fields are: %s", struct_type, schema_type, field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s does not exist available fields are: %s", struct_type, schema_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schemas_map.IsMap(field) {
-		errors = append(errors, fmt.Errorf("Common.GetField %s schema_type: %s field: %s is not a map and has type: %s", struct_type, schema_type, field, schemas_map.GetType(field)))
+		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s is not a map and has type: %s", struct_type, schema_type, field, schemas_map.GetType(field)))
 	} 
 
 	if len(errors) > 0 { 
@@ -386,12 +386,12 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	} else if schema_map == nil {
-		errors = append(errors, fmt.Errorf("%s %s map is nil", struct_type, schema_type))
+		errors = append(errors, fmt.Errorf("error: %s %s map is nil", struct_type, schema_type))
 	} else if !schema_map.HasKey("type") {
 		available_fields := schemas_map.Keys()
-		errors = append(errors, fmt.Errorf("%s field: %s schema \"type\" attribute does not exist available fields are: %s", struct_type, field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute does not exist available fields are: %s", struct_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_map.IsString("type") {
-		errors = append(errors, fmt.Errorf("%s field: %s schema \"type\" attribute value is not a string it's %s", struct_type, field, schema_map.GetType("type")))
+		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute value is not a string it's %s", struct_type, field, schema_map.GetType("type")))
 	}
 
 	if len(errors) > 0 {
@@ -402,7 +402,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 	if schema_type_value_errors != nil {
 		errors = append(errors, schema_type_value_errors...)
 	} else if schema_type_value == nil {
-		errors = append(errors, fmt.Errorf("field: %s schema type is nil"))
+		errors = append(errors, fmt.Errorf("error: field: %s schema type is nil"))
 	}
 
 	if len(errors) > 0 {
@@ -427,7 +427,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 		}
 
 		if schema_map.IsBoolTrue("primary_key") {
-			errors = append(errors,	fmt.Errorf("field: %s had nil value and default value but is a primary key"))
+			errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is a primary key"))
 			return nil, errors
 		}
 
@@ -435,14 +435,14 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			return nil, nil
 		}
 
-		errors = append(errors,	fmt.Errorf("field: %s had nil value and default value but is not nullable"))
+		errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is not nullable"))
 		return nil, errors
 	}
 	
 
 	object_type := fields_map.GetType(field)
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
-		errors = append(errors, fmt.Errorf("field: %s schema type: %s actual: %s are not a match", field, strings.ReplaceAll(*schema_type_value, "*", ""), strings.ReplaceAll(object_type, "*", "")))
+		errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s are not a match", field, strings.ReplaceAll(*schema_type_value, "*", ""), strings.ReplaceAll(object_type, "*", "")))
 	}
 
 	if len(errors) > 0 {
@@ -466,105 +466,105 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_value := result.(string)
 			return &temp_value, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*string":
 		switch desired_type {
 		case "string":
 			return *(result.(*string)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*uint64":
 		switch desired_type {
 		case "uint64":
 			return *(result.(*uint64)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*time.Time":
 		switch desired_type {
 		case "time.Time":
 			return *(result.(*time.Time)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.ClientManager":
 		switch desired_type {
 		case "class.ClientManager":
 			return *(result.(*ClientManager)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Client":
 		switch desired_type {
 		case "class.Client":
 			return *(result.(*Client)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Host":
 		switch desired_type {
 		case "class.Host":
 			return *(result.(*Host)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: ommon.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Database":
 		switch desired_type {
 		case "class.Database":
 			return *(result.(*Database)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Table":
 		switch desired_type {
 		case "class.Table":
 			return *(result.(*Table)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Record":
 		switch desired_type {
 		case "class.Record":
 			return *(result.(*Record)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.DomainName":
 		switch desired_type {
 		case "class.DomainName":
 			return *(result.(*DomainName)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Grant":
 		switch desired_type {
 		case "class.Grant":
 			return *(result.(*Grant)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.Credentials":
 		switch desired_type {
 		case "class.Credentials":
 			return *(result.(*Credentials)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.User":
 		switch desired_type {
 		case "class.User":
 			return *(result.(*User)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "*class.DatabaseCreateOptions":
 		switch desired_type {
 		case "class.DatabaseCreateOptions":
 			return *(result.(*DatabaseCreateOptions)), nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.ClientManager":
 		switch desired_type {
@@ -572,7 +572,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(ClientManager)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Client":
 		switch desired_type {
@@ -580,7 +580,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Client)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Host":
 		switch desired_type {
@@ -588,7 +588,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Host)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Database":
 		switch desired_type {
@@ -596,7 +596,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Database)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Table":
 		switch desired_type {
@@ -604,7 +604,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Table)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Record":
 		switch desired_type {
@@ -612,7 +612,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Record)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.DomainName":
 		switch desired_type {
@@ -620,7 +620,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(DomainName)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Grant":
 		switch desired_type {
@@ -628,7 +628,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Grant)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.Credentials":
 		switch desired_type {
@@ -636,7 +636,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(Credentials)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.User":
 		switch desired_type {
@@ -644,7 +644,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(User)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
 	case "class.DatabaseCreateOptions":
 		switch desired_type {
@@ -652,10 +652,10 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 			temp_result := result.(DatabaseCreateOptions)
 			return &temp_result, nil
 		default:
-			errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
+			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 	}
 	default:
-		errors = append(errors, fmt.Errorf("Common.GetField mapping not supported please implement: %s", type_of))
+		errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement: %s", type_of))
 	}
 
 	if len(errors) > 0 {
@@ -686,12 +686,12 @@ func SetField(struct_type string, m *Map, schema_type string, field_type string,
 	if schema_of_parameter_map_errors != nil {
 		errors = append(errors, schema_of_parameter_map_errors...)
 	} else if schema_of_parameter_map == nil {
-		errors = append(errors, fmt.Errorf("field: %s schema map is nil", parameter))
+		errors = append(errors, fmt.Errorf("error: field: %s schema map is nil", parameter))
 	} else if !schema_of_parameter_map.HasKey("type") {
 		available_fields := schema_of_parameter_map.Keys()
-		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute does not exist available fields are: %s", parameter, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute does not exist available fields are: %s", parameter, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_of_parameter_map.IsString("type") {
-		errors = append(errors, fmt.Errorf("field: %s schema \"type\" attribute value is not a string it's %s", parameter, schema_of_parameter_map.GetType("type")))
+		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute value is not a string it's %s", parameter, schema_of_parameter_map.GetType("type")))
 	}
 
 	if len(errors) > 0 {
@@ -729,17 +729,17 @@ func BlackListStringToUpper(m Map) []error {
 	data_type, _ := m.GetString("data_type")
 
 	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has nil map", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: has empty array", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -749,7 +749,7 @@ func BlackListStringToUpper(m Map) []error {
 	_, found := (*map_values)[strings.ToUpper(*str)]
 
 	if found {
-		errors = append(errors, fmt.Errorf("%s: %s: BlackListString: found value: %s", *data_type, *label, *str))
+		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	
 	if len(errors) > 0 {
@@ -772,17 +772,17 @@ func WhitelistCharacters(m Map) []error {
 	data_type, _ := m.GetString("data_type")
 
 	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has nil map", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has nil map", *data_type, *label))
 	} else if len(*map_values) == 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has empty array", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has empty array", *data_type, *label))
 	}
 
 	if str == nil {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: compare value is nil", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: compare value is nil", *data_type, *label))
 	} else if *str == "" {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: compare value is empty", *data_type, *label))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: compare value is empty", *data_type, *label))
 	}
 
 	if len(errors) > 0 {
@@ -800,7 +800,7 @@ func WhitelistCharacters(m Map) []error {
 	}
 
 	if len(invalid_letters) > 0 {
-		errors = append(errors, fmt.Errorf("%s: %s: WhitelistCharacters: has invalid character(s): %s", *data_type, *label, invalid_letters))
+		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has invalid character(s): %s", *data_type, *label, invalid_letters))
 	}
 
 	if len(errors) > 0 {
@@ -899,11 +899,11 @@ func ValidateData(data *Map, struct_type string) []error {
 
 	if (struct_type == "*class.Table" || struct_type == "class.Table") && !ignore_identity_errors {
 		if *primary_key_count <= 0 {
-			errors = append(errors, fmt.Errorf("table: %s did not have any primary keys", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys", struct_type))
 		}
 
 		if *auto_increment_count > 1 {
-			errors = append(errors, fmt.Errorf("table: %s had more than one auto_increment attribute on a column", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: %s had more than one auto_increment attribute on a column", struct_type))
 		}
 	}
 
@@ -919,11 +919,11 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
 	if schema_of_parameter_errors != nil {
-		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
 	} else if IsNil(schema_of_parameter) {
-		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s had nil schema", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s had nil schema", struct_type, parameter))
 	} else if !schemas.IsMap(parameter) {
-		errors = append(errors, fmt.Errorf("Common.ValidateParameterData: %s column: %s is not a map", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s is not a map", struct_type, parameter))
 	}
 
 	if len(errors) > 0 {
@@ -978,9 +978,9 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 	type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
 	if type_of_parameter_schema_value_errors != nil {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s error getting \"type\" attribute for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
+		errors = append(errors, fmt.Errorf("error: struct: %s column: %s error getting \"type\" attribute for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
 	} else if type_of_parameter_schema_value == nil {
-		errors = append(errors, fmt.Errorf("struct: %s column: %s \"type\" attribute of schema is nil", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: struct: %s column: %s \"type\" attribute of schema is nil", struct_type, parameter))
 	} else {
 		if strings.HasPrefix(*type_of_parameter_schema_value, "*") {
 			value_is_mandatory = false
@@ -1007,7 +1007,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			schema_of_parameter.SetBool("validated", &bool_true)
 		} else {
 				if !schema_of_parameter.IsBool("validated") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
 				return errors
 			} else if schema_of_parameter.IsBoolTrue("validated") {
 				return nil
@@ -1040,7 +1040,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			value_to_validate = schema_of_parameter.GetObject("default")
 		} else if !default_set { 
 			if value_is_mandatory {
-				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
+				errors = append(errors,  fmt.Errorf("error: struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
 			} else {
 				value_to_validate = nil
 			}
@@ -1052,7 +1052,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			value_to_validate = schema_of_parameter.GetObject("default")
 		} else if !default_set {
 			if value_is_mandatory {
-				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
+				errors = append(errors,  fmt.Errorf("error: struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
 			} else {
 				value_to_validate = nil
 			}
@@ -1071,7 +1071,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 	if !((struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter)) {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
-			errors = append(errors, fmt.Errorf("table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
 		}
 	}
 
@@ -1092,12 +1092,12 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		if schema_of_parameter.IsNumber("min_length") {
 			min_length, min_length_errors := schema_of_parameter.GetUInt64("min_length")
 			if min_length_errors != nil {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had an error parsing number", struct_type, parameter, "min_length"))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s had an error parsing number", struct_type, parameter, "min_length"))
 			} else {
 				runes := []rune(*string_value)
 
 				if uint64(len(runes)) < *min_length {
-					errors = append(errors, fmt.Errorf("table: %s column: %s attribute: min_length did not meet minimum length requirements and had length: %d", struct_type, parameter, len(runes)))
+					errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: min_length did not meet minimum length requirements and had length: %d", struct_type, parameter, len(runes)))
 				}
 			}
 		}
@@ -1110,7 +1110,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 		if schema_of_parameter.IsBoolTrue("not_empty_string_value") {
 			if *string_value == "" {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s was an empty string", struct_type, parameter, "not_empty_string_value"))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s was an empty string", struct_type, parameter, "not_empty_string_value"))
 			}
 		}
 
@@ -1125,13 +1125,13 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		}
 		
 		if !schema_of_parameter.IsArray(FILTERS())  {
-			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, FILTERS(), schema_of_parameter.GetType(FILTERS())))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, FILTERS(), schema_of_parameter.GetType(FILTERS())))
 			return errors
 		}
 
 		filters, filters_errors := schema_of_parameter.GetArray(FILTERS())
 		if filters_errors != nil {
-			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, FILTERS(), filters_errors))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, FILTERS(), filters_errors))
 		} else if filters == nil {
 			return nil
 		}
@@ -1141,7 +1141,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		}
 
 		if len(*filters) == 0 {
-			errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s has no filters", struct_type, parameter, FILTERS()))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s has no filters", struct_type, parameter, FILTERS()))
 			return errors
 		}
 
@@ -1149,18 +1149,18 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			filter_map := filter.(Map)
 
 			if !filter_map.HasKey("function") {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, FILTERS(), filter_index))
 				return errors
 			}
 
 			function := filter_map.Func("function")
 			if function == nil {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, FILTERS(), filter_index))
 				return errors
 			}
 
 			if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
-				errors = append(errors, fmt.Errorf("table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, FILTERS(), filter_index))
 				return errors
 			}
 
@@ -1364,7 +1364,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 
 		break
 	default:
-		errors = append(errors, fmt.Errorf("class: %s column: %s type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", struct_type, parameter, type_of_parameter_value, value_is_null, value_is_mandatory, default_is_null))
+		errors = append(errors, fmt.Errorf("error: class: %s column: %s type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", struct_type, parameter, type_of_parameter_value, value_is_null, value_is_mandatory, default_is_null))
 	}
 
 	if len(errors) > 0 {
@@ -1428,7 +1428,7 @@ func GenerateRandomLetters(length uint64, upper_case *bool) (*string) {
 func GetDirectoryOfExecutable() (*string, error) {
     _, filename, _, ok := runtime.Caller(0)
 	if !ok {
-		return nil, fmt.Errorf("filename error")
+		return nil, fmt.Errorf("error: filename error")
 	}
 	directory_name := filepath.Dir(filename)
 	directory_name = strings.Replace(directory_name, "/class","", 1)

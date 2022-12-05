@@ -57,7 +57,7 @@ func NewClientManager() (*ClientManager, []error) {
 		var errors []error
 		parts := strings.Split(label, ":")
 		if len(parts) != 5 {
-			errors = append(errors, fmt.Errorf("database config for %s not in format e.g holistic_db_config:127.0.0.1:3306:holistic_test:root", label))
+			errors = append(errors, fmt.Errorf("error: database config for %s not in format e.g holistic_db_config:127.0.0.1:3306:holistic_test:root", label))
 			return nil, errors
 		}
 	
