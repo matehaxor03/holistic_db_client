@@ -115,12 +115,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
-		temp_database_map, temp_database_map_errors := getData().GetMap("[database_username]")
-		if temp_database_map_errors != nil {
-			return temp_database_map_errors
-		}
-		temp_database_map.SetString("value", &database_username)
-		return nil
+		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", database_username)
 	}
 
 	validate := func() []error {
