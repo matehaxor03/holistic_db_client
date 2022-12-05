@@ -10,8 +10,16 @@ func GetTestTableNameWithStringColumn() string {
 	return "holistic_test_table_with_string"
 }
 
+func GetTestTableNameWithStringColumnNotMandatory() string {
+	return "holistic_test_table_with_string_not_mandatory"
+}
+
 func GetTestTableStringColumnName() string {
 	return "string_column"
+}
+
+func GetTestTableStringColumnNameNotMandatory() string {
+	return "string_column_not_mandatory"
 }
 
 func GetTestSchemaWithStringColumn() class.Map {
@@ -19,13 +27,16 @@ func GetTestSchemaWithStringColumn() class.Map {
 	                  GetTestTableStringColumnName(): class.Map {"type": "string", "max_length":100}}
 }
 
+func GetTestSchemaWithStringColumnNotMandatory() class.Map {
+	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableStringColumnNameNotMandatory(): class.Map {"type": "*string", "max_length":100}}
+}
 
 func TestTableCreateWithStringColumn(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t,  GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
+	CreateTableAndVerifySchema(t, GetTestTableStringColumnName(), GetTestSchemaWithStringColumn())
+}
 
-    table_errors := table.Create()
-	if table_errors != nil {
-		t.Error(table_errors)
-	}
+func TestTableCreateWithStringColumnNotMandatory(t *testing.T) {
+	CreateTableAndVerifySchema(t, GetTestTableNameWithStringColumnNotMandatory(), GetTestSchemaWithStringColumnNotMandatory())
 }
  
