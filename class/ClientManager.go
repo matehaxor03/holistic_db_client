@@ -83,11 +83,16 @@ func NewClientManager() (*ClientManager, []error) {
 		}
 
 		host, host_errors := newHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
-		client, client_errors := newClient(getClientManager(), host, temp_tuple_creds.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
-
+		
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
 		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		
+		client, client_errors := newClient(*getClientManager(), host, temp_tuple_creds.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)

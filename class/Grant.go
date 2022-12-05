@@ -33,7 +33,7 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(client *Client, user *User, grant string, database_filter *string, table_filter *string, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
+func newGrant(client Client, user User, grant string, database_filter *string, table_filter *string, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
 	struct_type := "*Grant"
 
 	var errors []error
@@ -46,9 +46,9 @@ func newGrant(client *Client, user *User, grant string, database_filter *string,
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]": Map{"[client]":client, "[user]":user, "[grant]":grant},
-		"[system_schema]": Map{"[client]":Map{"type":"*class.Client", "mandatory": true},
-						"[user]":Map{"type":"*class.User", "mandatory": true},
-						"[grant]": Map{"type":"string", "mandatory": true,
+		"[system_schema]": Map{"[client]":Map{"type":"class.Client"},
+						"[user]":Map{"type":"class.User"},
+						"[grant]": Map{"type":"string",
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -56,18 +56,18 @@ func newGrant(client *Client, user *User, grant string, database_filter *string,
 	if database_filter != nil {
 		data["[system_fields]"].(Map)["[database_filter]"] = database_filter
 		if *database_filter == "*" {
-			data["[ssystem_chema]"].(Map)["[database_filter]"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[ssystem_chema]"].(Map)["[database_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[database_filter]"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
+			data["[system_schema]"].(Map)["[database_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
 		}
 	}
 
 	if table_filter != nil {
 		data["[system_fields]"].(Map)["[table_filter]"] = table_filter
 		if *table_filter == "*" {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"*string", "mandatory": true, FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"*string","mandatory": true, FILTERS(): Array{Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
@@ -86,16 +86,25 @@ func newGrant(client *Client, user *User, grant string, database_filter *string,
 
 	getClient := func() (*Client, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[client]", "*class.Client")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		}
 		return temp_value.(*Client), temp_value_errors
 	}
 
 	getUser := func() (*User, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "*class.User")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		}
 		return temp_value.(*User), temp_value_errors
 	}
 
 	getGrantValue := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		}
 		return temp_value.(string), temp_value_errors
 	}
 
@@ -200,7 +209,7 @@ func newGrant(client *Client, user *User, grant string, database_filter *string,
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file": true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file": true})
 
 		if execute_errors != nil {
 			return execute_errors

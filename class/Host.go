@@ -75,9 +75,9 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		"[schema]": Map{},
 		"[system_fields]": Map{"[host_name]":host_name, "[port_number]":port_number},
 		"[system_schema]": Map{
-			"[host_name]":Map{"type":"*string","mandatory": true,
+			"[host_name]":Map{"type":"string",
 			FILTERS(): Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-			"[port_number]": Map{"type":"*string", "mandatory": true,
+			"[port_number]": Map{"type":"string",
 			FILTERS(): Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
 		},
 	}
@@ -88,11 +88,17 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 
 	getHostName := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host_name]", "string")
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		} 
 		return temp_value.(string), temp_value_errors
 	}
 
 	getPortNumber := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[port_number]", "string")
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		}
 		return temp_value.(string), temp_value_errors
 	}
 

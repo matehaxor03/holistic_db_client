@@ -14,7 +14,7 @@ type User struct {
 	Exists 		   func() (*bool, []error)
 }
 
-func newUser(client *Client, credentials *Credentials, domain_name *DomainName) (*User, []error) {
+func newUser(client Client, credentials Credentials, domain_name DomainName) (*User, []error) {
 	struct_type := "*User"
 
 	SQLCommand := newSQLCommand()
@@ -23,9 +23,9 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]": Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
-		"[system_schema]": Map{"[client]":Map{"type":"*class.Client", "mandatory": true},
-		                "[credentials]":Map{"type":"*class.Credentials", "mandatory": true},
-						"[domain_name]":Map{"type":"*class.DomainName", "mandatory": true},
+		"[system_schema]": Map{"[client]":Map{"type":"class.Client"},
+		                "[credentials]":Map{"type":"class.Credentials"},
+						"[domain_name]":Map{"type":"class.DomainName"},
 		},
 	}
 
@@ -39,6 +39,12 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 
 	getClient := func() (*Client, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
+		
 		return temp_value.(*Client), temp_value_errors
 	}
 
@@ -133,7 +139,7 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 				return temp_client_errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -184,7 +190,7 @@ func newUser(client *Client, credentials *Credentials, domain_name *DomainName) 
 				"[fields]": Map{},
 				"[schema]": Map{},
 				"[system_fields]":Map{"[password]":new_password},
-				"[system_schema]":Map{"[password]": Map{"type":"*string","mandatory": false, 
+				"[system_schema]":Map{"[password]": Map{"type":"string", 
 					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 				},
 			}

@@ -155,9 +155,9 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]":Map{"[username]":username,"[password]":password},
-		"[system_schema]":Map{"[username]":Map{"type":"*string","mandatory": true, 
+		"[system_schema]":Map{"[username]":Map{"type":"string", 
 			FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-							 "[password]": Map{"type":"*string","mandatory": false, 
+							 "[password]": Map{"type":"*string", 
 			FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 							},
 	}

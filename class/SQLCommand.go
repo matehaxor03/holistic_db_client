@@ -9,24 +9,20 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client *Client, sql_command *string, options Map) (*Array, []error)
+	ExecuteUnsafeCommand func(client Client, sql_command *string, options Map) (*Array, []error)
 }
 
 func newSQLCommand() *SQLCommand {
 	bashCommand := newBashCommand()
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options Map) (*Array, []error) {
+		ExecuteUnsafeCommand: func(client Client, sql_command *string, options Map) (*Array, []error) {
 			var errors []error
 
-			if client == nil {
-				errors = append(errors, fmt.Errorf("client is nil"))
-			} else {
-				client_errs := client.Validate()
-				if client_errs != nil {
-					errors = append(errors, client_errs...)
-				}
+			client_errs := client.Validate()
+			if client_errs != nil {
+				errors = append(errors, client_errs...)
 			}
-
+			
 			if len(errors) > 0 {
 				return nil, errors
 			}

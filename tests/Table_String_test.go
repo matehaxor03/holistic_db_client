@@ -16,7 +16,7 @@ func GetTestTableStringColumnName() string {
 
 func GetTestSchemaWithStringColumn() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableStringColumnName(): class.Map {"type": "string", "mandatory":true, "max_length":100}}
+	                  GetTestTableStringColumnName(): class.Map {"type": "string", "max_length":100}}
 }
 
 

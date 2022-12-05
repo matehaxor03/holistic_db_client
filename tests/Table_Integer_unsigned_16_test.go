@@ -20,12 +20,12 @@ func GetTestTableInteger16UnsignedColumnNameNotMandatory() string {
 
 func GetTestSchemaWithIntegerUnsigned16Column() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerUnsigned16ColumnName(): class.Map {"type": "uint16", "mandatory":true}}
+					  GetTestTableIntegerUnsigned16ColumnName(): class.Map {"type": "uint16"}}
 }
 
 func GetTestSchemaWithIntegerUnsigned16NotMandatoryColumn() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger16UnsignedColumnNameNotMandatory(): class.Map {"type": "*uint16", "mandatory":true}}
+	                  GetTestTableInteger16UnsignedColumnNameNotMandatory(): class.Map {"type": "*uint16"}}
 }
 
 func TestTableCreateWithIntegerUnsigned16Column(t *testing.T) {

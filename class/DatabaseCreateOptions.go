@@ -42,9 +42,9 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]":Map{"[character_set]":character_set, "[collate]":collate},
-		"[system_schema]":Map{"[character_set]":Map{"type":"*string","mandatory": false,
+		"[system_schema]":Map{"[character_set]":Map{"type":"*string",
 			FILTERS(): Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-			"[collate]": Map{"type":"*string","mandatory": false,
+			"[collate]": Map{"type":"*string",
 			FILTERS(): Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
 		},
 	}

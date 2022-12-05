@@ -49,17 +49,13 @@ type Record struct {
 	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
-func newRecord(table *Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
+func newRecord(table Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
 	SQLCommand := newSQLCommand()
 	var errors []error
 	struct_type := "*class.Record"
 
 	if record_data == nil {
 		errors = append(errors, fmt.Errorf("record_data is nil"))
-	}
-
-	if table == nil {
-		errors = append(errors, fmt.Errorf("table is nil"))
 	}
 
 	if len(errors) > 0 {
@@ -83,7 +79,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 	data := Map{"[fields]": record_data, "[system_fields]": Map{"[table]": table}}
 	data["[schema]"] = table_schema
-	data["[system_schema]"] = Map{"[table]": Map{"type":"*class.Table", "mandatory": true}}
+	data["[system_schema]"] = Map{"[table]": Map{"type":"class.Table"}}
 
 	getData := func() (*Map) {
 		return &data
@@ -100,6 +96,11 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 
 	getTable := func() (*Table, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*class.Table")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
 		return temp_value.(*Table), temp_value_errors
 	}
 
@@ -529,7 +530,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 				return temp_client_errors
 			}
 
-			json_array, errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql, options)
+			json_array, errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql, options)
 
 			if len(errors) > 0 {
 				return errors
@@ -597,7 +598,7 @@ func newRecord(table *Table, record_data Map, database_reserved_words_obj *Datab
 				return temp_client_errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql, options)
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql, options)
 
 			if execute_errors != nil {
 				return execute_errors

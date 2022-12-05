@@ -25,7 +25,7 @@ type Database struct {
 	UseDatabase     func() []error
 }
 
-func newDatabase(client *Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
+func newDatabase(client Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
 	SQLCommand := newSQLCommand()
 	var this_database *Database
 	struct_type := "*class.Database"
@@ -45,13 +45,13 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		"[fields]": Map{},
 		"[schema]": Map{},
 		"[system_fields]": Map{
-			"[client]":client, "[database_name]":&database_name,"[database_create_options]":database_create_options},
+			"[client]":client, "[database_name]":database_name,"[database_create_options]":database_create_options},
 		"[system_schema]": Map{
-			"[client]":Map{"type":"*class.Client","mandatory": true},
-			"[database_name]":Map{"type":"*string", "mandatory": true,"min_length":2,"not_empty_string_value":true,
+			"[client]":Map{"type":"class.Client"},
+			"[database_name]":Map{"type":"string","min_length":2,"not_empty_string_value":true,
 			FILTERS(): Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
 							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
-			"[database_create_options]":Map{"type":"*class.DatabaseCreateOptions","mandatory":false}},
+			"[database_create_options]":Map{"type":"*class.DatabaseCreateOptions"}},
 	}
 
 	getData := func() (*Map) {
@@ -147,7 +147,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file":false, "creating_database":true})
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file":false, "creating_database":true})
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -175,7 +175,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "checking_database_exists":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "checking_database_exists":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -211,7 +211,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, temp_client_errors
 		}
 
-		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false})
+		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -266,7 +266,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -299,7 +299,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -315,20 +315,17 @@ func newDatabase(client *Client, database_name string, database_create_options *
 	getTable := func(table_name string) (*Table, []error) {
 		var errors []error
 		database := getDatabase()
-		if database == nil {
-			errors = append(errors, fmt.Errorf("database is nil"))
-		} else {
-			database_errors := database.Validate()
-			if database_errors != nil {
-				errors = append(errors, database_errors...)
-			}
+		
+		database_errors := database.Validate()
+		if database_errors != nil {
+			errors = append(errors, database_errors...)
 		}
 
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		table, table_errors := newTable(getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		table, table_errors := newTable(*getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if table_errors != nil {
 			errors = append(errors, table_errors...)
 		}
@@ -351,7 +348,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -400,7 +397,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 
-			table, table_errors := newTable(getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, table_errors := newTable(*getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if table_errors != nil {
 				return nil, table_errors
@@ -415,7 +412,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -430,7 +427,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -464,14 +461,12 @@ func newDatabase(client *Client, database_name string, database_create_options *
 		GetTables: func() (*[]Table, []error) {
 			var errors []error
 			database := getDatabase()
-			if database == nil {
-				errors = append(errors, fmt.Errorf("database is nil"))
-			} else {
-				database_errors := database.Validate()
-				if database_errors != nil {
-					errors = append(errors, database_errors...)
-				}
+			
+			database_errors := database.Validate()
+			if database_errors != nil {
+				errors = append(errors, database_errors...)
 			}
+			
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -539,7 +534,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				return temp_client_errors
 			}
 
-			return temp_client.UseDatabase(temp_database)
+			return temp_client.UseDatabase(*temp_database)
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)

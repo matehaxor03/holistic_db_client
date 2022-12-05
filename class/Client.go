@@ -13,7 +13,7 @@ type Client struct {
 	GetDatabaseInterface func(database_name string, character_set *string, collate *string) (*Database, []error)
 	DeleteDatabase      func(database_name string) []error
 	DatabaseExists      func(database_name string) (*bool, []error)
-	UseDatabase         func(database *Database) []error
+	UseDatabase         func(database Database) []error
 	UseDatabaseByName   func(database_name string) (*Database, []error)
 	UseDatabaseUsername func(database_username string) []error
 	GetUser             func(username string) (*User, []error)
@@ -24,10 +24,10 @@ type Client struct {
 	GetDatabase         func() (*Database, []error)
 	Validate            func() []error
 	ToJSONString        func(json *strings.Builder) []error
-	Grant               func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
+	Grant               func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 }
 
-func newClient(client_manager *ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
+func newClient(client_manager ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
 	var this_client *Client
 	struct_type := "*class.Client"
 
@@ -45,10 +45,10 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 		"[system_fields]":Map{
 			"[client_manager]": client_manager, "[host]": host, "[database]": database, "[database_username]": database_username },
 		"[system_schema]":Map{
-			"[client_manager]": Map{"type":"*class.ClientManager", "mandatory": true},
-			"[host]": Map{"type":"*class.Host", "mandatory": false},
-			"[database]": Map{"type":"*class.Database", "mandatory": false},
-			"[database_username]": Map{"type":"*string", "mandatory":false,
+			"[client_manager]": Map{"type":"class.ClientManager"},
+			"[host]": Map{"type":"*class.Host"},
+			"[database]": Map{"type":"*class.Database"},
+			"[database_username]": Map{"type":"*string",
 				FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
 	}
 
@@ -62,7 +62,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, temp_database_create_options_errors
 		}
 		
-		database, errs := newDatabase(getClient(), database_name, temp_database_create_options, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		database, errs := newDatabase(*getClient(), database_name, temp_database_create_options, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if errs != nil {
 			return nil, errs
 		}
@@ -110,7 +110,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 		return temp_value.(*ClientManager), nil
 	}
 
-	setDatabase := func(database *Database) []error {
+	setDatabase := func(database Database) []error {
 		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", database)
 	}
 
@@ -175,7 +175,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, host_errors
 		}
 
-		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		client, client_errors := newClient(*temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -195,7 +195,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil, domain_name_errors
 		}
 
-		user, user_errors := newUser(client, credentials, domain_name)
+		user, user_errors := newUser(*client, *credentials, *domain_name)
 		if user_errors != nil {
 			return nil, user_errors
 		}
@@ -224,7 +224,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return database, nil
 		},
 		DeleteDatabase: func(database_name string) []error {
-			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			database, database_errors := newDatabase(*getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -237,7 +237,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil
 		},
 		DatabaseExists: func(database_name string) (*bool, []error) {
-			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			database, database_errors := newDatabase(*getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 			if database_errors != nil {
 				return nil, database_errors
 			}
@@ -260,7 +260,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 				return nil, domain_errors
 			}
 
-			user, user_errors := newUser(getClient(), credentials, domain)
+			user, user_errors := newUser(*getClient(), *credentials, *domain)
 			if user_errors != nil {
 				return nil, user_errors
 			}
@@ -281,13 +281,7 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
 		},
-		UseDatabase: func(database *Database) []error {
-			var errors []error
-			if database == nil {
-				errors = append(errors, fmt.Errorf("database is nil"))
-				return errors
-			}
-
+		UseDatabase: func(database Database) []error {
 			database_errors := database.Validate()
 			if database_errors != nil {
 				return database_errors
@@ -298,12 +292,12 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			return nil
 		},
 		UseDatabaseByName: func(database_name string) (*Database, []error) {
-			database, database_errors := newDatabase(getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			database, database_errors := newDatabase(*getClient(), database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 			if database_errors != nil {
 				return nil, database_errors
 			}
 
-			setDatabase(database)
+			setDatabase(*database)
 			database.SetClient(this_client)
 			return database, nil
 		},
@@ -311,9 +305,9 @@ func newClient(client_manager *ClientManager, host *Host, database_username *str
 			setDatabaseUsername(database_username)
 			return nil
 		},
-		Grant: func(user *User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
+		Grant: func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 			client := getClient()
-			grant_obj, grant_errors := newGrant(client, user, grant, database_filter, table_filter, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj)
+			grant_obj, grant_errors := newGrant(*client, user, grant, database_filter, table_filter, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj)
 
 			if grant_errors != nil {
 				return nil, grant_errors

@@ -21,12 +21,12 @@ func GetTestTableInteger32SignedColumnNameNotMandatory() string {
 
 func GetTestSchemaWithIntegerSigned32Column() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned32ColumnName(): class.Map {"type": "int32", "mandatory":true}}
+					  GetTestTableIntegerSigned32ColumnName(): class.Map {"type": "int32"}}
 }
 
 func GetTestSchemaWithIntegerSigned32NotMandatoryColumn() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger32SignedColumnNameNotMandatory(): class.Map {"type": "*int32", "mandatory":true}}
+	                  GetTestTableInteger32SignedColumnNameNotMandatory(): class.Map {"type": "*int32"}}
 }
 
 func TestTableCreateWithIntegerSigned32Column(t *testing.T) {

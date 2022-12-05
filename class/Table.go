@@ -27,7 +27,7 @@ type Table struct {
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
-func newTable(database *Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
+func newTable(database Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
 	struct_type := "*Table"
 
 	SQLCommand := newSQLCommand()
@@ -47,7 +47,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b *Database, n string, s Map) (Map) {
+	setupData := func(b Database, n string, s Map) (Map) {
 		schema_is_nil := false
 		
 		if IsNil(s) {
@@ -60,8 +60,8 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			"[schema]": Map{},
 			"[system_fields]":Map{"[database]":b, "[table_name]":n},
 			"[system_schema]": Map{
-				"[database]": Map{"type":"*class.Database", "mandatory": true},
-				"[table_name]": Map{"type": "*string", "mandatory": true, "not_empty_string_value": true, "min_length": 2,
+				"[database]": Map{"type":"class.Database"},
+				"[table_name]": Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
 				FILTERS(): Array{Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
 								 Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}},
 			},
@@ -73,11 +73,11 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			d["[schema_is_nil]"] = false
 		}
 	
-		s["enabled"] = Map{"type": "*bool", "mandatory": false, "default": true}
-		s["archieved"] = Map{"type": "*bool", "mandatory": false, "default": false}
-		s["created_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now"}
-		s["last_modified_date"] = Map{"type": "*time.Time", "mandatory": false, "default": "now"}
-		s["archieved_date"] = Map{"type": "*time.Time", "mandatory": false, "default":nil}
+		s["enabled"] = Map{"type": "*bool", "default": true}
+		s["archieved"] = Map{"type": "*bool", "default": false}
+		s["created_date"] = Map{"type": "*time.Time", "default": "now"}
+		s["last_modified_date"] = Map{"type": "*time.Time", "default": "now"}
+		s["archieved_date"] = Map{"type": "*time.Time", "default":nil}
 	
 		d["[schema]"] = s
 		return d
@@ -91,6 +91,12 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 
 	getTableName := func() (string, []error) {
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", "string")
+		if temp_value_errors != nil {
+			return "", temp_value_errors
+		} else if temp_value == nil {
+			return "", nil
+		}
+		
 		return temp_value.(string), temp_value_errors
 	}
 
@@ -206,7 +212,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return nil, temp_client_errors
 		}
 		
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -246,7 +252,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -282,7 +288,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -321,7 +327,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return nil, temp_client_errors
 		}
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, Map{"use_file": false, "json_output": true})
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "json_output": true})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -346,9 +352,8 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			column_schema := Map{}
 			default_value := ""
 			field_name := ""
-			is_nullable := true
+			is_nullable := false
 			is_primary_key := false
-			is_mandatory := false
 			extra_value := ""
 			for _, column_attribute := range column_attributes {
 				switch column_attribute {
@@ -357,10 +362,8 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					switch *key_value {
 					case "PRI":
 						is_primary_key = true
-						is_mandatory = true
 						is_nullable = false
 						column_schema.SetBool("primary_key", &is_primary_key)
-						column_schema.SetBool("mandatory", &is_mandatory)
 					case "":
 					default:
 						errors = append(errors, fmt.Errorf("Table: GetSchema: Key not implemented please implement: %s", *key_value))
@@ -450,14 +453,10 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					switch *null_value {
 					case "YES":
 						if !is_primary_key {
-							is_mandatory = false
 							is_nullable = true
-							column_schema.SetBool("mandatory", &is_mandatory)
 						}
 					case "NO":
 						is_nullable = false
-						is_mandatory = true
-						column_schema.SetBool("mandatory", &is_mandatory)
 					default:
 						errors = append(errors, fmt.Errorf("Table: GetSchema: Null value not supported please implement: %s", *null_value))
 					}
@@ -618,7 +617,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_schema_errors
 		}
 
-		_, new_table_errors := newTable(temp_database, new_table_name, *temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		_, new_table_errors := newTable(*temp_database, new_table_name, *temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if new_table_errors != nil {
 			return new_table_errors
 		}
@@ -864,7 +863,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file": false})
 
 		if execute_errors != nil {
 			return execute_errors
@@ -913,7 +912,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 			return errors
 		}
 
-		data = setupData(temp_database, temp_table_name, *temp_schema)
+		data = setupData(*temp_database, temp_table_name, *temp_schema)
 		return nil
 	}
 
@@ -983,7 +982,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1033,7 +1032,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(getTable(), new_record_data, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record, record_errors := newRecord(*getTable(), new_record_data, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 			if record_errors != nil {
 				return nil, record_errors
 			}
@@ -1176,7 +1175,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1368,7 +1367,7 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					}
 				}
 
-				mapped_record_obj, mapped_record_obj_errors := newRecord(getTable(), mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
+				mapped_record_obj, mapped_record_obj_errors := newRecord(*getTable(), mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
 				} else {
