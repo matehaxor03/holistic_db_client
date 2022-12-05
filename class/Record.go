@@ -44,6 +44,7 @@ type Record struct {
 	GetUInt8Value func(field string) (uint8, []error)
 	SetUInt8Value func(field string, value uint8) []error
 	GetString func(field string) (*string, []error)
+	GetStringValue func(field string) (string, []error)
 	SetString func(field string, value *string) []error 
 	SetStringValue func(field string, value string) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
@@ -920,6 +921,13 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				return nil, field_value_errors
 			}
 			return field_value.(*string), nil
+		},
+		GetStringValue: func(field string) (string, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "string")
+			if field_value_errors != nil {
+				return "", field_value_errors
+			}
+			return field_value.(string), nil
 		},
 		SetString: func(field string, value *string) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
