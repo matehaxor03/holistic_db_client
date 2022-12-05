@@ -12,20 +12,20 @@ func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned08ColumnName():&test_value})
 	if record_errors != nil {
-		t.Errorf(fmt.Sprintf("%s", record_errors))
+		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	}
 
 	if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	}
 
 	value, value_errors := record.GetInt8(GetTestTableIntegerSigned08ColumnName())
 	if value_errors != nil {
-		t.Error(fmt.Sprintf("%s", value_errors))
+		t.Error(fmt.Sprintf("error: %s", value_errors))
 	} else if class.IsNil(value_errors) {
-		t.Errorf("value is nil")
+		t.Errorf("error: value is nil")
 	} else if *value != int8(100) {
-		t.Errorf(fmt.Sprintf("value not equal expected: %d actual: %d", int8(100),  *value))
+		t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int8(100),  *value))
 	}
 }
 
@@ -34,9 +34,9 @@ func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 	test_value := int8(101)
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned08ColumnName():&test_value})
 	if record_errors != nil {
-		t.Errorf(fmt.Sprintf("%s", record_errors))
+		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
-		t.Errorf("record is nil")
+		t.Errorf("error: record is nil")
 	} else {
 		update_value := int8(120)
 		set_errors := record.SetInt8(GetTestTableIntegerSigned08ColumnName(), &update_value)
