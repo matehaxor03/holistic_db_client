@@ -10,6 +10,10 @@ func GetTestTableNameWithIntegerSigned08ColumnName() string {
 	return "holistic_test_table_with_integer_signed_08"
 }
 
+func GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory() string {
+	return "holistic_test_table_with_integer_signed_08_not_mandatory"
+}
+
 func GetTestTableIntegerSigned08ColumnName() string {
 	return "integer_signed_08_column"
 }
@@ -33,6 +37,6 @@ func TestTableCreateWithIntegerSigned08Column(t *testing.T) {
 }
 
 func TestTableCreateWithIntegerSigned08NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned08ColumnName(), GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
+	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
 }
  

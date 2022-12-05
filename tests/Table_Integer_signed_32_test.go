@@ -10,6 +10,10 @@ func GetTestTableNameWithIntegerSigned32ColumnName() string {
 	return "holistic_test_table_with_integer_signed_32"
 }
 
+func GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory() string {
+	return "holistic_test_table_with_integer_signed_32_not_mandatory"
+}
+
 func GetTestTableIntegerSigned32ColumnName() string {
 	return "integer_signed_32_column"
 }
@@ -24,7 +28,7 @@ func GetTestSchemaWithIntegerSigned32Column() class.Map {
 					  GetTestTableIntegerSigned32ColumnName(): class.Map {"type": "int32"}}
 }
 
-func GetTestSchemaWithIntegerSigned32NotMandatoryColumn() class.Map {
+func GetTestSchemaWithIntegerSigned32ColumnNotMandatory() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
 	                  GetTestTableInteger32SignedColumnNameNotMandatory(): class.Map {"type": "*int32"}}
 }
@@ -34,6 +38,6 @@ func TestTableCreateWithIntegerSigned32Column(t *testing.T) {
 }
 
 func TestTableCreateWithIntegerSigned32NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned32ColumnName(), GetTestSchemaWithIntegerSigned32NotMandatoryColumn())
+	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 }
  

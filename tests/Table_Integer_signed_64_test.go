@@ -10,6 +10,11 @@ func GetTestTableNameWithIntegerSigned64ColumnName() string {
 	return "holistic_test_table_with_integer_signed_64"
 }
 
+func GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory() string {
+	return "holistic_test_table_with_integer_signed_64_not_mandatory"
+}
+
+
 func GetTestTableIntegerSigned64ColumnName() string {
 	return "integer_signed_64_column"
 }
@@ -24,7 +29,7 @@ func GetTestSchemaWithIntegerSigned64Column() class.Map {
 					  GetTestTableIntegerSigned64ColumnName(): class.Map {"type": "int64"}}
 }
 
-func GetTestSchemaWithIntegerSigned64NotMandatoryColumn() class.Map {
+func GetTestSchemaWithIntegerSigned64ColumnNotMandatory() class.Map {
 	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
 	                  GetTestTableInteger64SignedColumnNameNotMandatory(): class.Map {"type": "*int64"}}
 }
@@ -34,6 +39,6 @@ func TestTableCreateWithIntegerSigned64Column(t *testing.T) {
 }
 
 func TestTableCreateWithIntegerSigned64NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned64ColumnName(), GetTestSchemaWithIntegerSigned64NotMandatoryColumn())
+	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 }
  
