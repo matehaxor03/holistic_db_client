@@ -30,6 +30,20 @@ func GetTestTableCreated(t *testing.T) (*class.Table) {
 
 	return table
 }
+
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema class.Map) (*class.Table) {
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, schema)
+	
+	table_create_errors := table.Create()
+	if table_create_errors != nil {
+		t.Errorf(fmt.Sprintf("error: %s", table_create_errors))
+		t.FailNow()
+		return nil
+	}
+
+	return table
+}
+
  
 func TestRecordCanCreateRecord(t *testing.T) {
 	table := GetTestTableCreated(t)

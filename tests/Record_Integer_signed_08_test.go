@@ -6,33 +6,8 @@ import (
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
-func GetTestTableCreatedWithIntegerSigned08Column(t *testing.T) (*class.Table) {
-	var errors []error
-
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableNameWithIntegerSigned08ColumnName(), GetTestSchemaWithIntegerSigned08Column())
-
-	if table == nil {
-		t.Error(fmt.Errorf("error: table is nil"))
-		t.FailNow()
-		return nil
-	}
-
-    table_errors := table.Create()
-	if table_errors != nil {
-		errors = append(errors, table_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return table
-}
-
 func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
-	table := GetTestTableCreatedWithIntegerSigned08Column(t)
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned08ColumnName(), GetTestSchemaWithIntegerSigned08Column())
 	test_value := int8(100)
 
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned08ColumnName():&test_value})
@@ -55,7 +30,7 @@ func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
-	table := GetTestTableCreatedWithIntegerSigned08Column(t)
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned08ColumnName(), GetTestSchemaWithIntegerSigned08Column())
 	test_value := int8(101)
     record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned08ColumnName():&test_value})
 	if record_errors != nil {
