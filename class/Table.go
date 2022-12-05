@@ -734,12 +734,16 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 					}
 				} 
 
-				if columnSchema.HasKey("default") && columnSchema.GetType("default") == "int" {
-					default_value, default_value_errors := columnSchema.GetInt64("default")
-					if default_value_errors != nil {
-						errors = append(errors, default_value_errors...)
+				if columnSchema.HasKey("default") {
+					if columnSchema.IsNumber("default") {
+						default_value, default_value_errors := columnSchema.GetInt64("default")
+						if default_value_errors != nil {
+							errors = append(errors, default_value_errors...)
+						} else {
+							sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
+						}
 					} else {
-						sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
+						errors = append(errors, fmt.Errorf("column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
 					}
 				}
 			case "*time.Time", "time.Time":

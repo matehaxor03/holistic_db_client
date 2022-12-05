@@ -98,7 +98,26 @@ func (m Map) IsEmptyString(s string) bool {
 func (m Map) IsNumber(s string) bool {
 	type_of := m.GetType(s)
 	switch type_of {
-	case "*int", "*int64", "*uint64","int", "int64", "uint64":
+	case "*int", 
+		  "int",
+		  "*uint", 
+		  "uint",
+		  "*int64",
+		  "int64",
+		  "*uint64",
+		  "uint64",
+		  "*int32",
+		  "int32",
+		  "*uint32",
+		  "uint32",
+		  "*int16",
+		  "int16",
+		  "*uint16",
+		  "uint16",
+		  "*int8",
+		  "int8",
+		  "*uint8",
+		  "uint8":
 		return true
 	default: 
 		return false
