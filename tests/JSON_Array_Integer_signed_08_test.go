@@ -16,13 +16,13 @@ func TestCanParseArrayContainingSingleInt8LowBoundary(t *testing.T) {
 		value, value_errors := json.GetArray("key") 
 
 		if value_errors != nil {
-			t.Errorf("%s", value_errors)
+			t.Errorf("error: %s", value_errors)
 		} else if value == nil {
-			t.Errorf("GetArray is nil")
+			t.Errorf("error: GetArray is nil")
 		} else if len(*value) != 1 {
-			t.Errorf("expected: length=1 actual: length=%d", len(*value))
+			t.Errorf("error: expected: length=1 actual: length=%d", len(*value))
 		} else if *((*value)[0].(*int8)) != -1 {
-			t.Errorf("expected \"value\" actual: %d", *((*value)[0].(*int8)))
+			t.Errorf("error: expected \"value\" actual: %d", *((*value)[0].(*int8)))
 		}
 	}
 }

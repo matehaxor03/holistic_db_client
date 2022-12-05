@@ -51,6 +51,10 @@ type Record struct {
 	GetBoolValue func(field string) (bool, []error)
 	SetBool func(field string, value *bool) []error 
 	SetBoolValue func(field string, value bool) []error 
+	GetFloat32 func(field string) (*float32, []error)
+	GetFloat32Value func(field string) (float32, []error)
+	SetFloat32 func(field string, value *float32) []error 
+	SetFloat32Value func(field string, value float32) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
@@ -331,6 +335,14 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			case "int":
 				value := column_data.(int)
 				sql_command += strconv.FormatInt(int64(value), 10)
+			case "float32":
+				sql_command += fmt.Sprintf("%f", column_data.(float32))
+			case "*float32":
+				sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+			case "float64":
+				sql_command += fmt.Sprintf("%f", column_data.(float64))
+			case "*float64":
+				sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 			case "*time.Time":
 				value := column_data.(*time.Time)
 				sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
@@ -533,6 +545,14 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				case "int":
 					value := column_data.(int)
 					sql_command += strconv.FormatInt(int64(value), 10)
+				case "float32":
+					sql_command += fmt.Sprintf("%f", column_data.(float32))
+				case "*float32":
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+				case "float64":
+					sql_command += fmt.Sprintf("%f", column_data.(float64))
+				case "*float64":
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
 					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
@@ -636,6 +656,14 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 				case "int":
 					value := column_data.(int)
 					sql_command += strconv.FormatInt(int64(value), 10)
+				case "float32":
+					sql_command += fmt.Sprintf("%f", column_data.(float32))
+				case "*float32":
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+				case "float64":
+					sql_command += fmt.Sprintf("%f", column_data.(float64))
+				case "*float64":
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
 					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
@@ -993,6 +1021,26 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		SetBoolValue: func(field string, value bool) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		GetFloat32: func(field string) (*float32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "*float32")
+			if field_value_errors != nil {
+				return nil, field_value_errors
+			}
+			return field_value.(*float32), nil
+		},
+		GetFloat32Value: func(field string) (float32, []error) {
+			field_value, field_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]", field, "float32")
+			if field_value_errors != nil {
+				return 0.0, field_value_errors
+			}
+			return field_value.(float32), nil
+		},
+		SetFloat32: func(field string, value *float32) []error {
+			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+		},
+		SetFloat32Value: func(field string, value float32) []error {
 			return SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {

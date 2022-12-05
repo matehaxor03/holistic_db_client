@@ -423,6 +423,9 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					case "text", "blob", "json":
 						data_type := "string"
 						column_schema.SetString("type", &data_type)
+					case "float":
+						data_type := "float32"
+						column_schema.SetString("type", &data_type)
 					default:
 						if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
 							data_type := "string"
@@ -473,7 +476,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					case "DEFAULT_GENERATED":
 					case "":
 					default:
-						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Extra value not supported please implement: %s", extra_value))
+						errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: Extra value not supported please implement: %s", temp_table_name, extra_value))
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
@@ -557,6 +560,14 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						converted := int8(number)
 						column_schema.SetInt8("default", &converted)
 					}
+				} else if *dt == "float32" && default_value != "" {
+					number, err := strconv.ParseFloat(default_value, 32)
+					if err != nil {
+						errors = append(errors, err)
+					} else {
+						converted := float32(number)
+						column_schema.SetFloat32("default", &converted)
+					}
 				}  else if *dt == "bool" && default_value != "" {
 					number, err := strconv.ParseInt(default_value, 10, 64)
 					if err != nil {
@@ -569,7 +580,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							boolean_value := true
 							column_schema.SetBool("default", &boolean_value)
 						} else {
-							errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
+							errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
 						}
 					}
 				} else if *dt == "time.Time" && default_value != "" {
@@ -583,8 +594,8 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					} else {
 						errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s please implement", default_value, *dt))
 					}
-				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string") && default_value != "" {
-					errors = append(errors, fmt.Errorf("error: default value not supported please implement: %s for type: %s", default_value, *dt))
+				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string" || *dt == "float32") && default_value != "" {
+					errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported please implement: %s for type: %s", default_value, *dt))
 				}
 			}
 			
@@ -780,6 +791,31 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						sql_command += " DEFAULT 1"
 					} else if columnSchema.IsBoolFalse("default") {
 						sql_command += " DEFAULT 0"
+					} else {
+						errors = append(errors, fmt.Errorf("error: column: %s had unknown error for boolean default value", column))
+					}
+				}
+			case "*float32", "float32":
+				sql_command += " FLOAT"
+
+				if !strings.HasPrefix(*typeOf, "*") {
+					sql_command += " NOT NULL"
+				}
+
+				if columnSchema.HasKey("default") {
+					if columnSchema.IsNil("default") {
+						sql_command += " DEFAULT NULL"
+					} else if !columnSchema.IsFloat("default") {
+						errors = append(errors, fmt.Errorf("error: column: %s had non-boolean default value", column))
+					} else if columnSchema.IsFloat("default") {
+						default_float_value, default_float_value_errors := columnSchema.GetFloat64("default")
+						if default_float_value_errors != nil {
+							errors = append(errors, fmt.Errorf("error: column: %s had unknown error for float64 default value %s", column, fmt.Sprintf("%s", default_float_value_errors)))
+						} else if default_float_value == nil {
+							errors = append(errors, fmt.Errorf("error: column: %s float64 default value returned nil", column))
+						} else {
+							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value) 
+						}
 					} else {
 						errors = append(errors, fmt.Errorf("error: column: %s had unknown error for boolean default value", column))
 					}
@@ -1361,6 +1397,22 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 							errors = append(errors, value_errors...)
 						} else {
 							mapped_record.SetStringValue(column, value)
+						}
+					case "*float32":
+						value, value_errors := current_record.GetFloat32(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else if value == nil {
+							mapped_record.SetNil(column)
+						} else {
+							mapped_record.SetFloat32(column, value)
+						}
+					case "float32":
+						value, value_errors := current_record.GetFloat32Value(column)
+						if value_errors != nil {
+							errors = append(errors, value_errors...)
+						} else {
+							mapped_record.SetFloat32Value(column, value)
 						}
 					default:
 						errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", temp_table_name, column, *table_data_type))

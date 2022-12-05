@@ -65,7 +65,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 	client := GetTestClient(t)
 
 	if client == nil {
-		t.Error(fmt.Errorf("test client is nil"))
+		t.Error(fmt.Errorf("error: test client is nil"))
 		t.FailNow()
 		return nil
 	}
@@ -203,11 +203,11 @@ func TestDatabaseExistsTrue(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if !(*exists) {
-		t.Errorf("exists is 'false' when it should be 'true'")
+		t.Errorf("error: exists is 'false' when it should be 'true'")
 	} 
 }
 
@@ -222,11 +222,11 @@ func TestDatabaseExistsFalse(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if (*exists) {
-		t.Errorf("exists is 'true' when it should be 'false'")
+		t.Errorf("error: exists is 'true' when it should be 'false'")
 	} 
 }
 
@@ -241,11 +241,11 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if (*exists) {
-		t.Errorf("exists is 'true' when it should be 'false'")
+		t.Errorf("error: exists is 'true' when it should be 'false'")
 	} 
 
     database_errors := database.Create()
@@ -259,11 +259,11 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if !(*exists) {
-		t.Errorf("exists is 'false' when it should be 'true'")
+		t.Errorf("error: exists is 'false' when it should be 'true'")
 	} 
 }
 
@@ -280,11 +280,11 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if !(*exists) {
-		t.Errorf("exists is 'false' when it should be 'true'")
+		t.Errorf("error: exists is 'false' when it should be 'true'")
 	} 
 
     database.Delete()
@@ -295,11 +295,11 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 	} 
 
 	if exists == nil {
-		t.Errorf("exists is nil")
+		t.Errorf("error: exists is nil")
 	} 
 
 	if (*exists) {
-		t.Errorf("exists is 'true' when it should be 'false'")
+		t.Errorf("error:exists is 'true' when it should be 'false'")
 	} 
 }
 
@@ -312,20 +312,20 @@ func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 		set_database_name_errors := database.SetDatabaseName(blacklist_database_name)
 		
 		if set_database_name_errors == nil {
-			t.Errorf("SetDatabaseName should return error when database_name is blacklisted")
+			t.Errorf("error: SetDatabaseName should return error when database_name is blacklisted")
 		}
 
 		database_name, database_name_errors := database.GetDatabaseName()
 		if database_name_errors != nil {
-			t.Errorf(fmt.Sprintf("%s", database_name_errors))
+			t.Errorf(fmt.Sprintf("error: %s", database_name_errors))
 		}
 
 		if database_name == blacklist_database_name {
-			t.Errorf("database_name was updated to the blacklisted database_name")
+			t.Errorf("error: database_name was updated to the blacklisted database_name")
 		}
 
 		if database_name != GetTestDatabaseName() {
-			t.Errorf("database_name is '%s' and should be '%s'", database_name,  GetTestDatabaseName())
+			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  GetTestDatabaseName())
 		}
 	}
 }
@@ -343,11 +343,11 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 		database, create_database_errors := client.GetDatabaseInterface(blacklist_database_name, &character_set, &collate)
 		
 		if create_database_errors == nil {
-			t.Errorf("NewDatabase should return error when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
 		}
 
 		if database != nil {
-			t.Errorf("NewDatabase should be nil when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
 		}
 	}
 }
@@ -364,11 +364,11 @@ func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 		database, create_database_errors :=  client.GetDatabaseInterface(strings.ToUpper(blacklist_database_name), &character_set, &collate)
 		
 		if create_database_errors == nil {
-			t.Errorf("NewDatabase should return error when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
 		}
 
 		if database != nil {
-			t.Errorf("NewDatabase should be nil when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
 		}
 	}
 }
@@ -386,11 +386,11 @@ func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 		database, create_database_errors :=  client.GetDatabaseInterface(strings.ToLower(blacklist_database_name), &character_set, &collate)
 		
 		if create_database_errors == nil {
-			t.Errorf("NewDatabase should return error when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
 		}
 
 		if database != nil {
-			t.Errorf("NewDatabase should be nil when database_name is blacklisted")
+			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
 		}
 	}
 }
@@ -408,7 +408,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 		if new_database_errors != nil {
 			t.Error(new_database_errors)
 		} else if database == nil {
-			t.Errorf("NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
+			t.Errorf("error: NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
 		} else {
 			database_delete_errors := database.DeleteIfExists()
 			if database_delete_errors != nil {
@@ -435,9 +435,9 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 		database, new_database_errors := client.GetDatabaseInterface("a" + non_whitelist_characters + "a", &character_set, &collate)
 		
 		if new_database_errors == nil {
-			t.Errorf("NewDatabase should return error when database_name character is non-whitelisted: %s", non_whitelist_characters)
+			t.Errorf("error: NewDatabase should return error when database_name character is non-whitelisted: %s", non_whitelist_characters)
 		} else if database != nil {
-			t.Errorf("NewDatabase should be nil when database_name is non-whitelisted: %s", non_whitelist_characters)
+			t.Errorf("error: NewDatabase should be nil when database_name is non-whitelisted: %s", non_whitelist_characters)
 		}
 	}
 }
@@ -454,9 +454,9 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 		database, new_database_errors := client.GetDatabaseInterface(whitelist_database_character, &character_set, &collate)
 		
 		if new_database_errors == nil {
-			t.Errorf("NewDatabase should return error when database_name character is whitelisted and database_name is only one character long: %s", whitelist_database_character)
+			t.Errorf("error: NewDatabase should return error when database_name character is whitelisted and database_name is only one character long: %s", whitelist_database_character)
 		} else if database != nil {
-			t.Errorf("NewDatabase should be nil when database_name is whitelisted and is only one character long: %s", whitelist_database_character)
+			t.Errorf("error: NewDatabase should be nil when database_name is whitelisted and is only one character long: %s", whitelist_database_character)
 		}
 	}
 }
@@ -471,12 +471,12 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 	}
 
 	if table_names == nil {
-		t.Errorf("table_names should not be nil")
+		t.Errorf("error: table_names should not be nil")
 	} else if !(len(*table_names) >= 0) {
-		t.Errorf("database.GetTables should return at least one table name")
+		t.Errorf("error: database.GetTables should return at least one table name")
 
 		if !class.Contains(*table_names, "some_table") {
-			t.Errorf("some_table not found in table_names")
+			t.Errorf("error: some_table not found in table_names")
 		}
 	}
 }
@@ -491,8 +491,8 @@ func TestDatabaseCanGetTables(t *testing.T) {
 	}
 
 	if tables == nil {
-		t.Errorf("tables should not be nil")
+		t.Errorf("error: tables should not be nil")
 	} else if !(len(*tables) >= 0) {
-		t.Errorf("database.GetTables should return at least one table")
+		t.Errorf("error: database.GetTables should return at least one table")
 	}
 }

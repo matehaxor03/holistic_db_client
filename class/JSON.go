@@ -508,14 +508,14 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 					data_type = "uint64"
 					uint64_temp, uint64_temp_error := strconv.ParseUint(*string_value, 10, 64)
 					if uint64_temp_error != nil {
-						errors = append(errors, fmt.Errorf("strconv.ParseUint(*string_value, 10, 64) error"))
+						errors = append(errors, fmt.Errorf("error: strconv.ParseUint(*string_value, 10, 64) error"))
 					} else {
 						uint64_value = &uint64_temp
 						if *uint64_value >= 0 && *uint64_value <= 255 {
 							data_type = "uint8"
 							int8_temp, int8_temp_error := strconv.ParseUint(*string_value, 10, 8)
 							if int8_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 8) error"))
+								errors = append(errors, fmt.Errorf("error:strconv.ParseUInt(*string_value, 10, 8) error"))
 							} else {
 								int8_conv := uint8(int8_temp)
 								uint8_value = &int8_conv
@@ -524,7 +524,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 							data_type = "uint16"
 							int16_temp, int16_temp_error := strconv.ParseUint(*string_value, 10, 16)
 							if int16_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 16) error"))
+								errors = append(errors, fmt.Errorf("error: strconv.ParseUInt(*string_value, 10, 16) error"))
 							} else {
 								int16_conv := uint16(int16_temp)
 								uint16_value = &int16_conv
@@ -533,7 +533,7 @@ func parseJSONValue(temp_key string, temp_value string, list *list.List) []error
 							data_type = "uint32"
 							int32_temp, int32_temp_error := strconv.ParseUint(*string_value, 10, 32)
 							if int32_temp_error != nil {
-								errors = append(errors, fmt.Errorf("strconv.ParseUInt(*string_value, 10, 32) error"))
+								errors = append(errors, fmt.Errorf("error: strconv.ParseUInt(*string_value, 10, 32) error"))
 							} else {
 								int32_conv := uint32(int32_temp)
 								uint32_value = &int32_conv

@@ -239,6 +239,7 @@ func (m Map) GetType(s string) string {
 	if m.IsNil(s) {
 		return "nil"
 	}
+	
 	return fmt.Sprintf("%T", m[s])
 }
 
@@ -255,7 +256,7 @@ func (m Map) Func(s string) func(Map) []error {
 		value := m[s].(*func(Map) []error)
 		return *value
 	default:
-		panic(fmt.Errorf("Map.Func: type %s is not supported please implement for field: %s", rep, s))
+		panic(fmt.Errorf("error: Map.Func: type %s is not supported please implement for field: %s", rep, s))
 	}
 
 	return nil
@@ -322,6 +323,22 @@ func (m Map) GetString(s string) (*string, []error) {
 	return result, nil
 }
 
+func (m Map) IsFloat(s string) (bool) {
+	if m.IsNil(s) {
+		return false
+	}
+
+	type_of := m.GetType(s)
+	if type_of == "float32" || 
+	   type_of == "*float32" || 
+	   type_of == "float64" || 
+	   type_of == "*float64" {
+		return true
+	}
+
+	return false
+}
+
 func (m Map) GetStringValue(s string) (string, []error) {
 	string_value, string_value_errors := m.GetString(s)
 	if string_value_errors != nil {
@@ -332,8 +349,72 @@ func (m Map) GetStringValue(s string) (string, []error) {
 	return *string_value, nil
 }
 
+func (m Map) GetFloat32(s string) (*float32, []error) {
+	var errors []error
+	float64_value, float64_value_errors := m.GetFloat64(s)
+	if float64_value_errors != nil {
+		return nil, float64_value_errors
+	} else if float64_value == nil {
+		return nil, nil
+	}
+
+	value, value_error := strconv.ParseFloat(fmt.Sprintf("%f", *float64_value), 32)
+	if value_error != nil {
+		errors = append(errors, fmt.Errorf("error: strconv.ParseFloat returned error for converting to float32 number may be out of range"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	float_32_value := float32(value)
+	return &float_32_value, nil
+}
+
+func (m Map) GetFloat32Value(s string) (float32, []error) {
+	var errors []error
+	float64_value, float64_value_errors := m.GetFloat64(s)
+	if float64_value_errors != nil {
+		return 0, float64_value_errors
+	} else if float64_value == nil {
+		errors = append(errors, fmt.Errorf("error: Map.GetFloat64 returned a nil value"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	value, value_error := strconv.ParseFloat(fmt.Sprintf("%f", *float64_value), 32)
+	if value_error != nil {
+		errors = append(errors, fmt.Errorf("error: strconv.ParseFloat returned error for converting to float32 number may be out of range"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	float_32_value := float32(value)
+	return float_32_value, nil
+}
+
+func (m Map) GetFloat64Value(s string) (float64, []error) {
+	var errors []error
+	float64_value, float64_value_errors := m.GetFloat64(s)
+	if float64_value_errors != nil {
+		return 0, float64_value_errors
+	} else if float64_value == nil {
+		errors = append(errors, fmt.Errorf("error: Map.GetFloat64 returned a nil value"))
+	}
+
+	if len(errors) > 0 {
+		return 0, errors
+	}
+
+	return *float64_value, nil
+}
+
 func (m Map) GetFloat64(s string) (*float64, []error) {
-	if m[s] == nil {
+	if m.IsNil(s) {
 		return nil, nil
 	}
 
@@ -345,46 +426,16 @@ func (m Map) GetFloat64(s string) (*float64, []error) {
 		value := m[s].(float64)
 		result = &value
 	case "*float64":
-		if fmt.Sprintf("%s", m[s]) != "%!s(*float64=<nil>)" {
-			value := m[s].(*float64)
-			new_value := *value
-			result = &new_value
-		} else {
-			errors = append(errors, fmt.Errorf("error: Map.GetFloat64: *float64 value is null for attribute: %s", rep, s))
-		}
-	default:
-		errors = append(errors, fmt.Errorf("error: Map.GetFloat64: type %s is not supported please implement for attribute: %s", rep, s))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return result, nil
-}
-
-func (m Map) GetFloat32(s string) (*float32, []error) {
-	if m[s] == nil {
-		return nil, nil
-	}
-
-	var errors []error
-	var result *float32
-	rep := fmt.Sprintf("%T", m[s])
-	switch rep {
+		value := *(m[s].(*float64))
+		result = &value
 	case "float32":
-		value := m[s].(float32)
+		value := float64(m[s].(float32))
 		result = &value
 	case "*float32":
-		if fmt.Sprintf("%s", m[s]) != "%!s(*float32=<nil>)" {
-			value := m[s].(*float32)
-			new_value := *value
-			result = &new_value
-		} else {
-			errors = append(errors, fmt.Errorf("error: Map.GetFloat32: *float32 value is null for attribute: %s", rep, s))
-		}
+		value := float64(*(m[s].(*float32)))
+		result = &value
 	default:
-		errors = append(errors, fmt.Errorf("error: Map.GetFloat32: type %s is not supported please implement for attribute: %s", rep, s))
+		errors = append(errors, fmt.Errorf("error: Map.GetFloat64: type %s is not supported please implement for attribute: %s", rep, s))
 	}
 
 	if len(errors) > 0 {
@@ -1139,7 +1190,15 @@ func (m Map) SetFloat64(s string, v *float64) {
 	m[s] = v
 }
 
+func (m Map) SetFloat64Value(s string, v float64) {
+	m[s] = v
+}
+
 func (m Map) SetFloat32(s string, v *float32) {
+	m[s] = v
+}
+
+func (m Map) SetFloat32Value(s string, v float32) {
 	m[s] = v
 }
 
