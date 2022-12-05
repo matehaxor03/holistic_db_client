@@ -233,7 +233,7 @@ func newDatabase(client *Client, database_name string, database_create_options *
 				errors = append(errors, table_name_errors...)
 				continue
 			} else if table_name == nil {
-				errors = append(errors, fmt.Errorf("Database: getTableNames(%s) was nil available fields are: %s", column_name, record.(*Map).Keys()))
+				errors = append(errors, fmt.Errorf("Database: getTableNames(%s) was nil available fields are: %s", column_name, record.(Map).Keys()))
 				continue
 			}
 			table_names = append(table_names, *table_name)
