@@ -959,7 +959,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			value_to_validate = schema_of_parameter.GetObject("default")
 		} else if !default_set { 
 			if value_is_mandatory {
-				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
+				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
 			} else {
 				value_to_validate = nil
 			}
@@ -971,7 +971,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			value_to_validate = schema_of_parameter.GetObject("default")
 		} else if !default_set {
 			if value_is_mandatory {
-				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value", struct_type, parameter))
+				errors = append(errors,  fmt.Errorf("struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
 			} else {
 				value_to_validate = nil
 			}
