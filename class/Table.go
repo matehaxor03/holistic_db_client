@@ -998,7 +998,12 @@ func newTable(database *Database, table_name string, schema Map, database_reserv
 				return nil, errors
 			}
 
-			count_value, _ := (*json_array)[0].(*Map).GetString("COUNT(*)")
+			count_value, count_value_error := (*json_array)[0].(Map).GetString("COUNT(*)")
+			if count_value_error != nil {
+				errors = append(errors, count_value_error...)
+				return nil, errors
+			}
+
 			count, count_err := strconv.ParseUint(*count_value, 10, 64)
 			if count_err != nil {
 				errors = append(errors, count_err)
