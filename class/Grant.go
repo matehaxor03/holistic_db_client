@@ -33,7 +33,7 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(client *Client, user *User, grant_value string, database_filter *string, table_filter *string, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
+func newGrant(client *Client, user *User, grant string, database_filter *string, table_filter *string, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist) (*Grant, []error) {
 	struct_type := "*Grant"
 
 	var errors []error
@@ -45,10 +45,10 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 	data := Map{
 		"[fields]": Map{},
 		"[schema]": Map{},
-		"[system_fields]": Map{"[client]":client, "[user]":user, "[grant_value]":grant_value},
+		"[system_fields]": Map{"[client]":client, "[user]":user, "[grant]":grant},
 		"[system_schema]": Map{"[client]":Map{"type":"*class.Client", "mandatory": true},
 						"[user]":Map{"type":"*class.User", "mandatory": true},
-						"[grant]": Map{"type":"*string", "mandatory": true,
+						"[grant]": Map{"type":"string", "mandatory": true,
 			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -188,7 +188,7 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 		return &sql, nil
 	}
 
-	grant := func() []error {
+	executeGrant := func() []error {
 		sql_command, sql_command_errors := getSQL()
 
 		if sql_command_errors != nil {
@@ -224,7 +224,7 @@ func newGrant(client *Client, user *User, grant_value string, database_filter *s
 			return validate()
 		},
 		Grant: func() []error {
-			return grant()
+			return executeGrant()
 		},
 	}
 
