@@ -421,7 +421,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 	}
 
 
-	if IsNil(result) {
+	if IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
 		if schema_map.IsBoolTrue("auto_increment") && schema_map.IsBoolTrue("primary_key") {
 			return nil, nil
 		}
@@ -437,8 +437,13 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 
 		errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is not nullable"))
 		return nil, errors
+	} else if IsNil(result) {
+		errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is not nullable"))
 	}
-	
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
 	object_type := fields_map.GetType(field)
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {

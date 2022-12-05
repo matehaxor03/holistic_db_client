@@ -41,11 +41,11 @@ func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 		update_value := int8(120)
 		set_errors := record.SetInt8(GetTestTableIntegerSigned08ColumnName(), &update_value)
 		if set_errors != nil {
-			t.Error(set_errors)
+			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
 			update_errors := record.Update()
 			if update_errors != nil {
-				t.Error(update_errors)
+				t.Errorf(fmt.Sprintf("error: %s", update_errors))
 			}
 		}
 	}
