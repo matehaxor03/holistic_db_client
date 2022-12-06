@@ -49,9 +49,11 @@ func newSQLCommand() (*SQLCommand, []error) {
 				}
 			}
 
-			database_username, _ := client.GetDatabaseUsername()
-			if database_username == nil {
-				errors = append(errors, fmt.Errorf("error: database_username is nil"))
+			database_username, database_username_errors := client.GetDatabaseUsername()
+			if database_username_errors != nil {
+				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database username: %s", fmt.Sprintf("%s", database_username_errors)))
+			} else if database_username == nil {
+				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is nil"))
 			}
 
 			database, database_errors := client.GetDatabase()
@@ -70,20 +72,18 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, fmt.Errorf("error: sql command is an empty string"))
 			}
 
-			
-
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
 			host_name, host_name_errors := (*host).GetHostName()
 			if host_name_errors != nil {
-				errors = append(errors, host_name_errors...)
+				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting hostname: %s", fmt.Sprintf("%s", host_name_errors)))
 			}
 
 			port_number, port_number_errors := (*host).GetPortNumber()
 			if port_number_errors != nil {
-				errors = append(errors, port_number_errors...)
+				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting port number: %s", fmt.Sprintf("%s", port_number_errors)))
 			}
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", host_name, port_number)
@@ -92,7 +92,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if database != nil {
 				database_name, database_name_errors := (*database).GetDatabaseName()
 				if database_name_errors != nil {
-					errors = append(errors, database_name_errors...)
+					errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database_name: %s", fmt.Sprintf("%s", database_name_errors)))
 				} else {
 					credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + host_name + ":" + port_number + ":" + database_name + ":" + (*database_username) + ".config"
 				}
@@ -122,7 +122,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 					errors = append(errors, database_name_errors...)
 				} else {
 					if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
-						sql = fmt.Sprintf("USE %s;\n", database_name)
+						sql += fmt.Sprintf("USE %s;\n", database_name)
 					}
 				}
 			}
