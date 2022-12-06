@@ -177,10 +177,6 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		UpdatePassword: func(new_password string) []error {
 			var errors []error
 
-			if new_password == "" {
-				errors = append(errors, fmt.Errorf("error: new password is empty"))
-			}
-
 			validate_errors := validate()
 			if validate_errors != nil {
 				errors = append(errors, validate_errors...)
@@ -190,9 +186,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				"[fields]": Map{},
 				"[schema]": Map{},
 				"[system_fields]":Map{"[password]":new_password},
-				"[system_schema]":Map{"[password]": Map{"type":"string", 
-					"filters": Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-				},
+				"[system_schema]":Map{"[password]": Map{"type":"string", "min_length":1}},
 			}
 
 			validate_password_errors := ValidateData(&password_data, "NewUserPassword")
