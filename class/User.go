@@ -191,7 +191,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				"[schema]": Map{},
 				"[system_fields]":Map{"[password]":new_password},
 				"[system_schema]":Map{"[password]": Map{"type":"string", 
-					FILTERS(): Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+					"filters": Array{Map{"values": GetCredentialPasswordValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 				},
 			}
 

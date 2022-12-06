@@ -49,7 +49,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		"[system_schema]": Map{
 			"[client]":Map{"type":"class.Client"},
 			"[database_name]":Map{"type":"string","min_length":2,"not_empty_string_value":true,
-			FILTERS(): Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
+			"filters": Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
 							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
 			"[database_create_options]":Map{"type":"*class.DatabaseCreateOptions"}},
 	}

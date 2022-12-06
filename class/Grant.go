@@ -49,25 +49,25 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		"[system_schema]": Map{"[client]":Map{"type":"class.Client"},
 						"[user]":Map{"type":"class.User"},
 						"[grant]": Map{"type":"string",
-			FILTERS(): Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
+		"filters]": Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
 	if database_filter != nil {
 		data["[system_fields]"].(Map)["[database_filter]"] = database_filter
 		if *database_filter == "*" {
-			data["[ssystem_chema]"].(Map)["[database_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[ssystem_chema]"].(Map)["[database_filter]"] = Map{"type":"string", "filters": Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[database_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
+			data["[system_schema]"].(Map)["[database_filter]"] = Map{"type":"string", "filters": Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
 		}
 	}
 
 	if table_filter != nil {
 		data["[system_fields]"].(Map)["[table_filter]"] = table_filter
 		if *table_filter == "*" {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", "filters": Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", FILTERS(): Array{Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", "filters": Array{Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 

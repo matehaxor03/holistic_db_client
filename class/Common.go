@@ -1178,18 +1178,18 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		} 
 
 
-		if schema_of_parameter.IsNil(FILTERS()) {
+		if schema_of_parameter.IsNil("filters") {
 			return nil
 		}
 		
-		if !schema_of_parameter.IsArray(FILTERS())  {
-			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, FILTERS(), schema_of_parameter.GetType(FILTERS())))
+		if !schema_of_parameter.IsArray("filters")  {
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s is not an array: %s", struct_type, parameter, "filters", schema_of_parameter.GetType("filters")))
 			return errors
 		}
 
-		filters, filters_errors := schema_of_parameter.GetArray(FILTERS())
+		filters, filters_errors := schema_of_parameter.GetArray("filters")
 		if filters_errors != nil {
-			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, FILTERS(), filters_errors))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s had error getting array %s", struct_type, parameter, "filters", filters_errors))
 		} else if filters == nil {
 			return nil
 		}
@@ -1199,7 +1199,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		}
 
 		if len(*filters) == 0 {
-			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s has no filters", struct_type, parameter, FILTERS()))
+			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s has no filters", struct_type, parameter, "filters"))
 			return errors
 		}
 
@@ -1207,18 +1207,18 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 			filter_map := filter.(Map)
 
 			if !filter_map.HasKey("function") {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, "filters", filter_index))
 				return errors
 			}
 
 			function := filter_map.Func("function")
 			if function == nil {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, "filters", filter_index))
 				return errors
 			}
 
 			if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, FILTERS(), filter_index))
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, "filters", filter_index))
 				return errors
 			}
 

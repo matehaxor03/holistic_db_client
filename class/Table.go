@@ -62,7 +62,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			"[system_schema]": Map{
 				"[database]": Map{"type":"class.Database"},
 				"[table_name]": Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
-				FILTERS(): Array{Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
+				"filters": Array{Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
 								 Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}},
 			},
 		}

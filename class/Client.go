@@ -52,7 +52,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			"[host]": Map{"type":"*class.Host"},
 			"[database]": Map{"type":"*class.Database"},
 			"[database_username]": Map{"type":"*string",
-				FILTERS(): Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
+				"filters": Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
 	}
 
 	getData := func() *Map {

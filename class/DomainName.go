@@ -21,7 +21,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 		"[schema]": Map{},
 		"[system_fields]": Map{"[domain_name]": domain_name},
 		"[system_schema]": Map{"[domain_name]":Map{"type":"string",
-			FILTERS(): Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
+			"filters": Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
