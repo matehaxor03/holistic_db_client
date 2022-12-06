@@ -153,7 +153,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(&command)
+			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command)
 
 			if sql_command_use_file {
 				os.Remove(filename)

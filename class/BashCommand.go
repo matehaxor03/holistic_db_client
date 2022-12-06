@@ -8,26 +8,18 @@ import (
 )
 
 type BashCommand struct {
-	ExecuteUnsafeCommand func(command *string) (*string, []error)
+	ExecuteUnsafeCommand func(command string) (*string, []error)
 }
 
 func newBashCommand() *BashCommand {
 	x := BashCommand{
-		ExecuteUnsafeCommand: func(command *string) (*string, []error) {
+		ExecuteUnsafeCommand: func(command string) (*string, []error) {
 			var errors []error
-
-			if command == nil {
-				errors = append(errors, fmt.Errorf("error: bash command is nil"))
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
 
 			var stdout bytes.Buffer
 			var stderr bytes.Buffer
 
-			cmd := exec.Command("bash", "-c", *command)
+			cmd := exec.Command("bash", "-c", command)
 			cmd.Stdout = &stdout
 			cmd.Stderr = &stderr
 			command_err := cmd.Run()
