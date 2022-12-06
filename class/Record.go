@@ -274,16 +274,18 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			return nil, nil, errors
 		}
 
-		sql_command := fmt.Sprintf("INSERT INTO %s ", EscapeString(table_name))
-		sql_command += "("
+		var sql_command strings.Builder
+		sql_command.WriteString(fmt.Sprintf("INSERT INTO "))
+		sql_command.WriteString(EscapeString(table_name))
+		sql_command.WriteString(" (")
 		for index, record_column := range *record_columns {
-			sql_command += EscapeString(record_column)
+			sql_command.WriteString(EscapeString(record_column))
 			if index < (len(*record_columns) - 1) {
-				sql_command += ", "
+				sql_command.WriteString(", ")
 			}
 		}
 
-		sql_command += ") VALUES ("
+		sql_command.WriteString(") VALUES (")
 		for index, record_column := range *record_columns {
 			column_data, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column, "self")
 			if paramter_errors != nil {
@@ -295,103 +297,112 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			switch rep {
 			case "*uint64":
 				value := column_data.(*uint64)
-				sql_command += strconv.FormatUint(*value, 10)
+				sql_command.WriteString(strconv.FormatUint(*value, 10))
 			case "uint64":
 				value := column_data.(uint64)
-				sql_command += strconv.FormatUint(value, 10)
+				sql_command.WriteString(strconv.FormatUint(value, 10))
 			case "*int64":
 				value := column_data.(*int64)
-				sql_command += strconv.FormatInt(*value, 10)
+				sql_command.WriteString(strconv.FormatInt(*value, 10))
 			case "int64":
 				value := column_data.(int64)
-				sql_command += strconv.FormatInt(value, 10)
+				sql_command.WriteString(strconv.FormatInt(value, 10))
 			case "*uint32":
 				value := column_data.(*uint32)
-				sql_command += strconv.FormatUint(uint64(*value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 			case "uint32":
 				value := column_data.(uint32)
-				sql_command += strconv.FormatUint(uint64(value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 			case "*int32":
 				value := column_data.(*int32)
-				sql_command += strconv.FormatInt(int64(*value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 			case "int32":
 				value := column_data.(int32)
-				sql_command += strconv.FormatInt(int64(value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 			case "*uint16":
 				value := column_data.(*uint16)
-				sql_command += strconv.FormatUint(uint64(*value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 			case "uint16":
 				value := column_data.(uint16)
-				sql_command += strconv.FormatUint(uint64(value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 			case "*int16":
 				value := column_data.(*int16)
-				sql_command += strconv.FormatInt(int64(*value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 			case "int16":
 				value := column_data.(int16)
-				sql_command += strconv.FormatInt(int64(value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 			case "*uint8":
 				value := column_data.(*uint8)
-				sql_command += strconv.FormatUint(uint64(*value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 			case "uint8":
 				value := column_data.(uint8)
-				sql_command += strconv.FormatUint(uint64(value), 10)
+				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 			case "*int8":
 				value := column_data.(*int8)
-				sql_command += strconv.FormatInt(int64(*value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 			case "int8":
 				value := column_data.(int8)
-				sql_command += strconv.FormatInt(int64(value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 			case "*int":
 				value := column_data.(*int)
-				sql_command += strconv.FormatInt(int64(*value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 			case "int":
 				value := column_data.(int)
-				sql_command += strconv.FormatInt(int64(value), 10)
+				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 			case "float32":
-				sql_command += fmt.Sprintf("%f", column_data.(float32))
+				sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
 			case "*float32":
-				sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+				sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
 			case "float64":
-				sql_command += fmt.Sprintf("%f", column_data.(float64))
+				sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
 			case "*float64":
-				sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+				sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 			case "*time.Time":
 				value := column_data.(*time.Time)
-				sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+				sql_command.WriteString("'")
+				sql_command.WriteString(EscapeString(FormatTime(*value)))
+				sql_command.WriteString("'")
 			case "time.Time":
 				value := column_data.(time.Time)
-				sql_command += "'" + EscapeString(FormatTime(value)) + "'"
+				sql_command.WriteString("'")
+				sql_command.WriteString(EscapeString(FormatTime(value)))
+				sql_command.WriteString("'")
 			case "string":
-				sql_command += "\"" + EscapeString(column_data.(string)) + "\""
+				sql_command.WriteString("'")
+				sql_command.WriteString(EscapeString(column_data.(string)))
+				sql_command.WriteString("'")
 			case "*string":
-				sql_command += "\"" + EscapeString(*(column_data.(*string))) + "\""
+				sql_command.WriteString("'")
+				sql_command.WriteString(EscapeString(*(column_data.(*string))))
+				sql_command.WriteString("'")
 			case "bool":
 				if column_data.(bool) {
-					sql_command += "1"
+					sql_command.WriteString("1")
 				} else {
-					sql_command += "0"
+					sql_command.WriteString("0")
 				}
 			case "*bool":
 				if *(column_data.(*bool)) {
-					sql_command += "1"
+					sql_command.WriteString("1")
 				} else {
-					sql_command += "0"
+					sql_command.WriteString("0")
 				}
 			default:
 				errors = append(errors, fmt.Errorf("error: %s Record.getInsertSQL type: %s not supported for table please implement", struct_type, rep))
 			}
 
 			if index < (len(*record_columns) - 1) {
-				sql_command += ", "
+				sql_command.WriteString(", ")
 			}
 		}
-		sql_command += ");"
+		sql_command.WriteString(");")
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
 
-		return &sql_command, options, nil
+		sql_command_string := sql_command.String()
+		return &sql_command_string, options, nil
 	}
 
 	getUpdateSQL := func() (*string, Map, []error) {
@@ -485,12 +496,14 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			return nil, nil, errors
 		}
 
-		sql_command := fmt.Sprintf("UPDATE %s \n", EscapeString(table_name))
+		var sql_command strings.Builder
+		sql_command.WriteString(fmt.Sprintf("UPDATE %s \n", EscapeString(table_name)))
 
-		sql_command += "SET "
+		sql_command.WriteString("SET ")
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
-			sql_command += EscapeString(record_non_identity_column) + "="
+			sql_command.WriteString(EscapeString(record_non_identity_column))
+			sql_command.WriteString("=")
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column, "self")
 
 			if column_data_errors != nil {
@@ -499,95 +512,103 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 
 			if IsNil(column_data) {
-				sql_command += "NULL"
+				sql_command.WriteString("NULL")
 			} else {
 				rep := GetType(column_data)
 				switch rep {
 				case "*uint64":
 					value := column_data.(*uint64)
-					sql_command += strconv.FormatUint(*value, 10)
+					sql_command.WriteString(strconv.FormatUint(*value, 10))
 				case "uint64":
 					value := column_data.(uint64)
-					sql_command += strconv.FormatUint(value, 10)
+					sql_command.WriteString(strconv.FormatUint(value, 10))
 				case "*int64":
 					value := column_data.(*int64)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int64":
 					value := column_data.(int64)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*uint32":
 					value := column_data.(*uint32)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint32":
 					value := column_data.(uint32)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 				case "*int32":
 					value := column_data.(*int32)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int32":
 					value := column_data.(int32)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*uint16":
 					value := column_data.(*uint16)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint16":
 					value := column_data.(uint16)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 				case "*int16":
 					value := column_data.(*int16)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int16":
 					value := column_data.(int16)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*uint8":
 					value := column_data.(*uint8)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint8":
 					value := column_data.(uint8)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString( strconv.FormatUint(uint64(value), 10))
 				case "*int8":
 					value := column_data.(*int8)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int8":
 					value := column_data.(int8)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*int":
 					value := column_data.(*int)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int":
 					value := column_data.(int)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "float32":
-					sql_command += fmt.Sprintf("%f", column_data.(float32))
+					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
 				case "*float32":
-					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
 				case "float64":
-					sql_command += fmt.Sprintf("%f", column_data.(float64))
+					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
 				case "*float64":
-					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 				case "*time.Time":
 					value := column_data.(*time.Time)
-					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(FormatTime(*value)))
+					sql_command.WriteString("'")
 				case "time.Time":
 					value := column_data.(time.Time)
-					sql_command += "'" + EscapeString(FormatTime(value)) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(FormatTime(value)))
+					sql_command.WriteString("'")
 				case "*string":
 					value := column_data.(*string)
-					sql_command += "'" + EscapeString(*value) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(*value))
+					sql_command.WriteString("'")
 				case "string":
 					value := column_data.(string)
-					sql_command += "'" + EscapeString(value) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(value))
+					sql_command.WriteString("'")
 				case "bool":
 					if column_data.(bool) {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				case "*bool":
 					if *(column_data.(*bool)) {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: %s Record.getUpdateSQL type: %s not supported for table please implement", struct_type, rep))
@@ -595,13 +616,14 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 
 			if index < len(*record_non_identity_columns)-1 {
-				sql_command += ", \n"
+				sql_command.WriteString(", \n")
 			}
 		}
 
-		sql_command += " WHERE "
+		sql_command.WriteString(" WHERE ")
 		for index, identity_column := range *identity_columns {
-			sql_command += EscapeString(identity_column) + " = "
+			sql_command.WriteString(EscapeString(identity_column))
+			sql_command.WriteString(" = ")
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column, "self")
 
 			if column_data_errors != nil {
@@ -610,95 +632,103 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 
 			if IsNil(column_data) {
-				sql_command += "NULL"
+				sql_command.WriteString("NULL")
 			} else {
 				record_non_identity_column_type := GetType(column_data)
 				switch record_non_identity_column_type {
 				case "*uint64":
 					value := column_data.(*uint64)
-					sql_command += strconv.FormatUint(*value, 10)
+					sql_command.WriteString(strconv.FormatUint(*value, 10))
 				case "uint64":
 					value := column_data.(uint64)
-					sql_command += strconv.FormatUint(value, 10)
+					sql_command.WriteString(strconv.FormatUint(value, 10))
 				case "*int64":
 					value := column_data.(*int64)
-					sql_command += strconv.FormatInt(*value, 10)
+					sql_command.WriteString(strconv.FormatInt(*value, 10))
 				case "int64":
 					value := column_data.(int64)
-					sql_command += strconv.FormatInt(value, 10)
+					sql_command.WriteString(strconv.FormatInt(value, 10))
 				case "*uint32":
 					value := column_data.(*uint32)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint32":
 					value := column_data.(uint32)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 				case "*int32":
 					value := column_data.(*int32)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int32":
 					value := column_data.(int32)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*uint16":
 					value := column_data.(*uint16)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint16":
 					value := column_data.(uint16)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 				case "*int16":
 					value := column_data.(*int16)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int16":
 					value := column_data.(int16)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*uint8":
 					value := column_data.(*uint8)
-					sql_command += strconv.FormatUint(uint64(*value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 				case "uint8":
 					value := column_data.(uint8)
-					sql_command += strconv.FormatUint(uint64(value), 10)
+					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 				case "*int8":
 					value := column_data.(*int8)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int8":
 					value := column_data.(int8)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "*int":
 					value := column_data.(*int)
-					sql_command += strconv.FormatInt(int64(*value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 				case "int":
 					value := column_data.(int)
-					sql_command += strconv.FormatInt(int64(value), 10)
+					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 				case "float32":
-					sql_command += fmt.Sprintf("%f", column_data.(float32))
+					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
 				case "*float32":
-					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
 				case "float64":
-					sql_command += fmt.Sprintf("%f", column_data.(float64))
+					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
 				case "*float64":
-					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 				case "*time.Time":
 					value := column_data.(*time.Time)
-					sql_command += "'" + EscapeString(FormatTime(*value)) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(FormatTime(*value)))
+					sql_command.WriteString("'")
 				case "time.Time":
 					value := column_data.(time.Time)
-					sql_command += "'" + EscapeString(FormatTime(value)) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(FormatTime(value)))
+					sql_command.WriteString("'")
 				case "*string":
 					value := column_data.(*string)
-					sql_command += "'" + EscapeString(*value) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(*value))
+					sql_command.WriteString("'")
 				case "string":
 					value := column_data.(string)
-					sql_command += "'" + EscapeString(value) + "'"
+					sql_command.WriteString("'")
+					sql_command.WriteString(EscapeString(value))
+					sql_command.WriteString("'")
 				case "bool":
 					if column_data.(bool) {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				case "*bool":
 					if *(column_data.(*bool)) {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
@@ -706,16 +736,17 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 
 			if index < (len(*identity_columns) - 1) {
-				sql_command += " AND "
+				sql_command.WriteString(" AND ")
 			}
 		}
-		sql_command += " ;"
+		sql_command.WriteString(" ;")
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
 
-		return &sql_command, options, nil
+		sql_command_string := sql_command.String()
+		return &sql_command_string, options, nil
 	}
 
 	x := Record{
