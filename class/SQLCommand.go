@@ -12,8 +12,18 @@ type SQLCommand struct {
 	ExecuteUnsafeCommand func(client Client, sql_command *string, options Map) (*Array, []error)
 }
 
-func newSQLCommand() *SQLCommand {
+func newSQLCommand() (*SQLCommand, []error) {
+	var errors []error
 	bashCommand := newBashCommand()
+
+	directory, directory_errors := GetDirectoryOfExecutable()
+	
+	if directory_errors != nil {
+		errors = append(errors, fmt.Errorf("error: newSQLCommand has errors getting directory: %s", fmt.Sprintf("%s", directory_errors)))
+	} else if directory == nil {
+		errors = append(errors, fmt.Errorf("error: newSQLCommand directory is nil"))
+	}
+	
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(client Client, sql_command *string, options Map) (*Array, []error) {
 			var errors []error
@@ -60,10 +70,7 @@ func newSQLCommand() *SQLCommand {
 				errors = append(errors, fmt.Errorf("error: sql command is an empty string"))
 			}
 
-			directory, directory_errors := GetDirectoryOfExecutable()
-			if directory_errors != nil {
-				errors = append(errors, directory_errors)
-			}
+			
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -209,5 +216,9 @@ func newSQLCommand() *SQLCommand {
 		},
 	}
 
-	return &x
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &x, nil
 }

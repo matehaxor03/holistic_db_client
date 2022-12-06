@@ -17,7 +17,11 @@ type User struct {
 func newUser(client Client, credentials Credentials, domain_name DomainName) (*User, []error) {
 	struct_type := "*User"
 
-	SQLCommand := newSQLCommand()
+	var errors []error
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
 
 	data := Map{
 		"[fields]": Map{},
@@ -117,9 +121,14 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		return &sql_command, options, nil
 	}
 
-	errors := validate()
 
-	if errors != nil {
+	validation_errors := validate()
+
+	if validation_errors != nil {
+		errors = append(errors, validation_errors...)
+	}
+
+	if len(errors) > 0 {
 		return nil, errors
 	}
 

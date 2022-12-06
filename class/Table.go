@@ -30,8 +30,12 @@ type Table struct {
 func newTable(database Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
 	struct_type := "*Table"
 
-	SQLCommand := newSQLCommand()
 	var errors []error
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	var this_table *Table
 
 	setTable := func(table *Table) {
@@ -1006,6 +1010,16 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		return &schema_column_names, nil
 	}
 
+	validate_errors := validate()
+
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
 	x := Table{
 		Validate: func() []error {
 			return validate()
@@ -1508,15 +1522,6 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 	}
 	setTable(&x)
 
-	validate_errors := validate()
-
-	if validate_errors != nil {
-		errors = append(errors, validate_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
+	
 	return &x, nil
 }

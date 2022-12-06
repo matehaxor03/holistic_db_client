@@ -37,7 +37,10 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	struct_type := "*Grant"
 
 	var errors []error
-	SQLCommand := newSQLCommand()
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
 
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
@@ -228,14 +231,12 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		return nil, errors
 	}
 
-	x := Grant{
+	return &Grant{
 		Validate: func() []error {
 			return validate()
 		},
 		Grant: func() []error {
 			return executeGrant()
 		},
-	}
-
-	return &x, nil
+	}, nil
 }

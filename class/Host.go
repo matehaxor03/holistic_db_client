@@ -112,7 +112,7 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		return nil, errors
 	}
 
-	x := Host{
+	return &Host{
 		Validate: func() []error {
 			return validate()
 		},
@@ -125,7 +125,5 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		GetPortNumber: func() (string, []error) {
 			return getPortNumber()
 		},
-	}
-
-	return &x, nil
+	}, nil
 }

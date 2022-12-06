@@ -26,7 +26,12 @@ type Database struct {
 }
 
 func newDatabase(client Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
-	SQLCommand := newSQLCommand()
+	var errors []error
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	var this_database *Database
 	struct_type := "*class.Database"
 
@@ -368,12 +373,6 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		return get_table, nil
 	}
 
-	errors := validate()
-
-	if errors != nil {
-		return nil, errors
-	}
-
 	x := Database{
 		Validate: func() []error {
 			return validate()
@@ -552,6 +551,15 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		},
 	}
 	setDatabase(&x)
+
+	valiation_errors := validate()
+	if valiation_errors != nil {
+		errors = append(errors, valiation_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
 	return &x, nil
 }

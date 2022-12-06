@@ -120,7 +120,13 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 		return temp_value.(*string), nil
 	}
 
-	x := Credentials{
+	errors := validate()
+
+	if errors != nil {
+		return nil, errors
+	}
+
+	return &Credentials{
 		Validate: func() []error {
 			return validate()
 		},
@@ -133,13 +139,5 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)
 		},
-	}
-
-	errors := validate()
-
-	if errors != nil {
-		return nil, errors
-	}
-
-	return &x, nil
+	}, nil
 }

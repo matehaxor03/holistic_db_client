@@ -77,7 +77,13 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		return temp_value.(*string), temp_value_errors
 	}
 
-	x := DatabaseCreateOptions{
+	validate_errors := validate()
+
+	if len(validate_errors) > 0 {
+		return nil, validate_errors
+	}
+
+	return &DatabaseCreateOptions{
 		GetCharacterSet: func() (*string, []error) {
 			return get_character_set()
 		},
@@ -90,13 +96,5 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 		Validate: func() []error {
 			return validate()
 		},
-	}
-
-	validate_errors := validate()
-
-	if len(validate_errors) > 0 {
-		return nil, validate_errors
-	}
-
-	return &x, nil
+	}, nil
 }

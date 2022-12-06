@@ -47,14 +47,12 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 		return nil, errors
 	}
 
-	x := DomainName{
+	return &DomainName{
 		Validate: func() []error {
 			return validate()
 		},
 		GetDomainName: func() (string, []error) {
 			return getDomainName()
 		},
-	}
-
-	return &x, nil
+	}, nil
 }

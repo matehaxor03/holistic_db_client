@@ -63,16 +63,16 @@ type Record struct {
 }
 
 func newRecord(table Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
-	SQLCommand := newSQLCommand()
 	var errors []error
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	struct_type := "*class.Record"
 
 	if record_data == nil {
 		errors = append(errors, fmt.Errorf("error: record_data is nil"))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
 	}
 
 	table_schema, table_schema_errors := table.GetSchema()
@@ -749,7 +749,18 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		return &sql_command_string, options, nil
 	}
 
-	x := Record{
+	validate_errors := validate()
+
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+
+	return &Record{
 		Validate: func() []error {
 			return validate()
 		},
@@ -1113,17 +1124,5 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 			}
 			return fields_map.ToJSONString(json)
 		},
-	}
-
-	validate_errors := validate()
-
-	if validate_errors != nil {
-		errors = append(errors, validate_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return &x, nil
+	}, nil
 }

@@ -30,7 +30,13 @@ type Client struct {
 }
 
 func newClient(client_manager ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
-	SQLCommand := newSQLCommand()
+	var errors []error
+	
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	var this_client *Client
 	struct_type := "*class.Client"
 
@@ -395,7 +401,10 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	}
 	setClient(&x)
 
-	errors := validate()
+	validation_errors := validate()
+	if validation_errors != nil {
+		errors = append(errors, validation_errors...)
+	}
 
 	if errors != nil {
 		return nil, errors
