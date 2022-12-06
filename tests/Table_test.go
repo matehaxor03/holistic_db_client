@@ -405,10 +405,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 				t.Errorf("error: actual schema is nil")
 			} else {
 				for _, expected_schema_column_name := range expected_schema_column_names {
-					if !class.IsDatabaseColumn(expected_schema_column_name) {
-						continue
-					}
-
+					
 					expected_schema_field, expected_schema_field_errors := expected_schema.GetMap(expected_schema_column_name)
 					if expected_schema_field_errors != nil {
 						t.Error(expected_schema_field_errors)
