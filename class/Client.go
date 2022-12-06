@@ -24,10 +24,13 @@ type Client struct {
 	GetDatabase         func() (*Database, []error)
 	Validate            func() []error
 	ToJSONString        func(json *strings.Builder) []error
+	GlobalGeneralLogDisable	func() []error
+	GlobalGeneralLogEnable	func() []error
 	Grant               func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 }
 
 func newClient(client_manager ClientManager, host *Host, database_username *string, database *Database, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Client, []error) {
+	SQLCommand := newSQLCommand()
 	var this_client *Client
 	struct_type := "*class.Client"
 
@@ -303,6 +306,22 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		},
 		UseDatabaseUsername: func(database_username string) []error {
 			setDatabaseUsername(database_username)
+			return nil
+		},
+		GlobalGeneralLogDisable: func() []error {
+			command := "SET GLOBAL general_log = 'OFF';"
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, Map{"use_file": false, "updating_database_global_settings":true})
+			if command_errors != nil {
+				return command_errors
+			}
+			return nil
+		},
+		GlobalGeneralLogEnable: func() []error {
+			command := "SET GLOBAL general_log = 'ON';"
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, Map{"use_file": false, "updating_database_global_settings":true})
+			if command_errors != nil {
+				return command_errors
+			}
 			return nil
 		},
 		Grant: func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {

@@ -114,7 +114,7 @@ func newSQLCommand() *SQLCommand {
 				if database_name_errors != nil {
 					errors = append(errors, database_name_errors...)
 				} else {
-					if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists")) {
+					if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
 						sql = fmt.Sprintf("USE %s;\n", database_name)
 					}
 				}
