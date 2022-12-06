@@ -723,7 +723,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 	return fields_map.GetObject(field), nil
 }
 
-func SetField(struct_type string, m *Map, schema_type string, field_type string, parameter string, object interface{}) ([]error) {
+func SetField(struct_type string, m *Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
 	var errors []error
 
 	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
@@ -731,7 +731,7 @@ func SetField(struct_type string, m *Map, schema_type string, field_type string,
 		errors = append(errors, schemas_map_errors...)
 	}
 
-	fields_map, fields_map_errors := GetFields(struct_type, m, field_type) 
+	fields_map, fields_map_errors := GetFields(struct_type, m, parameter_type) 
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	}
@@ -764,7 +764,7 @@ func SetField(struct_type string, m *Map, schema_type string, field_type string,
 	auto_increment_count_value := 0 
 	auto_increment_count = &auto_increment_count_value
 
-	validate_parameters_errors := ValidateParameterData(struct_type, schemas_map, nil, parameter, object, primary_key_count, auto_increment_count)
+	validate_parameters_errors := ValidateParameterData(struct_type, schemas_map, schema_type, nil, parameter_type, parameter, object, primary_key_count, auto_increment_count)
 	if validate_parameters_errors != nil {
 		errors = append(errors, validate_parameters_errors...)
 	}
@@ -919,7 +919,7 @@ func ValidateData(data *Map, struct_type string) []error {
 
 	if len(field_errors) == 0 {
 		for _, parameter := range (*schemas).Keys() {
-			value_errors := ValidateParameterData(struct_type, schemas, field_parameters, parameter, nil, primary_key_count, auto_increment_count)
+			value_errors := ValidateParameterData(struct_type, schemas, "[schema]", field_parameters, "[fields]", parameter, nil, primary_key_count, auto_increment_count)
 
 			if value_errors != nil {
 				field_errors = append(field_errors, value_errors...)
@@ -944,7 +944,7 @@ func ValidateData(data *Map, struct_type string) []error {
 	
 	if len(system_field_errors) == 0 {
 		for _, parameter := range (*system_schemas).Keys() {
-			value_errors := ValidateParameterData(struct_type, system_schemas, system_field_parameters, parameter, nil, primary_key_count, auto_increment_count)
+			value_errors := ValidateParameterData(struct_type, system_schemas, "[system_schema]", system_field_parameters, "[system_fields]", parameter, nil, primary_key_count, auto_increment_count)
 			if value_errors != nil {
 				system_field_errors = append(system_field_errors, value_errors...)
 			}
@@ -972,7 +972,7 @@ func ValidateData(data *Map, struct_type string) []error {
 	return nil
 }
 
-func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, parameter string, value_to_validate interface{}, primary_key_count *int,  auto_increment_count *int) ([]error) {
+func ValidateParameterData(struct_type string, schemas *Map, schemas_type string, parameters *Map, parameters_type string, parameter string, value_to_validate interface{}, primary_key_count *int,  auto_increment_count *int) ([]error) {
 	var errors []error
 
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
@@ -1076,7 +1076,7 @@ func ValidateParameterData(struct_type string, schemas *Map, parameters *Map, pa
 		}
 	}
 
-	if (struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter) {
+	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" {
 		value_is_mandatory = false
 	}
 
