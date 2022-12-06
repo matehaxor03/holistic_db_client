@@ -1190,10 +1190,11 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT * FROM %s ", EscapeString(temp_table_name))
+			var sql_command strings.Builder
+			sql_command.WriteString(fmt.Sprintf("SELECT * FROM %s ", EscapeString(temp_table_name)))
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
-					sql += "WHERE "
+					sql_command.WriteString("WHERE ")
 				}
 
 				column_name_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
@@ -1204,7 +1205,8 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 						errors = append(errors, column_name_errors...)
 					}	
 
-					sql += EscapeString(column_filter) + " = "
+					sql_command.WriteString(EscapeString(column_filter))
+					sql_command.WriteString(" = ")
 
 					//todo check data type with schema
 					type_of := filters.GetType(column_filter)
@@ -1213,27 +1215,27 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 					case "*string", "string":
 						filer_value, _ := filters.GetString(column_filter)
-						sql += fmt.Sprintf("'%s' ", EscapeString(*filer_value))
+						sql_command.WriteString(fmt.Sprintf("'%s' ", EscapeString(*filer_value)))
 					default:
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
-						sql += "AND "
+						sql_command.WriteString("AND ")
 					}
 				}
 			}
 
 			if limit != nil {
 				limit_value := strconv.FormatUint(*limit, 10)
-				sql += fmt.Sprintf("LIMIT %s ", limit_value)
+				sql_command.WriteString(fmt.Sprintf("LIMIT %s ", limit_value))
 			}
 
 			if offset != nil {
 				offset_value := strconv.FormatUint(*offset, 10)
-				sql += fmt.Sprintf("OFFSET %s ", offset_value)
+				sql_command.WriteString(fmt.Sprintf("OFFSET %s ", offset_value))
 			}
-			sql += ";"
+			sql_command.WriteString(";")
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -1249,7 +1251,8 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
+			sql_command_string := sql_command.String()
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command_string, Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
