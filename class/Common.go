@@ -868,20 +868,25 @@ func WhitelistCharacters(m Map) []error {
 	return nil
 }
 
-func IsDatabaseColumn(value string) bool {
+func ValidateDatabaseColumnName(value string) []error {
+	var errors []error
 	column_name_params := Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
 	column_name_errors := WhitelistCharacters(column_name_params)
 	if column_name_errors != nil {
-		return false
+		errors = append(errors, column_name_errors...)
 	}
 
 	blacklist_column_name_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": value, "label": "column_name", "data_type": "Table"}
 	blacklist_column_name_errors := BlackListStringToUpper(blacklist_column_name_params)
 	if blacklist_column_name_errors != nil {
-		return false
+		errors = append(errors, blacklist_column_name_errors...)
 	}
 
-	return true
+	if len(errors) > 0 {
+		return errors
+	}
+
+	return nil
 }
 
 func ValidateData(data *Map, struct_type string) []error {	
@@ -1127,7 +1132,7 @@ func ValidateParameterData(struct_type string, schemas *Map, schemas_type string
 		type_of_parameter_value = "*time.Time"
 	}
 
-	if !((struct_type == "*class.Table" || struct_type == "class.Table") && IsDatabaseColumn(parameter)) {
+	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
 			errors = append(errors, fmt.Errorf("error: table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
 		}
