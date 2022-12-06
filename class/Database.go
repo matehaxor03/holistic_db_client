@@ -120,11 +120,22 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		}
 
 		if databaseCreateOptions != nil {
-			database_create_options_command, database_create_options_command_errs := (*databaseCreateOptions).GetSQL()
-			if database_create_options_command_errs != nil {
-				errors = append(errors, database_create_options_command_errs...)
-			} else {
-				sql_command += *database_create_options_command
+			character_set, character_set_errors := databaseCreateOptions.GetCharacterSet()
+			if character_set_errors != nil {
+				return nil, character_set_errors
+			}
+
+			collate, collate_errors := databaseCreateOptions.GetCollate()
+			if collate_errors != nil {
+				return nil, collate_errors
+			}
+
+			if character_set != nil && *character_set != "" {
+				sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
+			}
+
+			if collate != nil && *collate != "" {
+				sql_command += fmt.Sprintf("COLLATE %s ", *collate)
 			}
 		}
 		sql_command += ";"
