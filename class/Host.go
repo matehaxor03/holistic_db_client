@@ -2,6 +2,7 @@ package class
 
 import (
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type Host struct {
@@ -14,8 +15,8 @@ type Host struct {
 func newHost(host_name string, port_number string) (*Host, []error) {
 	struct_type := "*Host"
 
-	getHostNameValidCharacters := func() Map {
-		temp := Map{"a": nil,
+	getHostNameValidCharacters := func() json.Map {
+		temp := json.Map{"a": nil,
 			"b": nil,
 			"c": nil,
 			"d": nil,
@@ -56,8 +57,8 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		return temp
 	}
 
-	getValidPortCharacters := func() Map {
-		temp := Map{"0": nil,
+	getValidPortCharacters := func() json.Map {
+		temp := json.Map{"0": nil,
 			"1": nil,
 			"2": nil,
 			"3": nil,
@@ -70,19 +71,19 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		return temp
 	}
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]": Map{"[host_name]":host_name, "[port_number]":port_number},
-		"[system_schema]": Map{
-			"[host_name]":Map{"type":"string",
-			"filters": Array{Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-			"[port_number]": Map{"type":"string",
-			"filters": Array{Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]": json.Map{"[host_name]":host_name, "[port_number]":port_number},
+		"[system_schema]": json.Map{
+			"[host_name]":json.Map{"type":"string",
+			"filters": json.Array{json.Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+			"[port_number]": json.Map{"type":"string",
+			"filters": json.Array{json.Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
 		},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 

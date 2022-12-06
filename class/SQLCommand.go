@@ -6,26 +6,21 @@ import (
 	"os"
 	"strings"
 	"time"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client Client, sql_command *string, options Map) (*Array, []error)
+	ExecuteUnsafeCommand func(client Client, sql_command *string, options json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
 	var errors []error
 	bashCommand := newBashCommand()
 
-	directory, directory_errors := GetDirectoryOfExecutable()
-	
-	if directory_errors != nil {
-		errors = append(errors, fmt.Errorf("error: newSQLCommand has errors getting directory: %s", fmt.Sprintf("%s", directory_errors)))
-	} else if directory == nil {
-		errors = append(errors, fmt.Errorf("error: newSQLCommand directory is nil"))
-	}
+	directory := "/Volumes/ramdisk"
 	
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client Client, sql_command *string, options Map) (*Array, []error) {
+		ExecuteUnsafeCommand: func(client Client, sql_command *string, options json.Map) (*json.Array, []error) {
 			var errors []error
 
 			client_errs := client.Validate()
@@ -94,10 +89,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 				if database_name_errors != nil {
 					errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database_name: %s", fmt.Sprintf("%s", database_name_errors)))
 				} else {
-					credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + host_name + ":" + port_number + ":" + database_name + ":" + (*database_username) + ".config"
+					credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config:" + host_name + ":" + port_number + ":" + database_name + ":" + (*database_username) + ".config"
 				}
 			} else {
-				credentials_command = "--defaults-extra-file=" + *directory + "/holistic_db_config:" + host_name + ":" + port_number + "::" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config:" + host_name + ":" + port_number + "::" + (*database_username) + ".config"
 			}
 
 			if len(errors) > 0 {
@@ -167,7 +162,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			records := Array{}
+			records := json.Array{}
 
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
 				return &records, nil
@@ -177,8 +172,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 			reading_columns := true
 			value := ""
 			columns_count := 0
-			columns := Array{}
-			record := Map{}
+			columns := json.Array{}
+			record := json.Map{}
 			for i := 0; i < len(rune_array); i++ {
 				current_value := string(rune_array[i])
 				if reading_columns {
@@ -199,7 +194,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 						column_value := CloneString(&value)
 						record.SetString(columns[columns_count].(string), column_value)
 						records = append(records, record)
-						record = Map{}
+						record = json.Map{}
 						value = ""
 						columns_count = 0
 					} else if current_value == "\t" {

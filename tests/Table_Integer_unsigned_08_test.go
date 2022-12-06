@@ -2,8 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GetTestTableNameWithIntegerUnsigned08ColumnName() string {
@@ -23,14 +22,14 @@ func GetTestTableIntegerUnsigned08ColumnNameNotMandatory() string {
 	return "integer_unsigned_08_column_not_mandatory"
 }
 
-func GetTestSchemaWithIntegerUnsigned08Column() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerUnsigned08ColumnName(): class.Map {"type": "uint8"}}
+func GetTestSchemaWithIntegerUnsigned08Column() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+					  GetTestTableIntegerUnsigned08ColumnName(): json.Map {"type": "uint8"}}
 }
 
-func GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerUnsigned08ColumnNameNotMandatory(): class.Map {"type": "*uint8"}}
+func GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+					  GetTestTableIntegerUnsigned08ColumnNameNotMandatory(): json.Map {"type": "*uint8"}}
 }
 
 func TestTableCreateWithIntegerUnsigned08Column(t *testing.T) {

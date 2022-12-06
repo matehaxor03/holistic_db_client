@@ -1,6 +1,11 @@
 package class
-func GetMySQLKeywordsAndReservedWordsInvalidWords() Map {
-return Map{
+
+import (
+    json "github.com/matehaxor03/holistic_json/json"
+)
+
+func GetMySQLKeywordsAndReservedWordsInvalidWords() json.Map {
+return json.Map{
     "A": nil,
     "ACCESSIBLE": nil,
     "ACCOUNT": nil,

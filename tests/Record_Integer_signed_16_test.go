@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -10,7 +11,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned16ColumnName(), GetTestSchemaWithIntegerSigned16Column())
 	test_value := int16(130)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned16ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
 	} else if record == nil {
@@ -30,7 +31,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
 func TestRecordCanUpdateRecordWithIntegerSigned16Colum(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned16ColumnName(), GetTestSchemaWithIntegerSigned16Column())
 	test_value := int16(150)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned16ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +54,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16ColumnNotMandatory(t *testing.T
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned16ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned16ColumnNotMandatory())
 	test_value := int16(130)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableInteger16SignedColumnNameNotMandatory(): &test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger16SignedColumnNameNotMandatory(): &test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
 	} else if record == nil {
@@ -73,7 +74,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16ColumnNotMandatory(t *testing.T
 func TestRecordCanUpdateRecordWithIntegerSigned16ColumNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned16ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned16ColumnNotMandatory())
 	test_value := int16(150)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableInteger16SignedColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger16SignedColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

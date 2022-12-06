@@ -1,8 +1,12 @@
 package main
 
+// mkdir /home/somefolder; mount /dev/dev4 /home/somefolder
+//diskutil erasevolume HFS+ "ramdisk" `hdiutil attach -nomount ram://{2048 * {mb}}`
+
 import (
 	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 	"os"
 	"sort"
 	"strings"
@@ -385,7 +389,7 @@ func testTableName(client *class.Client) []error {
 
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
-		schema := class.Map{"id": class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
+		schema := json.Map{"id": json.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 
 		table, table_errors := database.CreateTable(string_value, schema)
 		if table_errors != nil {
@@ -471,7 +475,7 @@ func testColumnName(client *class.Client) []error {
 
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
-		schema := class.Map{string_value: class.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
+		schema := json.Map{string_value: json.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
 		table_name := class.GenerateRandomLetters(10, nil)
 
 		table, table_errors := database.CreateTable(*table_name, schema)

@@ -2,8 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GetTestTableNameWithStringColumn() string {
@@ -22,14 +21,14 @@ func GetTestTableStringColumnNameNotMandatory() string {
 	return "string_column_not_mandatory"
 }
 
-func GetTestSchemaWithStringColumn() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableStringColumnName(): class.Map {"type": "string", "max_length":100}}
+func GetTestSchemaWithStringColumn() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableStringColumnName(): json.Map {"type": "string", "max_length":100}}
 }
 
-func GetTestSchemaWithStringColumnNotMandatory() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableStringColumnNameNotMandatory(): class.Map {"type": "*string", "max_length":100}}
+func GetTestSchemaWithStringColumnNotMandatory() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableStringColumnNameNotMandatory(): json.Map {"type": "*string", "max_length":100}}
 }
 
 func TestTableCreateWithStringColumn(t *testing.T) {

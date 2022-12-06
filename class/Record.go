@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type Record struct {
@@ -62,7 +63,7 @@ type Record struct {
 	ToJSONString  func(json *strings.Builder) ([]error)
 }
 
-func newRecord(table Table, record_data Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
+func newRecord(table Table, record_data json.Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
 	var errors []error
 	SQLCommand, SQLCommand_errors := newSQLCommand()
 	if SQLCommand_errors != nil {
@@ -90,9 +91,9 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 
-	data := Map{"[fields]": record_data, "[system_fields]": Map{"[table]": table}}
+	data := json.Map{"[fields]": record_data, "[system_fields]": json.Map{"[table]": table}}
 	data["[schema]"] = table_schema
-	data["[system_schema]"] = Map{"[table]": Map{"type":"class.Table"}}
+	data["[system_schema]"] = json.Map{"[table]": json.Map{"type":"class.Table"}}
 
 	schema_column_names := table_schema.Keys()
 	for _, schema_column_name := range schema_column_names {
@@ -102,7 +103,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		}
 	}
 
-	getData := func() (*Map) {
+	getData := func() (*json.Map) {
 		return &data
 	}
 
@@ -190,8 +191,8 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		return ValidateData(getData(), struct_type)
 	}
 
-	getInsertSQL := func() (*string, Map, []error) {
-		options := Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
+	getInsertSQL := func() (*string, json.Map, []error) {
+		options := json.Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -405,8 +406,8 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 		return &sql_command_string, options, nil
 	}
 
-	getUpdateSQL := func() (*string, Map, []error) {
-		options := Map{"use_file": false}
+	getUpdateSQL := func() (*string, json.Map, []error) {
+		options := json.Map{"use_file": false}
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -797,7 +798,7 @@ func newRecord(table Table, record_data Map, database_reserved_words_obj *Databa
 					return errors
 				}
 
-				record_from_db := (*json_array)[0].(Map)
+				record_from_db := (*json_array)[0].(json.Map)
 
 				last_insert_id, last_insert_id_errors := record_from_db.GetString("LAST_INSERT_ID()")
 				if last_insert_id_errors != nil {

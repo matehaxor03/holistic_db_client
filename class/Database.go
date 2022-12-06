@@ -3,6 +3,8 @@ package class
 import (
 	"fmt"
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
+
 )
 
 type Database struct {
@@ -16,8 +18,8 @@ type Database struct {
 	SetDatabaseName func(database_name string) []error
 	SetClient       func(client *Client) []error
 	GetClient       func() (*Client, []error)
-	CreateTable     func(table_name string, schema Map) (*Table, []error)
-	GetTableInterface func(table_name string, schema Map) (*Table, []error)
+	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
+	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() (*[]Table, []error)
 	GetTableNames   func() (*[]string, []error)
@@ -46,20 +48,20 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]": Map{
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]": json.Map{
 			"[client]":client, "[database_name]":database_name,"[database_create_options]":database_create_options},
-		"[system_schema]": Map{
-			"[client]":Map{"type":"class.Client"},
-			"[database_name]":Map{"type":"string","min_length":2,"not_empty_string_value":true,
-			"filters": Array{Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
-							 Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
-			"[database_create_options]":Map{"type":"*class.DatabaseCreateOptions"}},
+		"[system_schema]": json.Map{
+			"[client]": json.Map{"type":"class.Client"},
+			"[database_name]": json.Map{"type":"string","min_length":2,"not_empty_string_value":true,
+			"filters": json.Array{ json.Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
+							 json.Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
+			"[database_create_options]": json.Map{"type":"*class.DatabaseCreateOptions"}},
 	}
 
-	getData := func() (*Map) {
+	getData := func() (*json.Map) {
 		return &data
 	}
 
@@ -163,7 +165,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file":false, "creating_database":true})
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file":false, "creating_database":true})
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -191,7 +193,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "checking_database_exists":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "checking_database_exists":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -227,7 +229,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_client_errors
 		}
 
-		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false})
+		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -244,12 +246,12 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		var table_names []string
 		column_name := "Tables_in_" + EscapeString(temp_database_name)
 		for _, record := range *records {
-			table_name, table_name_errors := record.(Map).GetString(column_name)
+			table_name, table_name_errors := record.(json.Map).GetString(column_name)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
 				continue
 			} else if table_name == nil {
-				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) was nil available fields are: %s", column_name, record.(Map).Keys()))
+				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) was nil available fields are: %s", column_name, record.(json.Map).Keys()))
 				continue
 			}
 			table_names = append(table_names, *table_name)
@@ -282,7 +284,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "deleting_database":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -315,7 +317,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "deleting_database":true})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -415,7 +417,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 			return table.Exists()
 		},
-		GetTableInterface: func(table_name string, schema Map) (*Table, []error) {
+		GetTableInterface: func(table_name string, schema json.Map) (*Table, []error) {
 			errors := validate()
 
 			if len(errors) > 0 {
@@ -430,7 +432,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 			return table, nil
 		},
-		CreateTable: func(table_name string, schema Map) (*Table, []error) {
+		CreateTable: func(table_name string, schema json.Map) (*Table, []error) {
 			errors := validate()
 
 			if len(errors) > 0 {

@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -31,7 +32,7 @@ func GetTestTableCreated(t *testing.T) (*class.Table) {
 	return table
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema class.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema json.Map) (*class.Table) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, schema)
 	
 	table_create_errors := table.Create()
@@ -48,7 +49,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T,
 func TestRecordCanCreateRecord(t *testing.T) {
 	table := GetTestTableCreated(t)
 
-    record, record_errors := table.CreateRecord(class.Map{})
+    record, record_errors := table.CreateRecord(json.Map{})
 	if record_errors != nil {
 		t.Error(record_errors)
 	} else if record == nil {

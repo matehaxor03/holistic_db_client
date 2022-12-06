@@ -1,6 +1,11 @@
 package class
-func GetMySQLColumnNameWhitelistCharacters() Map {
-return Map{
+
+import (
+    json "github.com/matehaxor03/holistic_json/json"
+)
+
+func GetMySQLColumnNameWhitelistCharacters() json.Map {
+return json.Map{
     "0": nil,
     "1": nil,
     "2": nil,

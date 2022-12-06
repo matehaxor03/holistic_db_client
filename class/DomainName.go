@@ -1,11 +1,15 @@
 package class
 
+import (
+	json "github.com/matehaxor03/holistic_json/json"
+)
+
 func LOCALHOST_IP() string {
 	return "127.0.0.1"
 }
 
-func GET_ALLOWED_DOMAIN_NAMES() Map {
-	return Map{LOCALHOST_IP(): nil}
+func GET_ALLOWED_DOMAIN_NAMES() json.Map {
+	return json.Map{LOCALHOST_IP(): nil}
 }
 
 type DomainName struct {
@@ -16,16 +20,16 @@ type DomainName struct {
 func NewDomainName(domain_name string) (*DomainName, []error) {
 	struct_type := "*DomainName"
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]": Map{"[domain_name]": domain_name},
-		"[system_schema]": Map{"[domain_name]":Map{"type":"string",
-			"filters": Array{Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]": json.Map{"[domain_name]": domain_name},
+		"[system_schema]": json.Map{"[domain_name]": json.Map{"type":"string",
+			"filters": json.Array{json.Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 

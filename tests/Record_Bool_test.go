@@ -3,13 +3,14 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
 func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():true})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():true})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -29,7 +30,7 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():false})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():false})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -49,7 +50,7 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():false})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():false})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -70,7 +71,7 @@ func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolFalse(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():true})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():true})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -92,7 +93,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumnNotMandatory(), GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -113,7 +114,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumnNotMandatory(), GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := false
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -134,7 +135,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
 	test_value := false
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -157,7 +158,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithBoolColumn(), GetTestSchemaWithBoolColumn())
 
 	test_value := true
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableBoolColumnName():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableBoolColumnName():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

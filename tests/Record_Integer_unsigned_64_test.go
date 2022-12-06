@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -10,7 +11,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned64ColumnName(), GetTestSchemaWithIntegerUnsigned64Column())
 	test_value := uint64(555)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned64ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned64ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -30,7 +31,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned64ColumnName(), GetTestSchemaWithIntegerUnsigned64Column())
 	test_value := uint64(343443)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned64ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned64ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +54,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	test_value := uint64(349734)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -73,7 +74,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing
 func TestRecordCanUpdateRecordWithIntegerUnsigned64ColumNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	test_value := uint64(343443)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

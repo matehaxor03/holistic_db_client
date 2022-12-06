@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type Table struct {
@@ -13,7 +14,7 @@ type Table struct {
 	Read                func() []error
 	Delete                func() []error
 	DeleteIfExists        func() []error
-	GetSchema             func() (*Map, []error)
+	GetSchema             func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
 	GetSchemaColumns       func() (*[]string, []error)
@@ -21,13 +22,13 @@ type Table struct {
 	GetIdentityColumns    func() (*[]string, []error)
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
-	CreateRecord          func(record Map) (*Record, []error)
-	ReadRecords         func(filter Map, limit *uint64, offset *uint64) (*[]Record, []error)
+	CreateRecord          func(record json.Map) (*Record, []error)
+	ReadRecords         func(filter json.Map, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
-func newTable(database Database, table_name string, schema Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
+func newTable(database Database, table_name string, schema json.Map, database_reserved_words_obj *DatabaseReservedWords, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Table, []error) {
 	struct_type := "*Table"
 
 	var errors []error
@@ -51,23 +52,23 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b Database, n string, s Map) (Map) {
+	setupData := func(b Database, n string, s json.Map) (json.Map) {
 		schema_is_nil := false
 		
 		if IsNil(s) {
 			schema_is_nil = true
-			s = Map{}
+			s = json.Map{}
 		}
 	
-		d := Map{
-			"[fields]": Map{},
-			"[schema]": Map{},
-			"[system_fields]":Map{"[database]":b, "[table_name]":n},
-			"[system_schema]": Map{
-				"[database]": Map{"type":"class.Database"},
-				"[table_name]": Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
-				"filters": Array{Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
-								 Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}},
+		d := json.Map{
+			"[fields]": json.Map{},
+			"[schema]": json.Map{},
+			"[system_fields]":json.Map{"[database]":b, "[table_name]":n},
+			"[system_schema]": json.Map{
+				"[database]": json.Map{"type":"class.Database"},
+				"[table_name]": json.Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
+				"filters": json.Array{json.Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
+						   json.Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}},
 			},
 		}
 	
@@ -77,11 +78,11 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			d["[schema_is_nil]"] = false
 		}
 	
-		s["enabled"] = Map{"type": "*bool", "default": true}
-		s["archieved"] = Map{"type": "*bool", "default": false}
-		s["created_date"] = Map{"type": "*time.Time", "default": "now"}
-		s["last_modified_date"] = Map{"type": "*time.Time", "default": "now"}
-		s["archieved_date"] = Map{"type": "*time.Time", "default":nil}
+		s["enabled"] = json.Map{"type": "*bool", "default": true}
+		s["archieved"] = json.Map{"type": "*bool", "default": false}
+		s["created_date"] = json.Map{"type": "*time.Time", "default": "now"}
+		s["last_modified_date"] = json.Map{"type": "*time.Time", "default": "now"}
+		s["archieved_date"] = json.Map{"type": "*time.Time", "default":nil}
 	
 		d["[schema]"] = s
 		return d
@@ -89,7 +90,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 	data := setupData(database, table_name, schema)
 
-	getData := func() (*Map) {
+	getData := func() (*json.Map) {
 		return &data
 	}
 
@@ -216,7 +217,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return nil, temp_client_errors
 		}
 		
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false})
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -256,7 +257,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -292,7 +293,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -305,7 +306,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		return nil
 	}
 
-	getSchema := func() (*Map, []error) {
+	getSchema := func() (*json.Map, []error) {
 		var errors []error
 		validate_errors := validate()
 		
@@ -331,7 +332,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return nil, temp_client_errors
 		}
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, Map{"use_file": false, "json_output": true})
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "json_output": true})
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -348,12 +349,12 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return nil, errors
 		}
 
-		schema := Map{}
+		schema := json.Map{}
 		for _, column_details := range *json_array {
-			column_map := column_details.(Map)
+			column_map := column_details.(json.Map)
 			column_attributes := column_map.Keys()
 
-			column_schema := Map{}
+			column_schema := json.Map{}
 			default_value := ""
 			field_name := ""
 			is_nullable := false
@@ -941,7 +942,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file": false})
 
 		if execute_errors != nil {
 			return execute_errors
@@ -1070,7 +1071,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1085,7 +1086,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 				return nil, errors
 			}
 
-			count_value, count_value_error := (*json_array)[0].(Map).GetString("COUNT(*)")
+			count_value, count_value_error := (*json_array)[0].(json.Map).GetString("COUNT(*)")
 			if count_value_error != nil {
 				errors = append(errors, count_value_error...)
 				return nil, errors
@@ -1114,7 +1115,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 			return deleteIfExists()
 		},
-		CreateRecord: func(new_record_data Map) (*Record, []error) {
+		CreateRecord: func(new_record_data json.Map) (*Record, []error) {
 			errors := validate()
 			if errors != nil {
 				return nil, errors
@@ -1132,7 +1133,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 
 			return record, nil
 		},
-		ReadRecords: func(filters Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(filters json.Map, limit *uint64, offset *uint64) (*[]Record, []error) {
 			var errors []error
 			validate_errors := validate()
 			if errors != nil {
@@ -1211,7 +1212,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 					sql_command.WriteString("WHERE ")
 				}
 
-				column_name_params := Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
+				column_name_params := json.Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
 				for index, column_filter := range filters.Keys() {
 					column_name_params.SetString("value", &column_filter)
 					column_name_errors := WhitelistCharacters(column_name_params)
@@ -1266,7 +1267,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			}
 
 			sql_command_string := sql_command.String()
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command_string, Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command_string, json.Map{"use_file": false})
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1277,10 +1278,10 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 			}
 
 			var mapped_records []Record
-			for _, json := range *json_array {
-				current_record := json.(Map)
+			for _, current_json := range *json_array {
+				current_record := current_json.(json.Map)
 				columns := current_record.Keys()
-				mapped_record := Map{}
+				mapped_record := json.Map{}
 				for _, column := range columns {
 					table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)
 					if table_schema_column_map_errors != nil {
@@ -1507,7 +1508,7 @@ func newTable(database Database, table_name string, schema Map, database_reserve
 		Exists: func() (*bool, []error) {
 			return exists()
 		},
-		GetSchema: func() (*Map, []error) {
+		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
 		},
 		GetTableName: func() (string, []error) {

@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GRANT_ALL() string {
@@ -20,12 +21,12 @@ func GRANT_SELECT() string {
 	return "SELECT"
 }
 
-func GET_ALLOWED_GRANTS() Map {
-	return Map{GRANT_ALL(): nil, GRANT_INSERT(): nil, GRANT_UPDATE(): nil, GRANT_SELECT(): nil}
+func GET_ALLOWED_GRANTS() json.Map {
+	return json.Map{GRANT_ALL(): nil, GRANT_INSERT(): nil, GRANT_UPDATE(): nil, GRANT_SELECT(): nil}
 }
 
-func GET_ALLOWED_FILTERS() Map {
-	return Map{"*": nil}
+func GET_ALLOWED_FILTERS() json.Map {
+	return json.Map{"*": nil}
 }
 
 type Grant struct {
@@ -45,32 +46,32 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 	
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]": Map{"[client]":client, "[user]":user, "[grant]":grant},
-		"[system_schema]": Map{"[client]":Map{"type":"class.Client"},
-						"[user]":Map{"type":"class.User"},
-						"[grant]": Map{"type":"string",
-		"filters]": Array{Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]": json.Map{"[client]":client, "[user]":user, "[grant]":grant},
+		"[system_schema]": json.Map{"[client]": json.Map{"type":"class.Client"},
+						"[user]": json.Map{"type":"class.User"},
+						"[grant]": json.Map{"type":"string",
+		"filters]": json.Array{json.Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
 	if database_filter != nil {
-		data["[system_fields]"].(Map)["[database_filter]"] = database_filter
+		data["[system_fields]"].(json.Map)["[database_filter]"] = database_filter
 		if *database_filter == "*" {
-			data["[ssystem_chema]"].(Map)["[database_filter]"] = Map{"type":"string", "filters": Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[ssystem_chema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[database_filter]"] = Map{"type":"string", "filters": Array{Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
+			data["[system_schema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, json.Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
 		}
 	}
 
 	if table_filter != nil {
-		data["[system_fields]"].(Map)["[table_filter]"] = table_filter
+		data["[system_fields]"].(json.Map)["[table_filter]"] = table_filter
 		if *table_filter == "*" {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", "filters": Array{Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(json.Map)["[table_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
-			data["[system_schema]"].(Map)["[table_filter]"] = Map{"type":"string", "filters": Array{Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(json.Map)["[table_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
 		}
 	}
 
@@ -79,7 +80,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		errors = append(errors, fmt.Errorf("error: Grant: database_filter and table_filter are both nil"))
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 
@@ -212,7 +213,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, Map{"use_file": true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file": true})
 
 		if execute_errors != nil {
 			return execute_errors

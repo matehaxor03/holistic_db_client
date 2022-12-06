@@ -3,32 +3,32 @@ package tests
 import (
     "testing"
 	"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTestColumnSchemaNoPrimaryKey() class.Map {
-	return class.Map {"type": "uint64" }
+func GetTestColumnSchemaNoPrimaryKey() json.Map {
+	return json.Map {"type": "uint64" }
 }
 
-func GetTestColumnSchemaNoType() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"primary_key": true}}
+func GetTestColumnSchemaNoType() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"primary_key": true}}
 }
 
-func GetTestColumnSchemaWithValue() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "value":"something", "auto_increment": true, "primary_key": true}}
+func GetTestColumnSchemaWithValue() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "value":"something", "auto_increment": true, "primary_key": true}}
 }
 
-func GetTestTableSchemaNoPrimaryKey() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoPrimaryKey()}
+func GetTestTableSchemaNoPrimaryKey() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoPrimaryKey()}
 }
 
-func GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): GetTestSchemaColumnPrimaryKeyAutoIncrement(),
+func GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): GetTestSchemaColumnPrimaryKeyAutoIncrement(),
 	                  GetTestTablePrimaryKeyName2(): GetTestSchemaColumnPrimaryKeyAutoIncrement()}
 }
 
-func GetTestTableSchemaNoType() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
+func GetTestTableSchemaNoType() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
 }
 
 func TestSchemaCanCreateTable(t *testing.T) {
@@ -54,7 +54,7 @@ func TestSchemaCannotCreateTableIfNil(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), class.Map{})
+	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), json.Map{})
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}

@@ -4,6 +4,7 @@ import (
     "testing"
 	"strings"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -28,19 +29,19 @@ func GetTestTablePrimaryKeyName2() string {
 	return "test_table_id2"
 }
 
-func GetTestSchema() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
+func GetTestSchema() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
 }
 
-func GetTestSchemaColumn() class.Map {
-	return class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
+func GetTestSchemaColumn() json.Map {
+	return json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
 }
 
-func GetTestSchemaColumnPrimaryKeyAutoIncrement() class.Map {
-	return class.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
+func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
+	return json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema class.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (*class.Table) {
 	var errors []error
 
 	database := GetTestDatabaseCreated(t)
@@ -87,7 +88,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	return table
 }
 
-func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema class.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (*class.Table) {
 	var errors []error
 
 	database := GetTestDatabase(t)
@@ -353,7 +354,7 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	t.Parallel()
 	database := GetTestDatabase(t)
-	non_whitelist_map := class.Map{"(":nil, ")":nil}
+	non_whitelist_map := json.Map{"(":nil, ")":nil}
 
 	for invalid_character := range non_whitelist_map {
 		table, get_table_interface_errors := database.GetTableInterface(invalid_character + invalid_character, GetTestSchema())
@@ -386,7 +387,7 @@ func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T
 	}
 }
 
-func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema class.Map) {
+func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema json.Map) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, expected_schema)
 
     table_errors := table.Create()
@@ -405,7 +406,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 				t.Errorf("error: actual schema is nil")
 			} else {
 				for _, expected_schema_column_name := range expected_schema_column_names {
-					
+
 					expected_schema_field, expected_schema_field_errors := expected_schema.GetMap(expected_schema_column_name)
 					if expected_schema_field_errors != nil {
 						t.Error(expected_schema_field_errors)

@@ -2,8 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GetTestTableNameWithIntegerSigned64ColumnName() string {
@@ -24,14 +23,14 @@ func GetTestTableInteger64SignedColumnNameNotMandatory() string {
 }
 
 
-func GetTestSchemaWithIntegerSigned64Column() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned64ColumnName(): class.Map {"type": "int64"}}
+func GetTestSchemaWithIntegerSigned64Column() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+					  GetTestTableIntegerSigned64ColumnName(): json.Map {"type": "int64"}}
 }
 
-func GetTestSchemaWithIntegerSigned64ColumnNotMandatory() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger64SignedColumnNameNotMandatory(): class.Map {"type": "*int64"}}
+func GetTestSchemaWithIntegerSigned64ColumnNotMandatory() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableInteger64SignedColumnNameNotMandatory(): json.Map {"type": "*int64"}}
 }
 
 func TestTableCreateWithIntegerSigned64Column(t *testing.T) {

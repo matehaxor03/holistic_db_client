@@ -5,13 +5,11 @@ import (
 	"strings"
 	"time"
 	"math/rand"
-    "path/filepath"
-	"runtime"
-	//"reflect"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetValidSchemaFields() Map {
-	return Map{
+func GetValidSchemaFields() json.Map {
+	return json.Map{
 		"type": nil,
 		"primary_key": nil,
 		"unsigned":nil,
@@ -170,7 +168,7 @@ func GetTime(object interface{}) (*time.Time, []error) {
 		}
 
 	default:
-		errors = append(errors, fmt.Errorf("error: Map.GetTime: type %s is not supported please implement", rep))
+		errors = append(errors, fmt.Errorf("error: json.Map.GetTime: type %s is not supported please implement", rep))
 	}
 
 	if len(errors) > 0 {
@@ -195,22 +193,22 @@ func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
 	return "validation_functions_parameters"
 }
 
-func getWhitelistStringFunc() *func(m Map) []error {
+func getWhitelistStringFunc() *func(m json.Map) []error {
 	function := WhiteListString
 	return &function
 }
 
-func getBlacklistStringFunc() *func(m Map) []error {
+func getBlacklistStringFunc() *func(m json.Map) []error {
 	function := BlackListString
 	return &function
 }
 
-func getBlacklistStringToUpperFunc() *func(m Map) []error {
+func getBlacklistStringToUpperFunc() *func(m json.Map) []error {
 	function := BlackListStringToUpper
 	return &function
 }
 
-func WhiteListString(m Map) []error {
+func WhiteListString(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -248,7 +246,7 @@ func WhiteListString(m Map) []error {
 	return nil
 }
 
-func BlackListString(m Map) []error {
+func BlackListString(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -287,7 +285,7 @@ func BlackListString(m Map) []error {
 }
 
 
-func GetFields(struct_type string, m *Map, field_type string) (*Map, []error) {
+func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, []error) {
 	var errors []error
 	if !(field_type == "[fields]" || field_type == "[system_fields]") {
 		available_fields := m.Keys()
@@ -312,7 +310,7 @@ func GetFields(struct_type string, m *Map, field_type string) (*Map, []error) {
 	return fields_map, nil
 }
 
-func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) {
+func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map, []error) {
 	var errors []error
 	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
 		available_fields := m.Keys()
@@ -357,7 +355,7 @@ func GetSchemas(struct_type string, m *Map, schema_type string) (*Map, []error) 
 	return schemas_map, nil
 }
 
-func GetField(struct_type string, m *Map, schema_type string, field_type string, field string, desired_type string) (interface{}, []error) {
+func GetField(struct_type string, m *json.Map, schema_type string, field_type string, field string, desired_type string) (interface{}, []error) {
 	var errors []error
 	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
 	if schemas_map_errors != nil {
@@ -723,7 +721,7 @@ func GetField(struct_type string, m *Map, schema_type string, field_type string,
 	return fields_map.GetObject(field), nil
 }
 
-func SetField(struct_type string, m *Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
+func SetField(struct_type string, m *json.Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
 	var errors []error
 
 	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
@@ -779,7 +777,7 @@ func SetField(struct_type string, m *Map, schema_type string, parameter_type str
 	return nil
 }
 
-func BlackListStringToUpper(m Map) []error {
+func BlackListStringToUpper(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -817,12 +815,12 @@ func BlackListStringToUpper(m Map) []error {
 	return nil
 }
 
-func getWhitelistCharactersFunc() *func(m Map) []error {
+func getWhitelistCharactersFunc() *func(m json.Map) []error {
 	funcValue := WhitelistCharacters
 	return &funcValue
 }
 
-func WhitelistCharacters(m Map) []error {
+func WhitelistCharacters(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -870,13 +868,13 @@ func WhitelistCharacters(m Map) []error {
 
 func ValidateDatabaseColumnName(value string) []error {
 	var errors []error
-	column_name_params := Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
+	column_name_params := json.Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
 	column_name_errors := WhitelistCharacters(column_name_params)
 	if column_name_errors != nil {
 		errors = append(errors, column_name_errors...)
 	}
 
-	blacklist_column_name_params := Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": value, "label": "column_name", "data_type": "Table"}
+	blacklist_column_name_params := json.Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": value, "label": "column_name", "data_type": "Table"}
 	blacklist_column_name_errors := BlackListStringToUpper(blacklist_column_name_params)
 	if blacklist_column_name_errors != nil {
 		errors = append(errors, blacklist_column_name_errors...)
@@ -889,7 +887,7 @@ func ValidateDatabaseColumnName(value string) []error {
 	return nil
 }
 
-func ValidateData(data *Map, struct_type string) []error {	
+func ValidateData(data *json.Map, struct_type string) []error {	
 	var errors []error
 	var ignore_identity_errors = false
 	
@@ -977,7 +975,7 @@ func ValidateData(data *Map, struct_type string) []error {
 	return nil
 }
 
-func ValidateParameterData(struct_type string, schemas *Map, schemas_type string, parameters *Map, parameters_type string, parameter string, value_to_validate interface{}, primary_key_count *int,  auto_increment_count *int) ([]error) {
+func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type string, parameters *json.Map, parameters_type string, parameter string, value_to_validate interface{}, primary_key_count *int,  auto_increment_count *int) ([]error) {
 	var errors []error
 
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
@@ -1209,7 +1207,7 @@ func ValidateParameterData(struct_type string, schemas *Map, schemas_type string
 		}
 
 		for filter_index, filter := range *filters {
-			filter_map := filter.(Map)
+			filter_map := filter.((json.Map))
 
 			if !filter_map.HasKey("function") {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, "filters", filter_index))
@@ -1231,7 +1229,7 @@ func ValidateParameterData(struct_type string, schemas *Map, schemas_type string
 			filter_map.SetString("data_type", &struct_type)
 			filter_map.SetString("label", &parameter)
 
-			temp_map := filter.(Map)
+			temp_map := filter.(json.Map)
 			function_errors := function(temp_map)
 			if function_errors != nil {
 				errors = append(errors, function_errors...)
@@ -1488,24 +1486,5 @@ func GenerateRandomLetters(length uint64, upper_case *bool) (*string) {
 
 	value := sb.String()
 	return &value
-}
-
-func GetDirectoryOfExecutable() (*string, error) {
-    _, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		return nil, fmt.Errorf("error: filename error")
-	}
-	directory_name := filepath.Dir(filename)
-	directory_name = strings.Replace(directory_name, "/class","", 1)
-	directory_name = strings.Replace(directory_name, "/tests","", 1)
-	directory_name = strings.Replace(directory_name, "/queue","", 1)
-	directory_name = strings.Replace(directory_name, "/go/pkg/mod/github.com/","/go/src/github.com/", 1)
-	
-	index_of_tag := strings.Index(directory_name, "@")
-	if index_of_tag != -1 {
-		directory_name = directory_name[:index_of_tag] + "/"
-	}
-
-	return &directory_name, nil
 }
 

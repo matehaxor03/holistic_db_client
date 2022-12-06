@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -10,7 +11,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08Column(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned08ColumnName(), GetTestSchemaWithIntegerUnsigned08Column())
 	test_value := uint8(100)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned08ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned08ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -30,7 +31,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08Column(t *testing.T) {
 func TestRecordCanUpdateRecordWithIntegerUnsigned08Colum(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned08ColumnName(), GetTestSchemaWithIntegerUnsigned08Column())
 	test_value := uint8(101)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned08ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned08ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +54,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08ColumnNotMandatory(t *testing
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	test_value := uint8(100)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned08ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned08ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -73,7 +74,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08ColumnNotMandatory(t *testing
 func TestRecordCanUpdateRecordWithIntegerUnsigned08ColumNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	test_value := uint8(101)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerUnsigned08ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned08ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type User struct {
@@ -23,17 +24,17 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		errors = append(errors, SQLCommand_errors...)
 	}
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]": Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
-		"[system_schema]": Map{"[client]":Map{"type":"class.Client"},
-		                "[credentials]":Map{"type":"class.Credentials"},
-						"[domain_name]":Map{"type":"class.DomainName"},
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]": json.Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
+		"[system_schema]": json.Map{"[client]":json.Map{"type":"class.Client"},
+		                "[credentials]":json.Map{"type":"class.Credentials"},
+						"[domain_name]":json.Map{"type":"class.DomainName"},
 		},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 
@@ -72,8 +73,8 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		return temp_value.(*DomainName), nil
 	}
 
-	getCreateSQL := func() (*string, Map, []error) {
-		options := Map{"use_file": true}
+	getCreateSQL := func() (*string, json.Map, []error) {
+		options := json.Map{"use_file": true}
 
 		errors := validate()
 		if len(errors) > 0 {
@@ -191,11 +192,11 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				errors = append(errors, validate_errors...)
 			}
 
-			password_data := Map{
-				"[fields]": Map{},
-				"[schema]": Map{},
-				"[system_fields]":Map{"[password]":new_password},
-				"[system_schema]":Map{"[password]": Map{"type":"string", "min_length":1}},
+			password_data := json.Map{
+				"[fields]": json.Map{},
+				"[schema]": json.Map{},
+				"[system_fields]":json.Map{"[password]":new_password},
+				"[system_schema]":json.Map{"[password]": json.Map{"type":"string", "min_length":1}},
 			}
 
 			validate_password_errors := ValidateData(&password_data, "NewUserPassword")
@@ -234,7 +235,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 
 			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", EscapeString(temp_username), EscapeString(temp_host_name), EscapeString(new_password))
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, Map{"use_file": true})
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, json.Map{"use_file": true})
 
 			if execute_errors != nil {
 				return execute_errors

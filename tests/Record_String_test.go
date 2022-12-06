@@ -3,13 +3,14 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
 func TestRecordCanCreateRecordWithString(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():"hello world"})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -29,7 +30,7 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 func TestRecordCanUpdateRecordWithString(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():"hello world"})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -51,7 +52,7 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumnNotMandatory(), GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -72,7 +73,7 @@ func TestRecordCanUpdateRecordWithStringNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableStringColumnName():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

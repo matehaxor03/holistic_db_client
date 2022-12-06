@@ -45,7 +45,7 @@ func NewClientManager() (*ClientManager, []error) {
 	}*/
 
 	/*
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}*/
 

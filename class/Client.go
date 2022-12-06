@@ -1,11 +1,9 @@
 package class
 
 import (
-	//"bufio"
 	"fmt"
-	//"io/ioutil"
-	//"os"
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type Client struct {
@@ -48,20 +46,20 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		return this_client
 	}
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]":Map{
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]":json.Map{
 			"[client_manager]": client_manager, "[host]": host, "[database]": database, "[database_username]": database_username },
-		"[system_schema]":Map{
-			"[client_manager]": Map{"type":"class.ClientManager"},
-			"[host]": Map{"type":"*class.Host"},
-			"[database]": Map{"type":"*class.Database"},
-			"[database_username]": Map{"type":"*string",
-				"filters": Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
+		"[system_schema]":json.Map{
+			"[client_manager]": json.Map{"type":"class.ClientManager"},
+			"[host]": json.Map{"type":"*class.Host"},
+			"[database]": json.Map{"type":"*class.Database"},
+			"[database_username]": json.Map{"type":"*string",
+				"filters": json.Array{json.Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 
@@ -316,7 +314,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		},
 		GlobalGeneralLogDisable: func() []error {
 			command := "SET GLOBAL general_log = 'OFF';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, Map{"use_file": false, "updating_database_global_settings":true})
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, json.Map{"use_file": false, "updating_database_global_settings":true})
 			if command_errors != nil {
 				return command_errors
 			}
@@ -324,7 +322,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		},
 		GlobalGeneralLogEnable: func() []error {
 			command := "SET GLOBAL general_log = 'ON';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, Map{"use_file": false, "updating_database_global_settings":true})
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, json.Map{"use_file": false, "updating_database_global_settings":true})
 			if command_errors != nil {
 				return command_errors
 			}
@@ -377,7 +375,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 				return nil, errors
 			}
 
-			records, records_errors := table.ReadRecords(Map{"User": EscapeString(username)}, nil, nil)
+			records, records_errors := table.ReadRecords(json.Map{"User": EscapeString(username)}, nil, nil)
 
 			if records_errors != nil {
 				return nil, records_errors

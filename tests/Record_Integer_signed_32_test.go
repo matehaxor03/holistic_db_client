@@ -3,6 +3,7 @@ package tests
 import (
     "testing"
 	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -10,7 +11,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32Column(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned32ColumnName(), GetTestSchemaWithIntegerSigned32Column())
 	test_value := int32(188)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned32ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned32ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -30,7 +31,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32Column(t *testing.T) {
 func TestRecordCanUpdateRecordWithIntegerSigned32Colum(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned32ColumnName(), GetTestSchemaWithIntegerSigned32Column())
 	test_value := int32(199)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableIntegerSigned32ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned32ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +54,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	test_value := int32(188)
 
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableInteger32SignedColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger32SignedColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -73,7 +74,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T
 func TestRecordCanUpdateRecordWithIntegerSigned32ColumNotMandatory(t *testing.T) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	test_value := int32(199)
-    record, record_errors := table.CreateRecord(class.Map{GetTestTableInteger32SignedColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger32SignedColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

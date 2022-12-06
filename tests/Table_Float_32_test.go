@@ -2,8 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GetTestTableNameWithFloat32Column() string {
@@ -22,14 +21,14 @@ func GetTestTableFloat32ColumnNameNotMandatory() string {
 	return "float32_column_not_mandatory"
 }
 
-func GetTestSchemaWithFloat32Column() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableFloat32ColumnName(): class.Map {"type": "float32"}}
+func GetTestSchemaWithFloat32Column() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableFloat32ColumnName(): json.Map {"type": "float32"}}
 }
 
-func GetTestSchemaWithFloat32ColumnNotMandatory() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableFloat32ColumnNameNotMandatory(): class.Map {"type": "*float32"}}
+func GetTestSchemaWithFloat32ColumnNotMandatory() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableFloat32ColumnNameNotMandatory(): json.Map {"type": "*float32"}}
 }
 
 func TestTableCreateWithFloat32Column(t *testing.T) {

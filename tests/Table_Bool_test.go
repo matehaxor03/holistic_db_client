@@ -2,8 +2,7 @@ package tests
  
 import (
     "testing"
-	//"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GetTestTableNameWithBoolColumn() string {
@@ -22,14 +21,14 @@ func GetTestTableBoolColumnNameNotMandatory() string {
 	return "bool_column_not_mandatory"
 }
 
-func GetTestSchemaWithBoolColumn() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableBoolColumnName(): class.Map {"type": "bool"}}
+func GetTestSchemaWithBoolColumn() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableBoolColumnName(): json.Map {"type": "bool"}}
 }
 
-func GetTestSchemaWithBoolColumnNotMandatory() class.Map {
-	return class.Map {GetTestTablePrimaryKeyName(): class.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableBoolColumnNameNotMandatory(): class.Map {"type": "*bool"}}
+func GetTestSchemaWithBoolColumnNotMandatory() json.Map {
+	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
+	                  GetTestTableBoolColumnNameNotMandatory(): json.Map {"type": "*bool"}}
 }
 
 func TestTableCreateWithBoolColumn(t *testing.T) {

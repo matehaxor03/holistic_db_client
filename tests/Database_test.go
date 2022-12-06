@@ -5,6 +5,7 @@ import (
 	"strings"
 	"fmt"
 	"sync"
+	json "github.com/matehaxor03/holistic_json/json"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -429,7 +430,7 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	non_whitelist_map := class.Map{"(":nil, ")":nil}
+	non_whitelist_map := json.Map{"(":nil, ")":nil}
 
 	for non_whitelist_characters := range non_whitelist_map {
 		database, new_database_errors := client.GetDatabaseInterface("a" + non_whitelist_characters + "a", &character_set, &collate)

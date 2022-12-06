@@ -2,6 +2,7 @@ package class
 
 import (
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 func GET_CHARACTER_SET_UTF8() string {
@@ -12,8 +13,8 @@ func GET_CHARACTER_SET_UTF8MB4() string {
 	return "utf8mb4"
 }
 
-func GET_CHARACTER_SETS() Map {
-	return Map{GET_CHARACTER_SET_UTF8(): nil, GET_CHARACTER_SET_UTF8MB4(): nil}
+func GET_CHARACTER_SETS() json.Map {
+	return json.Map{GET_CHARACTER_SET_UTF8(): nil, GET_CHARACTER_SET_UTF8MB4(): nil}
 }
 
 func GET_COLLATE_UTF8_GENERAL_CI() string {
@@ -24,8 +25,8 @@ func GET_COLLATE_UTF8MB4_0900_AI_CI() string {
 	return "utf8mb4_0900_ai_ci"
 }
 
-func GET_COLLATES() Map {
-	return Map{GET_COLLATE_UTF8_GENERAL_CI(): nil, GET_COLLATE_UTF8MB4_0900_AI_CI(): nil}
+func GET_COLLATES() json.Map {
+	return json.Map{GET_COLLATE_UTF8_GENERAL_CI(): nil, GET_COLLATE_UTF8MB4_0900_AI_CI(): nil}
 }
 
 type DatabaseCreateOptions struct {
@@ -38,18 +39,18 @@ type DatabaseCreateOptions struct {
 func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 	struct_type := "*class.DatabaseCreateOptions"
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]":Map{"[character_set]":character_set, "[collate]":collate},
-		"[system_schema]":Map{"[character_set]":Map{"type":"*string",
-			"filters": Array{Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-			"[collate]": Map{"type":"*string",
-			"filters": Array{Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
+	data := json.Map{
+		"[fields]": json.Map{},
+		"[schema]": json.Map{},
+		"[system_fields]":json.Map{"[character_set]":character_set, "[collate]":collate},
+		"[system_schema]":json.Map{"[character_set]":json.Map{"type":"*string",
+			"filters": json.Array{json.Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
+			"[collate]": json.Map{"type":"*string",
+			"filters": json.Array{json.Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 

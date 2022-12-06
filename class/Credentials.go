@@ -2,6 +2,7 @@ package class
 
 import (
 	"strings"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type Credentials struct {
@@ -12,8 +13,8 @@ type Credentials struct {
 	Clone        func() *Credentials
 }
 
-func GetCredentialsUsernameValidCharacters() Map {
-	temp := Map{"a": nil,
+func GetCredentialsUsernameValidCharacters() json.Map {
+	temp := json.Map{"a": nil,
 		"b": nil,
 		"c": nil,
 		"d": nil,
@@ -82,17 +83,17 @@ func GetCredentialsUsernameValidCharacters() Map {
 func newCredentials(username string, password *string) (*Credentials, []error) {
 	struct_type := "*Credentials"
 
-	data := Map{
-		"[fields]": Map{},
-		"[schema]": Map{},
-		"[system_fields]":Map{"[username]":username,"[password]":password},
-		"[system_schema]":Map{
-			"[username]":Map{"type":"string", "min_length":1,
-			"filters": Array{Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-							 "[password]": Map{"type":"*string", "min_length":1}},
+	data := json.Map{
+		"[fields]":json.Map{},
+		"[schema]":json.Map{},
+		"[system_fields]":json.Map{"[username]":username,"[password]":password},
+		"[system_schema]":json.Map{
+			"[username]":json.Map{"type":"string", "min_length":1,
+			"filters":json.Array{json.Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
+							 "[password]":json.Map{"type":"*string", "min_length":1}},
 	}
 
-	getData := func() *Map {
+	getData := func() *json.Map {
 		return &data
 	}
 
