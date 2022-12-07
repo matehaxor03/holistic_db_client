@@ -305,16 +305,21 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 	} 
 }
 
-func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
+func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	t.Parallel()
 	database := GetTestDatabase(t)
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	for blacklist_database_name := range blacklist_map {
+		
+		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
+			continue
+		}
+		
 		set_database_name_errors := database.SetDatabaseName(blacklist_database_name)
 		
-		if set_database_name_errors == nil {
-			t.Errorf("error: SetDatabaseName should return error when database_name is blacklisted")
+		if set_database_name_errors != nil {
+			t.Errorf(fmt.Sprintf("error: SetDatabaseName should not return error when database_name is blacklisted, %s", set_database_name_errors))
 		}
 
 		database_name, database_name_errors := database.GetDatabaseName()
@@ -322,18 +327,18 @@ func TestDatabaseCannotSetDatabaseNameWithBlackListName(t *testing.T) {
 			t.Errorf(fmt.Sprintf("error: %s", database_name_errors))
 		}
 
-		if database_name == blacklist_database_name {
-			t.Errorf("error: database_name was updated to the blacklisted database_name")
+		if database_name != blacklist_database_name {
+			t.Errorf("error: database_name was not updated to the blacklisted database_name")
 		}
 
-		if database_name != GetTestDatabaseName() {
+		if database_name != blacklist_database_name {
 			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  GetTestDatabaseName())
 		}
 	}
 }
 
 
-func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
+func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
@@ -342,19 +347,24 @@ func TestDatabaseCannotCreateWithBlackListName(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
+		
+		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
+			continue
+		}
+		
 		database, create_database_errors := client.GetDatabaseInterface(blacklist_database_name, &character_set, &collate)
 		
-		if create_database_errors == nil {
-			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
+		if create_database_errors != nil {
+			t.Errorf(fmt.Sprintf("error: NewDatabase should not return error when database_name is blacklisted %s", create_database_errors))
 		}
 
-		if database != nil {
-			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
+		if database == nil {
+			t.Errorf("error: NewDatabase should not be nil when database_name is blacklisted")
 		}
 	}
 }
 
-func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
+func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
@@ -363,20 +373,25 @@ func TestDatabaseCannotCreateWithBlackListNameUppercase(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
-		database, create_database_errors :=  client.GetDatabaseInterface(strings.ToUpper(blacklist_database_name), &character_set, &collate)
 		
-		if create_database_errors == nil {
-			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
+		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
+			continue
 		}
 
-		if database != nil {
-			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
+		database, create_database_errors := client.GetDatabaseInterface(strings.ToUpper(blacklist_database_name), &character_set, &collate)
+		
+		if create_database_errors != nil {
+			t.Errorf(fmt.Sprintf("error: NewDatabase should not return error when database_name is blacklisted %s", create_database_errors))
+		}
+
+		if database == nil {
+			t.Errorf("error: NewDatabase should not be nil when database_name is blacklisted")
 		}
 	}
 }
 
 
-func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
+func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
@@ -385,14 +400,19 @@ func TestDatabaseCannotCreateWithBlackListNameLowercase(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_database_name := range blacklist_map {
+		
+		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
+			continue
+		}
+
 		database, create_database_errors :=  client.GetDatabaseInterface(strings.ToLower(blacklist_database_name), &character_set, &collate)
 		
-		if create_database_errors == nil {
-			t.Errorf("error: NewDatabase should return error when database_name is blacklisted")
+		if create_database_errors != nil {
+			t.Errorf(fmt.Sprintf("error: NewDatabase should not return error when database_name is blacklisted %s", create_database_errors))
 		}
 
-		if database != nil {
-			t.Errorf("error: NewDatabase should be nil when database_name is blacklisted")
+		if database == nil {
+			t.Errorf("error: NewDatabase not should be nil when database_name is blacklisted")
 		}
 	}
 }
@@ -408,7 +428,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
 			
 		if new_database_errors != nil {
-			t.Error(new_database_errors)
+			t.Errorf(fmt.Sprintf("error: %s", new_database_errors))
 		} else if database == nil {
 			t.Errorf("error: NewDatabase should not be nil when database_name is whitelisted: %s", whitelist_database_character)
 		} else {

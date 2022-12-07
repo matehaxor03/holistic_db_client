@@ -704,12 +704,6 @@ func ValidateDatabaseColumnName(value string) []error {
 		errors = append(errors, column_name_errors...)
 	}
 
-	blacklist_column_name_params := json.Map{"values": GetMySQLKeywordsAndReservedWordsInvalidWords(), "value": value, "label": "column_name", "data_type": "Table"}
-	blacklist_column_name_errors := BlackListStringToUpper(blacklist_column_name_params)
-	if blacklist_column_name_errors != nil {
-		errors = append(errors, blacklist_column_name_errors...)
-	}
-
 	if len(errors) > 0 {
 		return errors
 	}

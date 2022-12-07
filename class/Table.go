@@ -48,7 +48,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return this_table
 	}
 
-	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
@@ -68,8 +68,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			"[system_schema]": json.Map{
 				"[database]": json.Map{"type":"class.Database"},
 				"[table_name]": json.Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
-				"filters": json.Array{json.Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()},
-						   json.Map{"values": database_reserved_words, "function": getBlacklistStringToUpperFunc()}}},
+				"filters": json.Array{json.Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()}},
+				},
 			},
 		}
 	
@@ -194,6 +194,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	exists := func() (*bool, []error) {
+		options := json.Map{"use_file": false}
+		
 		var errors []error
 		validate_errors := validate()
 		if errors != nil {
@@ -212,7 +214,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 		
-		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", table_name_escaped)
+		sql_command := fmt.Sprintf("SELECT 0 FROM ")
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`", table_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`", table_name_escaped)
+		}
+		sql_command += " LIMIT 1;"
 		
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -224,7 +232,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_client_errors
 		}
 		
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -242,6 +250,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	delete := func() ([]error) {
+		options := json.Map{"use_file": false}
+		
 		errors := validate()
 		if errors != nil {
 			return errors
@@ -258,7 +268,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE %s;", table_name_escaped)
+		sql := "DROP TABLE "
+		if options.IsBoolTrue("use_file") {
+			sql += fmt.Sprintf("`%s`;", table_name_escaped)
+		} else {
+			sql += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+		}
+		
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -270,7 +286,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -284,6 +300,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	deleteIfExists := func() ([]error) {
+		options := json.Map{"use_file": false}
+		
 		errors := validate()
 		if errors != nil {
 			return errors
@@ -300,7 +318,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", table_name_escaped)
+		sql := "DROP TABLE IF EXISTS "
+		if options.IsBoolTrue("use_file") {
+			sql += fmt.Sprintf("`%s`;", table_name_escaped)
+		} else {
+			sql += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -312,7 +335,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -326,6 +349,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	getSchema := func() (*json.Map, []error) {
+		options := json.Map{"use_file": false, "json_output": true}
+		
 		var errors []error
 		validate_errors := validate()
 		
@@ -345,7 +370,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 		
-		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", table_name_escaped)
+		sql_command := "SHOW COLUMNS FROM "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`;", table_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -357,7 +387,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_client_errors
 		}
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "json_output": true})
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -659,31 +689,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	setTableName := func(new_table_name string) []error {
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-
-		temp_schema, temp_schema_errors := getSchema()
-		if temp_schema_errors != nil {
-			return temp_schema_errors
-		}
-
-		_, new_table_errors := newTable(*temp_database, new_table_name, *temp_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
-		if new_table_errors != nil {
-			return new_table_errors
-		}
-
-		temp_database_name_map, temp_database_name_map_errors := getData().GetMap("[table_name]")
-		if temp_database_name_map_errors != nil {
-			return temp_database_name_map_errors
-		}
-
-		temp_database_name_map.SetObject("value", new_table_name)
-		return nil
+		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", new_table_name)
 	}
 
-	getCreateSQL := func() (*string, []error) {
+	getCreateSQL := func(options json.Map) (*string, []error) {
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -701,8 +710,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 
-		var sql_command strings.Builder
-		sql_command.WriteString(fmt.Sprintf("CREATE TABLE %s", table_name_escaped))
+		sql_command := ""
+		sql_command += "CREATE TABLE "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s` ", table_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\` ", table_name_escaped)
+		}
 
 		valid_columns, valid_columns_errors := getTableColumns()
 		if valid_columns_errors != nil {
@@ -716,7 +730,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		primary_key_count := 0
 
-		sql_command.WriteString("(")
+		sql_command += "("
 		for index, column := range *valid_columns {
 			columnSchema, columnSchema_errors := schemas_map.GetMap(column)
 			if columnSchema_errors != nil {
@@ -732,7 +746,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				errors = append(errors, column_escaped_errors)
 			}
 
-			sql_command.WriteString(column_escaped)
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+			sql_command += column_escaped
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
 
 			typeOf, type_of_errors := columnSchema.GetString("type")
 			if type_of_errors != nil {
@@ -744,13 +769,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			case "*uint64", "uint64","*int64", "int64", "*uint32", "uint32", "*int32","int32", "*uint16", "uint16", "*int16","int16",  "*uint8", "uint8", "*int8","int8":
 				switch *typeOf {
 				case "*uint64", "*int64", "uint64", "int64":
-					sql_command.WriteString(" BIGINT")
+					sql_command += " BIGINT"
 				case "*uint32", "*int32", "uint32", "int32":
-					sql_command.WriteString(" INT")
+					sql_command += " INT"
 				case "*uint16", "*int16", "uint16", "int16":
-					sql_command.WriteString(" SMALLINT")
+					sql_command += " SMALLINT"
 				case "*uint8", "*int8", "uint8", "int8":
-					sql_command.WriteString(" TINYINT")
+					sql_command += " TINYINT"
 				default:
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL number type not mapped: %s", *typeOf))
 				}
@@ -769,17 +794,17 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				}
 
 				if unsigned_number {
-					sql_command.WriteString(" UNSIGNED")
+					sql_command += " UNSIGNED"
 				}
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("auto_increment") {
 					if columnSchema.IsBool("auto_increment") && !columnSchema.IsNil("auto_increment") {
 						if columnSchema.IsBoolTrue("auto_increment") {
-							sql_command.WriteString(" AUTO_INCREMENT")
+							sql_command += " AUTO_INCREMENT"
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: auto_increment contained a value which is not a bool: %s", column, columnSchema.GetType("auto_increment")))
@@ -789,7 +814,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				if columnSchema.HasKey("primary_key") {
 					if columnSchema.IsBool("primary_key") && !columnSchema.IsNil("primary_key") {
 						if columnSchema.IsBoolTrue("primary_key") {
-							sql_command.WriteString(" PRIMARY KEY")
+							sql_command += " PRIMARY KEY"
 							primary_key_count += 1
 						}
 					} else {
@@ -803,17 +828,17 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						if default_value_errors != nil {
 							errors = append(errors, default_value_errors...)
 						} else {
-							sql_command.WriteString(" DEFAULT " + strconv.FormatInt(*default_value, 10))
+							sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
 					}
 				}
 			case "*time.Time", "time.Time":
-				sql_command.WriteString(" TIMESTAMP(6)")
+				sql_command += " TIMESTAMP(6)"
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") {
@@ -821,18 +846,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					if default_value_errors != nil {
 						errors = append(errors, default_value_errors...)
 					} else if default_value == nil {
-						sql_command.WriteString(" DEFAULT NULL")
+						sql_command += " DEFAULT NULL"
 					} else if *default_value == "now" {
-						sql_command.WriteString(" DEFAULT CURRENT_TIMESTAMP(6)")
+						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
 					}
 				}
 			case "*bool", "bool":
-				sql_command.WriteString(" BOOLEAN")
+				sql_command += " BOOLEAN"
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") {
@@ -841,23 +866,23 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					} else if !columnSchema.IsBool("default") {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 					} else if columnSchema.IsBoolTrue("default") {
-						sql_command.WriteString(" DEFAULT 1")
+						sql_command += " DEFAULT 1"
 					} else if columnSchema.IsBoolFalse("default") {
-						sql_command.WriteString(" DEFAULT 0")
+						sql_command += " DEFAULT 0"
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*float32", "float32":
-				sql_command.WriteString(" FLOAT")
+				sql_command += " FLOAT"
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
-						sql_command.WriteString(" DEFAULT NULL")
+						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsFloat("default") {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 					} else if columnSchema.IsFloat("default") {
@@ -867,22 +892,22 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						} else if default_float_value == nil {
 							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s float32 default value returned nil", column))
 						} else {
-							sql_command.WriteString(fmt.Sprintf(" DEFAULT %f", *default_float_value)) 
+							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value)
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*float64", "float64":
-				sql_command.WriteString(" DOUBLE")
+				sql_command += " DOUBLE"
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
-						sql_command.WriteString(" DEFAULT NULL")
+						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsFloat("default") {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 					} else if columnSchema.IsFloat("default") {
@@ -892,14 +917,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						} else if default_float_value == nil {
 							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s float32 default value returned nil", column))
 						} else {
-							sql_command.WriteString(fmt.Sprintf(" DEFAULT %f", *default_float_value))
+							sql_command += fmt.Sprintf(" DEFAULT %f", *default_float_value)
 						}
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had unknown error for boolean default value", column))
 					}
 				}
 			case "*string", "string":
-				sql_command.WriteString(" VARCHAR(")
+				sql_command += " VARCHAR("
 				if !columnSchema.HasKey("max_length") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s did not specify length attribute", column))
 				} else if columnSchema.GetType("max_length") != "int" {
@@ -912,18 +937,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
 					} else {
 						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
-						sql_command.WriteString(fmt.Sprintf("%d", (4*(*max_length))))
+						sql_command += fmt.Sprintf("%d", (4*(*max_length)))
 					}
 				}
-				sql_command.WriteString(")")
+				sql_command += ")"
 
 				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command.WriteString(" NOT NULL")
+					sql_command += " NOT NULL"
 				}
 
 				if columnSchema.HasKey("default") {
 					if columnSchema.IsNil("default") {
-						sql_command.WriteString(" DEFAULT NULL")
+						sql_command += " DEFAULT NULL"
 					} else if !columnSchema.IsString("default") {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-string default value", column))
 					} else {
@@ -936,9 +961,21 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							if default_value_escaped_errors != nil {
 								errors = append(errors, default_value_escaped_errors)
 							}
-							sql_command.WriteString(" DEFAULT '")
-							sql_command.WriteString(default_value_escaped)
-							sql_command.WriteString("'")
+
+							sql_command += " DEFAULT "
+
+							if options.IsBoolTrue("use_file") {
+								sql_command += "`"
+							} else {
+								sql_command += "\\`"
+							}
+							sql_command += default_value_escaped
+							
+							if options.IsBoolTrue("use_file") {
+								sql_command += "`"
+							} else {
+								sql_command += "\\`"
+							}
 						}
 					} 
 				}
@@ -949,10 +986,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			}
 
 			if index < (len(*valid_columns) - 1) {
-				sql_command.WriteString(", ")
+				sql_command += ", "
 			}
 		}
-		sql_command.WriteString(");")
+		sql_command += ");"
 
 		if primary_key_count == 0 {
 			errors = append(errors, fmt.Errorf("error: Table.getCreateSQL: %s must have at least 1 primary key", table_name_escaped))
@@ -964,12 +1001,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 
-		sql_comand_string := sql_command.String()
-		return &sql_comand_string, nil
+		return &sql_command, nil
 	}
 
 	createTable := func() []error {
-		sql_command, sql_command_errors := getCreateSQL()
+		options := json.Map{"use_file": false}
+
+		sql_command, sql_command_errors := getCreateSQL(options)
 
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -985,7 +1023,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file": false})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors
@@ -1092,6 +1130,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil
 		},
 		Count: func() (*uint64, []error) {
+			options := json.Map{"use_file": false}
 			errors := validate()
 			if errors != nil {
 				return nil, errors
@@ -1108,7 +1147,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
-			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", table_name_escaped)
+			sql := "SELECT COUNT(*) FROM "
+			if options.IsBoolTrue("use_file") {
+				sql += fmt.Sprintf("`%s`;", table_name_escaped)
+			} else {
+				sql += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+			}
 
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
@@ -1120,7 +1164,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, json.Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1183,6 +1227,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return record, nil
 		},
 		ReadRecords: func(filters json.Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+			options := json.Map{"use_file": false}
 			var errors []error
 			validate_errors := validate()
 			if errors != nil {
@@ -1260,11 +1305,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
-			var sql_command strings.Builder
-			sql_command.WriteString(fmt.Sprintf("SELECT * FROM %s ", table_name_escaped))
+			sql_command := "SELECT * FROM "
+			if options.IsBoolTrue("use_file") {
+				sql_command += fmt.Sprintf("`%s` ", table_name_escaped)
+			} else {
+				sql_command += fmt.Sprintf("\\`%s\\` ", table_name_escaped)
+			}
+
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
-					sql_command.WriteString("WHERE ")
+					sql_command += "WHERE "
 				}
 
 				column_name_params := json.Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
@@ -1280,8 +1330,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						errors = append(errors, column_filter_escaped_errors)
 					}
 
-					sql_command.WriteString(column_filter_escaped)
-					sql_command.WriteString(" = ")
+					if options.IsBoolTrue("use_file") {
+						sql_command += "`"
+					} else {
+						sql_command += "\\`"
+					}
+					sql_command += column_filter_escaped
+					if options.IsBoolTrue("use_file") {
+						sql_command += "`"
+					} else {
+						sql_command += "\\`"
+					}
+					sql_command += " = "
 
 					//todo check data type with schema
 					type_of := filters.GetType(column_filter)
@@ -1301,29 +1361,37 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							continue
 						}
 
-						sql_command.WriteString("'")
-						sql_command.WriteString(filer_value_escaped)
-						sql_command.WriteString("'")
+						if options.IsBoolTrue("use_file") {
+							sql_command += "`"
+						} else {
+							sql_command += "\\`"
+						}
+						sql_command += filer_value_escaped
+						if options.IsBoolTrue("use_file") {
+							sql_command += "`"
+						} else {
+							sql_command += "\\`"
+						}
 					default:
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
-						sql_command.WriteString("AND ")
+						sql_command += "AND "
 					}
 				}
 			}
 
 			if limit != nil {
 				limit_value := strconv.FormatUint(*limit, 10)
-				sql_command.WriteString(fmt.Sprintf("LIMIT %s ", limit_value))
+				sql_command += fmt.Sprintf("LIMIT %s ", limit_value)
 			}
 
 			if offset != nil {
 				offset_value := strconv.FormatUint(*offset, 10)
-				sql_command.WriteString(fmt.Sprintf("OFFSET %s ", offset_value))
+				sql_command += fmt.Sprintf("OFFSET %s ", offset_value)
 			}
-			sql_command.WriteString(";")
+			sql_command += ";"
 
 			if len(errors) > 0 {
 				return nil, errors
@@ -1339,8 +1407,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, temp_client_errors
 			}
 
-			sql_command_string := sql_command.String()
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command_string, json.Map{"use_file": false})
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)

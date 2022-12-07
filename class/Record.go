@@ -282,10 +282,24 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, errors
 		}
 
-		var sql_command strings.Builder
-		sql_command.WriteString(fmt.Sprintf("INSERT INTO "))
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString(" (")
+		
+		sql_command := "INSERT INTO "
+		
+		if options.IsBoolTrue("use_file") {
+			sql_command += "`"
+		} else {
+			sql_command += "\\`"
+		}
+
+		sql_command += table_name_escaped
+		
+		if options.IsBoolTrue("use_file") {
+			sql_command += "`"
+		} else {
+			sql_command += "\\`"
+		}
+
+		sql_command += " ("
 		for index, record_column := range *record_columns {
 			record_column_escaped,record_column_escaped_errors := common.EscapeString(record_column, "'")
 			if record_column_escaped_errors != nil {
@@ -293,13 +307,27 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			sql_command.WriteString(record_column_escaped)
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+
+			sql_command += record_column_escaped
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+
 			if index < (len(*record_columns) - 1) {
-				sql_command.WriteString(", ")
+				sql_command += ", "
 			}
 		}
 
-		sql_command.WriteString(") VALUES (")
+		sql_command += ") VALUES ("
 		for index, record_column := range *record_columns {
 			column_data, paramter_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_column, "self")
 			if paramter_errors != nil {
@@ -311,66 +339,66 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			switch rep {
 			case "*uint64":
 				value := column_data.(*uint64)
-				sql_command.WriteString(strconv.FormatUint(*value, 10))
+				sql_command += strconv.FormatUint(*value, 10)
 			case "uint64":
 				value := column_data.(uint64)
-				sql_command.WriteString(strconv.FormatUint(value, 10))
+				sql_command += strconv.FormatUint(value, 10)
 			case "*int64":
 				value := column_data.(*int64)
-				sql_command.WriteString(strconv.FormatInt(*value, 10))
+				sql_command += strconv.FormatInt(*value, 10)
 			case "int64":
 				value := column_data.(int64)
-				sql_command.WriteString(strconv.FormatInt(value, 10))
+				sql_command += strconv.FormatInt(value, 10)
 			case "*uint32":
 				value := column_data.(*uint32)
-				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+				sql_command += strconv.FormatUint(uint64(*value), 10)
 			case "uint32":
 				value := column_data.(uint32)
-				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+				sql_command += strconv.FormatUint(uint64(value), 10)
 			case "*int32":
 				value := column_data.(*int32)
-				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+				sql_command += strconv.FormatInt(int64(*value), 10)
 			case "int32":
 				value := column_data.(int32)
-				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+				sql_command += strconv.FormatInt(int64(value), 10)
 			case "*uint16":
 				value := column_data.(*uint16)
-				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+				sql_command += strconv.FormatUint(uint64(*value), 10)
 			case "uint16":
 				value := column_data.(uint16)
-				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+				sql_command += strconv.FormatUint(uint64(value), 10)
 			case "*int16":
 				value := column_data.(*int16)
-				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+				sql_command += strconv.FormatInt(int64(*value), 10)
 			case "int16":
 				value := column_data.(int16)
-				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+				sql_command += strconv.FormatInt(int64(value), 10)
 			case "*uint8":
 				value := column_data.(*uint8)
-				sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+				sql_command += strconv.FormatUint(uint64(*value), 10)
 			case "uint8":
 				value := column_data.(uint8)
-				sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+				sql_command += strconv.FormatUint(uint64(value), 10)
 			case "*int8":
 				value := column_data.(*int8)
-				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+				sql_command += strconv.FormatInt(int64(*value), 10)
 			case "int8":
 				value := column_data.(int8)
-				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+				sql_command += strconv.FormatInt(int64(value), 10)
 			case "*int":
 				value := column_data.(*int)
-				sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+				sql_command += strconv.FormatInt(int64(*value), 10)
 			case "int":
 				value := column_data.(int)
-				sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+				sql_command += strconv.FormatInt(int64(value), 10)
 			case "float32":
-				sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
+				sql_command += fmt.Sprintf("%f", column_data.(float32))
 			case "*float32":
-				sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
+				sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
 			case "float64":
-				sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
+				sql_command += fmt.Sprintf("%f", column_data.(float64))
 			case "*float64":
-				sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
+				sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 			case "*time.Time":
 				value := column_data.(*time.Time)
 				
@@ -379,9 +407,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					errors = append(errors, value_escaped_errors)
 				}
 
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
+				if options.IsBoolTrue("use_file") {
+					sql_command += "'" + value_escaped + "'"
+				} else {
+					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				}
+
 			case "time.Time":
 				value := column_data.(time.Time)
 			
@@ -390,55 +421,62 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					errors = append(errors, value_escaped_errors)
 				}
 
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
+				if options.IsBoolTrue("use_file") {
+					sql_command += "'" + value_escaped + "'"
+				} else {
+					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				}
 			case "string":
 				value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
 				if value_escaped_errors != nil {
 					errors = append(errors, value_escaped_errors)
 				}
 
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
+				if options.IsBoolTrue("use_file") {
+					sql_command += "'" + value_escaped + "'"
+				} else {
+					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				}
+
 			case "*string":
 				value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
 				if value_escaped_errors != nil {
 					errors = append(errors, value_escaped_errors)
 				}
 
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
+				if options.IsBoolTrue("use_file") {
+					sql_command += "'" + value_escaped + "'"
+				} else {
+					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				}
+
 			case "bool":
 				if column_data.(bool) {
-					sql_command.WriteString("1")
+					sql_command += "1"
 				} else {
-					sql_command.WriteString("0")
+					sql_command += "0"
 				}
 			case "*bool":
 				if *(column_data.(*bool)) {
-					sql_command.WriteString("1")
+					sql_command += "1"
 				} else {
-					sql_command.WriteString("0")
+					sql_command += "0"
 				}
 			default:
 				errors = append(errors, fmt.Errorf("error: %s Record.getInsertSQL type: %s not supported for table please implement", struct_type, rep))
 			}
 
 			if index < (len(*record_columns) - 1) {
-				sql_command.WriteString(", ")
+				sql_command += ", "
 			}
 		}
-		sql_command.WriteString(");")
+		sql_command += ");"
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
 
-		sql_command_string := sql_command.String()
-		return &sql_command_string, options, nil
+		return &sql_command, options, nil
 	}
 
 	getUpdateSQL := func() (*string, json.Map, []error) {
@@ -538,10 +576,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, errors
 		}
 
-		var sql_command strings.Builder
-		sql_command.WriteString(fmt.Sprintf("UPDATE %s \n", table_name_escaped))
+		sql_command := "UPDATE "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s` \n", table_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\` \n", table_name_escaped)
+		}
 
-		sql_command.WriteString("SET ")
+		sql_command += "SET "
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
 			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_identity_column, "'")
@@ -551,8 +593,22 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 			
-			sql_command.WriteString(record_non_identity_column_escaped)
-			sql_command.WriteString("=")
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+			
+			sql_command += record_non_identity_column_escaped
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+
+			sql_command += "="
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column, "self")
 
 			if column_data_errors != nil {
@@ -561,72 +617,72 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if common.IsNil(column_data) {
-				sql_command.WriteString("NULL")
+				sql_command += "NULL"
 			} else {
 				rep := common.GetType(column_data)
 				switch rep {
 				case "*uint64":
 					value := column_data.(*uint64)
-					sql_command.WriteString(strconv.FormatUint(*value, 10))
+					sql_command += strconv.FormatUint(*value, 10)
 				case "uint64":
 					value := column_data.(uint64)
-					sql_command.WriteString(strconv.FormatUint(value, 10))
+					sql_command += strconv.FormatUint(value, 10)
 				case "*int64":
 					value := column_data.(*int64)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int64":
 					value := column_data.(int64)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*uint32":
 					value := column_data.(*uint32)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint32":
 					value := column_data.(uint32)
-					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+					sql_command += strconv.FormatUint(uint64(value), 10)
 				case "*int32":
 					value := column_data.(*int32)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int32":
 					value := column_data.(int32)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*uint16":
 					value := column_data.(*uint16)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint16":
 					value := column_data.(uint16)
-					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+					sql_command += strconv.FormatUint(uint64(value), 10)
 				case "*int16":
 					value := column_data.(*int16)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int16":
 					value := column_data.(int16)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*uint8":
 					value := column_data.(*uint8)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint8":
 					value := column_data.(uint8)
-					sql_command.WriteString( strconv.FormatUint(uint64(value), 10))
+					sql_command +=  strconv.FormatUint(uint64(value), 10)
 				case "*int8":
 					value := column_data.(*int8)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int8":
 					value := column_data.(int8)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*int":
 					value := column_data.(*int)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int":
 					value := column_data.(int)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "float32":
-					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
+					sql_command += fmt.Sprintf("%f", column_data.(float32))
 				case "*float32":
-					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
 				case "float64":
-					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
+					sql_command += fmt.Sprintf("%f", column_data.(float64))
 				case "*float64":
-					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
 					
@@ -634,10 +690,13 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+
 				case "time.Time":
 					value := column_data.(time.Time)
 				
@@ -645,39 +704,49 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+
 				case "string":
 					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+					
 				case "*string":
 					value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+				
 				case "bool":
 					if column_data.(bool) {
-						sql_command.WriteString("1")
+						sql_command += "1"
 					} else {
-						sql_command.WriteString("0")
+						sql_command += "0"
 					}
 				case "*bool":
 					if *(column_data.(*bool)) {
-						sql_command.WriteString("1")
+						sql_command += "1"
 					} else {
-						sql_command.WriteString("0")
+						sql_command += "0"
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: %s Record.getUpdateSQL type: %s not supported for table please implement", struct_type, rep))
@@ -685,11 +754,11 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if index < len(*record_non_identity_columns)-1 {
-				sql_command.WriteString(", \n")
+				sql_command += ", \n"
 			}
 		}
 
-		sql_command.WriteString(" WHERE ")
+		sql_command += " WHERE "
 		for index, identity_column := range *identity_columns {
 			identity_column_escaped, identity_column_escaped_errors := common.EscapeString(identity_column, "'")
 			
@@ -698,8 +767,21 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			sql_command.WriteString(identity_column_escaped)
-			sql_command.WriteString(" = ")
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+			
+			sql_command += identity_column_escaped
+			
+			if options.IsBoolTrue("use_file") {
+				sql_command += "`"
+			} else {
+				sql_command += "\\`"
+			}
+
+			sql_command += " = "
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column, "self")
 
 			if column_data_errors != nil {
@@ -708,72 +790,72 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if common.IsNil(column_data) {
-				sql_command.WriteString("NULL")
+				sql_command += "NULL"
 			} else {
 				record_non_identity_column_type := common.GetType(column_data)
 				switch record_non_identity_column_type {
 				case "*uint64":
 					value := column_data.(*uint64)
-					sql_command.WriteString(strconv.FormatUint(*value, 10))
+					sql_command += strconv.FormatUint(*value, 10)
 				case "uint64":
 					value := column_data.(uint64)
-					sql_command.WriteString(strconv.FormatUint(value, 10))
+					sql_command += strconv.FormatUint(value, 10)
 				case "*int64":
 					value := column_data.(*int64)
-					sql_command.WriteString(strconv.FormatInt(*value, 10))
+					sql_command += strconv.FormatInt(*value, 10)
 				case "int64":
 					value := column_data.(int64)
-					sql_command.WriteString(strconv.FormatInt(value, 10))
+					sql_command += strconv.FormatInt(value, 10)
 				case "*uint32":
 					value := column_data.(*uint32)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint32":
 					value := column_data.(uint32)
-					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+					sql_command += strconv.FormatUint(uint64(value), 10)
 				case "*int32":
 					value := column_data.(*int32)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int32":
 					value := column_data.(int32)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*uint16":
 					value := column_data.(*uint16)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint16":
 					value := column_data.(uint16)
-					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+					sql_command += strconv.FormatUint(uint64(value), 10)
 				case "*int16":
 					value := column_data.(*int16)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int16":
 					value := column_data.(int16)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*uint8":
 					value := column_data.(*uint8)
-					sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+					sql_command += strconv.FormatUint(uint64(*value), 10)
 				case "uint8":
 					value := column_data.(uint8)
-					sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
+					sql_command += strconv.FormatUint(uint64(value), 10)
 				case "*int8":
 					value := column_data.(*int8)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int8":
 					value := column_data.(int8)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "*int":
 					value := column_data.(*int)
-					sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+					sql_command += strconv.FormatInt(int64(*value), 10)
 				case "int":
 					value := column_data.(int)
-					sql_command.WriteString(strconv.FormatInt(int64(value), 10))
+					sql_command += strconv.FormatInt(int64(value), 10)
 				case "float32":
-					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float32)))
+					sql_command += fmt.Sprintf("%f", column_data.(float32))
 				case "*float32":
-					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float32))))
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
 				case "float64":
-					sql_command.WriteString(fmt.Sprintf("%f", column_data.(float64)))
+					sql_command += fmt.Sprintf("%f", column_data.(float64))
 				case "*float64":
-					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
+					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
 					
@@ -781,10 +863,13 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+					
 				case "time.Time":
 					value := column_data.(time.Time)
 				
@@ -792,39 +877,49 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+					
 				case "string":
 					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+					
 				case "*string":
 					value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
 					if value_escaped_errors != nil {
 						errors = append(errors, value_escaped_errors)
 					}
-	
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
+					
+					if options.IsBoolTrue("use_file") {
+						sql_command += "'" + value_escaped + "'"
+					} else {
+						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					}
+				
 				case "bool":
 					if column_data.(bool) {
-						sql_command.WriteString("1")
+						sql_command += "1"
 					} else {
-						sql_command.WriteString("0")
+						sql_command += "0"
 					}
 				case "*bool":
 					if *(column_data.(*bool)) {
-						sql_command.WriteString("1")
+						sql_command += "1"
 					} else {
-						sql_command.WriteString("0")
+						sql_command += "0"
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: update record type is not supported please implement for set clause: %s", record_non_identity_column_type))
@@ -832,17 +927,16 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if index < (len(*identity_columns) - 1) {
-				sql_command.WriteString(" AND ")
+				sql_command += " AND "
 			}
 		}
-		sql_command.WriteString(" ;")
+		sql_command += " ;"
 
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
 
-		sql_command_string := sql_command.String()
-		return &sql_command_string, options, nil
+		return &sql_command, options, nil
 	}
 
 	validate_errors := validate()

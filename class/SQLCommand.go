@@ -100,10 +100,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
+			sql_command_use_file := true
+			if options.IsBoolFalse("use_file") {
+				sql_command_use_file = false
+			}
+
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command)
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
-			filename := fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
+			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
 			sql := ""
@@ -118,17 +123,16 @@ func newSQLCommand() (*SQLCommand, []error) {
 					errors = append(errors, database_name_errors...)
 				} else {
 					if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
-						sql += fmt.Sprintf("USE %s;\n", database_name)
+						if options.IsBoolTrue("use_file") {
+							sql += fmt.Sprintf("USE `%s`;\n", database_name)
+						} else {
+							sql += fmt.Sprintf("USE \\`%s\\`;\n", database_name)
+						}
 					}
 				}
 			}
 
 			sql += " " + *sql_command
-
-			sql_command_use_file := true
-			if options.IsBoolFalse("use_file") {
-				sql_command_use_file = false
-			}
 
 			if options.IsBoolTrue("get_last_insert_id") {
 				sql += " SELECT LAST_INSERT_ID();"
@@ -160,6 +164,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
+				fmt.Println(command)
 				return nil, errors
 			}
 

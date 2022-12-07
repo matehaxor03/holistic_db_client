@@ -249,85 +249,102 @@ func TestTableDeleteWithExists(t *testing.T) {
 	} 
 }
 
-func TestTableCannotSetTableNameWithBlackListName(t *testing.T) {
+func TestTableCanSetTableNameWithBlackListName(t *testing.T) {
 	t.Parallel()
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	table := GetTestTableBasic(t)
 
-	for blacklist_database_name := range blacklist_map {
-		set_table_name_errors := table.SetTableName(blacklist_database_name)
+	for blacklist_table_name := range blacklist_map {
+		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
+			continue
+		}
 		
-		if set_table_name_errors == nil {
-			t.Errorf("SetTableName should return error when table_name is blacklisted")
+		set_table_name_errors := table.SetTableName(blacklist_table_name)
+		
+		if set_table_name_errors != nil {
+			t.Errorf(fmt.Sprintf("SetTableName should not return error when table_name is blacklisted %s", set_table_name_errors))
 		}
 
 		table_name, table_name_errors := table.GetTableName()
 		if table_name_errors != nil {
 			t.Errorf(fmt.Sprintf("%s", table_name_errors))
 		}
+		
 
-		if table_name == blacklist_database_name {
-			t.Errorf("table_name was updated to the blacklisted table_name")
+		if table_name != blacklist_table_name {
+			t.Errorf("table_name was not updated to the blacklisted table_name")
 		}
 
-		if table_name != GetTestTableName() {
-			t.Errorf("table_name is '%s' and should be '%s'", table_name,  GetTestTableName())
+		if table_name != blacklist_table_name {
+			t.Errorf("table_name is '%s' and should be '%s'", table_name, blacklist_table_name)
 		}
 	}
 }
 
 
-func TestTableCannotCreateWithBlackListName(t *testing.T) {
+func TestTableCanCreateWithBlackListName(t *testing.T) {
 	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
+		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
+			continue
+		}
+		
 		table, get_table_interface_errors := database.GetTableInterface(blacklist_table_name, GetTestSchema())
 
-		if get_table_interface_errors == nil {
-			t.Errorf("database.GetTableInterface was expected to have errors")
+		if get_table_interface_errors != nil {
+			t.Errorf("error: database.GetTableInterface sohuld not have errors")
 		}
 
-		if table != nil {
-			t.Errorf("database.GetTableInterface table was not nil")
+		if table == nil {
+			t.Errorf("error: database.GetTableInterface table should not be nil")
 		}
 	}
 }
 
-func TestTableCannotCreateWithBlackListNameUppercase(t *testing.T) {
+func TestTableCanCreateWithBlackListNameUppercase(t *testing.T) {
 	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
+		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
+			continue
+		}
+		
 		table, get_table_interface_errors := database.GetTableInterface(strings.ToUpper(blacklist_table_name), GetTestSchema())
 
-		if get_table_interface_errors == nil {
-			t.Errorf("database.GetTableInterface was expected to have errors")
+		if get_table_interface_errors != nil {
+			t.Errorf("error: database.GetTableInterface should not return error was expected to have errors")
 		}
 
-		if table != nil {
-			t.Errorf("database.GetTableInterface table was not nil")
+		if table == nil {
+			t.Errorf("error: database.GetTableInterface should not be nil table was not nil")
 		}
 	}
 }
 
 
-func TestTableCannotCreateWithBlackListNameLowercase(t *testing.T) {
+func TestTableCanCreateWithBlackListNameLowercase(t *testing.T) {
 	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for blacklist_table_name := range blacklist_map {
+		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
+			continue
+		}
+		
 		table, get_table_interface_errors := database.GetTableInterface(strings.ToLower(blacklist_table_name), GetTestSchema())
 
-		if get_table_interface_errors == nil {
-			t.Errorf("database.GetTableInterface was expected to have errors")
+		if get_table_interface_errors != nil {
+			t.Errorf(fmt.Sprintf("error: database.GetTableInterface should not have errors was expected to have errors %s", get_table_interface_errors))
 		}
 
-		if table != nil {
-			t.Errorf("database.GetTableInterface table was not nil")
+		if table == nil {
+			t.Errorf("error: database.GetTableInterface table should not be was not nil")
 		}
 	}
 }

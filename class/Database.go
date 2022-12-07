@@ -45,7 +45,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		return this_database
 	}
 
-	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
+	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
 	data := json.Map{
@@ -56,8 +56,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		"[system_schema]": json.Map{
 			"[client]": json.Map{"type":"class.Client"},
 			"[database_name]": json.Map{"type":"string","min_length":2,"not_empty_string_value":true,
-			"filters": json.Array{ json.Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()},
-							 json.Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}},
+			"filters": json.Array{ json.Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()}}},
 			"[database_create_options]": json.Map{"type":"*class.DatabaseCreateOptions"}},
 	}
 
@@ -107,7 +106,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", &new_database_name)
 	}
 
-	getCreateSQL := func() (*string, []error) {
+	getCreateSQL := func(options json.Map) (*string, []error) {
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -125,7 +124,12 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE DATABASE %s ", database_name_escaped)
+		sql_command := "CREATE DATABASE "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
+		}
 
 		databaseCreateOptions, databaseCreateOptions_errors := getDatabaseCreateOptions()
 		if databaseCreateOptions_errors != nil {
@@ -161,7 +165,9 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	create := func() []error {
-		sql_command, generate_sql_errors := getCreateSQL()
+		options := json.Map{"use_file":false, "creating_database":true}
+
+		sql_command, generate_sql_errors := getCreateSQL(options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors
@@ -171,7 +177,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file":false, "creating_database":true})
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -181,6 +187,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	exists := func() (*bool, []error) {
+		options := json.Map{"use_file":false, "checking_database_exists":true}
+
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -198,14 +206,19 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, errors
 		}
 
-		sql_command := fmt.Sprintf("USE %s;", database_name_escaped)
+		sql_command := "USE "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
+		}
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
 			return nil, temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "checking_database_exists":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -223,6 +236,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getTableNames := func() (*[]string, []error) {
+		options := json.Map{"use_file": false}
+
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -240,14 +255,19 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, errors
 		}
 
-		sql_command :=  fmt.Sprintf("SHOW TABLES IN %s;", database_name_escaped)
+		sql_command := "SHOW TABLES IN "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
+		}
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
 			return nil, temp_client_errors
 		}
 
-		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false})
+		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -283,6 +303,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	delete := func() ([]error) {
+		options := json.Map{"use_file": false, "deleting_database":true}
+		
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -302,14 +324,19 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return errors
 		}
 
-		sql_command := fmt.Sprintf("DROP DATABASE %s;", database_name_escaped)
+		sql_command := "DROP DATABASE "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
+		}
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -323,6 +350,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	deleteIfExists := func() ([]error) {
+		options := json.Map{"use_file": false, "deleting_database":true}
+		
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -341,14 +370,19 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return errors
 		}
 
-		sql_command := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", database_name_escaped)
+		sql_command := "DROP DATABASE IF EXISTS "
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
+		}
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, json.Map{"use_file": false, "deleting_database":true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
