@@ -1355,23 +1355,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							continue
 						}
 
-						filer_value_escaped, filer_value_escaped_errors := common.EscapeString(*filer_value, "'")
-						if filer_value_escaped_errors != nil {
-							errors = append(errors, filer_value_escaped_errors)
+						value_escaped, value_escaped_errors := common.EscapeString(*filer_value, "'")
+						if value_escaped_errors != nil {
+							errors = append(errors, value_escaped_errors)
 							continue
 						}
 
 						if options.IsBoolTrue("use_file") {
-							sql_command += "`"
+							sql_command += "'" + value_escaped + "'"
 						} else {
-							sql_command += "\\`"
+							sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
 						}
-						sql_command += filer_value_escaped
-						if options.IsBoolTrue("use_file") {
-							sql_command += "`"
-						} else {
-							sql_command += "\\`"
-						}
+
 					default:
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}

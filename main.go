@@ -563,7 +563,7 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 	}
 	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nfunc %s Map {\nreturn Map{\n", package_name, method_name)); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nimport (\n    json \"github.com/matehaxor03/holistic_json/json\"\n)\nfunc %s Map {\nreturn Map{\n", package_name, method_name)); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
