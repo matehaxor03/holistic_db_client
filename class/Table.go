@@ -558,6 +558,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		
 			if default_value == "NULL" {
+				column_schema.SetNil("default")
 			} else {
 				if *dt == "string" {
 					column_schema.SetString("default", &default_value)
@@ -655,10 +656,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						}
 					}
 				} else if *dt == "time.Time" && default_value != "" {
-					if default_value == "NULL" {
-						column_schema.SetNil("default")
-					} else if (default_value == "CURRENT_TIMESTAMP(6)" || 
+					if (default_value == "CURRENT_TIMESTAMP(6)" ||
+						default_value == "CURRENT_TIMESTAMP(5)" ||  
+						default_value == "CURRENT_TIMESTAMP(4)" ||
 						default_value == "CURRENT_TIMESTAMP(3)" ||
+						default_value == "CURRENT_TIMESTAMP(2)" ||
+						default_value == "CURRENT_TIMESTAMP(1)" ||
 						default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
 						now := "now"
 						column_schema.SetString("default", &now)
@@ -969,7 +972,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							} else {
 								sql_command += strings.ReplaceAll("'" + default_value_escaped + "'", "`", "\\`")
 							}
-							
+
 						}
 					} 
 				}
