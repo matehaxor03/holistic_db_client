@@ -340,7 +340,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalSetSQLMode: func() []error {
-			command := "SET GLOBAL global sql_mode= = 'ONLY_FULL_GROUP_BY, STRICT_TRANS_TABLES, ERROR_FOR_DIVISION_BY_ZERO, NO_ENGINE_SUBSTITUTION';"
+			command := "SET GLOBAL global sql_mode= 'ONLY_FULL_GROUP_BY, STRICT_TRANS_TABLES, ERROR_FOR_DIVISION_BY_ZERO, NO_ENGINE_SUBSTITUTION';"
 			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, json.Map{"use_file": false, "updating_database_global_settings":true})
 			if command_errors != nil {
 				return command_errors
