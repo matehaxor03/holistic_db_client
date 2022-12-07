@@ -671,7 +671,25 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							} else if default_value == "0000-00-00 00:00:00" {
 								default_value = "zero"
 								column_schema.SetString("default", &default_value)
-							} else {
+							} else if default_value == "0000-00-00 00:00:00.0" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00.00" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00.000" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00.0000" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00.00000" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00.000000" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							}  else {
 								errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, *dt))
 							}
 						
