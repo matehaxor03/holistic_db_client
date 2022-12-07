@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type Table struct {
@@ -55,7 +56,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	setupData := func(b Database, n string, s json.Map) (json.Map) {
 		schema_is_nil := false
 		
-		if IsNil(s) {
+		if common.IsNil(s) {
 			schema_is_nil = true
 			s = json.Map{}
 		}
@@ -204,8 +205,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		if temp_table_name_errors != nil {
 			return nil, temp_table_name_errors
 		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, errors
+		}
 		
-		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", EscapeString(temp_table_name))
+		sql_command := fmt.Sprintf("SELECT 0 FROM %s LIMIT 1;", table_name_escaped)
 		
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -245,7 +252,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_table_name_errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE %s;", EscapeString(temp_table_name))
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return errors
+		}
+
+		sql := fmt.Sprintf("DROP TABLE %s;", table_name_escaped)
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -281,7 +294,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_table_name_errors
 		}
 
-		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", EscapeString(temp_table_name))
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return errors
+		}
+
+		sql := fmt.Sprintf("DROP TABLE IF EXISTS %s;", table_name_escaped)
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -319,8 +338,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		if temp_table_name_errors != nil {
 			return nil, temp_table_name_errors
 		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, errors
+		}
 		
-		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", EscapeString(temp_table_name))
+		sql_command := fmt.Sprintf("SHOW COLUMNS FROM %s;", table_name_escaped)
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
@@ -670,8 +695,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_table_name_errors
 		}
 
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, errors
+		}
+
 		var sql_command strings.Builder
-		sql_command.WriteString(fmt.Sprintf("CREATE TABLE %s", EscapeString(temp_table_name)))
+		sql_command.WriteString(fmt.Sprintf("CREATE TABLE %s", table_name_escaped))
 
 		valid_columns, valid_columns_errors := getTableColumns()
 		if valid_columns_errors != nil {
@@ -691,12 +722,17 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			if columnSchema_errors != nil {
 				errors = append(errors, columnSchema_errors...)
 				continue
-			} else if IsNil(columnSchema) {
+			} else if common.IsNil(columnSchema) {
 				errors = append(errors, fmt.Errorf("error: Table.getCreateSQL %s column schema for column: %s is nil", struct_type, column))
 				continue
 			}
 
-			sql_command.WriteString(EscapeString(column))
+			column_escaped, column_escaped_errors := common.EscapeString(column, "'")
+			if column_escaped_errors != nil {
+				errors = append(errors, column_escaped_errors)
+			}
+
+			sql_command.WriteString(column_escaped)
 
 			typeOf, type_of_errors := columnSchema.GetString("type")
 			if type_of_errors != nil {
@@ -895,7 +931,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						if default_value_errors != nil {
 							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified default attribute had errors %s", column, fmt.Sprintf("%s", default_value_errors)))
 						} else {
-							sql_command.WriteString(" DEFAULT '" + EscapeString(*default_value) + "'")
+
+							default_value_escaped, default_value_escaped_errors := common.EscapeString(*default_value, "'")
+							if default_value_escaped_errors != nil {
+								errors = append(errors, default_value_escaped_errors)
+							}
+							sql_command.WriteString(" DEFAULT '")
+							sql_command.WriteString(default_value_escaped)
+							sql_command.WriteString("'")
 						}
 					} 
 				}
@@ -912,7 +955,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		sql_command.WriteString(");")
 
 		if primary_key_count == 0 {
-			errors = append(errors, fmt.Errorf("error: Table.getCreateSQL: %s must have at least 1 primary key", EscapeString(temp_table_name)))
+			errors = append(errors, fmt.Errorf("error: Table.getCreateSQL: %s must have at least 1 primary key", table_name_escaped))
 		}
 
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
@@ -961,7 +1004,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
 			errors = append(errors, temp_database_errors...)
-		} else if IsNil(temp_database) {
+		} else if common.IsNil(temp_database) {
 			errors = append(errors, fmt.Errorf("error: Table.read database is nil"))
 		}
 
@@ -972,7 +1015,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
 			errors = append(errors, temp_table_name_errors...)
-		} else if IsNil(temp_table_name) {
+		} else if common.IsNil(temp_table_name) {
 			errors = append(errors, fmt.Errorf("error: Table.read table_name is nil"))
 		}
 
@@ -983,7 +1026,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		temp_schema, temp_schema_errors := getSchema()
 		if temp_schema_errors != nil {
 			errors = append(errors, temp_schema_errors...)
-		} else if IsNil(temp_schema) {
+		} else if common.IsNil(temp_schema) {
 			errors = append(errors, fmt.Errorf("error: Table.read schema is nil"))
 		}
 
@@ -1059,7 +1102,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, temp_table_name_errors
 			}
 
-			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", EscapeString(temp_table_name))
+			table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+			if table_name_escaped_errors != nil {
+				errors = append(errors, table_name_escaped_errors)
+				return nil, errors
+			}
+
+			sql := fmt.Sprintf("SELECT COUNT(*) FROM %s;", table_name_escaped)
 
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
@@ -1151,6 +1200,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, temp_table_name_errors
 			}
 
+			table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+			if table_name_escaped_errors != nil {
+				errors = append(errors, table_name_escaped_errors)
+				return nil, errors
+			}
+
 			if filters != nil {
 				table_columns, table_columns_errors := getTableColumns()
 				if table_columns_errors != nil {
@@ -1159,7 +1214,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 				filter_columns := filters.Keys()
 				for _, filter_column := range filter_columns {
-					if !Contains(*table_columns, filter_column) {
+					if !common.Contains(*table_columns, filter_column) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 					}
 				}
@@ -1206,7 +1261,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			}
 
 			var sql_command strings.Builder
-			sql_command.WriteString(fmt.Sprintf("SELECT * FROM %s ", EscapeString(temp_table_name)))
+			sql_command.WriteString(fmt.Sprintf("SELECT * FROM %s ", table_name_escaped))
 			if filters != nil {
 				if len(filters.Keys()) > 0 {
 					sql_command.WriteString("WHERE ")
@@ -1220,7 +1275,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						errors = append(errors, column_name_errors...)
 					}	
 
-					sql_command.WriteString(EscapeString(column_filter))
+					column_filter_escaped, column_filter_escaped_errors := common.EscapeString(column_filter, "'")
+					if table_name_escaped_errors != nil {
+						errors = append(errors, column_filter_escaped_errors)
+					}
+
+					sql_command.WriteString(column_filter_escaped)
 					sql_command.WriteString(" = ")
 
 					//todo check data type with schema
@@ -1229,8 +1289,21 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 
 					case "*string", "string":
-						filer_value, _ := filters.GetString(column_filter)
-						sql_command.WriteString(fmt.Sprintf("'%s' ", EscapeString(*filer_value)))
+						filer_value, filter_value_errors := filters.GetString(column_filter)
+						if filter_value_errors != nil {
+							errors = append(errors, filter_value_errors...)
+							continue
+						}
+
+						filer_value_escaped, filer_value_escaped_errors := common.EscapeString(*filer_value, "'")
+						if filer_value_escaped_errors != nil {
+							errors = append(errors, filer_value_escaped_errors)
+							continue
+						}
+
+						sql_command.WriteString("'")
+						sql_command.WriteString(filer_value_escaped)
+						sql_command.WriteString("'")
 					default:
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}

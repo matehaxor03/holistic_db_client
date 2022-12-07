@@ -4,7 +4,7 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
@@ -19,7 +19,7 @@ func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
 		value, value_errors := record.GetFloat64Value(GetTestTableFloat64ColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
 		} else if value != float64(123456789.987654321) {
 			t.Errorf(fmt.Sprintf("error:  value not equal expected: %f actual: %f", float64(123456789.987654321),  value))
@@ -61,7 +61,7 @@ func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
 		value, value_errors := record.GetFloat64(GetTestTableFloat64ColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
 		} else if *value != float64(987654321.987654321) {
 			t.Errorf(fmt.Sprintf("error:  value not equal expected: %f actual: %f",	float64(987654321.987654321), *value))

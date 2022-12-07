@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 	json "github.com/matehaxor03/holistic_json/json"
 	"os"
 	"sort"
@@ -476,7 +477,7 @@ func testColumnName(client *class.Client) []error {
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 		schema := json.Map{string_value: json.Map{"type": "uint64", "primary_key": true, "auto_increment": true}}
-		table_name := class.GenerateRandomLetters(10, nil)
+		table_name := common.GenerateRandomLetters(10, nil)
 
 		table, table_errors := database.CreateTable(*table_name, schema)
 		if table_errors != nil {

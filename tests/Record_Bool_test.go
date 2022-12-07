@@ -4,7 +4,7 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
@@ -19,7 +19,7 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 		value, value_errors := record.GetBoolValue(GetTestTableBoolColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("%s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("value is nil")
 		} else if value != true {
 			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", true,  value))
@@ -39,7 +39,7 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 		value, value_errors := record.GetBoolValue(GetTestTableBoolColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("%s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
 		} else if value != false {
 			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", false,  value))
@@ -102,7 +102,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 		value, value_errors := record.GetBool(GetTestTableBoolColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
 		} else if *value != true {
 			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", true,  *value))
@@ -123,7 +123,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 		value, value_errors := record.GetBool(GetTestTableBoolColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
 		} else if *value != false {
 			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", false,  *value))

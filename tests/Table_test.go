@@ -5,6 +5,7 @@ import (
 	"strings"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -402,7 +403,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 			actual_schema, actual_schema_errors := table.GetSchema()
 			if actual_schema_errors != nil {
 				t.Errorf(fmt.Sprintf("error: %s", actual_schema_errors))
-			} else if class.IsNil(actual_schema) {
+			} else if common.IsNil(actual_schema) {
 				t.Errorf("error: actual schema is nil")
 			} else {
 				for _, expected_schema_column_name := range expected_schema_column_names {
@@ -420,7 +421,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 					if expected_schema_type_errors != nil {
 						t.Errorf(fmt.Sprintf("error: %s", expected_schema_type_errors))
 						continue
-					} else if class.IsNil(expected_schema_type) {
+					} else if common.IsNil(expected_schema_type) {
 						t.Errorf("error: field: %s expected_schem type is nil", expected_schema_column_name)
 						continue
 					}
@@ -438,7 +439,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 					if actual_schema_type_errors != nil {
 						t.Error(actual_schema_type_errors)
 						continue
-					} else if class.IsNil(actual_schema_type) {
+					} else if common.IsNil(actual_schema_type) {
 						t.Errorf("error: field: %s actual_schema is nil", expected_schema_column_name)
 						continue
 					}

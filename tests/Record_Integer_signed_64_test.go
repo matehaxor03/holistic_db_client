@@ -4,7 +4,7 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
@@ -20,7 +20,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
 		value, value_errors := record.GetInt64Value(GetTestTableIntegerSigned64ColumnName())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value_errors) {
+		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
 		} else if value != int64(555) {
 			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int64(555),  value))
@@ -63,7 +63,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T
 		value, value_errors := record.GetInt64(GetTestTableInteger64SignedColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value_errors) {
+		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
 		} else if *value != int64(555) {
 			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int64(555),  *value))

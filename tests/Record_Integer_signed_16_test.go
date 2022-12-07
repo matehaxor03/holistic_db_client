@@ -4,7 +4,7 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
@@ -20,7 +20,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
 		value, value_errors := record.GetInt16Value(GetTestTableIntegerSigned16ColumnName())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value_errors) {
+		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
 		} else if value != int16(130) {
 			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  value))
@@ -63,7 +63,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16ColumnNotMandatory(t *testing.T
 		value, value_errors := record.GetInt16(GetTestTableInteger16SignedColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value_errors) {
+		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
 		} else if *value != int16(130) {
 			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", int16(130),  *value))

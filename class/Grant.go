@@ -3,6 +3,7 @@ package class
 import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func GRANT_ALL() string {
@@ -177,22 +178,34 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		}
 		
 		table_filter, table_filter_errors := getTableFilter()
-		if table_filter_errors != nil{
+		if table_filter_errors != nil {
 			return nil, table_filter_errors
 		}
 
 		sql := ""
 		if database_filter != nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s.%s ", EscapeString(grant_value), EscapeString(*database_filter), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s.%s ", grant_value, *database_filter, *table_filter)
 		} else if database_filter != nil && table_filter == nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*database_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *database_filter)
 		} else if database_filter == nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", EscapeString(grant_value), EscapeString(*table_filter))
+			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *table_filter)
 		} else {
 			errors = append(errors, fmt.Errorf("error: Grant: getSQL: both database_filter and table_filter were nil"))
 		}
 
-		sql += fmt.Sprintf("To '%s'@'%s';", EscapeString(username_value), EscapeString(domain_name_value))
+		username_value_escaped, username_value_escaped_errors := common.EscapeString(username_value, "'")
+		if username_value_escaped_errors != nil {
+			errors = append(errors, username_value_escaped_errors)
+			return nil, errors
+		}
+
+		domain_name_value_escaped, domain_name_value_escaped_errors := common.EscapeString(domain_name_value, "'")
+		if domain_name_value_escaped_errors != nil {
+			errors = append(errors, domain_name_value_escaped_errors)
+			return nil, errors
+		}
+
+		sql += fmt.Sprintf("To '%s'@'%s';", username_value_escaped, domain_name_value_escaped)
 
 		if len(errors) > 0 {
 			return nil, errors

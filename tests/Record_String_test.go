@@ -4,7 +4,7 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func TestRecordCanCreateRecordWithString(t *testing.T) {
@@ -19,7 +19,7 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 		value, value_errors := record.GetStringValue(GetTestTableStringColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error:  value is nil")
 		} else if value != "hello world" {
 			t.Errorf(fmt.Sprintf("error:  value not equal expected: %s actual: %s", "hello world",  value))
@@ -61,7 +61,7 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 		value, value_errors := record.GetString(GetTestTableStringColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
-		} else if class.IsNil(value) {
+		} else if common.IsNil(value) {
 			t.Errorf("error:  value is nil")
 		} else if *value != "hello world" {
 			t.Errorf(fmt.Sprintf("error:  value not equal expected: %s actual: %s", "hello world",  *value))

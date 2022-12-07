@@ -3,6 +3,7 @@ package class
 import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type User struct {
@@ -94,7 +95,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		temp_password, temp_password_errors := temp_credentials.GetPassword()
 		if temp_password_errors != nil {
 			return nil, nil, temp_password_errors
-		} else if IsNil(temp_password) {
+		} else if common.IsNil(temp_password) {
 			errors = append(errors, fmt.Errorf("error: User.getCreateSQL password is nil"))
 		}
 
@@ -112,11 +113,30 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return nil, nil, temp_domain_name_value_errors
 		}
 
+		username_escaped, username_escaped_errors := common.EscapeString(temp_username, "'")
+		if username_escaped_errors != nil {
+			errors = append(errors, username_escaped_errors)
+		}
+
+		temp_domain_name_value_escaped, temp_domain_name_value_escaped_errors := common.EscapeString(temp_domain_name_value, "'")
+		if temp_domain_name_value_escaped_errors != nil {
+			errors = append(errors, temp_domain_name_value_escaped_errors)
+		}
+
+		temp_password_escaped, temp_password_escaped_errors := common.EscapeString(*temp_password, "'")
+		if temp_password_escaped_errors != nil {
+			errors = append(errors, temp_password_escaped_errors)
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
+		}
+
 		sql_command := "CREATE USER "
-		sql_command += fmt.Sprintf("'%s'", EscapeString(temp_username))
-		sql_command += fmt.Sprintf("@'%s' ", EscapeString(temp_domain_name_value))
+		sql_command += fmt.Sprintf("'%s'", username_escaped)
+		sql_command += fmt.Sprintf("@'%s' ", temp_domain_name_value_escaped)
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'", EscapeString(*temp_password))
+		sql_command += fmt.Sprintf("'%s'", temp_password_escaped)
 
 		sql_command += ";"
 		return &sql_command, options, nil
@@ -233,7 +253,25 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				return temp_username_errors
 			}
 
-			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", EscapeString(temp_username), EscapeString(temp_host_name), EscapeString(new_password))
+			temp_username_escaped, temp_username_escaped_errors := common.EscapeString(temp_username, "'")
+			if temp_username_escaped_errors != nil {
+				errors = append(errors, temp_username_escaped_errors)
+			}
+
+			temp_host_name_escaped, temp_host_name_escaped_errors := common.EscapeString(temp_host_name, "'")
+			if temp_host_name_escaped_errors != nil {
+				errors = append(errors, temp_host_name_escaped_errors)
+			}
+
+			new_password_escaped, new_password_escaped_errors := common.EscapeString(new_password, "'")
+			if new_password_escaped_errors != nil {
+				errors = append(errors, new_password_escaped_errors)
+			}
+
+			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", temp_username_escaped,temp_host_name_escaped, new_password_escaped)
+			if len(errors) > 0 {
+				return errors
+			}
 
 			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, json.Map{"use_file": true})
 

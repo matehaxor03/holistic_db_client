@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
-	"math/rand"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 func GetValidSchemaFields() json.Map {
@@ -21,176 +21,6 @@ func GetValidSchemaFields() json.Map {
 		"min_length": nil,
 		"max_length": nil,
 	}
-}
-
-func EscapeString(value string) string {
-	value = strings.ReplaceAll(value, "\\", "\\\\")
-	value = strings.ReplaceAll(value, "'", "\\'")
-	return value
-}
-
-func CloneString(value *string) *string {
-	if value == nil {
-		return nil
-	}
-
-	temp := strings.Clone(*value)
-	return &temp
-}
-
-func IsNil(object interface{}) bool {
-	if object == nil {
-		return true
-	}
-	
-	string_value := fmt.Sprintf("%s", object) 
-
-	if string_value == "<nil>" {
-		return true
-	}
-
-	if string_value == "map[]" {
-		return true
-	}
-
-	rep := fmt.Sprintf("%T", object)
-
-	if string_value == "%!s("+rep+"=<nil>)" {
-		return true
-	}
-
-	/*
-	switch reflect.TypeOf(object).Kind() {
-		case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
-			return reflect.ValueOf(object).IsNil()
-	}*/
-
-	return false
-	/*
-	string_value := fmt.Sprintf("%s", object)
-
-	if string_value == "<nil>" {
-		return true
-	}
-
-	rep := fmt.Sprintf("%T", object)
-
-	if string_value == "%!s("+rep+"=<nil>)" {
-		return true
-	}
-
-	return false*/
-}
-
-func IsTime(object interface{}) bool {
-	if IsNil(object) {
-		return false
-	}
-
-	time, time_errors := GetTime(object)
-	if time_errors != nil {
-		return false
-	} else if IsNil(time) {
-		return false
-	}
-
-	return true
-}
-
-func GetTime(object interface{}) (*time.Time, []error) {
-	var errors []error
-	var result *time.Time
-
-	if object == nil {
-		return nil, nil
-	}
-
-	rep := fmt.Sprintf("%T", object)
-	switch rep {
-	case "*time.Time":
-		value := *(object.(*time.Time))
-		result = &value
-	case "time.Time":
-		value := object.(time.Time)
-		result = &value
-	case "*string":
-		//todo: parse for null
-		value1, value_errors1 := time.Parse("2006-01-02 15:04:05.000000", *(object.(*string)))
-		value2, value_errors2 := time.Parse("2006-01-02 15:04:05", *(object.(*string)))
-		var value3 *time.Time
-		if *(object.(*string)) == "now" {
-			value3 = GetTimeNow()
-		} else {
-			value3 = nil
-		}
-
-		if value_errors1 != nil && value_errors2 != nil && value3 == nil {
-			errors = append(errors, value_errors1)
-		}
-
-		if value_errors1 == nil {
-			result = &value1
-		}
-
-		if value_errors2 == nil {
-			result = &value2
-		}
-
-		if value3 != nil {
-			result = value3
-		}
-
-	case "string":
-		//todo: parse for null
-		value1, value_errors1 := time.Parse("2006-01-02 15:04:05.000000", (object.(string)))
-		value2, value_errors2 := time.Parse("2006-01-02 15:04:05", (object.(string)))
-		var value3 *time.Time
-		if (object.(string)) == "now" {
-			value3 = GetTimeNow()
-		} else {
-			value3 = nil
-		}
-
-		if value_errors1 != nil && value_errors2 != nil && value3 == nil {
-			errors = append(errors, value_errors1)
-		}
-
-		if value_errors1 == nil {
-			result = &value1
-		}
-
-		if value_errors2 == nil {
-			result = &value2
-		}
-
-		if value3 != nil {
-			result = value3
-		}
-
-	default:
-		errors = append(errors, fmt.Errorf("error: json.Map.GetTime: type %s is not supported please implement", rep))
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
-	return result, nil
-}
-
-func GetType(object interface{}) string {
-	if IsNil(object) {
-		return "nil"
-	}
-	return fmt.Sprintf("%T", object)
-}
-
-func FIELD_NAME_VALIDATION_FUNCTIONS() string {
-	return "validation_functions"
-}
-
-func FIELD_NAME_VALIDATION_FUNCTIONS_PARAMETERS() string {
-	return "validation_functions_parameters"
 }
 
 func getWhitelistStringFunc() *func(m json.Map) []error {
@@ -299,7 +129,7 @@ func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, [
 	fields_map, fields_map_errors := m.GetMap(field_type)
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
-	} else if IsNil(fields_map) {
+	} else if common.IsNil(fields_map) {
 		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, field_type))
 	} 
 
@@ -324,7 +154,7 @@ func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map,
 	schemas_map, schemas_map_errors := m.GetMap(schema_type)
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
-	} else if IsNil(schemas_map) {
+	} else if common.IsNil(schemas_map) {
 		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, schema_type))
 	} else {
 		schema_paramters := schemas_map.Keys()
@@ -419,7 +249,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	}
 
 
-	if IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
+	if common.IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
 		if schema_map.IsBoolTrue("auto_increment") && schema_map.IsBoolTrue("primary_key") {
 			return nil, nil
 		}
@@ -435,7 +265,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 
 		errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is not nullable"))
 		return nil, errors
-	} else if IsNil(result) {
+	} else if common.IsNil(result) {
 		errors = append(errors,	fmt.Errorf("error: field: %s had nil value and default value but is not nullable"))
 	}
 
@@ -456,7 +286,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		return result, nil
 	}
 
-	type_of := GetType(result)
+	type_of := common.GetType(result)
 
 	if desired_type == type_of {
 		return result, nil
@@ -981,7 +811,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
 	if schema_of_parameter_errors != nil {
 		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
-	} else if IsNil(schema_of_parameter) {
+	} else if common.IsNil(schema_of_parameter) {
 		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s had nil schema", struct_type, parameter))
 	} else if !schemas.IsMap(parameter) {
 		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s is not a map", struct_type, parameter))
@@ -1001,7 +831,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	value_is_set = true
 	value_is_null = false
 
-	if !IsNil(parameters) {
+	if !common.IsNil(parameters) {
 		if parameters.HasKey(parameter) {
 			value_is_set = true
 			if parameters.IsNil(parameter) {
@@ -1015,7 +845,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			value_is_null = true
 		}
 	} else {
-		if IsNil(value_to_validate) {
+		if common.IsNil(value_to_validate) {
 			value_is_null = true
 		} else {
 			value_is_null = false
@@ -1062,7 +892,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 	}
 
-	if !IsNil(parameters) {
+	if !common.IsNil(parameters) {
 		if !schema_of_parameter.HasKey("validated") {
 			bool_true := true
 			schema_of_parameter.SetBool("validated", &bool_true)
@@ -1124,9 +954,9 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
-	type_of_parameter_value := GetType(value_to_validate)
+	type_of_parameter_value := common.GetType(value_to_validate)
 
-	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" && IsTime(value_to_validate) {
+	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" && common.IsTime(value_to_validate) {
 		type_of_parameter_value = "*time.Time"
 	}
 
@@ -1438,53 +1268,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 }
 
 
-func Contains(sl []string, name string) bool {
-	for _, value := range sl {
-		if value == name {
-			return true
-		}
-	}
-	return false
-}
 
-func GetTimeNow() *time.Time {
-	now := time.Now()
-	return &now
-}
 
-func FormatTime(value time.Time) string {
-	return value.Format("2006-01-02 15:04:05.000000")
-}
 
-func GetTimeNowString() string {
-	return (*GetTimeNow()).Format("2006-01-02 15:04:05.000000")
-}
-
-func GenerateRandomLetters(length uint64, upper_case *bool) (*string) {
-	rand.Seed(time.Now().UnixNano())
-	
-	var letters_to_use string
-	uppercase_letters :=  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	lowercase_letters := "abcdefghijklmnopqrstuvwxyz"
-
-	if upper_case == nil {
-		letters_to_use = uppercase_letters + lowercase_letters
-	} else if *upper_case {
-		letters_to_use = uppercase_letters
-	} else {
-		letters_to_use = lowercase_letters
-	}
-
-	var sb strings.Builder
-
-	l := len(letters_to_use)
-
-	for i := uint64(0); i < length; i++ {
-		c := letters_to_use[rand.Intn(l)]
-		sb.WriteByte(c)
-	}
-
-	value := sb.String()
-	return &value
-}
 

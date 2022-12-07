@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
@@ -30,7 +31,7 @@ func GetTestClient(t *testing.T) (*class.Client) {
 	lock_get_client_manager.Lock()
 	defer lock_get_client_manager.Unlock()
 	var errors []error
-	if class.IsNil(client_manager) {
+	if common.IsNil(client_manager) {
 		temp_client_manager, temp_client_manager_errors := class.NewClientManager()
 		if temp_client_manager_errors != nil {
 			errors = append(errors, temp_client_manager_errors...)
@@ -476,7 +477,7 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 	} else if !(len(*table_names) >= 0) {
 		t.Errorf("error: database.GetTables should return at least one table name")
 
-		if !class.Contains(*table_names, "some_table") {
+		if !common.Contains(*table_names, "some_table") {
 			t.Errorf("error: some_table not found in table_names")
 		}
 	}

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
-
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type Database struct {
@@ -73,7 +73,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*class.DatabaseCreateOptions")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*DatabaseCreateOptions), nil
@@ -83,7 +83,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*Client), nil
@@ -97,7 +97,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
 		if temp_value_errors != nil {
 			return "", temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return "", nil
 		}
 		return temp_value.(string), nil
@@ -119,7 +119,13 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_database_name_errors
 		}
 
-		sql_command := fmt.Sprintf("CREATE DATABASE %s ", EscapeString(temp_database_name))
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return nil, errors
+		}
+
+		sql_command := fmt.Sprintf("CREATE DATABASE %s ", database_name_escaped)
 
 		databaseCreateOptions, databaseCreateOptions_errors := getDatabaseCreateOptions()
 		if databaseCreateOptions_errors != nil {
@@ -186,7 +192,13 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_database_name_errors
 		}
 
-		sql_command := fmt.Sprintf("USE %s;", EscapeString(temp_database_name))
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return nil, errors
+		}
+
+		sql_command := fmt.Sprintf("USE %s;", database_name_escaped)
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
@@ -222,7 +234,13 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_database_name_errors
 		}
 
-		sql_command :=  fmt.Sprintf("SHOW TABLES IN %s;", EscapeString(temp_database_name))
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return nil, errors
+		}
+
+		sql_command :=  fmt.Sprintf("SHOW TABLES IN %s;", database_name_escaped)
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
@@ -244,7 +262,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		}
 
 		var table_names []string
-		column_name := "Tables_in_" + EscapeString(temp_database_name)
+		column_name := "Tables_in_" + database_name_escaped
 		for _, record := range *records {
 			table_name, table_name_errors := record.(json.Map).GetString(column_name)
 			if table_name_errors != nil {
@@ -277,7 +295,14 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_database_name_errors
 		}
 
-		sql_command := fmt.Sprintf("DROP DATABASE %s;", EscapeString(temp_database_name))
+
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return errors
+		}
+
+		sql_command := fmt.Sprintf("DROP DATABASE %s;", database_name_escaped)
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {
@@ -310,7 +335,13 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_database_name_errors
 		}
 
-		sql_command := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", EscapeString(temp_database_name))
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return errors
+		}
+
+		sql_command := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", database_name_escaped)
 
 		temp_client, temp_client_errors := getClient()
 		if temp_client_errors != nil {

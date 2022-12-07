@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type Client struct {
@@ -81,7 +82,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]", "*class.Host")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*Host), nil
@@ -91,7 +92,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*string), nil
@@ -101,7 +102,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*class.Database")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*Database), nil
@@ -111,7 +112,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "*class.ClientManager")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
-		} else if IsNil(temp_value) {
+		} else if common.IsNil(temp_value) {
 			return nil, nil
 		}
 		return temp_value.(*ClientManager), nil
@@ -375,7 +376,13 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 				return nil, errors
 			}
 
-			records, records_errors := table.ReadRecords(json.Map{"User": EscapeString(username)}, nil, nil)
+			username_escaped, username_escaped_error := common.EscapeString(username, "'")
+			if username_escaped_error != nil {
+				errors = append(errors, username_escaped_error)
+				return nil, errors
+			}
+
+			records, records_errors := table.ReadRecords(json.Map{"User": username_escaped}, nil, nil)
 
 			if records_errors != nil {
 				return nil, records_errors
@@ -387,7 +394,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			} else if (len(*records) == 1) {
 				exists = true
 			} else {
-				errors = append(errors, fmt.Errorf("error: User: Exists: %d records found with username %s", len(*records), EscapeString(username)))
+				errors = append(errors, fmt.Errorf("error: User: Exists: %d records found with username %s", len(*records), username_escaped))
 			}
 
 			if len(errors) > 0 {

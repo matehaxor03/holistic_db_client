@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type SQLCommand struct {
@@ -178,12 +179,12 @@ func newSQLCommand() (*SQLCommand, []error) {
 				current_value := string(rune_array[i])
 				if reading_columns {
 					if current_value == "\n" {
-						column_name := CloneString(&value)
+						column_name := common.CloneString(&value)
 						columns = append(columns, *column_name)
 						value = ""
 						reading_columns = false
 					} else if current_value == "\t" {
-						column_name := CloneString(&value)
+						column_name := common.CloneString(&value)
 						columns = append(columns, *column_name)
 						value = ""
 					} else {
@@ -191,14 +192,14 @@ func newSQLCommand() (*SQLCommand, []error) {
 					}
 				} else {
 					if current_value == "\n" {
-						column_value := CloneString(&value)
+						column_value := common.CloneString(&value)
 						record.SetString(columns[columns_count].(string), column_value)
 						records = append(records, record)
 						record = json.Map{}
 						value = ""
 						columns_count = 0
 					} else if current_value == "\t" {
-						column_value := CloneString(&value)
+						column_value := common.CloneString(&value)
 						record.SetString(columns[columns_count].(string), column_value)
 						columns_count += 1
 						value = ""

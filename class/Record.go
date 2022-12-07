@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 	json "github.com/matehaxor03/holistic_json/json"
+	common "github.com/matehaxor03/holistic_common/common"
 )
 
 type Record struct {
@@ -79,7 +80,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	table_schema, table_schema_errors := table.GetSchema()
 	if table_schema_errors != nil {
 		errors = append(errors, table_schema_errors...)
-	} else if IsNil(table_schema) {
+	} else if common.IsNil(table_schema) {
 		errors = append(errors, fmt.Errorf("error: table schema is nil"))
 	}
 
@@ -224,6 +225,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, table_name_errors
 		}
 
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, nil, errors
+		}
+
 		for _, record_column := range *record_columns {
 			if strings.HasPrefix(record_column, "credential") {
 				options["use_file"] = true
@@ -277,10 +284,16 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		var sql_command strings.Builder
 		sql_command.WriteString(fmt.Sprintf("INSERT INTO "))
-		sql_command.WriteString(EscapeString(table_name))
+		sql_command.WriteString(table_name_escaped)
 		sql_command.WriteString(" (")
 		for index, record_column := range *record_columns {
-			sql_command.WriteString(EscapeString(record_column))
+			record_column_escaped,record_column_escaped_errors := common.EscapeString(record_column, "'")
+			if record_column_escaped_errors != nil {
+				errors = append(errors, record_column_escaped_errors)
+				continue
+			}
+
+			sql_command.WriteString(record_column_escaped)
 			if index < (len(*record_columns) - 1) {
 				sql_command.WriteString(", ")
 			}
@@ -294,7 +307,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			rep := GetType(column_data)
+			rep := common.GetType(column_data)
 			switch rep {
 			case "*uint64":
 				value := column_data.(*uint64)
@@ -360,21 +373,43 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 			case "*time.Time":
 				value := column_data.(*time.Time)
+				
+				value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
+				if value_escaped_errors != nil {
+					errors = append(errors, value_escaped_errors)
+				}
+
 				sql_command.WriteString("'")
-				sql_command.WriteString(EscapeString(FormatTime(*value)))
+				sql_command.WriteString(value_escaped)
 				sql_command.WriteString("'")
 			case "time.Time":
 				value := column_data.(time.Time)
+			
+				value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
+				if value_escaped_errors != nil {
+					errors = append(errors, value_escaped_errors)
+				}
+
 				sql_command.WriteString("'")
-				sql_command.WriteString(EscapeString(FormatTime(value)))
+				sql_command.WriteString(value_escaped)
 				sql_command.WriteString("'")
 			case "string":
+				value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
+				if value_escaped_errors != nil {
+					errors = append(errors, value_escaped_errors)
+				}
+
 				sql_command.WriteString("'")
-				sql_command.WriteString(EscapeString(column_data.(string)))
+				sql_command.WriteString(value_escaped)
 				sql_command.WriteString("'")
 			case "*string":
+				value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
+				if value_escaped_errors != nil {
+					errors = append(errors, value_escaped_errors)
+				}
+
 				sql_command.WriteString("'")
-				sql_command.WriteString(EscapeString(*(column_data.(*string))))
+				sql_command.WriteString(value_escaped)
 				sql_command.WriteString("'")
 			case "bool":
 				if column_data.(bool) {
@@ -422,6 +457,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		table_name, table_name_errors := table.GetTableName()
 		if table_name_errors != nil {
 			return nil, nil, table_name_errors
+		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, nil, errors
 		}
 
 		_, table_schema_errors := table.GetSchema()
@@ -474,7 +515,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 		}
 
-		SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", GetTimeNow())
+		SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", common.GetTimeNow())
 
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
 		if record_non_identity_columns_errors != nil {
@@ -489,7 +530,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			errors = append(errors, fmt.Errorf("error: table schema has no identity columns"))
 		}
 
-		if !Contains(*table_non_identity_columns, "last_modified_date") {
+		if !common.Contains(*table_non_identity_columns, "last_modified_date") {
 			errors = append(errors, fmt.Errorf("error: table schema does not have last_modified_date"))
 		}
 
@@ -498,12 +539,19 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		}
 
 		var sql_command strings.Builder
-		sql_command.WriteString(fmt.Sprintf("UPDATE %s \n", EscapeString(table_name)))
+		sql_command.WriteString(fmt.Sprintf("UPDATE %s \n", table_name_escaped))
 
 		sql_command.WriteString("SET ")
 
 		for index, record_non_identity_column := range *record_non_identity_columns {
-			sql_command.WriteString(EscapeString(record_non_identity_column))
+			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_identity_column, "'")
+			
+			if record_non_identity_column_escaped_errors != nil {
+				errors = append(errors, record_non_identity_column_escaped_errors)
+				continue
+			}
+			
+			sql_command.WriteString(record_non_identity_column_escaped)
 			sql_command.WriteString("=")
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column, "self")
 
@@ -512,10 +560,10 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			if IsNil(column_data) {
+			if common.IsNil(column_data) {
 				sql_command.WriteString("NULL")
 			} else {
-				rep := GetType(column_data)
+				rep := common.GetType(column_data)
 				switch rep {
 				case "*uint64":
 					value := column_data.(*uint64)
@@ -581,23 +629,43 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 				case "*time.Time":
 					value := column_data.(*time.Time)
+					
+					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(FormatTime(*value)))
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "time.Time":
 					value := column_data.(time.Time)
+				
+					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(FormatTime(value)))
-					sql_command.WriteString("'")
-				case "*string":
-					value := column_data.(*string)
-					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(*value))
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "string":
-					value := column_data.(string)
+					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(value))
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
+				case "*string":
+					value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "bool":
 					if column_data.(bool) {
@@ -623,7 +691,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		sql_command.WriteString(" WHERE ")
 		for index, identity_column := range *identity_columns {
-			sql_command.WriteString(EscapeString(identity_column))
+			identity_column_escaped, identity_column_escaped_errors := common.EscapeString(identity_column, "'")
+			
+			if identity_column_escaped_errors != nil {
+				errors = append(errors, identity_column_escaped_errors)
+				continue
+			}
+
+			sql_command.WriteString(identity_column_escaped)
 			sql_command.WriteString(" = ")
 			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column, "self")
 
@@ -632,10 +707,10 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			if IsNil(column_data) {
+			if common.IsNil(column_data) {
 				sql_command.WriteString("NULL")
 			} else {
-				record_non_identity_column_type := GetType(column_data)
+				record_non_identity_column_type := common.GetType(column_data)
 				switch record_non_identity_column_type {
 				case "*uint64":
 					value := column_data.(*uint64)
@@ -701,23 +776,43 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					sql_command.WriteString(fmt.Sprintf("%f", *(column_data.(*float64))))
 				case "*time.Time":
 					value := column_data.(*time.Time)
+					
+					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(FormatTime(*value)))
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "time.Time":
 					value := column_data.(time.Time)
+				
+					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(FormatTime(value)))
-					sql_command.WriteString("'")
-				case "*string":
-					value := column_data.(*string)
-					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(*value))
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "string":
-					value := column_data.(string)
+					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
 					sql_command.WriteString("'")
-					sql_command.WriteString(EscapeString(value))
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
+				case "*string":
+					value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
+					if value_escaped_errors != nil {
+						errors = append(errors, value_escaped_errors)
+					}
+	
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
 					sql_command.WriteString("'")
 				case "bool":
 					if column_data.(bool) {
@@ -816,7 +911,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					auto_increment_column_name, auto_increment_column_name_errors := options.GetString("auto_increment_column_name")
 					if auto_increment_column_name_errors != nil {
 						errors = append(errors, auto_increment_column_name_errors...)
-					} else if IsNil(auto_increment_column_name) {
+					} else if common.IsNil(auto_increment_column_name) {
 						errors = append(errors, fmt.Errorf("error: auto_increment_column_name is nil"))
 					}
 
