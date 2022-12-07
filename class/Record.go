@@ -62,6 +62,7 @@ type Record struct {
 	SetFloat64 func(field string, value *float64) []error 
 	SetFloat64Value func(field string, value float64) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
+	GetFields func() (*json.Map, []error)
 }
 
 func newRecord(table Table, record_data json.Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
@@ -1313,6 +1314,13 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				return fields_map_errors
 			}
 			return fields_map.ToJSONString(json)
+		},
+		GetFields: func() (*json.Map, []error) {
+			fields_map, fields_map_errors := GetFields(struct_type, getData(), "[fields]")
+			if fields_map_errors != nil {
+				return nil, fields_map_errors
+			}
+			return fields_map, nil
 		},
 	}, nil
 }
