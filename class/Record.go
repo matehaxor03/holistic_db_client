@@ -336,6 +336,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
+			column_definition, column_definition_errors := table_schema.GetMap(record_column)
+			if column_definition_errors != nil {
+				errors = append(errors, column_definition_errors...) 
+				continue
+			}
+
 			rep := common.GetType(column_data)
 			switch rep {
 			case "*uint64":
@@ -402,30 +408,55 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 			case "*time.Time":
 				value := column_data.(*time.Time)
-				
-				value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
-				if value_escaped_errors != nil {
-					errors = append(errors, value_escaped_errors)
-				}
-
-				if options.IsBoolTrue("use_file") {
-					sql_command += "'" + value_escaped + "'"
+				decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+				if decimal_places_error != nil {
+					errors = append(errors, decimal_places_error...)
+				} else if decimal_places == nil {
+					errors = append(errors, fmt.Errorf("decimal_places is nil"))
 				} else {
-					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-				}
+					format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+					if format_time_errors != nil {
+						errors = append(errors, format_time_errors...)
+					} else if format_time == nil { 
+						errors = append(errors, fmt.Errorf("format time is nil"))
+					} else {
+						value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+						if value_escaped_errors != nil {
+							errors = append(errors, value_escaped_errors)
+						}
 
+						if options.IsBoolTrue("use_file") {
+							sql_command += "'" + value_escaped + "'"
+						} else {
+							sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						}
+					}
+				}
 			case "time.Time":
 				value := column_data.(time.Time)
-			
-				value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
-				if value_escaped_errors != nil {
-					errors = append(errors, value_escaped_errors)
-				}
-
-				if options.IsBoolTrue("use_file") {
-					sql_command += "'" + value_escaped + "'"
+				decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+				if decimal_places_error != nil {
+					errors = append(errors, decimal_places_error...)
+				} else if decimal_places == nil {
+					errors = append(errors, fmt.Errorf("decimal_places is nil"))
 				} else {
-					sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+					format_time, format_time_errors := common.FormatTime(value, *decimal_places)
+					if format_time_errors != nil {
+						errors = append(errors, format_time_errors...)
+					} else if format_time == nil { 
+						errors = append(errors, fmt.Errorf("format time is nil"))
+					} else {
+						value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+						if value_escaped_errors != nil {
+							errors = append(errors, value_escaped_errors)
+						}
+
+						if options.IsBoolTrue("use_file") {
+							sql_command += "'" + value_escaped + "'"
+						} else {
+							sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						}
+					}
 				}
 			case "string":
 				value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
@@ -504,7 +535,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, errors
 		}
 
-		_, table_schema_errors := table.GetSchema()
+		table_schema, table_schema_errors := table.GetSchema()
 
 		if table_schema_errors != nil {
 			return nil, nil, table_schema_errors
@@ -593,7 +624,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				errors = append(errors, record_non_identity_column_escaped_errors)
 				continue
 			}
-			
+
+			column_definition, column_definition_errors := table_schema.GetMap(record_non_identity_column)
+			if column_definition_errors != nil {
+				errors = append(errors, column_definition_errors...) 
+				continue
+			}
 			
 			if options.IsBoolTrue("use_file") {
 				sql_command += "`"
@@ -686,32 +722,56 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
-					
-					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
-					if value_escaped_errors != nil {
-						errors = append(errors, value_escaped_errors)
-					}
-					
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+					decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+					if decimal_places_error != nil {
+						errors = append(errors, decimal_places_error...)
+					} else if decimal_places == nil {
+						errors = append(errors, fmt.Errorf("decimal_places is nil"))
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+						if format_time_errors != nil {
+							errors = append(errors, format_time_errors...)
+						} else if format_time == nil { 
+							errors = append(errors, fmt.Errorf("format time is nil"))
+						} else {
+							value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+	
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+						}
 					}
-
 				case "time.Time":
 					value := column_data.(time.Time)
-				
-					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
-					if value_escaped_errors != nil {
-						errors = append(errors, value_escaped_errors)
-					}
-
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+					decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+					if decimal_places_error != nil {
+						errors = append(errors, decimal_places_error...)
+					} else if decimal_places == nil {
+						errors = append(errors, fmt.Errorf("decimal_places is nil"))
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						format_time, format_time_errors := common.FormatTime(value, *decimal_places)
+						if format_time_errors != nil {
+							errors = append(errors, format_time_errors...)
+						} else if format_time == nil { 
+							errors = append(errors, fmt.Errorf("format time is nil"))
+						} else {
+							value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+	
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+						}
 					}
-
 				case "string":
 					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
 					if value_escaped_errors != nil {
@@ -765,6 +825,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			
 			if identity_column_escaped_errors != nil {
 				errors = append(errors, identity_column_escaped_errors)
+				continue
+			}
+
+			column_definition, column_definition_errors := table_schema.GetMap(identity_column_escaped)
+			if column_definition_errors != nil {
+				errors = append(errors, column_definition_errors...) 
 				continue
 			}
 
@@ -859,45 +925,56 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
 				case "*time.Time":
 					value := column_data.(*time.Time)
-					
-					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(*value), "'")
-					if value_escaped_errors != nil {
-						errors = append(errors, value_escaped_errors)
-					}
-					
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+					decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+					if decimal_places_error != nil {
+						errors = append(errors, decimal_places_error...)
+					} else if decimal_places == nil {
+						errors = append(errors, fmt.Errorf("decimal_places is nil"))
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+						if format_time_errors != nil {
+							errors = append(errors, format_time_errors...)
+						} else if format_time == nil { 
+							errors = append(errors, fmt.Errorf("format time is nil"))
+						} else {
+							value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+	
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+						}
 					}
-					
 				case "time.Time":
 					value := column_data.(time.Time)
-				
-					value_escaped, value_escaped_errors := common.EscapeString(common.FormatTime(value), "'")
-					if value_escaped_errors != nil {
-						errors = append(errors, value_escaped_errors)
-					}
-					
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+					decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+					if decimal_places_error != nil {
+						errors = append(errors, decimal_places_error...)
+					} else if decimal_places == nil {
+						errors = append(errors, fmt.Errorf("decimal_places is nil"))
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						format_time, format_time_errors := common.FormatTime(value, *decimal_places)
+						if format_time_errors != nil {
+							errors = append(errors, format_time_errors...)
+						} else if format_time == nil { 
+							errors = append(errors, fmt.Errorf("format time is nil"))
+						} else {
+							value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+	
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+						}
 					}
-					
-				case "string":
-					value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
-					if value_escaped_errors != nil {
-						errors = append(errors, value_escaped_errors)
-					}
-					
-					
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
-					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-					}
-					
 				case "*string":
 					value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
 					if value_escaped_errors != nil {

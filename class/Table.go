@@ -82,9 +82,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		s["name"] = json.Map{"type": "string", "default": "", "max_length": 1020}
 		s["enabled"] = json.Map{"type": "bool", "default": true}
 		s["archieved"] = json.Map{"type": "bool", "default": false}
-		s["created_date"] = json.Map{"type": "time.Time", "default": "now"}
-		s["last_modified_date"] = json.Map{"type": "time.Time", "default": "now"}
-		s["archieved_date"] = json.Map{"type": "time.Time", "default":"zero"}
+		s["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
+		s["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
+		s["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
 	
 		d["[schema]"] = s
 		return d
@@ -475,9 +475,34 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					case "tinyint":
 						data_type := "int8"
 						column_schema.SetString("type", &data_type)
-					case "timestamp(6)", "timestamp(5)", "timestamp(4)", "timestamp(3)", "timestamp(2)", "timestamp(1)", "timestamp":
+					case "timestamp":
 						data_type := "time.Time"
 						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(0))
+					case "timestamp(1)":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(1))
+					case "timestamp(2)":						
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(2))
+					case "timestamp(3)":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(3))
+					case "timestamp(4)":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(4))
+					case "timestamp(5)":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(5))
+					case "timestamp(6)":
+						data_type := "time.Time"
+						column_schema.SetString("type", &data_type)
+						column_schema.SetUInt8Value("decimal_places", uint8(6))
 					case "tinyint(1)":
 						data_type := "bool"
 						column_schema.SetString("type", &data_type)
@@ -657,44 +682,43 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						}
 					}
 				} else if *dt == "time.Time" && default_value != "" {
-					if (default_value == "CURRENT_TIMESTAMP(6)" ||
-						default_value == "CURRENT_TIMESTAMP(5)" ||  
-						default_value == "CURRENT_TIMESTAMP(4)" ||
-						default_value == "CURRENT_TIMESTAMP(3)" ||
-						default_value == "CURRENT_TIMESTAMP(2)" ||
-						default_value == "CURRENT_TIMESTAMP(1)" ||
-						default_value == "CURRENT_TIMESTAMP") {
-
-							if extra_value == "DEFAULT_GENERATED" {
-								default_value = "now"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.0" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.00" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.000" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.0000" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.00000" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							} else if default_value == "0000-00-00 00:00:00.000000" {
-								default_value = "zero"
-								column_schema.SetString("default", &default_value)
-							}  else {
-								errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, *dt))
-							}
+					if extra_value == "DEFAULT_GENERATED" && strings.HasPrefix(default_value, "CURRENT_TIMESTAMP") {
+						if default_value == "CURRENT_TIMESTAMP" {
+						} else if default_value == "CURRENT_TIMESTAMP(1)" {
+						} else if default_value == "CURRENT_TIMESTAMP(2)" {
+						} else if default_value == "CURRENT_TIMESTAMP(3)" {
+						} else if default_value == "CURRENT_TIMESTAMP(4)" {
+						} else if default_value == "CURRENT_TIMESTAMP(5)" {
+						} else if default_value == "CURRENT_TIMESTAMP(6)" {
+						} else {
+							errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 0-6 decimal places", default_value, *dt))
+						}
 						
-					} else {
-						errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s please implement", default_value, *dt))
+						default_value = "now"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.0" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.00" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.000" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.0000" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.00000" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					} else if default_value == "0000-00-00 00:00:00.000000" {
+						default_value = "zero"
+						column_schema.SetString("default", &default_value)
+					}  else {
+						errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, *dt))
 					}
 				} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string" || *dt == "float32" || *dt == "float64") && default_value != "" {
 					errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported please implement: %s for type: %s", default_value, *dt))
@@ -866,26 +890,51 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					}
 				}
 			case "*time.Time", "time.Time":
-				sql_command += " TIMESTAMP(6)"
-
-				if !strings.HasPrefix(*typeOf, "*") {
-					sql_command += " NOT NULL"
-				}
-
-				if columnSchema.HasKey("default") {
-					default_value, default_value_errors := columnSchema.GetString("default")
-					if default_value_errors != nil {
-						errors = append(errors, default_value_errors...)
-					} else if default_value == nil {
-						sql_command += " DEFAULT NULL"
-					} else if *default_value == "now" {
-						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
-					} else if *default_value == "zero" {
-						sql_command += " DEFAULT 0"
-					}  else {
-						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
+				decimal_places, decimal_places_error := columnSchema.GetInt("decimal_places")
+				if decimal_places_error != nil {
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: decimal_places contained a value which is not supported %s", column, fmt.Sprintf("%s", decimal_places_error)))
+				} else if common.IsNil(decimal_places) {
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: decimal_places contained a value which is not supported: nil", column))
+				} else if *decimal_places < 0  || *decimal_places > 6 {
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: decimal_places contained invalid decimal range outside [0-6]: %d", column, *decimal_places))
+				} else {
+					if *decimal_places == 0 {
+						sql_command += " TIMESTAMP"
+					} else {
+						sql_command += fmt.Sprintf(" TIMESTAMP(%d)", *decimal_places)
 					}
+
+					if !strings.HasPrefix(*typeOf, "*") {
+						sql_command += " NOT NULL"
+					}
+
+					if columnSchema.HasKey("default") {
+						default_value, default_value_errors := columnSchema.GetString("default")
+						if default_value_errors != nil {
+							errors = append(errors, default_value_errors...)
+						} else if default_value == nil {
+							sql_command += " DEFAULT NULL"
+						} else if *default_value == "now" {
+							if *decimal_places == 0 {
+								sql_command += " DEFAULT CURRENT_TIMESTAMP"
+							} else {
+								sql_command += fmt.Sprintf(" DEFAULT CURRENT_TIMESTAMP(%d)", *decimal_places)
+							}
+						} else if *default_value == "zero" {
+							sql_command += " DEFAULT 0"
+						}  else {
+							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
+						}
+					}
+
+
+
+
 				}
+
+				
+
+				
 			case "*bool", "bool":
 				sql_command += " BOOLEAN"
 
@@ -1586,12 +1635,19 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						} else {
 							mapped_record.SetInt8Value(column, value)
 						}
-					case "*time.Time":
-						value, value_errors := current_record.GetTime(column)
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
+					case "*time.Time", "time.Time":
+						decimal_places, decimal_places_errors := table_schema_column_map.GetInt("decimal_places")
+						if decimal_places_errors != nil {
+							errors = append(errors, decimal_places_errors...)
+						} else if common.IsNil(decimal_places) {
+							errors = append(errors, fmt.Errorf("decimal places is nil"))
 						} else {
-							mapped_record.SetTime(column, value)
+							value, value_errors := current_record.GetTime(column, *decimal_places)
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else {
+								mapped_record.SetTime(column, value)
+							}
 						}
 					case "*bool", "bool":
 						value, value_errors := current_record.GetBool(column)

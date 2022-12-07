@@ -20,6 +20,7 @@ func GetValidSchemaFields() json.Map {
 		"not_empty_string_value":nil,
 		"min_length": nil,
 		"max_length": nil,
+		"decimal_places": nil,
 	}
 }
 
@@ -950,9 +951,21 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	type_of_parameter_value := common.GetType(value_to_validate)
 
-	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" && common.IsTime(value_to_validate) {
-		type_of_parameter_value = "*time.Time"
+
+	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" {
+		decimal_places, decimal_places_error := schema_of_parameter.GetInt("decimal_places")
+		if decimal_places_error != nil {
+			errors = append(errors, decimal_places_error...)
+		} else if decimal_places == nil {
+			errors = append(errors, fmt.Errorf("decimal places is nil"))
+		} else if common.IsTime(value_to_validate, *decimal_places) {
+			type_of_parameter_value = "*time.Time"
+		}
 	}
+
+	if len(errors) > 0 {
+		return errors
+	} 
 
 	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
