@@ -2,6 +2,7 @@ package class
 
 import (
 	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
@@ -74,9 +75,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		return temp_value.(*DomainName), nil
 	}
 
-	getCreateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{"use_file": true}
-
+	getCreateSQL := func(options json.Map) (*string, json.Map, []error) {
 		errors := validate()
 		if len(errors) > 0 {
 			return nil, nil, errors
@@ -132,11 +131,30 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return nil, nil, errors
 		}
 
+		if options.IsBoolTrue("use_file") {
+			username_escaped = "'" + username_escaped + "'"
+		} else {
+			username_escaped =  strings.ReplaceAll("'" + username_escaped + "'", "`", "\\`")
+		}
+
+		if options.IsBoolTrue("use_file") {
+			temp_domain_name_value_escaped = "'" + temp_domain_name_value_escaped + "'"
+		} else {
+			temp_domain_name_value_escaped =  strings.ReplaceAll("'" + temp_domain_name_value_escaped + "'", "`", "\\`")
+		}
+
+		if options.IsBoolTrue("use_file") {
+			temp_password_escaped = "'" + temp_password_escaped + "'"
+		} else {
+			temp_password_escaped =  strings.ReplaceAll("'" + temp_password_escaped + "'", "`", "\\`")
+		}
+
+
 		sql_command := "CREATE USER "
-		sql_command += fmt.Sprintf("'%s'", username_escaped)
-		sql_command += fmt.Sprintf("@'%s' ", temp_domain_name_value_escaped)
+		sql_command += fmt.Sprintf("%s", username_escaped)
+		sql_command += fmt.Sprintf("@%s ", temp_domain_name_value_escaped)
 		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("'%s'", temp_password_escaped)
+		sql_command += fmt.Sprintf("%s", temp_password_escaped)
 
 		sql_command += ";"
 		return &sql_command, options, nil
@@ -158,7 +176,8 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return validate()
 		},
 		Create: func() []error {
-			sql_command, options, sql_command_errors := getCreateSQL()
+			options := json.Map{"use_file": true}
+			sql_command, options, sql_command_errors := getCreateSQL(options)
 
 			if sql_command_errors != nil {
 				return sql_command_errors
@@ -205,6 +224,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return temp_client.UserExists(temp_username)
 		},
 		UpdatePassword: func(new_password string) []error {
+			options := json.Map{"use_file": true}
 			var errors []error
 
 			validate_errors := validate()
@@ -268,7 +288,25 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				errors = append(errors, new_password_escaped_errors)
 			}
 
-			sql_command := fmt.Sprintf("ALTER USER '%s'@'%s' IDENTIFIED BY '%s'", temp_username_escaped,temp_host_name_escaped, new_password_escaped)
+			if options.IsBoolTrue("use_file") {
+				temp_username_escaped = "'" + temp_username_escaped + "'"
+			} else {
+				temp_username_escaped =  strings.ReplaceAll("'" + temp_username_escaped + "'", "`", "\\`")
+			}
+
+			if options.IsBoolTrue("use_file") {
+				temp_host_name_escaped = "'" + temp_host_name_escaped + "'"
+			} else {
+				temp_host_name_escaped =  strings.ReplaceAll("'" + temp_host_name_escaped + "'", "`", "\\`")
+			}
+
+			if options.IsBoolTrue("use_file") {
+				new_password_escaped = "'" + new_password_escaped + "'"
+			} else {
+				new_password_escaped =  strings.ReplaceAll("'" + new_password_escaped + "'", "`", "\\`")
+			}
+
+			sql_command := fmt.Sprintf("ALTER USER %s@%s IDENTIFIED BY %s", temp_username_escaped, temp_host_name_escaped, new_password_escaped)
 			if len(errors) > 0 {
 				return errors
 			}
