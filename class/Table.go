@@ -965,17 +965,11 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							sql_command += " DEFAULT "
 
 							if options.IsBoolTrue("use_file") {
-								sql_command += "`"
+								sql_command += "'" + default_value_escaped + "'"
 							} else {
-								sql_command += "\\`"
+								sql_command += strings.ReplaceAll("'" + default_value_escaped + "'", "`", "\\`")
 							}
-							sql_command += default_value_escaped
 							
-							if options.IsBoolTrue("use_file") {
-								sql_command += "`"
-							} else {
-								sql_command += "\\`"
-							}
 						}
 					} 
 				}
