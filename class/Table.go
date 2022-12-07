@@ -79,11 +79,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			d["[schema_is_nil]"] = false
 		}
 	
-		s["enabled"] = json.Map{"type": "*bool", "default": true}
-		s["archieved"] = json.Map{"type": "*bool", "default": false}
-		s["created_date"] = json.Map{"type": "*time.Time", "default": "now"}
-		s["last_modified_date"] = json.Map{"type": "*time.Time", "default": "now"}
-		s["archieved_date"] = json.Map{"type": "*time.Time", "default":nil}
+		s["name"] = json.Map{"type": "string", "default": "", "max_length": 1020}
+		s["enabled"] = json.Map{"type": "bool", "default": true}
+		s["archieved"] = json.Map{"type": "bool", "default": false}
+		s["created_date"] = json.Map{"type": "time.Time", "default": "now"}
+		s["last_modified_date"] = json.Map{"type": "time.Time", "default": "now"}
+		s["archieved_date"] = json.Map{"type": "time.Time", "default":"zero"}
 	
 		d["[schema]"] = s
 		return d
@@ -662,9 +663,18 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						default_value == "CURRENT_TIMESTAMP(3)" ||
 						default_value == "CURRENT_TIMESTAMP(2)" ||
 						default_value == "CURRENT_TIMESTAMP(1)" ||
-						default_value == "CURRENT_TIMESTAMP") && extra_value == "DEFAULT_GENERATED" {
-						now := "now"
-						column_schema.SetString("default", &now)
+						default_value == "CURRENT_TIMESTAMP") {
+
+							if extra_value == "DEFAULT_GENERATED" {
+								default_value = "now"
+								column_schema.SetString("default", &default_value)
+							} else if default_value == "0000-00-00 00:00:00" {
+								default_value = "zero"
+								column_schema.SetString("default", &default_value)
+							} else {
+								errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, *dt))
+							}
+						
 					} else {
 						errors = append(errors, fmt.Errorf("error: default value not supported %s for type: %s please implement", default_value, *dt))
 					}
@@ -852,7 +862,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						sql_command += " DEFAULT NULL"
 					} else if *default_value == "now" {
 						sql_command += " DEFAULT CURRENT_TIMESTAMP(6)"
-					} else {
+					} else if *default_value == "zero" {
+						sql_command += " DEFAULT 0"
+					}  else {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
 					}
 				}
@@ -929,15 +941,15 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			case "*string", "string":
 				sql_command += " VARCHAR("
 				if !columnSchema.HasKey("max_length") {
-					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s did not specify length attribute", column))
+					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s did not specify max_length attribute", column))
 				} else if columnSchema.GetType("max_length") != "int" {
 					errors = append(errors, fmt.Errorf("error: column: %s specified length attribute however it's not an int", column))
 				} else {
 					max_length, max_length_errors := columnSchema.GetInt("max_length")
 					if max_length_errors != nil {
 						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified max_length attribute had errors %s", column, fmt.Sprintf("%s", max_length_errors)))
-					} else if *max_length <= 0 {
-						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified length attribute was <= 0 and had value: %d", column, max_length))
+					} else if *max_length < 0 {
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s specified max_length attribute was < 0 and had value: %d", column, max_length))
 					} else {
 						// utf-8 should use 4 bytes (maxiumum per character) but in mysql it's 3 bytes but to be consistent going to assume 4 bytes, 
 						sql_command += fmt.Sprintf("%d", (4*(*max_length)))
