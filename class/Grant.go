@@ -53,8 +53,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		"[system_fields]": json.Map{"[client]":client, "[user]":user, "[grant]":grant},
 		"[system_schema]": json.Map{"[client]": json.Map{"type":"class.Client"},
 						"[user]": json.Map{"type":"class.User"},
-						"[grant]": json.Map{"type":"string",
-		"filters]": json.Array{json.Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
+						"[grant]": json.Map{"type":"string","filters": json.Array{json.Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
 
