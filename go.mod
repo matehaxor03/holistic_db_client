@@ -6,4 +6,4 @@ require github.com/matehaxor03/holistic_json v0.0.6
 
 require github.com/matehaxor03/holistic_common v0.0.5
 
-retract v0.0.364
+retract [v0.0.377, v0.0.1]
