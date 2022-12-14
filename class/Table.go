@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
@@ -1370,7 +1371,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 					table_column_type, _ := (*table_schema_column).GetString("type")
 					if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+						table_column_type_simple := strings.Replace(*table_column_type, "*", "", -1)
+						filter_column_type_simple := strings.Replace(filter_column_type, "*", "", -1)
+						if strings.Contains(table_column_type_simple, "int") && strings.Contains(filter_column_type_simple, "int") {
+
+						} else if strings.Contains(table_column_type_simple, "float") && strings.Contains(filter_column_type_simple, "float"){
+
+						} else {
+							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+						}
+						
 
 						//todo ignore if filter data_type is nil and table column allows nil
 					}
@@ -1429,6 +1439,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 				column_name_params := json.Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
 				for index, column_filter := range filters.Keys() {
+					
+					column_definition, column_definition_errors := table_schema.GetMap(column_filter)
+					if column_definition_errors != nil {
+						errors = append(errors, column_definition_errors...) 
+						continue
+					}
+					
 					column_name_params.SetString("value", &column_filter)
 					column_name_errors := WhitelistCharacters(column_name_params)
 					if column_name_errors != nil {
@@ -1453,32 +1470,166 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					}
 					sql_command += " = "
 
-					//todo check data type with schema
-					type_of := filters.GetType(column_filter)
-					switch type_of {
-
-
-					case "*string", "string":
-						filer_value, filter_value_errors := filters.GetString(column_filter)
-						if filter_value_errors != nil {
-							errors = append(errors, filter_value_errors...)
-							continue
+					if filters.IsNil(column_filter) {
+						sql_command += "NULL "
+					} else {
+						//todo check data type with schema
+						type_of := filters.GetType(column_filter)
+						column_data := filters[column_filter]
+						switch type_of {
+						case "*uint64":
+							value := column_data.(*uint64)
+							sql_command += strconv.FormatUint(*value, 10)
+						case "uint64":
+							value := column_data.(uint64)
+							sql_command += strconv.FormatUint(value, 10)
+						case "*int64":
+							value := column_data.(*int64)
+							sql_command += strconv.FormatInt(int64(*value), 10)
+						case "int64":
+							value := column_data.(int64)
+							sql_command += strconv.FormatInt(int64(value), 10)
+						case "*uint32":
+							value := column_data.(*uint32)
+							sql_command += strconv.FormatUint(uint64(*value), 10)
+						case "uint32":
+							value := column_data.(uint32)
+							sql_command += strconv.FormatUint(uint64(value), 10)
+						case "*int32":
+							value := column_data.(*int32)
+							sql_command += strconv.FormatInt(int64(*value), 10)
+						case "int32":
+							value := column_data.(int32)
+							sql_command += strconv.FormatInt(int64(value), 10)
+						case "*uint16":
+							value := column_data.(*uint16)
+							sql_command += strconv.FormatUint(uint64(*value), 10)
+						case "uint16":
+							value := column_data.(uint16)
+							sql_command += strconv.FormatUint(uint64(value), 10)
+						case "*int16":
+							value := column_data.(*int16)
+							sql_command += strconv.FormatInt(int64(*value), 10)
+						case "int16":
+							value := column_data.(int16)
+							sql_command += strconv.FormatInt(int64(value), 10)
+						case "*uint8":
+							value := column_data.(*uint8)
+							sql_command += strconv.FormatUint(uint64(*value), 10)
+						case "uint8":
+							value := column_data.(uint8)
+							sql_command +=  strconv.FormatUint(uint64(value), 10)
+						case "*int8":
+							value := column_data.(*int8)
+							sql_command += strconv.FormatInt(int64(*value), 10)
+						case "int8":
+							value := column_data.(int8)
+							sql_command += strconv.FormatInt(int64(value), 10)
+						case "*int":
+							value := column_data.(*int)
+							sql_command += strconv.FormatInt(int64(*value), 10)
+						case "int":
+							value := column_data.(int)
+							sql_command += strconv.FormatInt(int64(value), 10)
+						case "float32":
+							sql_command += fmt.Sprintf("%f", column_data.(float32))
+						case "*float32":
+							sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+						case "float64":
+							sql_command += fmt.Sprintf("%f", column_data.(float64))
+						case "*float64":
+							sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+						case "*time.Time":
+							value := column_data.(*time.Time)
+							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+							if decimal_places_error != nil {
+								errors = append(errors, decimal_places_error...)
+							} else if decimal_places == nil {
+								errors = append(errors, fmt.Errorf("decimal_places is nil"))
+							} else {
+								format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+								if format_time_errors != nil {
+									errors = append(errors, format_time_errors...)
+								} else if format_time == nil { 
+									errors = append(errors, fmt.Errorf("format time is nil"))
+								} else {
+									value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+									if value_escaped_errors != nil {
+										errors = append(errors, value_escaped_errors)
+									}
+			
+									if options.IsBoolTrue("use_file") {
+										sql_command += "'" + value_escaped + "'"
+									} else {
+										sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+									}
+								}
+							}
+						case "time.Time":
+							value := column_data.(time.Time)
+							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+							if decimal_places_error != nil {
+								errors = append(errors, decimal_places_error...)
+							} else if decimal_places == nil {
+								errors = append(errors, fmt.Errorf("decimal_places is nil"))
+							} else {
+								format_time, format_time_errors := common.FormatTime(value, *decimal_places)
+								if format_time_errors != nil {
+									errors = append(errors, format_time_errors...)
+								} else if format_time == nil { 
+									errors = append(errors, fmt.Errorf("format time is nil"))
+								} else {
+									value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+									if value_escaped_errors != nil {
+										errors = append(errors, value_escaped_errors)
+									}
+			
+									if options.IsBoolTrue("use_file") {
+										sql_command += "'" + value_escaped + "'"
+									} else {
+										sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+									}
+								}
+							}
+						case "string":
+							value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+							
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+							
+						case "*string":
+							value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+		
+							if options.IsBoolTrue("use_file") {
+								sql_command += "'" + value_escaped + "'"
+							} else {
+								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+							}
+						
+						case "bool":
+							if column_data.(bool) {
+								sql_command += "1"
+							} else {
+								sql_command += "0"
+							}
+						case "*bool":
+							if *(column_data.(*bool)) {
+								sql_command += "1"
+							} else {
+								sql_command += "0"
+							}
+						default:
+							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 						}
-
-						value_escaped, value_escaped_errors := common.EscapeString(*filer_value, "'")
-						if value_escaped_errors != nil {
-							errors = append(errors, value_escaped_errors)
-							continue
-						}
-
-						if options.IsBoolTrue("use_file") {
-							sql_command += "'" + value_escaped + "'"
-						} else {
-							sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-						}
-
-					default:
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 					}
 
 					if index < len(filters.Keys()) - 1 {
