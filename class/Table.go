@@ -24,7 +24,7 @@ type Table struct {
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
-	ReadRecords         func(filter json.Map, limit *uint64, offset *uint64) (*[]Record, []error)
+	ReadRecords         func(filter json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
@@ -1302,7 +1302,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			return record, nil
 		},
-		ReadRecords: func(filters json.Map, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(filters json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.Map{"use_file": false}
 			var errors []error
 			validate_errors := validate()
@@ -1377,11 +1377,45 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				}
 			}
 
+			if select_fields != nil {
+				table_columns, table_columns_errors := getTableColumns()
+				if table_columns_errors != nil {
+					return nil, table_columns_errors
+				}
+
+				for _, select_field := range select_fields {
+					if !common.Contains(*table_columns, select_field.(string)) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+					}
+				}
+			}
+
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
-			sql_command := "SELECT * FROM "
+			sql_command := "SELECT "
+			if select_fields != nil && len(select_fields) > 0 {
+				select_fields_values_length := len(select_fields)
+				for i, select_fields_value := range select_fields {
+					escape_string_value, escape_string_value_errors := common.EscapeString((select_fields_value.(string)), "'")
+					if escape_string_value_errors != nil {
+						errors = append(errors, escape_string_value_errors)
+					} else {
+						sql_command += escape_string_value
+						if i < (select_fields_values_length - 1) {
+							sql_command += ", "
+						} else {
+							sql_command += " "
+						}
+					}
+				}
+			} else {
+				sql_command += "* "
+			}
+
+			sql_command += "FROM "
+			
 			if options.IsBoolTrue("use_file") {
 				sql_command += fmt.Sprintf("`%s` ", table_name_escaped)
 			} else {
