@@ -150,27 +150,31 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
+				if sql_command_use_file {
+					os.Remove(filename)
+				}
 				return nil, errors
 			}
 
 			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command)
-
-			if sql_command_use_file {
-				os.Remove(filename)
-			}
 
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)
 			}
 
 			if len(errors) > 0 {
-				fmt.Println(command)
+				if sql_command_use_file {
+					os.Remove(filename)
+				}
 				return nil, errors
 			}
 
 			records := json.Array{}
 
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
+				if sql_command_use_file {
+					os.Remove(filename)
+				}
 				return &records, nil
 			}
 
@@ -213,6 +217,11 @@ func newSQLCommand() (*SQLCommand, []error) {
 					}
 				}
 			}
+
+			if sql_command_use_file {
+				os.Remove(filename)
+			}
+			
 			return &records, nil
 		},
 	}
