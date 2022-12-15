@@ -25,6 +25,7 @@ type Database struct {
 	GetTableNames   func() (*[]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
 	UseDatabase     func() []error
+	ExecuteUnsafeCommand func(sql_command *string, options json.Map) (*json.Array, []error)
 }
 
 func newDatabase(client Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
@@ -602,6 +603,20 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		},
 		SetDatabaseName: func(database_name string) []error {
 			return setDatabaseName(database_name)
+		},
+		ExecuteUnsafeCommand: func(sql_command *string, options json.Map) (*json.Array, []error) {
+			errors := validate()
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			temp_client, temp_client_errors := getClient()
+			if temp_client_errors != nil {
+				return nil, temp_client_errors
+			}
+
+			return SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
 		},
 		UseDatabase: func() []error {
 			temp_database := getDatabase()
