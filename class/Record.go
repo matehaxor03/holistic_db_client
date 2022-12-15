@@ -63,6 +63,7 @@ type Record struct {
 	SetFloat64Value func(field string, value float64) []error 
 	ToJSONString  func(json *strings.Builder) ([]error)
 	GetFields func() (*json.Map, []error)
+	GetUpdateSQL func() (*string, []error)
 }
 
 func newRecord(table Table, record_data json.Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
@@ -1099,6 +1100,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			return nil
+		},
+		GetUpdateSQL: func() (*string, []error) {
+			//todo push options up higher to hide sensitive info if needed
+			sql, _, generate_sql_errors := getUpdateSQL()
+			if generate_sql_errors != nil {
+				return nil, generate_sql_errors
+			}
+			return sql, nil
 		},
 		Update: func() []error {
 			sql, options, generate_sql_errors := getUpdateSQL()
