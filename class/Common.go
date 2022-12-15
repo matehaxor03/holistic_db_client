@@ -276,7 +276,16 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 
 	object_type := fields_map.GetType(field)
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
-		errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s are not a match", field, strings.ReplaceAll(*schema_type_value, "*", ""), strings.ReplaceAll(object_type, "*", "")))
+		object_type_simple := strings.ReplaceAll(object_type, "*", "")
+		schema_type_value_simple := strings.ReplaceAll(*schema_type_value, "*", "") 
+		
+		if strings.Contains(object_type_simple, "int") && strings.Contains(schema_type_value_simple, "int") {
+
+		} else if strings.Contains(object_type_simple, "float") && strings.Contains(schema_type_value_simple, "float"){
+
+		} else {
+			errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s are not a match", field, schema_type_value_simple, object_type_simple))
+		}
 	}
 
 	if len(errors) > 0 {
