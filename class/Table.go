@@ -375,7 +375,23 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		records_obj := json.Array{}
 		for _, record := range records {
-			current_map := record.(json.Map)
+			type_of := common.GetType(record)
+			var current_map json.Map
+			valid := false
+			if type_of == "json.Map" {
+				current_map = record.(json.Map)
+				valid = true
+			} else if type_of == "*json.Map" {
+				current_map = *(record.(*json.Map))
+				valid = true
+			} else {
+				errors = append(errors, fmt.Errorf("type is not a map %s", type_of))
+			}
+
+			if !valid {
+				continue
+			}
+
 			record_obj, record_errors := newRecord(*getTable(), current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
