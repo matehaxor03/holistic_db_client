@@ -969,7 +969,15 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
-			errors = append(errors, fmt.Errorf("error: table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+			type_of_parameter_schema_value_simple := strings.ReplaceAll(type_of_parameter_value, "*", "")
+			type_of_parameter_value_simple := strings.ReplaceAll(*type_of_parameter_schema_value, "*", "")
+			if strings.Contains(type_of_parameter_schema_value_simple, "int") && strings.Contains(type_of_parameter_value_simple, "int") {
+
+			} else if strings.Contains(type_of_parameter_schema_value_simple, "float") && strings.Contains(type_of_parameter_value_simple, "float"){
+
+			} else {
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+			}
 		}
 	}
 
@@ -1086,7 +1094,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	case "*uint8", "uint8":
 	case "*float32", "float32":
 	case "*float64", "float64":
-	case "*time.Time":
+	case "*time.Time", "time.Time":
 	case "*class.Database":
 		database := value_to_validate.(*Database)
 
