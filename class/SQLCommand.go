@@ -177,6 +177,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return &records, nil
 			}
 
+			fmt.Println(*shell_output)
+
 			rune_array := []rune(*shell_output)
 			reading_columns := true
 			value := ""

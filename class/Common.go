@@ -1070,8 +1070,8 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
-			type_of_parameter_schema_value_simple := strings.ReplaceAll(type_of_parameter_value, "*", "")
-			type_of_parameter_value_simple := strings.ReplaceAll(*type_of_parameter_schema_value, "*", "")
+			type_of_parameter_schema_value_simple := strings.ReplaceAll(*type_of_parameter_schema_value, "*", "")
+			type_of_parameter_value_simple := strings.ReplaceAll(type_of_parameter_value, "*", "")
 			if strings.Contains(type_of_parameter_schema_value_simple, "int") && strings.Contains(type_of_parameter_value_simple, "int") {
 
 			} else if strings.Contains(type_of_parameter_schema_value_simple, "float") && strings.Contains(type_of_parameter_value_simple, "float"){
