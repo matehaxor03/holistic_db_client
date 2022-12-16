@@ -255,6 +255,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			if column_definition_errors != nil {
 				errors = append(errors, column_definition_errors...) 
 				continue
+			} else if common.IsNil(column_definition) {
+				errors = append(errors, fmt.Errorf("schema column definition is nil %s", valid_column)) 
+				continue
 			}
 
 			if !column_definition.IsBool("primary_key") || !column_definition.IsBool("auto_increment") {
