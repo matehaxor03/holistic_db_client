@@ -100,7 +100,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				errors = append(errors, fmt.Errorf("schema is nil for key %s", schema_key_from_db))
 			} else {
 				if !merged_schema.HasKey(schema_key_from_db) {
-					merged_schema[schema_key_from_db] = current_schema
+					merged_schema[schema_key_from_db] = *current_schema
 				} else if current_schema.IsMap("system_filters") {
 					system_filters, system_filters_errors := current_schema.GetMap("system_filters")
 					if system_filters_errors != nil {
