@@ -90,8 +90,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		merged_schema["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
 		merged_schema["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
 	
-		d["[schema]"] = merged_schema
-
 		for _, schema_key_from_db := range schema_from_db.Keys() {
 			current_schema, current_schema_error := schema_from_db.GetMap(schema_key_from_db)
 			if current_schema_error != nil {
@@ -145,6 +143,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				} 
 			}
 		}
+		
+		d["[schema]"] = merged_schema
 
 		return d
 	}
