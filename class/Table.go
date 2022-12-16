@@ -56,12 +56,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b Database, n string, s json.Map) (json.Map) {
+	setupData := func(b Database, n string, schema_from_db json.Map) (json.Map) {
 		schema_is_nil := false
 		
-		if common.IsNil(s) {
+		merged_schema := json.Map{}
+		if common.IsNil(schema_from_db) {
 			schema_is_nil = true
-			s = json.Map{}
+			schema_from_db = json.Map{}
 		}
 	
 		d := json.Map{
@@ -82,59 +83,66 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			d["[schema_is_nil]"] = false
 		}
 	
-		s["name"] = json.Map{"type": "string", "default": "", "max_length": 1020}
-		s["enabled"] = json.Map{"type": "bool", "default": true}
-		s["archieved"] = json.Map{"type": "bool", "default": false}
-		s["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
-		s["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
-		s["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
+		merged_schema["name"] = json.Map{"type": "string", "default": "", "max_length": 1020}
+		merged_schema["enabled"] = json.Map{"type": "bool", "default": true}
+		merged_schema["archieved"] = json.Map{"type": "bool", "default": false}
+		merged_schema["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
+		merged_schema["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
+		merged_schema["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
 	
-		d["[schema]"] = s
+		d["[schema]"] = merged_schema
 
-		for _, schema_key := range s.Keys() {
-			current_schema, current_schema_error := s.GetMap(schema_key)
+		for _, schema_key_from_db := range schema_from_db.Keys() {
+			current_schema, current_schema_error := schema_from_db.GetMap(schema_key_from_db)
 			if current_schema_error != nil {
 				errors = append(errors, current_schema_error...)
 			} else if common.IsNil(current_schema) {
-				errors = append(errors, fmt.Errorf("schema is nil for key %s", schema_key))
-			} else if current_schema.IsMap("system_filters") {
-				system_filters, system_filters_errors := current_schema.GetMap("system_filters")
-				if system_filters_errors != nil {
-					errors = append(errors, system_filters_errors...)
-				} else if common.IsNil(system_filters) {
-					errors = append(errors, fmt.Errorf("system filters is nil"))
-				} else if system_filters.IsArray("rules") {
-					rules_array, rules_array_errors := system_filters.GetArray("rules")
-					if rules_array_errors != nil {
-						errors = append(errors, rules_array_errors...)
-					} else if common.IsNil(rules_array) {
-						errors = append(errors, fmt.Errorf("rules arrray is nil"))
-					} else {
-						filters_array, filters_array_errors := current_schema.GetArray("filters")
-						if filters_array_errors != nil {
-							errors = append(errors, filters_array_errors...)
-						} else {
-							if common.IsNil(filters_array) {
-								new_filters_array := json.Array{}
-								current_schema.SetArray("filters", &new_filters_array)
-								filters_array = &new_filters_array
-							}
-	
-							for _, rule := range *rules_array {
-								rule_value := *(rule.(*string))
-								switch rule_value {
-								case "domain_name":
-									domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
-									*filters_array = append(*filters_array, domain_name_filter)
-								default:
-									errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
+				errors = append(errors, fmt.Errorf("schema is nil for key %s", schema_key_from_db))
+			} else {
+				if !merged_schema.HasKey(schema_key_from_db) {
+					merged_schema[schema_key_from_db] = current_schema
+				} else if current_schema.IsMap("system_filters") {
+					system_filters, system_filters_errors := current_schema.GetMap("system_filters")
+					if system_filters_errors != nil {
+						errors = append(errors, system_filters_errors...)
+					} else if common.IsNil(system_filters) {
+						errors = append(errors, fmt.Errorf("system filters is nil"))
+					} else if system_filters.IsArray("rules") {
+						rules_array, rules_array_errors := system_filters.GetArray("rules")
+						if rules_array_errors != nil {
+							errors = append(errors, rules_array_errors...)
+						} else if common.IsNil(rules_array) {
+							errors = append(errors, fmt.Errorf("rules arrray is nil"))
+						} else if merged_schema.IsMap(schema_key_from_db) {
+							merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
+							if merged_schema_map_errors != nil {
+								errors = append(errors, merged_schema_map_errors...)
+							} else {
+								filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
+								if filters_array_errors != nil {
+									errors = append(errors, filters_array_errors...)
+								} else {
+									if common.IsNil(filters_array) {
+										new_filters_array := json.Array{}
+										current_schema.SetArray("filters", &new_filters_array)
+										filters_array = &new_filters_array
+									}
+			
+									for _, rule := range *rules_array {
+										rule_value := *(rule.(*string))
+										switch rule_value {
+										case "domain_name":
+											domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
+											*filters_array = append(*filters_array, domain_name_filter)
+										default:
+											errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
+										}
+									}
 								}
 							}
 						}
 					}
-				} else {
-					errors = append(errors, fmt.Errorf("rules is not an array"))
-				}
+				} 
 			}
 		}
 
