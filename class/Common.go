@@ -249,7 +249,6 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		result = fields_map.GetObject(field)
 	}
 
-
 	if common.IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
 		if schema_map.IsBoolTrue("auto_increment") && schema_map.IsBoolTrue("primary_key") {
 			return nil, nil
@@ -274,7 +273,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		return nil, errors
 	}
 
-	object_type := fields_map.GetType(field)
+	object_type := common.GetType(result)
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
 		object_type_simple := strings.ReplaceAll(object_type, "*", "")
 		schema_type_value_simple := strings.ReplaceAll(*schema_type_value, "*", "") 
@@ -283,6 +282,19 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 
 		} else if strings.Contains(object_type_simple, "float") && strings.Contains(schema_type_value_simple, "float"){
 
+		} else if strings.Contains(object_type_simple, "string") && strings.Contains(schema_type_value_simple, "time.Time") {
+			var convert_default_time_string string
+			if object_type == "*string" {
+				convert_default_time_string = *(result.(*string))
+			} else {
+				convert_default_time_string = result.(string)
+			}
+
+			if convert_default_time_string == "zero" {
+				return nil, nil
+			} else if convert_default_time_string == "now" {
+				return common.GetTimeNow(), nil
+			}
 		} else {
 			errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s are not a match", field, schema_type_value_simple, object_type_simple))
 		}

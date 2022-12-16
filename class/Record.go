@@ -127,7 +127,17 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		} else if temp_value == nil {
 			return nil, nil
 		}
-		return temp_value.(*Table), temp_value_errors
+		return temp_value.(*Table), nil
+	}
+
+	getArchieved := func() (*bool, []error) {
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[schema]", "[fields]",  "archieved", "*bool")
+		if temp_value_errors != nil {
+			return nil, temp_value_errors
+		} else if temp_value == nil {
+			return nil, nil
+		}
+		return temp_value.(*bool), nil
 	}
 
 	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
@@ -148,8 +158,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		var record_non_identity_columns []string
 		for _, record_column := range *record_columns {
-			if record_column == "created_date" ||
-				record_column == "archieved_date" {
+			if record_column == "created_date" {
 				continue
 			}
 
@@ -589,12 +598,35 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", common.GetTimeNow())
 
+		archieved, archieved_errors := getArchieved()
+		if archieved_errors != nil {
+			errors = append(errors, archieved_errors...)
+		} else if !common.IsNil(archieved) {
+			if *archieved {
+				SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", common.GetTimeNow())
+			} 
+		}
+
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
 		if record_non_identity_columns_errors != nil {
 			return nil, nil, record_non_identity_columns_errors
 		}
 
-		if len(*record_non_identity_columns) == 0 {
+		// when archieved is off use default zero value of database to handle
+		var record_non_identity_columns_adjusted []string
+		if !common.IsNil(archieved) && !(*archieved) {
+			for _, x := range *record_non_identity_columns {
+				if x == "archieved" {
+					continue
+				} else {
+					record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, x)
+				}
+			}
+		} else {
+			record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, (*record_non_identity_columns)...)
+		}
+
+		if len(record_non_identity_columns_adjusted) == 0 {
 			errors = append(errors, fmt.Errorf("error: no non-identity columns detected in record to update"))
 		}
 
@@ -619,7 +651,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		sql_command += "SET "
 
-		for index, record_non_identity_column := range *record_non_identity_columns {
+		for index, record_non_identity_column := range record_non_identity_columns_adjusted {
 			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_identity_column, "'")
 			
 			if record_non_identity_column_escaped_errors != nil {
