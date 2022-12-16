@@ -848,7 +848,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				}
 			}
 
-			if index < len(*record_non_identity_columns)-1 {
+			if index < len(record_non_identity_columns_adjusted)-1 {
 				sql_command += ", \n"
 			}
 		}
