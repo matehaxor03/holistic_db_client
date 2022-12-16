@@ -17,7 +17,6 @@ func GetValidSchemaFields() json.Map {
 		"default": nil,
 		"validated": nil,
 		"filters": nil,
-		"system_filters": nil,
 		"not_empty_string_value":nil,
 		"min_length": nil,
 		"max_length": nil,
