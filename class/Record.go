@@ -604,7 +604,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		} else if !common.IsNil(archieved) {
 			if *archieved {
 				SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", common.GetTimeNow())
-			} 
+			} else {
+				SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", "0000-00-00 00:00:00.000000")
+			}
 		}
 
 		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
@@ -612,21 +614,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, record_non_identity_columns_errors
 		}
 
-		// when archieved is off use default zero value of database to handle
-		var record_non_identity_columns_adjusted []string
-		if !common.IsNil(archieved) && !(*archieved) {
-			for _, record_non_identity_column := range *record_non_identity_columns {
-				if record_non_identity_column == "archieved_date" {
-					continue
-				} else {
-					record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, record_non_identity_column)
-				}
-			}
-		} else {
-			record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, (*record_non_identity_columns)...)
-		}
-
-		if len(record_non_identity_columns_adjusted) == 0 {
+		if len(*record_non_identity_columns) == 0 {
 			errors = append(errors, fmt.Errorf("error: no non-identity columns detected in record to update"))
 		}
 
@@ -651,7 +639,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		sql_command += "SET "
 
-		for index, record_non_identity_column := range record_non_identity_columns_adjusted {
+		for index, record_non_identity_column := range *record_non_identity_columns {
 			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_identity_column, "'")
 			
 			if record_non_identity_column_escaped_errors != nil {
@@ -848,7 +836,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				}
 			}
 
-			if index < len(record_non_identity_columns_adjusted)-1 {
+			if index < len(*record_non_identity_columns)-1 {
 				sql_command += ", \n"
 			}
 		}
