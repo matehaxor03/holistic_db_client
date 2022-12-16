@@ -1087,6 +1087,10 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
+	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" && len(parameters.Keys()) == 0 {
+		return nil
+	}
+
 	switch type_of_parameter_value {
 	case "*string", "string":
 		var string_value *string
