@@ -25,6 +25,7 @@ type Table struct {
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
+	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
 	ReadRecords         func(filter json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
@@ -407,6 +408,97 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		sql := ""
 		for _, record_obj := range records_obj {
 			sql_update_snippet, sql_update_snippet_errors := record_obj.(Record).GetUpdateSQL()
+			if sql_update_snippet_errors != nil {
+				errors = append(errors, sql_update_snippet_errors...)
+			} else {
+				sql += *sql_update_snippet + "\n"
+			}
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return temp_database_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
+	createRecords := func(records json.Array) []error {
+		options := json.Map{"use_file": false}
+
+		errors := validate()
+		if errors != nil {
+			return errors
+		}
+
+		if len(records) == 0 {
+			return nil
+		}
+
+		for _, record := range records {
+			if !common.IsMap(record) {
+				errors = append(errors, fmt.Errorf("record is not a map"))
+			}
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		records_obj := json.Array{}
+		for _, record := range records {
+			type_of := common.GetType(record)
+			var current_map json.Map
+			valid := false
+			if type_of == "json.Map" {
+				current_map = record.(json.Map)
+				valid = true
+			} else if type_of == "*json.Map" {
+				current_map = *(record.(*json.Map))
+				valid = true
+			} else {
+				errors = append(errors, fmt.Errorf("type is not a map %s", type_of))
+			}
+
+			if !valid {
+				continue
+			}
+
+			record_obj, record_errors := newRecord(*getTable(), current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			if record_errors != nil {
+				errors = append(errors, record_errors...)
+			} else {
+				records_obj = append(records_obj, *record_obj)
+			}
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		sql := ""
+		for _, record_obj := range records_obj {
+			sql_update_snippet, sql_update_snippet_errors := record_obj.(Record).GetCreateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
@@ -2002,6 +2094,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 		UpdateRecords: func(records json.Array) ([]error) {
 			return updateRecords(records)
+		},
+		CreateRecords: func(records json.Array) ([]error) {
+			return createRecords(records)
 		},
 		Exists: func() (*bool, []error) {
 			return exists()

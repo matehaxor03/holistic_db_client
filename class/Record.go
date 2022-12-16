@@ -64,6 +64,7 @@ type Record struct {
 	ToJSONString  func(json *strings.Builder) ([]error)
 	GetFields func() (*json.Map, []error)
 	GetUpdateSQL func() (*string, []error)
+	GetCreateSQL func() (*string, []error)
 }
 
 func newRecord(table Table, record_data json.Map, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
@@ -194,7 +195,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		return ValidateData(getData(), struct_type)
 	}
 
-	getInsertSQL := func() (*string, json.Map, []error) {
+	getCreateSQL := func() (*string, json.Map, []error) {
 		options := json.Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
 		errors := validate()
 
@@ -496,7 +497,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 					sql_command += "0"
 				}
 			default:
-				errors = append(errors, fmt.Errorf("error: %s Record.getInsertSQL type: %s not supported for table please implement", struct_type, rep))
+				errors = append(errors, fmt.Errorf("error: %s Record.getCreateSQL type: %s not supported for table please implement", struct_type, rep))
 			}
 
 			if index < (len(*record_columns) - 1) {
@@ -1034,7 +1035,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return validate()
 		},
 		Create: func() []error {
-			sql, options, errors := getInsertSQL()
+			sql, options, errors := getCreateSQL()
 			if errors != nil {
 				return errors
 			}
@@ -1104,6 +1105,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		GetUpdateSQL: func() (*string, []error) {
 			//todo push options up higher to hide sensitive info if needed
 			sql, _, generate_sql_errors := getUpdateSQL()
+			if generate_sql_errors != nil {
+				return nil, generate_sql_errors
+			}
+			return sql, nil
+		},
+		GetCreateSQL: func() (*string, []error) {
+			//todo push options up higher to hide sensitive info if needed
+			sql, _, generate_sql_errors := getCreateSQL()
 			if generate_sql_errors != nil {
 				return nil, generate_sql_errors
 			}
