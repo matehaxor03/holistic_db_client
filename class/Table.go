@@ -90,6 +90,54 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		s["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
 	
 		d["[schema]"] = s
+
+		for _, schema_key := range s.Keys() {
+			current_schema, current_schema_error := s.GetMap(schema_key)
+			if current_schema_error != nil {
+				errors = append(errors, current_schema_error...)
+			} else if common.IsNil(current_schema) {
+				errors = append(errors, fmt.Errorf("schema is nil for key %s", schema_key))
+			} else if current_schema.IsMap("system_filters") {
+				system_filters, system_filters_errors := current_schema.GetMap("system_filters")
+				if system_filters_errors != nil {
+					errors = append(errors, system_filters_errors...)
+				} else if common.IsNil(system_filters) {
+					errors = append(errors, fmt.Errorf("system filters is nil"))
+				} else if system_filters.IsArray("rules") {
+					rules_array, rules_array_errors := system_filters.GetArray("rules")
+					if rules_array_errors != nil {
+						errors = append(errors, rules_array_errors...)
+					} else if common.IsNil(rules_array) {
+						errors = append(errors, fmt.Errorf("rules arrray is nil"))
+					} else {
+						filters_array, filters_array_errors := current_schema.GetArray("filters")
+						if filters_array_errors != nil {
+							errors = append(errors, filters_array_errors...)
+						} else {
+							if common.IsNil(filters_array) {
+								new_filters_array := json.Array{}
+								current_schema.SetArray("filters", &new_filters_array)
+								filters_array = &new_filters_array
+							}
+	
+							for _, rule := range *rules_array {
+								rule_value := *(rule.(*string))
+								switch rule_value {
+								case "domain_name":
+									domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
+									*filters_array = append(*filters_array, domain_name_filter)
+								default:
+									errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
+								}
+							}
+						}
+					}
+				} else {
+					errors = append(errors, fmt.Errorf("rules is not an array"))
+				}
+			}
+		}
+
 		return d
 	}
 
@@ -556,7 +604,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 		
-		sql_command := "SHOW COLUMNS FROM "
+		sql_command := "SHOW FULL COLUMNS FROM "
 		if options.IsBoolTrue("use_file") {
 			sql_command += fmt.Sprintf("`%s`;", table_name_escaped)
 		} else {
@@ -601,6 +649,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			is_nullable := false
 			is_primary_key := false
 			extra_value := ""
+			comment_value := ""
 			for _, column_attribute := range column_attributes {
 				switch column_attribute {
 				case "Key":
@@ -751,6 +800,23 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					case "":
 					default:
 						errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: Extra value not supported please implement: %s", temp_table_name, extra_value))
+					}
+				case "Privileges":
+				case "Collation":
+				case "Comment":
+					comment_val, comment_errors := column_map.GetString("Comment")
+					if comment_errors != nil {
+						errors = append(errors, comment_errors...)
+					} else {
+						comment_value = *comment_val
+						if strings.TrimSpace(comment_value) != "" {
+							comment_as_map, comment_as_map_value_errors := json.ParseJSON(strings.TrimSpace(comment_value))
+							if comment_as_map_value_errors != nil {
+								errors = append(errors, comment_as_map_value_errors...)
+							} else {
+								column_schema.SetMap("system_filters", comment_as_map)
+							}
+						}
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: column: %s attribute: %s not supported please implement", temp_table_name, field_name, column_attribute))
