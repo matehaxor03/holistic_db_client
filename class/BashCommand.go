@@ -32,7 +32,7 @@ func newBashCommand() *BashCommand {
 			}
 
 			if strings.TrimSpace(shell_output_errs) != "" {
-				errors = append(errors, fmt.Errorf("error: %s", fmt.Sprintf(shell_output_errs)))
+				errors = append(errors, fmt.Errorf("error: %s", fmt.Sprintf(strings.TrimSpace(shell_output_errs))))
 			}
 
 			if len(errors) > 0 {
