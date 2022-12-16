@@ -615,11 +615,11 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		// when archieved is off use default zero value of database to handle
 		var record_non_identity_columns_adjusted []string
 		if !common.IsNil(archieved) && !(*archieved) {
-			for _, x := range *record_non_identity_columns {
-				if x == "archieved" {
+			for _, record_non_identity_column := range *record_non_identity_columns {
+				if record_non_identity_column == "archieved_date" {
 					continue
 				} else {
-					record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, x)
+					record_non_identity_columns_adjusted = append(record_non_identity_columns_adjusted, record_non_identity_column)
 				}
 			}
 		} else {
