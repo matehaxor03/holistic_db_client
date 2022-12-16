@@ -122,7 +122,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								} else {
 									if common.IsNil(filters_array) {
 										new_filters_array := json.Array{}
-										current_schema.SetArray("filters", &new_filters_array)
+										merged_schema_map.SetArray("filters", &new_filters_array)
 										filters_array = &new_filters_array
 									}
 			
