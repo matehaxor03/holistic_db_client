@@ -652,7 +652,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						is_primary_key = true
 						is_nullable = false
 						column_schema.SetBool("primary_key", &is_primary_key)
-					case "":
+					case "", "MUL":
 					default:
 						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Key not implemented please implement: %s", *key_value))
 					}
