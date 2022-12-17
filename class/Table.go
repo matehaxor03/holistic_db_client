@@ -808,8 +808,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								errors = append(errors, comment_as_map_value_errors...)
 							} else if common.IsNil(comment_as_map) {
 								errors = append(errors, fmt.Errorf("comment is nil"))
-							} else if !comment_as_map.IsArray("rules") {	
-								errors = append(errors, fmt.Errorf("rules is not an array nil"))
 							} else {
 								rules_array, rules_array_errors := comment_as_map.GetArray("rules")
 								if rules_array_errors != nil {
