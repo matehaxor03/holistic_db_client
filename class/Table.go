@@ -1926,6 +1926,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						default:
 							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 						}
+						sql_command += " "
 					}
 
 					if index < len(filters.Keys()) - 1 {
