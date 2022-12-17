@@ -183,7 +183,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			if column_schema.IsBoolFalse("primary_key") {
+			if column_schema.IsBoolFalse("primary_key") && column_schema.IsBoolFalse("foreign_key") {
 				continue
 			}
 
@@ -811,19 +811,58 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							} else if !comment_as_map.IsArray("rules") {	
 								errors = append(errors, fmt.Errorf("rules is not an array nil"))
 							} else {
-								filters := json.Array{}
-								rules_array, _ := comment_as_map.GetArray("rules")
-								for _, rule := range *rules_array {
-									rule_value := *(rule.(*string))
-									switch rule_value {
-									case "domain_name":
-										domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
-										filters = append(filters, domain_name_filter)
-									default:
-										errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
+								rules_array, rules_array_errors := comment_as_map.GetArray("rules")
+								if rules_array_errors != nil {
+									errors = append(errors, rules_array_errors...)
+								} else if !common.IsNil(rules_array) {
+									filters := json.Array{}
+									for _, rule := range *rules_array {
+										rule_value := *(rule.(*string))
+										switch rule_value {
+										case "domain_name":
+											domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
+											filters = append(filters, domain_name_filter)
+										default:
+											errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
+										}
+									}
+									column_schema.SetArray("filters", &filters)
+								}
+
+								foreign_key_map, foreign_key_map_errors := comment_as_map.GetMap("foreign_key")
+								if foreign_key_map_errors != nil {
+									errors = append(errors, foreign_key_map_errors...)
+								} else if !common.IsNil(foreign_key_map) {
+									foreign_key_true := true
+									column_schema.SetBool("foreign_key", &foreign_key_true)
+
+									foreign_key_table_name, foreign_key_table_name_errors := foreign_key_map.GetString("table_name")
+									if foreign_key_table_name_errors != nil {
+										errors = append(errors, foreign_key_table_name_errors...)
+									} else if common.IsNil(foreign_key_table_name) {
+										errors = append(errors, fmt.Errorf("foreign_key table_name is nil"))
+									} else {
+										column_schema.SetString("foreign_key_table_name", foreign_key_table_name)
+									}
+
+									foreign_key_column_name, foreign_key_column_name_errors := foreign_key_map.GetString("column_name")
+									if foreign_key_column_name_errors != nil {
+										errors = append(errors, foreign_key_column_name_errors...)
+									} else if common.IsNil(foreign_key_column_name) {
+										errors = append(errors, fmt.Errorf("foreign_key column_name is nil"))
+									} else {
+										column_schema.SetString("foreign_key_column_name", foreign_key_column_name)
+									}
+
+									foreign_key_type, foreign_key_type_errors := foreign_key_map.GetString("type")
+									if foreign_key_type_errors != nil {
+										errors = append(errors, foreign_key_type_errors...)
+									} else if common.IsNil(foreign_key_type) {
+										errors = append(errors, fmt.Errorf("foreign_key type is nil"))
+									} else {
+										column_schema.SetString("foreign_key_type", foreign_key_type)
 									}
 								}
-								column_schema.SetArray("filters", &filters)
 							}
 						}
 					}

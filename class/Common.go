@@ -12,6 +12,10 @@ func GetValidSchemaFields() json.Map {
 	return json.Map{
 		"type": nil,
 		"primary_key": nil,
+		"foreign_key": nil,
+		"foreign_key_table_name": nil,
+		"foreign_key_column_name": nil,
+		"foreign_key_type": nil,
 		"unsigned":nil,
 		"auto_increment": nil,
 		"default": nil,
