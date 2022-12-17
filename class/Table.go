@@ -820,6 +820,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 										case "domain_name":
 											domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
 											filters = append(filters, domain_name_filter)
+										case "repository_name":
+											repostiory_name_filter := json.Map{"values": get_repository_name_characters(), "function": getWhitelistCharactersFunc()}
+											filters = append(filters, repostiory_name_filter)
 										default:
 											errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
 										}
