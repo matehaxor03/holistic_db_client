@@ -27,6 +27,7 @@ type Table struct {
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
+	UpdateRecord          func(record json.Map) ([]error)
 	ReadRecords         func(filter json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
@@ -472,6 +473,53 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 
 		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
+	updateRecord := func(record json.Map) []error {
+		options := json.Map{"use_file": false}
+
+		errors := validate()
+		if errors != nil {
+			return errors
+		}
+
+		record_obj, record_errors := newRecord(*getTable(), record, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+		if record_errors != nil {
+			return record_errors
+		} else if common.IsNil(record_obj) {
+			errors = append(errors, fmt.Errorf("newRecord is nil"))
+			return errors
+		}
+
+		sql, update_sql_errors := record_obj.GetUpdateSQL()
+		if update_sql_errors != nil {
+			return update_sql_errors
+		} else if common.IsNil(sql) {
+			errors = append(errors, fmt.Errorf("generated sql is nil"))
+			return errors
+		}
+		
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return temp_database_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return temp_client_errors
+		}
+
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -2220,6 +2268,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 		UpdateRecords: func(records json.Array) ([]error) {
 			return updateRecords(records)
+		},
+		UpdateRecord: func(record json.Map) ([]error) {
+			return updateRecord(record)
 		},
 		CreateRecords: func(records json.Array) ([]error) {
 			return createRecords(records)
