@@ -84,7 +84,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 	
 		merged_schema["name"] = json.Map{"type": "string", "default": "", "max_length": 1020}
-		merged_schema["enabled"] = json.Map{"type": "bool", "default": true}
+		merged_schema["active"] = json.Map{"type": "bool", "default": true}
 		merged_schema["archieved"] = json.Map{"type": "bool", "default": false}
 		merged_schema["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
 		merged_schema["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
