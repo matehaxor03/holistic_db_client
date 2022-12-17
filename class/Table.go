@@ -641,6 +641,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			field_name := ""
 			is_nullable := false
 			is_primary_key := false
+			is_unique := false
 			extra_value := ""
 			comment_value := ""
 			for _, column_attribute := range column_attributes {
@@ -653,6 +654,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						is_nullable = false
 						column_schema.SetBool("primary_key", &is_primary_key)
 					case "", "MUL":
+					case "UNI":
+						is_unique = true
+						column_schema.SetBool("unique", &is_unique)
 					default:
 						errors = append(errors, fmt.Errorf("error: Table: GetSchema: Key not implemented please implement: %s", *key_value))
 					}
@@ -823,6 +827,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 										case "repository_name":
 											repostiory_name_filter := json.Map{"values": get_repository_name_characters(), "function": getWhitelistCharactersFunc()}
 											filters = append(filters, repostiory_name_filter)
+										case "repository_account_name":
+											repository_account_name := json.Map{"values": get_repository_account_name_characters(), "function": getWhitelistCharactersFunc()}
+											filters = append(filters, repository_account_name)
+										case "branch_name":
+											branch_name := json.Map{"values": get_branch_name_characters(), "function": getWhitelistCharactersFunc()}
+											filters = append(filters, branch_name)
 										default:
 											errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
 										}

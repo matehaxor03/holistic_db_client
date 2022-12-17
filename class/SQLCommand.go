@@ -167,7 +167,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				fmt.Println(command)
 				return nil, errors
 			}
 
@@ -176,8 +175,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
 				return &records, nil
 			}
-
-			fmt.Println(*shell_output)
 
 			rune_array := []rune(*shell_output)
 			reading_columns := true
