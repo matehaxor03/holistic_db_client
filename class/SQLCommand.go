@@ -18,7 +18,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 	var errors []error
 	bashCommand := newBashCommand()
 
-	directory := "/Volumes/ramdisk"
+	directory := common.GetDataDirectory()
 	
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(client Client, sql_command *string, options json.Map) (*json.Array, []error) {

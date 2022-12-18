@@ -1279,7 +1279,29 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								sql_command += fmt.Sprintf(" DEFAULT CURRENT_TIMESTAMP(%d)", *decimal_places)
 							}
 						} else if *default_value == "zero" {
-							sql_command += " DEFAULT 0"
+							default_time, default_time_errors := columnSchema.GetTime("default", *decimal_places)
+							if default_time_errors != nil {
+								errors = append(errors, default_time_errors...)
+							} else if common.IsNil(default_time) {
+								errors = append(errors, fmt.Errorf("default zero time was nil"))
+							} else {
+								time_zero_as_string, time_zero_as_string_errors := common.GetTimeZeroStringSQL(*decimal_places)
+								if time_zero_as_string_errors != nil {
+									errors = append(errors, time_zero_as_string_errors...)
+								} else {
+									value_escaped, value_escaped_errors := common.EscapeString(*time_zero_as_string, "'")
+									if value_escaped_errors != nil {
+										errors = append(errors, value_escaped_errors)
+									} else {
+										sql_command += " DEFAULT "
+										if options.IsBoolTrue("use_file") {
+											sql_command += "'" + value_escaped + "'"
+										} else {
+											sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+										}
+									}	
+								}
+							}
 						}  else {
 							errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had default value it did not understand", column))
 						}
