@@ -2104,7 +2104,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				}
 			}
 
-			if order_by != nil {
+			if order_by_clause != "" {
 				sql_command += "ORDER BY " + (order_by_clause + " ")
 			}
 
