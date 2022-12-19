@@ -167,6 +167,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
+				fmt.Println(sql)
 				return nil, errors
 			}
 

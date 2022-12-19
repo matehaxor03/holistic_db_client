@@ -1827,9 +1827,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 					order_by_string_value_validated := ""
 					if *order_by_string_value == "ascending" {
-						order_by_string_value_validated = "asc"
+						order_by_string_value_validated = "ASC"
 					} else if *order_by_string_value == "decending" {
-						order_by_string_value_validated = "desc"
+						order_by_string_value_validated = "DESC"
 					} else {
 						errors = append(errors, fmt.Errorf("order by value is is not valid %s must be ascending or decending", *order_by_string_value))
 						continue
