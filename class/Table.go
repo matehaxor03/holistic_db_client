@@ -28,7 +28,7 @@ type Table struct {
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record json.Map) ([]error)
-	ReadRecords         func(filter json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
+	ReadRecords         func(filter json.Map, select_fields json.Array, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
@@ -1682,7 +1682,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			return record, nil
 		},
-		ReadRecords: func(filters json.Map, select_fields json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(filters json.Map, select_fields json.Array, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.Map{"use_file": false}
 			var errors []error
 			validate_errors := validate()
@@ -1775,6 +1775,90 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				for _, select_field := range select_fields {
 					if !common.Contains(*table_columns, select_field.(string)) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+					}
+				}
+			}
+
+			order_by_clause := ""
+			if order_by != nil {
+				table_columns, table_columns_errors := getTableColumns()
+				if table_columns_errors != nil {
+					return nil, table_columns_errors
+				}
+
+				order_by_columns := len(order_by)
+				for order_by_index, order_by_field := range order_by {
+					if !common.IsMap(order_by_field) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d is not a map", order_by_index))
+						continue
+					}
+
+					var order_by_map json.Map
+					if common.GetType(order_by_field) == "json.Map" {
+						order_by_map = order_by_field.(json.Map)
+					} else if common.GetType(order_by_field) == "*json.Map" {
+						order_by_map = *(order_by_field.(*json.Map))
+					} else {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d is not a map", order_by_index))
+						continue
+					}
+					
+					order_by_map_column_names := order_by_map.Keys()
+					if len(order_by_map_column_names) != 1 {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d was a map however did not have a column name", order_by_index))
+						continue
+					}
+
+					order_by_column_name := order_by_map_column_names[0]
+					
+					if !common.Contains(*table_columns, order_by_column_name) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, temp_table_name, *table_columns))
+						continue
+					}
+
+					order_by_string_value, order_by_string_value_errors := order_by_map.GetString(order_by_column_name)
+					if order_by_string_value_errors != nil {
+						errors = append(errors, order_by_string_value_errors...)
+						continue
+					} else if common.IsNil(order_by_string_value) {
+						errors = append(errors, fmt.Errorf("order by value is nil"))
+						continue
+					}
+
+					order_by_string_value_validated := ""
+					if *order_by_string_value == "ascending" {
+						order_by_string_value_validated = "asc"
+					} else if *order_by_string_value == "decending" {
+						order_by_string_value_validated = "desc"
+					} else {
+						errors = append(errors, fmt.Errorf("order by value is is not valid %s must be ascending or decending", *order_by_string_value))
+						continue
+					}
+					
+					if options.IsBoolTrue("use_file") {
+						order_by_clause += "`"
+					} else {
+						order_by_clause += "\\`"
+					}
+					escaped_order_by_column_name, escaped_order_by_column_name_errors := common.EscapeString(order_by_column_name, "'")
+					if escaped_order_by_column_name_errors != nil {
+						errors = append(errors, escaped_order_by_column_name_errors)
+						continue
+					}
+
+					order_by_clause += escaped_order_by_column_name
+					if options.IsBoolTrue("use_file") {
+						order_by_clause += "`"
+					} else {
+						order_by_clause += "\\`"
+					}
+
+					order_by_clause += " "
+
+					order_by_clause += order_by_string_value_validated
+
+					if order_by_index < order_by_columns - 1 {
+						order_by_clause += ", "
 					}
 				}
 			}
@@ -2016,6 +2100,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						sql_command += "AND "
 					}
 				}
+			}
+
+			if order_by != nil {
+				sql_command += (order_by_clause + " ")
 			}
 
 			if limit != nil {
