@@ -1857,8 +1857,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 					order_by_clause += order_by_string_value_validated
 
-					if order_by_index < order_by_columns - 1 {
+					if order_by_index < (order_by_columns - 1) {
 						order_by_clause += ", "
+					} else {
+						order_by_clause += " "
 					}
 				}
 			}
