@@ -1784,25 +1784,26 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					return nil, table_columns_errors
 				}
 
-				for _, select_field := range filters_logic {
-					if !common.Contains(*table_columns, select_field.(string)) {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+				temp_filters_fields := filters_logic.Keys()
+				for _, temp_filters_field := range temp_filters_fields {
+					if !common.Contains(*table_columns, temp_filters_field) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
 						continue
 					}
 
-					if !filters_logic.IsString(select_field.(string)) {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic is not a string", select_field, temp_table_name))
+					if !filters_logic.IsString(temp_filters_field) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic is not a string", temp_filters_field, temp_table_name))
 					} else {
-						logic_value, logic_value_errors := filters_logic.GetString(select_field.(string))
-						if logic_value_errors != nil {
-							errors = append(errors, logic_value_errors...)
-						} else if common.IsNil(logic_value) {
-							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value had error getting string value", select_field, temp_table_name))
+						temp_logic_value, temp_logic_value_errors := filters_logic.GetString(temp_filters_field)
+						if temp_logic_value_errors != nil {
+							errors = append(errors, temp_logic_value_errors...)
+						} else if common.IsNil(temp_logic_value) {
+							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value had error getting string value", temp_filters_field, temp_table_name))
 						} else {
-							if !(*logic_value != "=" ||
-							   *logic_value != ">" ||
-							   *logic_value != "<") {
-								errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", select_field, temp_table_name, *logic_value))
+							if !(*temp_logic_value != "=" ||
+							   *temp_logic_value != ">" ||
+							   *temp_logic_value != "<") {
+								errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", temp_filters_field, temp_table_name, *temp_logic_value))
 							} 
 						}
 					}
