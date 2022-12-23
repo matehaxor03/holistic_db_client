@@ -400,7 +400,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 				return nil, errors
 			}
 
-			records, records_errors := table.ReadRecords(json.Map{"User": username_escaped}, json.Array{"User"}, nil, nil, nil)
+			records, records_errors := table.ReadRecords(json.Array{"User"}, json.Map{"User": username_escaped}, nil, nil, nil, nil)
 
 			if records_errors != nil {
 				return nil, records_errors

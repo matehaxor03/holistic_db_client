@@ -28,7 +28,7 @@ type Table struct {
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record json.Map) ([]error)
-	ReadRecords         func(filter json.Map, select_fields json.Array, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
+	ReadRecords         func(select_fields json.Array, filter json.Map, filter_logic json.Map, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
@@ -1681,7 +1681,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			return record, nil
 		},
-		ReadRecords: func(filters json.Map, select_fields json.Array, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(select_fields json.Array, filters json.Map, filters_logic json.Map, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.Map{"use_file": false}
 			var errors []error
 			validate_errors := validate()
@@ -1774,6 +1774,37 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				for _, select_field := range select_fields {
 					if !common.Contains(*table_columns, select_field.(string)) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+					}
+				}
+			}
+
+			if filters_logic  != nil {
+				table_columns, table_columns_errors := getTableColumns()
+				if table_columns_errors != nil {
+					return nil, table_columns_errors
+				}
+
+				for _, select_field := range filters_logic {
+					if !common.Contains(*table_columns, select_field.(string)) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+						continue
+					}
+
+					if !filters_logic.IsString(select_field.(string)) {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic is not a string", select_field, temp_table_name))
+					} else {
+						logic_value, logic_value_errors := filters_logic.GetString(select_field.(string))
+						if logic_value_errors != nil {
+							errors = append(errors, logic_value_errors...)
+						} else if common.IsNil(logic_value) {
+							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value had error getting string value", select_field, temp_table_name))
+						} else {
+							if !(*logic_value != "=" ||
+							   *logic_value != ">" ||
+							   *logic_value != "<") {
+								errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", select_field, temp_table_name, *logic_value))
+							} 
+						}
 					}
 				}
 			}
@@ -1932,7 +1963,23 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					} else {
 						sql_command += "\\`"
 					}
-					sql_command += " = "
+
+					if common.IsNil(filters_logic) {
+						sql_command += " = "
+					} else if !filters_logic.HasKey(column_filter) {
+						sql_command += " = "
+					} else {
+						filters_logic_temp, filters_logic_temp_errors := filters_logic.GetString(column_filter)
+						if filters_logic_temp_errors != nil {
+							errors = append(errors, filters_logic_temp_errors...)
+						} else if common.IsNil(filters_logic_temp) {
+							errors = append(errors, fmt.Errorf("filters logic is nil"))
+						} else {
+							sql_command += " "
+							sql_command += *filters_logic_temp
+							sql_command += " "
+						}
+					}
 
 					if filters.IsNil(column_filter) {
 						sql_command += "NULL "
