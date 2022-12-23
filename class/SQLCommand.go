@@ -18,8 +18,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 	var errors []error
 	bashCommand := newBashCommand()
 
-	directory := common.GetDataDirectory()
-	
+	directory_parts := common.GetDataDirectory()
+	directory := "/" 
+	for index, directory_part := range directory_parts {
+		directory += directory_part
+		if index < len(directory_parts) - 1 {
+			directory += "/"
+		}
+	}
+
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(client Client, sql_command *string, options json.Map) (*json.Array, []error) {
 			var errors []error
