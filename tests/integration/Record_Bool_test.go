@@ -176,5 +176,3 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 		}
 	}
 }
-
-
