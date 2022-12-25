@@ -21,6 +21,7 @@ type Client struct {
 	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() (*Host, []error)
 	GetDatabase         func() (*Database, []error)
+	GetClientManager    func() (*ClientManager, []error)
 	Validate            func() []error
 	ToJSONString        func(json *strings.Builder) []error
 	GlobalGeneralLogDisable	func() []error
@@ -290,6 +291,9 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		},
 		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
+		},
+		GetClientManager: func() (*ClientManager, []error) {
+			return getClientManager()
 		},
 		UseDatabase: func(database Database) []error {
 			database_errors := database.Validate()

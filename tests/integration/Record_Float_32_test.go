@@ -70,7 +70,7 @@ func TestRecordCanCreateRecordWithFloat32NotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat32NotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat32Column(), GetTestSchemaWithFloat32ColumnNotMandatory())
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat32ColumnNotMandatory(), GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(123456789.123456789)
     record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat32ColumnNameNotMandatory():&test_value})

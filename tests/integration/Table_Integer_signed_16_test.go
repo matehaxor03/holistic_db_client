@@ -10,7 +10,7 @@ func GetTestTableNameWithIntegerSigned16ColumnName() string {
 }
 
 func GetTestTableNameWithIntegerSigned16ColumnNameNotMandatory() string {
-	return "holistic_test_table_with_integer_signed_16"
+	return "holistic_test_table_with_integer_signed_16_not_mandatory"
 }
 
 func GetTestTableIntegerSigned16ColumnName() string {

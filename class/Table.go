@@ -623,8 +623,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	getSchema := func() (*json.Map, []error) {
-		options := json.Map{"use_file": false, "json_output": true}
-		
 		var errors []error
 		validate_errors := validate()
 		
@@ -632,10 +630,33 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
+		options := json.Map{"use_file": false, "json_output": true}
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
 			return nil, temp_table_name_errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return nil, temp_client_errors
+		}
+
+		temp_client_manager, temp_client_manager_errors := temp_client.GetClientManager()
+		if temp_client_manager_errors != nil {
+			return nil, temp_client_manager_errors
+		}
+
+		cached_schema, cached_schema_errors := temp_client_manager.GetOrSetSchema(*temp_database, temp_table_name, nil)
+		if cached_schema_errors != nil {
+			return nil, cached_schema_errors
+		} else if !common.IsNil(cached_schema) {
+			return cached_schema, nil
 		}
 
 		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
@@ -649,16 +670,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			sql_command += fmt.Sprintf("`%s`;", table_name_escaped)
 		} else {
 			sql_command += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
-		}
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
-
-		temp_client, temp_client_errors := temp_database.GetClient()
-		if temp_client_errors != nil {
-			return nil, temp_client_errors
 		}
 
 		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
@@ -1096,7 +1107,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 
 
-
+		temp_client_manager.GetOrSetSchema(*temp_database, temp_table_name, &schema)
 		return &schema, nil
 	}
 

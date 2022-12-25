@@ -70,7 +70,7 @@ func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat64NotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64Column(), GetTestSchemaWithFloat64ColumnNotMandatory())
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64ColumnNotMandatory(), GetTestSchemaWithFloat64ColumnNotMandatory())
 
 	test_value := float64(123456789.123456789)
     record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat64ColumnNameNotMandatory():&test_value})

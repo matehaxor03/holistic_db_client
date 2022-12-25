@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	json "github.com/matehaxor03/holistic_json/json"
 )
 
 type TupleCredentials struct {
@@ -16,6 +17,7 @@ type TupleCredentials struct {
 type ClientManager struct {
 	GetClient func(label string) (*Client, []error)
 	GetTupleCredentials func(label string) (*TupleCredentials, []error)
+	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
 	Validate func() []error
 }
 
@@ -32,12 +34,14 @@ func NewClientManager() (*ClientManager, []error) {
 	
 	lock_client := &sync.Mutex{}
 	lock_tuple := &sync.Mutex{}
+	lock_table_schema_cache := &sync.Mutex{}
+	table_schema_cache := newTableSchemaCache()
+
 	tuple := make(map[string]TupleCredentials)
 	database_reserved_words_obj := newDatabaseReservedWords()
 	database_name_whitelist_characters_obj := newDatabaseNameCharacterWhitelist()
 	table_name_whitelist_characters_obj := newTableNameCharacterWhitelist()
 	column_name_whitelist_characters_obj := newColumnNameCharacterWhitelist()
-
 	/*
 	data := Map{
 		"[fields]":nil,
@@ -55,9 +59,9 @@ func NewClientManager() (*ClientManager, []error) {
 		}
 
 		var errors []error
-		parts := strings.Split(label, ":")
+		parts := strings.Split(label, "#")
 		if len(parts) != 5 {
-			errors = append(errors, fmt.Errorf("error: database config for %s not in format e.g holistic_db_config:127.0.0.1:3306:holistic_test:root", label))
+			errors = append(errors, fmt.Errorf("error: database config for %s not in format e.g holistic_db_config#127.0.0.1#3306#holistic_test#root", label))
 			return nil, errors
 		}
 	
@@ -72,6 +76,7 @@ func NewClientManager() (*ClientManager, []error) {
 	}
 
 	getClient := func(label string) (*Client, []error) {
+		
 		var errors []error
 		temp_tuple_creds, details_errors := getTupleCredentials(label)
 		if details_errors != nil {
@@ -128,6 +133,12 @@ func NewClientManager() (*ClientManager, []error) {
 			lock_client.Lock()
 			defer lock_client.Unlock()
 			return getClient(label)
+		},
+		GetOrSetSchema: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
+			// todo clone schema
+			lock_table_schema_cache.Lock()
+			defer lock_table_schema_cache.Unlock()
+			return table_schema_cache.GetOrSetSchema(database, table_name, schema)
 		},
 	}
 	setClientManager(&x)
