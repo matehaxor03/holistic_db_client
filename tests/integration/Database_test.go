@@ -339,7 +339,6 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 
 
 func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
-	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
@@ -365,7 +364,6 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 }
 
 func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
-	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
@@ -392,7 +390,6 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 
 func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
-	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
@@ -446,7 +443,6 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 }
 
 func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
-	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
@@ -465,7 +461,6 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 }
 
 func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
-	t.Parallel()
 	client := GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
