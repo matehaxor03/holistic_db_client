@@ -306,7 +306,6 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 }
 
 func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()

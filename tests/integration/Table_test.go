@@ -250,7 +250,6 @@ func TestTableDeleteWithExists(t *testing.T) {
 }
 
 func TestTableCanSetTableNameWithBlackListName(t *testing.T) {
-	t.Parallel()
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	table := GetTestTableBasic(t)
 
@@ -283,7 +282,6 @@ func TestTableCanSetTableNameWithBlackListName(t *testing.T) {
 
 
 func TestTableCanCreateWithBlackListName(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -305,7 +303,6 @@ func TestTableCanCreateWithBlackListName(t *testing.T) {
 }
 
 func TestTableCanCreateWithBlackListNameUppercase(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -328,7 +325,6 @@ func TestTableCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 
 func TestTableCanCreateWithBlackListNameLowercase(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -370,7 +366,6 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 }
 
 func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 	non_whitelist_map := json.Map{"(":nil, ")":nil}
 
@@ -388,7 +383,6 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 }
 
 func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T) {
-	t.Parallel()
 	database := GetTestDatabase(t)
 	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
