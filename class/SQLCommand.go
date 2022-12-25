@@ -178,6 +178,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
+			fmt.Println(sql)
+
 			records := json.Array{}
 
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
