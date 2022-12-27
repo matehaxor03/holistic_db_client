@@ -18,6 +18,8 @@ type ClientManager struct {
 	GetClient func(label string) (*Client, []error)
 	GetTupleCredentials func(label string) (*TupleCredentials, []error)
 	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
+	GetOrSetTableStatus func(database Database, table_name string, table_status *json.Map) (*json.Map, []error)
+	GetOrSetReadRecords func(database Database, sql string, records *[]Record) (*[]Record, []error)
 	Validate func() []error
 }
 
@@ -34,24 +36,21 @@ func NewClientManager() (*ClientManager, []error) {
 	
 	lock_client := &sync.Mutex{}
 	lock_tuple := &sync.Mutex{}
+	
 	lock_table_schema_cache := &sync.Mutex{}
 	table_schema_cache := newTableSchemaCache()
+
+	lock_table_status_cache := &sync.Mutex{}
+	table_status_cache := newTableStatusCache()
+
+	lock_table_records_cache := &sync.Mutex{}
+	table_read_records_cache := newTableReadRecordsCache()
 
 	tuple := make(map[string]TupleCredentials)
 	database_reserved_words_obj := newDatabaseReservedWords()
 	database_name_whitelist_characters_obj := newDatabaseNameCharacterWhitelist()
 	table_name_whitelist_characters_obj := newTableNameCharacterWhitelist()
 	column_name_whitelist_characters_obj := newColumnNameCharacterWhitelist()
-	/*
-	data := Map{
-		"[fields]":nil,
-		"[schema]":nil,
-	}*/
-
-	/*
-	getData := func() *json.Map {
-		return &data
-	}*/
 
 	getTupleCredentials := func(label string) (*TupleCredentials, []error) {
 		if value, found_value := tuple[label]; found_value {
@@ -139,6 +138,18 @@ func NewClientManager() (*ClientManager, []error) {
 			lock_table_schema_cache.Lock()
 			defer lock_table_schema_cache.Unlock()
 			return table_schema_cache.GetOrSetSchema(database, table_name, schema)
+		},
+		GetOrSetTableStatus: func(database Database, table_name string, table_status *json.Map) (*json.Map, []error) {
+			// todo clone schema
+			lock_table_status_cache.Lock()
+			defer lock_table_status_cache.Unlock()
+			return table_status_cache.GetOrSetTableStatus(database, table_name, table_status)
+		},
+		GetOrSetReadRecords: func(database Database, sql string, records *[]Record) (*[]Record, []error) {
+			// todo clone schema
+			lock_table_records_cache.Lock()
+			defer lock_table_records_cache.Unlock()
+			return table_read_records_cache.GetOrSetReadRecords(database, sql, records)
 		},
 	}
 	setClientManager(&x)

@@ -17,9 +17,10 @@ type Table struct {
 	Delete                func() []error
 	DeleteIfExists        func() []error
 	GetSchema             func() (*json.Map, []error)
+	getTableStatus        func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
-	GetSchemaColumns       func() (*[]string, []error)
+	GetSchemaColumns      func() (*[]string, []error)
 	GetTableColumns       func() (*[]string, []error)
 	GetIdentityColumns    func() (*[]string, []error)
 	GetNonIdentityColumns func() (*[]string, []error)
@@ -621,6 +622,135 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		return nil
 	}
+
+	getTableStatus := func() (*json.Map, []error) {
+		var errors []error
+		validate_errors := validate()
+		
+		if validate_errors != nil {
+			errors = append(errors, validate_errors...)
+			return nil, errors
+		}
+		options := json.Map{"use_file": false, "json_output": true}
+
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			return nil, temp_table_name_errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+
+		temp_database_name, temp_database_name_errors := temp_database.GetDatabaseName()
+		if temp_database_name_errors != nil {
+			return nil, temp_database_name_errors
+		}
+
+		temp_client, temp_client_errors := temp_database.GetClient()
+		if temp_client_errors != nil {
+			return nil, temp_client_errors
+		}
+
+		temp_client_manager, temp_client_manager_errors := temp_client.GetClientManager()
+		if temp_client_manager_errors != nil {
+			return nil, temp_client_manager_errors
+		}
+
+		cached_table_status, cached_table_status_errors := temp_client_manager.GetOrSetTableStatus(*temp_database, temp_table_name, nil)
+		if cached_table_status_errors != nil {
+			return nil, cached_table_status_errors
+		} else if !common.IsNil(cached_table_status) {
+			return cached_table_status, nil
+		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return nil, errors
+		}
+
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return nil, errors
+		}
+		
+		sql_command := "SHOW TABLE STATUS FROM "
+		
+		if options.IsBoolTrue("use_file") {
+			sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
+		} else {
+			sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
+		}
+
+		sql_command += "WHERE name='" + table_name_escaped + "';"
+
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+			return nil, errors
+		}
+
+		if json_array == nil {
+			errors = append(errors, fmt.Errorf("error: show table status returned nil records"))
+			return nil, errors
+		}
+
+		if len(*json_array) == 0 {
+			errors = append(errors, fmt.Errorf("error:  show table status did not return any records"))
+			return nil, errors
+		}
+
+		table_status := json.Map{}
+		for _, column_details := range *json_array {
+			column_map := column_details.(json.Map)
+			column_attributes := column_map.Keys()
+
+			for _, column_attribute := range column_attributes {
+				switch column_attribute {
+				case "Comment":
+					comment_value, comment_errors := column_map.GetString("Comment")
+					if comment_errors != nil {
+						errors = append(errors, comment_errors...)
+					} else if common.IsNil(comment_value) {
+						errors = append(errors, fmt.Errorf("comment is nil"))
+					} else {
+						if strings.TrimSpace(*comment_value) != "" {
+							comment_as_map, comment_as_map_value_errors := json.ParseJSON(strings.TrimSpace(*comment_value))
+							if comment_as_map_value_errors != nil {
+								errors = append(errors, comment_as_map_value_errors...)
+							} else if common.IsNil(comment_as_map) {
+								errors = append(errors, fmt.Errorf("comment is nil"))
+							} else {
+								table_status["Comment"] = comment_as_map
+							}
+						}
+					}
+				default:
+					column_attribute_value, column_attribute_value_errors := column_map.GetString(column_attribute)
+					if column_attribute_value_errors != nil {
+						errors = append(errors, column_attribute_value_errors...)
+					} else if common.IsNil(column_attribute_value) {
+						errors = append(errors, fmt.Errorf("%s is nil", column_attribute))
+					} else {
+						table_status[column_attribute] = *column_attribute_value
+					}
+				}
+			}
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+
+		temp_client_manager.GetOrSetTableStatus(*temp_database, temp_table_name, &table_status)
+		return &table_status, nil
+	}
+
 
 	getSchema := func() (*json.Map, []error) {
 		var errors []error
@@ -1694,12 +1824,15 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 		ReadRecords: func(select_fields json.Array, filters json.Map, filters_logic json.Map, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.Map{"use_file": false}
+			cacheable := false
 			var errors []error
 			validate_errors := validate()
 			if errors != nil {
 				errors = append(errors, validate_errors...)
 				return nil, errors
 			}
+
+			
 
 			table_schema, table_schema_errors := getSchema()
 			if table_schema_errors != nil {
@@ -2181,6 +2314,11 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
+			table_status, table_status_errors := getTableStatus()
+			if table_status_errors != nil {
+				return nil, table_status_errors
+			}
+
 			temp_database, temp_database_errors := getDatabase()
 			if temp_database_errors != nil {
 				return nil, temp_database_errors
@@ -2189,6 +2327,32 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			temp_client, temp_client_errors := temp_database.GetClient()
 			if temp_client_errors != nil {
 				return nil, temp_client_errors
+			}
+
+			temp_client_manager, temp_client_manager_errors := temp_client.GetClientManager()
+			if temp_client_manager_errors != nil {
+				return nil, temp_client_manager_errors
+			}
+
+			table_status_comment, table_status_comment_errors := table_status.GetMap("Comment")
+			if table_status_comment_errors != nil {
+				return nil, table_status_comment_errors
+			} else if !common.IsNil(table_status_comment) {
+				cache, cache_errors := table_status_comment.GetBool("cache")
+				if cache_errors != nil {
+					errors = append(errors, cache_errors...)
+				} else if !common.IsNil(cache) {
+					cacheable = *cache
+				}
+			}
+
+			if cacheable {
+				cachable_records, cachable_records_errors := temp_client_manager.GetOrSetReadRecords(*temp_database, sql_command, nil)
+				if cachable_records_errors != nil {
+					return nil, cachable_records_errors
+				} else if !common.IsNil(cachable_records) {
+					return cachable_records, nil
+				}
 			}
 
 			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
@@ -2434,6 +2598,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
+			if cacheable {
+				temp_client_manager.GetOrSetReadRecords(*temp_database, sql_command, &mapped_records)
+			}
+
 			return &mapped_records, nil
 		},
 		UpdateRecords: func(records json.Array) ([]error) {
@@ -2450,6 +2618,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
+		},
+		getTableStatus: func() (*json.Map, []error) {
+			return getTableStatus()
 		},
 		GetTableName: func() (string, []error) {
 			return getTableName()
