@@ -96,8 +96,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 				database_name, database_name_errors := (*database).GetDatabaseName()
 				if database_name_errors != nil {
 					errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database_name: %s", fmt.Sprintf("%s", database_name_errors)))
-				} else {
+				} else if *database_username != "root" {
 					credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + (*database_username) + ".config"
+				} else {
+					credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + (*database_username) + ".config"
 				}
 			} else {
 				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + (*database_username) + ".config"
@@ -174,7 +176,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				fmt.Println(sql)
 				return nil, errors
 			}
 

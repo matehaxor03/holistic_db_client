@@ -922,8 +922,6 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
-	//fmt.Println(fmt.Sprintf("%s %s %s %s %s", struct_type, schemas, parameters, parameter, value_to_validate))
-
 	var value_is_mandatory bool
 	var value_is_set bool
 	var value_is_null bool

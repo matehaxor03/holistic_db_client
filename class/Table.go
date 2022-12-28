@@ -2351,7 +2351,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				if cachable_records_errors != nil {
 					return nil, cachable_records_errors
 				} else if !common.IsNil(cachable_records) {
-					fmt.Println("cache hit!")
 					return cachable_records, nil
 				}
 			}
