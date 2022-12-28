@@ -5,19 +5,20 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned16ColumnName(), GetTestSchemaWithIntegerUnsigned16Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
 	test_value := uint16(130)
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned16ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetUInt16Value(GetTestTableIntegerUnsigned16ColumnName())
+		value, value_errors := record.GetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
@@ -29,16 +30,16 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned16ColumnName(), GetTestSchemaWithIntegerUnsigned16Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
 	test_value := uint16(150)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned16ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := uint16(180)
-		set_errors := record.SetUInt16Value(GetTestTableIntegerUnsigned16ColumnName(), update_value)
+		set_errors := record.SetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName(), update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
@@ -51,16 +52,16 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	test_value := uint16(130)
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetUInt16(GetTestTableIntegerUnsigned16ColumnNameNotMandatory())
+		value, value_errors := record.GetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
@@ -72,16 +73,16 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16ColumNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	test_value := uint16(150)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := uint16(180)
-		set_errors := record.SetUInt16(GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &update_value)
+		set_errors := record.SetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {

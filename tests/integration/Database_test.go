@@ -4,176 +4,15 @@ import (
     "testing"
 	"strings"
 	"fmt"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	class "github.com/matehaxor03/holistic_db_client/class"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
-
-var lock_get_client_manager = &sync.Mutex{}
-var client_manager *class.ClientManager
-
-func GetTestDatabaseName() string {
-	return "holistic_test"
-}
-
-func ensureDatabaseIsDeleted(t *testing.T, database *class.Database) {
-	database_delete_errors := database.DeleteIfExists()
-	
-	if database_delete_errors != nil {
-		t.Error(database_delete_errors)
-		t.FailNow()
-		return
-	}
-}
-
-func GetTestClient(t *testing.T) (*class.Client) {
-	lock_get_client_manager.Lock()
-	defer lock_get_client_manager.Unlock()
-	var errors []error
-	if common.IsNil(client_manager) {
-		temp_client_manager, temp_client_manager_errors := class.NewClientManager()
-		if temp_client_manager_errors != nil {
-			errors = append(errors, temp_client_manager_errors...)
-		} else if temp_client_manager == nil {
-			errors = append(errors, fmt.Errorf("error: client_manager is nil"))
-		}
-
-		if len(errors) > 0 {
-			t.Error(errors)
-			t.FailNow()
-			return nil
-		}
-		client_manager = temp_client_manager
-	}
-
-	client, client_errors := client_manager.GetClient("holistic_db_config#127.0.0.1#3306#holistic_test#root")
-	if client_errors != nil {
-		errors = append(errors, client_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return client
-}
-
-func GetTestDatabase(t *testing.T) (*class.Database) {
-	var errors []error
-
-	client := GetTestClient(t)
-
-	if client == nil {
-		t.Error(fmt.Errorf("error: test client is nil"))
-		t.FailNow()
-		return nil
-	}
-
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
-	database, database_errors := client.GetDatabaseInterface(GetTestDatabaseName(), &character_set, &collate)
-	if database_errors != nil {
-		errors = append(errors, database_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	user_database_errors := database.UseDatabase()
-	if user_database_errors != nil {
-		errors = append(errors, user_database_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return database
-}
-
-func GetTestDatabaseDeleted(t *testing.T) (*class.Database) {
-	var errors []error
-
-	database := GetTestDatabase(t)
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	database_delete_errors := database.DeleteIfExists()
-	if database_delete_errors != nil {
-		errors = append(errors, database_delete_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return database
-}
-
-func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
-	var errors []error
-
-	database := GetTestDatabase(t)
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	database_delete_errors := database.DeleteIfExists()
-	if database_delete_errors != nil {
-		errors = append(errors, database_delete_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	database_create_errors := database.Create()
-	if database_create_errors != nil {
-		errors = append(errors, database_create_errors...)	
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	use_database_errors := database.UseDatabase() 
-	if use_database_errors != nil {
-		errors = append(errors, use_database_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
-
-	return database
-}
  
 func TestDatabaseCreate(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
     database_errors := database.Create()
 	if database_errors != nil {
@@ -182,8 +21,8 @@ func TestDatabaseCreate(t *testing.T) {
 }
 
 func TestDatabaseDelete(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
 
     database.Create()
@@ -194,8 +33,8 @@ func TestDatabaseDelete(t *testing.T) {
 }
 
 func TestDatabaseExistsTrue(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
 
     database.Create()
@@ -214,8 +53,8 @@ func TestDatabaseExistsTrue(t *testing.T) {
 }
 
 func TestDatabaseExistsFalse(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
 
 	exists, exists_errors := database.Exists()
@@ -233,8 +72,8 @@ func TestDatabaseExistsFalse(t *testing.T) {
 }
 
 func TestDatabaseCreateWithExists(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
 
 	exists, exists_errors := database.Exists()
@@ -270,8 +109,8 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 }
 
 func TestDatabaseDeleteWithExists(t *testing.T) {
-	database := GetTestDatabase(t)
-	ensureDatabaseIsDeleted(t, database)
+	database := helper.GetTestDatabase(t)
+	helper.EnsureDatabaseIsDeleted(t, database)
 
 	
 	database.Create()
@@ -306,7 +145,7 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 }
 
 func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
-	database := GetTestDatabase(t)
+	database := helper.GetTestDatabase(t)
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	for blacklist_database_name := range blacklist_map {
@@ -331,14 +170,14 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 		}
 
 		if database_name != blacklist_database_name {
-			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  GetTestDatabaseName())
+			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  helper.GetTestDatabaseName())
 		}
 	}
 }
 
 
 func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 	
@@ -363,7 +202,7 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 }
 
 func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
@@ -389,7 +228,7 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 
 func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
@@ -414,7 +253,7 @@ func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 }
 
 func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
@@ -442,7 +281,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 }
 
 func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
@@ -460,7 +299,7 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 }
 
 func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
-	client := GetTestClient(t)
+	client := helper.GetTestClient(t)
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
@@ -478,8 +317,8 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 }
 
 func TestDatabaseCanGetTableNames(t *testing.T) {
-	database := GetTestDatabaseCreated(t)
-	database.CreateTable("some_table", GetTestSchema())
+	database := helper.GetTestDatabaseCreated(t)
+	database.CreateTable("some_table", helper.GetTestSchema())
 
 	table_names, tables_name_errors := database.GetTableNames()
 	if tables_name_errors != nil {
@@ -498,8 +337,8 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 }
 
 func TestDatabaseCanGetTables(t *testing.T) {
-	database := GetTestDatabaseCreated(t)
-	database.CreateTable("some_table", GetTestSchema())
+	database := helper.GetTestDatabaseCreated(t)
+	database.CreateTable("some_table", helper.GetTestSchema())
 
 	tables, tables_errors := database.GetTables()
 	if tables_errors != nil {

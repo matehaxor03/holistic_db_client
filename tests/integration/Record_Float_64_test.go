@@ -5,18 +5,19 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
 func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64Column(), GetTestSchemaWithFloat64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64Column(), helper.GetTestSchemaWithFloat64Column())
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat64ColumnName():float64(123456789.987654321)})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat64ColumnName():float64(123456789.987654321)})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetFloat64Value(GetTestTableFloat64ColumnName())
+		value, value_errors := record.GetFloat64Value(helper.GetTestTableFloat64ColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
@@ -28,15 +29,15 @@ func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat64(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64Column(), GetTestSchemaWithFloat64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64Column(), helper.GetTestSchemaWithFloat64Column())
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat64ColumnName():float64(123456789.987654321)})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat64ColumnName():float64(123456789.987654321)})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		set_errors := record.SetFloat64Value(GetTestTableFloat64ColumnName(), float64(987654321.987654321))
+		set_errors := record.SetFloat64Value(helper.GetTestTableFloat64ColumnName(), float64(987654321.987654321))
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
@@ -49,16 +50,16 @@ func TestRecordCanUpdateRecordWithFloat64(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64ColumnNotMandatory(), GetTestSchemaWithFloat64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64ColumnNotMandatory(), helper.GetTestSchemaWithFloat64ColumnNotMandatory())
 
 	test_value := float64(987654321.987654321)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat64ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat64ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetFloat64(GetTestTableFloat64ColumnNameNotMandatory())
+		value, value_errors := record.GetFloat64(helper.GetTestTableFloat64ColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
@@ -70,17 +71,17 @@ func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat64NotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithFloat64ColumnNotMandatory(), GetTestSchemaWithFloat64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64ColumnNotMandatory(), helper.GetTestSchemaWithFloat64ColumnNotMandatory())
 
 	test_value := float64(123456789.123456789)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableFloat64ColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat64ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("record is nil")
 	} else {
 		update_value := float64(987654321.987654321)
-		set_errors := record.SetFloat64(GetTestTableFloat64ColumnNameNotMandatory(), &update_value)
+		set_errors := record.SetFloat64(helper.GetTestTableFloat64ColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {

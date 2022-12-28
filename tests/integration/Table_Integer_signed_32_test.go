@@ -2,41 +2,14 @@ package integration
  
 import (
     "testing"
-	json "github.com/matehaxor03/holistic_json/json"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
-func GetTestTableNameWithIntegerSigned32ColumnName() string {
-	return "holistic_test_table_with_integer_signed_32"
-}
-
-func GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory() string {
-	return "holistic_test_table_with_integer_signed_32_not_mandatory"
-}
-
-func GetTestTableIntegerSigned32ColumnName() string {
-	return "integer_signed_32_column"
-}
-
-func GetTestTableInteger32SignedColumnNameNotMandatory() string {
-	return "integer_signed_32_column_not_mandatory"
-}
-
-
-func GetTestSchemaWithIntegerSigned32Column() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned32ColumnName(): json.Map {"type": "int32"}}
-}
-
-func GetTestSchemaWithIntegerSigned32ColumnNotMandatory() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger32SignedColumnNameNotMandatory(): json.Map {"type": "*int32"}}
-}
-
 func TestTableCreateWithIntegerSigned32Column(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned32ColumnName(), GetTestSchemaWithIntegerSigned32Column())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithIntegerSigned32ColumnName(), helper.GetTestSchemaWithIntegerSigned32Column())
 }
 
 func TestTableCreateWithIntegerSigned32NotMandatoryColumn(t *testing.T) {
-	CreateTableAndVerifySchema(t, GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 }
  

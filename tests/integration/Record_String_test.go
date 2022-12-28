@@ -5,18 +5,19 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
 func TestRecordCanCreateRecordWithString(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():"hello world"})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetStringValue(GetTestTableStringColumnName())
+		value, value_errors := record.GetStringValue(helper.GetTestTableStringColumnName())
 		if value_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
@@ -28,15 +29,15 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithString(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():"hello world"})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():"hello world"})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("record is nil")
 	} else {
-		set_errors := record.SetStringValue(GetTestTableStringColumnName(), "hello world2")
+		set_errors := record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world2")
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
@@ -49,16 +50,16 @@ func TestRecordCanUpdateRecordWithString(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumnNotMandatory(), GetTestSchemaWithStringColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetString(GetTestTableStringColumnNameNotMandatory())
+		value, value_errors := record.GetString(helper.GetTestTableStringColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
@@ -70,17 +71,17 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithStringNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithStringColumn(), GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableStringColumnName():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("record is nil")
 	} else {
 		update_value := "hello world2"
-		set_errors := record.SetString(GetTestTableStringColumnName(), &update_value)
+		set_errors := record.SetString(helper.GetTestTableStringColumnName(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {

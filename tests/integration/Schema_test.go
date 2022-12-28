@@ -4,35 +4,11 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
-func GetTestColumnSchemaNoPrimaryKey() json.Map {
-	return json.Map {"type": "uint64" }
-}
-
-func GetTestColumnSchemaNoType() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"primary_key": true}}
-}
-
-func GetTestColumnSchemaWithValue() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "value":"something", "auto_increment": true, "primary_key": true}}
-}
-
-func GetTestTableSchemaNoPrimaryKey() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoPrimaryKey()}
-}
-
-func GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestSchemaColumnPrimaryKeyAutoIncrement(),
-	                  GetTestTablePrimaryKeyName2(): GetTestSchemaColumnPrimaryKeyAutoIncrement()}
-}
-
-func GetTestTableSchemaNoType() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
-}
-
 func TestSchemaCanCreateTable(t *testing.T) {
-	table, table_errors := GetTestDatabaseCreated(t).CreateTable(GetTestTableName(), GetTestSchema())
+	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(helper.GetTestTableName(), helper.GetTestSchema())
 	if table_errors != nil {
 		t.Errorf("expect table_errors to be nil: %s", fmt.Sprintf("%s", table_errors))
 	}
@@ -43,7 +19,7 @@ func TestSchemaCanCreateTable(t *testing.T) {
 }
  
 func TestSchemaCannotCreateTableIfNil(t *testing.T) {
-	table, table_errors := GetTestDatabaseCreated(t).CreateTable(GetTestTableName(), nil)
+	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(helper.GetTestTableName(), nil)
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -54,7 +30,7 @@ func TestSchemaCannotCreateTableIfNil(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), json.Map{})
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), json.Map{})
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -65,7 +41,7 @@ func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableNoPrimaryKey(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaNoPrimaryKey())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaNoPrimaryKey())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -76,7 +52,7 @@ func TestSchemaCannotCreateTableNoPrimaryKey(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -87,7 +63,7 @@ func TestSchemaCannotCreateTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.
 }
 
 func TestSchemaCannotCreateTableIfNoTypeAttribute(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestTableSchemaNoType())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaNoType())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -98,7 +74,7 @@ func TestSchemaCannotCreateTableIfNoTypeAttribute(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfHasValueAttribute(t *testing.T) {
-	table, table_errors := GetTestDatabase(t).CreateTable(GetTestTableName(), GetTestColumnSchemaWithValue())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestColumnSchemaWithValue())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}

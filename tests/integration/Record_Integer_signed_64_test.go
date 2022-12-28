@@ -5,19 +5,20 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned64ColumnName(), GetTestSchemaWithIntegerSigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
 	test_value := int64(555)
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned64ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned64ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetInt64Value(GetTestTableIntegerSigned64ColumnName())
+		value, value_errors := record.GetInt64Value(helper.GetTestTableIntegerSigned64ColumnName())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
@@ -29,16 +30,16 @@ func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned64Colum(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned64ColumnName(), GetTestSchemaWithIntegerSigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
 	test_value := int64(66775)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableIntegerSigned64ColumnName():test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned64ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := int64(45452)
-		set_errors := record.SetInt64Value(GetTestTableIntegerSigned64ColumnName(), update_value)
+		set_errors := record.SetInt64Value(helper.GetTestTableIntegerSigned64ColumnName(), update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
@@ -51,16 +52,16 @@ func TestRecordCanUpdateRecordWithIntegerSigned64Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	test_value := int64(555)
 
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger64SignedColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableInteger64SignedColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		value, value_errors := record.GetInt64(GetTestTableInteger64SignedColumnNameNotMandatory())
+		value, value_errors := record.GetInt64(helper.GetTestTableInteger64SignedColumnNameNotMandatory())
 		if value_errors != nil {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
@@ -72,16 +73,16 @@ func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned64ColumNotMandatory(t *testing.T) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	test_value := int64(66775)
-    record, record_errors := table.CreateRecord(json.Map{GetTestTableInteger64SignedColumnNameNotMandatory():&test_value})
+    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableInteger64SignedColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := int64(45452)
-		set_errors := record.SetInt64(GetTestTableInteger64SignedColumnNameNotMandatory(), &update_value)
+		set_errors := record.SetInt64(helper.GetTestTableInteger64SignedColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
