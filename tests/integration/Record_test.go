@@ -6,7 +6,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
-
 )
  
 func TestRecordCanCreateRecord(t *testing.T) {

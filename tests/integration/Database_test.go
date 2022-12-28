@@ -146,6 +146,7 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 
 func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	database := helper.GetTestDatabase(t)
+	previous_database_name, _ := database.GetDatabaseName()
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	for blacklist_database_name := range blacklist_map {
@@ -170,7 +171,7 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 		}
 
 		if database_name != blacklist_database_name {
-			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  helper.GetTestDatabaseName())
+			t.Errorf("error: database_name is '%s' and should be '%s'", database_name,  previous_database_name)
 		}
 	}
 }

@@ -1,13 +1,7 @@
 package integration_test_helpers
 
 import (
-    //"testing"
-	//"strings"
-	//"fmt"
-	//"sync"
 	json "github.com/matehaxor03/holistic_json/json"
-	//common "github.com/matehaxor03/holistic_common/common"
-	//class "github.com/matehaxor03/holistic_db_client/class"
 )
 
 func GetTestTableNameWithIntegerUnsigned08ColumnName() string {

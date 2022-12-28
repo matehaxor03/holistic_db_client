@@ -2,19 +2,21 @@ package integration_test_helpers
 
 import (
     "testing"
-	//"strings"
 	"fmt"
 	"sync"
-	//json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	class "github.com/matehaxor03/holistic_db_client/class"
 )
 
+var database_count uint64 = 0
 var lock_get_client_manager = &sync.Mutex{}
+var lock_get_database = &sync.Mutex{}
 var client_manager *class.ClientManager
 
-func GetTestDatabaseName() string {
-	return "holistic_test"
+func getTestDatabaseName() string {
+	database_count++
+	uppercase := false
+	return "holistic_test_" + *(common.GenerateRandomLetters(10, &uppercase)) + fmt.Sprintf("_%d", database_count)
 }
 
 func EnsureDatabaseIsDeleted(t *testing.T, database *class.Database) {
@@ -62,8 +64,9 @@ func GetTestClient(t *testing.T) (*class.Client) {
 }
 
 func GetTestDatabase(t *testing.T) (*class.Database) {
+	lock_get_database.Lock()
+	defer lock_get_database.Unlock()
 	var errors []error
-
 	client := GetTestClient(t)
 
 	if client == nil {
@@ -74,7 +77,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
-	database, database_errors := client.GetDatabaseInterface(GetTestDatabaseName(), &character_set, &collate)
+	database, database_errors := client.GetDatabaseInterface(getTestDatabaseName(), &character_set, &collate)
 	if database_errors != nil {
 		errors = append(errors, database_errors...)
 	}
