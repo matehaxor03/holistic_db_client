@@ -140,7 +140,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		return temp_value.(*bool), nil
 	}
 
-	getNonIdentityColumnsUpdate := func() (*[]string, []error) {
+	getNonPrimaryKeyColumnsUpdate := func() (*[]string, []error) {
 		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, record_columns_errors
@@ -151,25 +151,25 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, temp_table_errors
 		}
 
-		non_identity_columns, non_identity_columns_errors := temp_table.GetNonIdentityColumns()
-		if non_identity_columns_errors != nil {
-			return nil, non_identity_columns_errors
+		non_primary_key_columns, non_primary_key_columns_errors := temp_table.GetNonPrimaryKeyColumns()
+		if non_primary_key_columns_errors != nil {
+			return nil, non_primary_key_columns_errors
 		}
 
-		var record_non_identity_columns []string
+		var record_non_primary_key_columns []string
 		for _, record_column := range *record_columns {
 			if record_column == "created_date" {
 				continue
 			}
 
-			for _, non_identity_column := range *non_identity_columns {
-				if non_identity_column == record_column {
-					record_non_identity_columns = append(record_non_identity_columns, non_identity_column)
+			for _, non_primary_key_column := range *non_primary_key_columns {
+				if non_primary_key_column == record_column {
+					record_non_primary_key_columns = append(record_non_primary_key_columns, non_primary_key_column)
 					break
 				}
 			}
 		}
-		return &record_non_identity_columns, nil
+		return &record_non_primary_key_columns, nil
 	}
 
 	getPrimaryKeyColumns := func() (*[]string, []error) {
@@ -233,7 +233,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getCreateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false}
+		options := json.Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false, "transactional":true}
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -554,7 +554,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getUpdateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{"use_file": false}
+		options := json.Map{"use_file": false, "transactional":true}
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -609,9 +609,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, foreign_key_table_columns_errors
 		}
 
-		table_non_identity_columns, table_non_identity_columns_errors := table.GetNonIdentityColumns()
-		if table_non_identity_columns_errors != nil {
-			return nil, nil, table_non_identity_columns_errors
+		table_non_primary_key_columns, table_non_primary_key_columns_errors := table.GetNonPrimaryKeyColumns()
+		if table_non_primary_key_columns_errors != nil {
+			return nil, nil, table_non_primary_key_columns_errors
 		}
 
 		record_primary_key_columns, record_primary_key_columns_errors := getPrimaryKeyColumns()
@@ -668,20 +668,20 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 		}
 
-		record_non_identity_columns, record_non_identity_columns_errors := getNonIdentityColumnsUpdate()
-		if record_non_identity_columns_errors != nil {
-			return nil, nil, record_non_identity_columns_errors
+		record_non_primary_key_columns, record_non_primary_key_columns_errors := getNonPrimaryKeyColumnsUpdate()
+		if record_non_primary_key_columns_errors != nil {
+			return nil, nil, record_non_primary_key_columns_errors
 		}
 
-		if len(*record_non_identity_columns) == 0 {
-			errors = append(errors, fmt.Errorf("error: no non-identity columns detected in record to update"))
+		if len(*record_non_primary_key_columns) == 0 {
+			errors = append(errors, fmt.Errorf("error: no non-primary key columns detected in record to update"))
 		}
 
 		if len(*primary_key_table_columns) == 0 {
 			errors = append(errors, fmt.Errorf("error: table schema has no identity columns"))
 		}
 
-		if !common.Contains(*table_non_identity_columns, "last_modified_date") {
+		if !common.Contains(*table_non_primary_key_columns, "last_modified_date") {
 			errors = append(errors, fmt.Errorf("error: table schema does not have last_modified_date"))
 		}
 
@@ -698,15 +698,15 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		sql_command += "SET "
 
-		for index, record_non_identity_column := range *record_non_identity_columns {
-			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_identity_column, "'")
+		for index, record_non_primary_key_column := range *record_non_primary_key_columns {
+			record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_primary_key_column, "'")
 			
 			if record_non_identity_column_escaped_errors != nil {
 				errors = append(errors, record_non_identity_column_escaped_errors)
 				continue
 			}
 
-			column_definition, column_definition_errors := table_schema.GetMap(record_non_identity_column)
+			column_definition, column_definition_errors := table_schema.GetMap(record_non_primary_key_column)
 			if column_definition_errors != nil {
 				errors = append(errors, column_definition_errors...) 
 				continue
@@ -727,7 +727,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			sql_command += "="
-			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_identity_column, "self")
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", record_non_primary_key_column, "self")
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -895,7 +895,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				}
 			}
 
-			if index < len(*record_non_identity_columns)-1 {
+			if index < len(*record_non_primary_key_columns)-1 {
 				sql_command += ", \n"
 			}
 		}

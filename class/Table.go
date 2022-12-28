@@ -26,7 +26,7 @@ type Table struct {
 	GetPrimaryKeyColumns  func() (*[]string, []error)
 	GetForeignKeyColumns  func() (*[]string, []error)
 
-	GetNonIdentityColumns func() (*[]string, []error)
+	GetNonPrimaryKeyColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecords          func(records json.Array) ([]error)
@@ -275,7 +275,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return &columns, nil
 	}
 
-	getNonIdentityColumns := func() (*[]string, []error) {
+	getNonPrimaryKeyColumns := func() (*[]string, []error) {
 		var errors []error
 		var columns []string
 
@@ -472,7 +472,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 	
 	updateRecords := func(records json.Array) []error {
-		options := json.Map{"use_file": false}
+		options := json.Map{"use_file": false, "transactional":true}
 
 		errors := validate()
 		if errors != nil {
@@ -563,7 +563,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	updateRecord := func(record json.Map) []error {
-		options := json.Map{"use_file": false}
+		options := json.Map{"use_file": false, "transactional":true}
 
 		errors := validate()
 		if errors != nil {
@@ -610,7 +610,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	createRecords := func(records json.Array) []error {
-		options := json.Map{"use_file": false}
+		options := json.Map{"use_file": false, "transactional":true}
 
 		errors := validate()
 		if errors != nil {
@@ -1797,8 +1797,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		GetForeignKeyColumns: func() (*[]string, []error) {
 			return getForeignKeyColumns()
 		},
-		GetNonIdentityColumns: func() (*[]string, []error) {
-			return getNonIdentityColumns()
+		GetNonPrimaryKeyColumns: func() (*[]string, []error) {
+			return getNonPrimaryKeyColumns()
 		},
 		Create: func() []error {
 			errors := createTable()
