@@ -172,7 +172,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		return &record_non_identity_columns, nil
 	}
 
-	getIdentityColumns := func() (*[]string, []error) {
+	getPrimaryKeyColumns := func() (*[]string, []error) {
 		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, record_columns_errors
@@ -183,21 +183,49 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, temp_table_errors
 		}
 
-		identity_columns, identity_columns_errors := temp_table.GetIdentityColumns()
-		if identity_columns_errors != nil {
-			return nil, identity_columns_errors
+		table_primary_key_columns, table_primary_key_columns_errors := temp_table.GetPrimaryKeyColumns()
+		if table_primary_key_columns_errors != nil {
+			return nil, table_primary_key_columns_errors
 		}
 
-		var record_identity_columns []string
+		var record_primary_key_columns []string
 		for _, record_column := range *record_columns {
-			for _, identity_column := range *identity_columns {
-				if identity_column == record_column {
-					record_identity_columns = append(record_identity_columns, identity_column)
+			for _, table_primary_key_column := range *table_primary_key_columns {
+				if table_primary_key_column == record_column {
+					record_primary_key_columns = append(record_primary_key_columns, record_column)
 					break
 				}
 			}
 		}
-		return &record_identity_columns, nil
+		return &record_primary_key_columns, nil
+	}
+
+	getForeignKeyColumns := func() (*[]string, []error) {
+		record_columns, record_columns_errors := getRecordColumns()
+		if record_columns_errors != nil {
+			return nil, record_columns_errors
+		}
+
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			return nil, temp_table_errors
+		}
+
+		table_foreign_key_columns, table_foreign_key_columns_errors := temp_table.GetForeignKeyColumns()
+		if table_foreign_key_columns_errors != nil {
+			return nil, table_foreign_key_columns_errors
+		}
+
+		var record_foreign_key_columns []string
+		for _, record_column := range *record_columns {
+			for _, table_foreign_key_column := range *table_foreign_key_columns {
+				if table_foreign_key_column == record_column {
+					record_foreign_key_columns = append(record_foreign_key_columns, record_column)
+					break
+				}
+			}
+		}
+		return &record_foreign_key_columns, nil
 	}
 
 	validate := func() []error {
@@ -571,9 +599,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 		}
 
-		identity_columns, identity_columns_errors := table.GetIdentityColumns()
-		if identity_columns_errors != nil {
-			return nil, nil, identity_columns_errors
+		primary_key_table_columns, primary_key_table_columns_errors := table.GetPrimaryKeyColumns()
+		if primary_key_table_columns_errors != nil {
+			return nil, nil, primary_key_table_columns_errors
+		}
+
+		foreign_key_table_columns, foreign_key_table_columns_errors := table.GetForeignKeyColumns()
+		if foreign_key_table_columns_errors != nil {
+			return nil, nil, foreign_key_table_columns_errors
 		}
 
 		table_non_identity_columns, table_non_identity_columns_errors := table.GetNonIdentityColumns()
@@ -581,21 +614,44 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			return nil, nil, table_non_identity_columns_errors
 		}
 
-		record_identity_columns, record_identity_columns_errors := getIdentityColumns()
-		if record_identity_columns_errors != nil {
-			return nil, nil, record_identity_columns_errors
+		record_primary_key_columns, record_primary_key_columns_errors := getPrimaryKeyColumns()
+		if record_primary_key_columns_errors != nil {
+			return nil, nil, record_primary_key_columns_errors
 		}
 
-		for _, identity_column := range *identity_columns {
-			found_identity_column := false
-			for _, record_identity_column := range *record_identity_columns {
-				if identity_column == record_identity_column {
-					found_identity_column = true
+		record_foreign_key_columns, record_foreign_key_columns_errors := getForeignKeyColumns()
+		if record_foreign_key_columns_errors != nil {
+			return nil, nil, record_foreign_key_columns_errors
+		}
+
+		for _, primary_key_table_column := range *primary_key_table_columns {
+			found_primary_key_column := false
+			for _, record_primary_key_column := range *record_primary_key_columns {
+				if primary_key_table_column == record_primary_key_column {
+					found_primary_key_column = true
 				}
 			}
 
-			if !found_identity_column {
-				errors = append(errors, fmt.Errorf("error: record did not contain identify column: %s", identity_column))
+			if !found_primary_key_column {
+				errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", primary_key_table_column))
+			}
+		}
+
+		for _, foreign_key_table_column := range *foreign_key_table_columns {
+			found_foreign_key_column := false
+			for _, record_foreign_key_column := range *record_foreign_key_columns {
+				if foreign_key_table_column == record_foreign_key_column {
+					found_foreign_key_column = true
+				}
+			}
+
+			if found_foreign_key_column {
+				record_forign_key_column_data, record_forign_key_column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", foreign_key_table_column, "self")
+				if record_forign_key_column_data_errors != nil {
+					errors = append(errors, fmt.Errorf("error: record had error getting foreign key field: %s", foreign_key_table_column))
+				} else if common.Contains(*record_columns, foreign_key_table_column) && common.IsNil(record_forign_key_column_data) {
+					errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
+				}
 			}
 		}
 
@@ -621,7 +677,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			errors = append(errors, fmt.Errorf("error: no non-identity columns detected in record to update"))
 		}
 
-		if len(*identity_columns) == 0 {
+		if len(*primary_key_table_columns) == 0 {
 			errors = append(errors, fmt.Errorf("error: table schema has no identity columns"))
 		}
 
@@ -845,15 +901,15 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		}
 
 		sql_command += " WHERE "
-		for index, identity_column := range *identity_columns {
-			identity_column_escaped, identity_column_escaped_errors := common.EscapeString(identity_column, "'")
+		for index, primary_key_table_column := range *primary_key_table_columns {
+			primary_key_table_column_ecaped, primary_key_table_column_ecaped_errors := common.EscapeString(primary_key_table_column, "'")
 			
-			if identity_column_escaped_errors != nil {
-				errors = append(errors, identity_column_escaped_errors)
+			if primary_key_table_column_ecaped_errors != nil {
+				errors = append(errors, primary_key_table_column_ecaped_errors)
 				continue
 			}
 
-			column_definition, column_definition_errors := table_schema.GetMap(identity_column_escaped)
+			column_definition, column_definition_errors := table_schema.GetMap(primary_key_table_column_ecaped)
 			if column_definition_errors != nil {
 				errors = append(errors, column_definition_errors...) 
 				continue
@@ -865,7 +921,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				sql_command += "\\`"
 			}
 			
-			sql_command += identity_column_escaped
+			sql_command += primary_key_table_column_ecaped
 			
 			if options.IsBoolTrue("use_file") {
 				sql_command += "`"
@@ -874,7 +930,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			sql_command += " = "
-			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", identity_column, "self")
+			column_data, column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", primary_key_table_column, "self")
 
 			if column_data_errors != nil {
 				errors = append(errors, column_data_errors...)
@@ -1029,7 +1085,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				}
 			}
 
-			if index < (len(*identity_columns) - 1) {
+			if index < (len(*primary_key_table_columns) - 1) {
 				sql_command += " AND "
 			}
 		}

@@ -23,6 +23,9 @@ type Table struct {
 	GetSchemaColumns      func() (*[]string, []error)
 	GetTableColumns       func() (*[]string, []error)
 	GetIdentityColumns    func() (*[]string, []error)
+	GetPrimaryKeyColumns  func() (*[]string, []error)
+	GetForeignKeyColumns  func() (*[]string, []error)
+
 	GetNonIdentityColumns func() (*[]string, []error)
 	Count                 func() (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
@@ -158,6 +161,80 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_schemas_error
 		}
 		columns := temp_schemas.Keys()
+		return &columns, nil
+	}
+
+	getPrimaryKeyColumns := func() (*[]string, []error) {
+		var errors []error
+		var columns []string
+
+		schema_map, schema_map_errors := GetSchemas(struct_type, getData(), "[schema]")
+		if schema_map_errors != nil {
+			errors = append(errors, schema_map_errors...)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		for _, column := range schema_map.Keys() {
+			column_schema, column_schema_errors := schema_map.GetMap(column)
+			if column_schema_errors != nil {
+				errors = append(errors, column_schema_errors...)
+				continue
+			} else if column_schema == nil {
+				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
+				continue
+			}
+
+			if column_schema.IsBoolFalse("primary_key") {
+				continue
+			}
+
+			columns = append(columns, column)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return &columns, nil
+	}
+
+	getForeignKeyColumns := func() (*[]string, []error) {
+		var errors []error
+		var columns []string
+
+		schema_map, schema_map_errors := GetSchemas(struct_type, getData(), "[schema]")
+		if schema_map_errors != nil {
+			errors = append(errors, schema_map_errors...)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		for _, column := range schema_map.Keys() {
+			column_schema, column_schema_errors := schema_map.GetMap(column)
+			if column_schema_errors != nil {
+				errors = append(errors, column_schema_errors...)
+				continue
+			} else if column_schema == nil {
+				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
+				continue
+			}
+
+			if column_schema.IsBoolFalse("foreign_key") {
+				continue
+			}
+
+			columns = append(columns, column)
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
 		return &columns, nil
 	}
 
@@ -1713,6 +1790,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 		GetIdentityColumns: func() (*[]string, []error) {
 			return getIdentityColumns()
+		},
+		GetPrimaryKeyColumns: func() (*[]string, []error) {
+			return getPrimaryKeyColumns()
+		},
+		GetForeignKeyColumns: func() (*[]string, []error) {
+			return getForeignKeyColumns()
 		},
 		GetNonIdentityColumns: func() (*[]string, []error) {
 			return getNonIdentityColumns()
