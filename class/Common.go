@@ -805,7 +805,12 @@ func WhitelistCharacters(m json.Map) []error {
 
 func ValidateDatabaseColumnName(value string) []error {
 	var errors []error
-	column_name_params := json.Map{"values": GetMySQLColumnNameWhitelistCharacters(), "value": value, "label": "column_name", "data_type": "Table"}
+	column_name_params := json.Map{}
+	column_name_params.SetObject("values", GetMySQLColumnNameWhitelistCharacters())
+	column_name_params.SetStringValue("value", value)
+	column_name_params.SetStringValue("label", "column_name")
+	column_name_params.SetStringValue("data_type", "Table")
+
 	column_name_errors := WhitelistCharacters(column_name_params)
 	if column_name_errors != nil {
 		errors = append(errors, column_name_errors...)
@@ -1103,7 +1108,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			string_value = &temp_string
 		}
 
-		if schema_of_parameter.IsNumber("min_length") {
+		if schema_of_parameter.IsInteger("min_length") {
 			min_length, min_length_errors := schema_of_parameter.GetUInt64("min_length")
 			if min_length_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s had an error parsing number", struct_type, parameter, "min_length"))
@@ -1160,15 +1165,25 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		for filter_index, filter := range *filters {
-			filter_map := filter.((json.Map))
+			filter_map, filter_map_errors := filter.GetMap()
+			if filter_map_errors != nil {
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d getting filter had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", filter_map_errors)))
+				return errors
+			} else if common.IsNil(filter_map) {
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d getting filter is nil", struct_type, parameter, "filters", filter_index))
+				return errors
+			}
 
 			if !filter_map.HasKey("function") {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is empty", struct_type, parameter, "filters", filter_index))
 				return errors
 			}
 
-			function := filter_map.Func("function")
-			if function == nil {
+			function, function_errors := filter_map.Func("function")
+			if function_errors != nil {
+				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
+				return errors
+			} else if common.IsNil(function) {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, "filters", filter_index))
 				return errors
 			}
@@ -1182,10 +1197,9 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			filter_map.SetString("data_type", &struct_type)
 			filter_map.SetString("label", &parameter)
 
-			temp_map := filter.(json.Map)
-			function_errors := function(temp_map)
-			if function_errors != nil {
-				errors = append(errors, function_errors...)
+			function_execution_errors := function(*filter_map)
+			if function_execution_errors != nil {
+				errors = append(errors, function_execution_errors...)
 			}
 		}
 
