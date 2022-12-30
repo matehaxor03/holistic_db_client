@@ -1422,7 +1422,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				column_schema.SetString("type", &adjusted_type)
 			}
 
-			schema[field_name] = column_schema
+			schema.SetMapValue(field_name, column_schema)
 		}
 
 		if len(errors) > 0 {
@@ -1569,7 +1569,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				} 
 
 				if columnSchema.HasKey("default") {
-					if columnSchema.IsNumber("default") {
+					if columnSchema.IsInteger("default") {
 						default_value, default_value_errors := columnSchema.GetInt64("default")
 						if default_value_errors != nil {
 							errors = append(errors, default_value_errors...)
@@ -1794,7 +1794,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	createTable := func() []error {
-		options := json.Map{"use_file": false}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
 
 		sql_command, sql_command_errors := getCreateSQL(options)
 
@@ -1925,7 +1926,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil
 		},
 		Count: func() (*uint64, []error) {
-			options := json.Map{"use_file": false}
+			options := json.Map{}
+			options.SetBoolValue("use_file", false)
 			errors := validate()
 			if errors != nil {
 				return nil, errors
@@ -1974,7 +1976,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
-			count_value, count_value_error := (*json_array)[0].(json.Map).GetString("COUNT(*)")
+			map_record, map_record_errors := ((*json_array)[0]).GetMap()
+			if map_record_errors != nil {
+				errors = append(errors, map_record_errors...)
+				return nil, errors
+			} else if common.IsNil(map_record) {
+				errors = append(errors, fmt.Errorf("map_record is nil"))
+				return nil, errors
+			}
+
+			count_value, count_value_error := map_record.GetString("COUNT(*)")
 			if count_value_error != nil {
 				errors = append(errors, count_value_error...)
 				return nil, errors
@@ -2022,7 +2033,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return record, nil
 		},
 		ReadRecords: func(select_fields json.Array, filters json.Map, filters_logic json.Map, order_by json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
-			options := json.Map{"use_file": false}
+			options := json.Map{}
+			options.SetBoolValue("use_file", false)
 			cacheable := false
 			var errors []error
 			validate_errors := validate()
@@ -2115,7 +2127,15 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				}
 
 				for _, select_field := range select_fields {
-					if !common.Contains(*table_columns, select_field.(string)) {
+					select_field_value, select_field_value_errors := select_field.GetString()
+					if select_field_value_errors != nil {
+						return nil, select_field_value_errors
+					} else if common.IsNil(select_field_value) {
+						errors = append(errors, fmt.Errorf("select_field_value is nil"))
+						return nil, errors
+					}
+
+					if !common.Contains(*table_columns, *select_field_value) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
 					}
 				}
@@ -2162,18 +2182,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 				order_by_columns := len(order_by)
 				for order_by_index, order_by_field := range order_by {
-					if !common.IsMap(order_by_field) {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d is not a map", order_by_index))
+					order_by_map, order_by_map_errors := order_by_field.GetMap()
+					if order_by_map_errors != nil {
+						errors = append(errors, order_by_map_errors...)
 						continue
-					}
-
-					var order_by_map json.Map
-					if common.GetType(order_by_field) == "json.Map" {
-						order_by_map = order_by_field.(json.Map)
-					} else if common.GetType(order_by_field) == "*json.Map" {
-						order_by_map = *(order_by_field.(*json.Map))
-					} else {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d is not a map", order_by_index))
+					} else if common.IsNil(order_by_map) {
+						errors = append(errors, fmt.Errorf("order_by_map is nil"))
 						continue
 					}
 					
@@ -2246,8 +2260,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			sql_command := "SELECT "
 			if select_fields != nil && len(select_fields) > 0 {
 				select_fields_values_length := len(select_fields)
-				for i, select_fields_value := range select_fields {
-					escape_string_value, escape_string_value_errors := common.EscapeString((select_fields_value.(string)), "'")
+				for i, _ := range select_fields {
+					select_fields_value, select_fields_value_errors := select_fields.GetStringValue(i)
+					if select_fields_value_errors != nil {
+						errors = append(errors, select_fields_value_errors...)
+						continue
+					}
+
+					escape_string_value, escape_string_value_errors := common.EscapeString(select_fields_value, "'")
 					if escape_string_value_errors != nil {
 						errors = append(errors, escape_string_value_errors)
 					} else {
@@ -2276,7 +2296,11 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					sql_command += "WHERE "
 				}
 
-				column_name_params := json.Map{"values": column_name_whitelist_characters, "value": nil, "label": "column_name", "data_type": "Table"}
+				column_name_params := json.Map{}
+				column_name_params.SetObject("values", column_name_whitelist_characters)
+				column_name_params.SetNil("value")
+				column_name_params.SetStringValue("label","column_name")
+				column_name_params.SetStringValue("data_type", "Table")
 				for index, column_filter := range filters.Keys() {
 					
 					column_definition, column_definition_errors := table_schema.GetMap(column_filter)
@@ -2333,75 +2357,219 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						column_data := filters[column_filter]
 						switch type_of {
 						case "*uint64":
-							value := column_data.(*uint64)
-							sql_command += strconv.FormatUint(*value, 10)
+							value, value_errors := column_data.GetUInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(*value, 10)
+							}
 						case "uint64":
-							value := column_data.(uint64)
-							sql_command += strconv.FormatUint(value, 10)
+							value, value_errors := column_data.GetUInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(*value, 10)
+							}
 						case "*int64":
-							value := column_data.(*int64)
-							sql_command += strconv.FormatInt(int64(*value), 10)
+							value, value_errors := column_data.GetInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "int64":
-							value := column_data.(int64)
-							sql_command += strconv.FormatInt(int64(value), 10)
+							value, value_errors := column_data.GetInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "*uint32":
-							value := column_data.(*uint32)
-							sql_command += strconv.FormatUint(uint64(*value), 10)
+							value, value_errors := column_data.GetUInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "uint32":
-							value := column_data.(uint32)
-							sql_command += strconv.FormatUint(uint64(value), 10)
+							value, value_errors := column_data.GetUInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "*int32":
-							value := column_data.(*int32)
-							sql_command += strconv.FormatInt(int64(*value), 10)
+							value, value_errors := column_data.GetInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=strconv.FormatInt(int64(*value), 10)
+							}
 						case "int32":
-							value := column_data.(int32)
-							sql_command += strconv.FormatInt(int64(value), 10)
+							value, value_errors := column_data.GetInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=strconv.FormatInt(int64(*value), 10)
+							}
 						case "*uint16":
-							value := column_data.(*uint16)
-							sql_command += strconv.FormatUint(uint64(*value), 10)
+							value, value_errors := column_data.GetUInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "uint16":
-							value := column_data.(uint16)
-							sql_command += strconv.FormatUint(uint64(value), 10)
+							value, value_errors := column_data.GetUInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "*int16":
-							value := column_data.(*int16)
-							sql_command += strconv.FormatInt(int64(*value), 10)
+							value, value_errors := column_data.GetInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "int16":
-							value := column_data.(int16)
-							sql_command += strconv.FormatInt(int64(value), 10)
+							value, value_errors := column_data.GetInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "*uint8":
-							value := column_data.(*uint8)
-							sql_command += strconv.FormatUint(uint64(*value), 10)
+							value, value_errors := column_data.GetUInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "uint8":
-							value := column_data.(uint8)
-							sql_command +=  strconv.FormatUint(uint64(value), 10)
+							value, value_errors := column_data.GetUInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatUint(uint64(*value), 10)
+							}
 						case "*int8":
-							value := column_data.(*int8)
-							sql_command += strconv.FormatInt(int64(*value), 10)
+							value, value_errors := column_data.GetInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "int8":
-							value := column_data.(int8)
-							sql_command += strconv.FormatInt(int64(value), 10)
+							value, value_errors := column_data.GetInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "*int":
-							value := column_data.(*int)
-							sql_command += strconv.FormatInt(int64(*value), 10)
+							value, value_errors := column_data.GetInt()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "int":
-							value := column_data.(int)
-							sql_command += strconv.FormatInt(int64(value), 10)
+							value, value_errors := column_data.GetInt()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command += strconv.FormatInt(int64(*value), 10)
+							}
 						case "float32":
-							sql_command += fmt.Sprintf("%f", column_data.(float32))
+							value, value_errors := column_data.GetFloat32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=  fmt.Sprintf("%f", *value)
+							}
 						case "*float32":
-							sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+							value, value_errors := column_data.GetFloat32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=  fmt.Sprintf("%f", *value)
+							}
 						case "float64":
-							sql_command += fmt.Sprintf("%f", column_data.(float64))
+							value, value_errors := column_data.GetFloat64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=  fmt.Sprintf("%f", *value)
+							}
 						case "*float64":
-							sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+							value, value_errors := column_data.GetFloat64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command +=  fmt.Sprintf("%f", *value)
+							}
 						case "*time.Time":
-							value := column_data.(*time.Time)
 							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
 							if decimal_places_error != nil {
 								errors = append(errors, decimal_places_error...)
 							} else if decimal_places == nil {
 								errors = append(errors, fmt.Errorf("decimal_places is nil"))
 							} else {
+								value, value_errors := column_data.GetTime(*decimal_places)
+								if value_errors != nil {
+									errors = append(errors, value_errors...)
+									continue
+								} else if common.IsNil(value) {
+									errors = append(errors, fmt.Errorf("time is nil"))
+									continue
+								}
+
 								format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
 								if format_time_errors != nil {
 									errors = append(errors, format_time_errors...)
@@ -2421,14 +2589,22 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								}
 							}
 						case "time.Time":
-							value := column_data.(time.Time)
 							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
 							if decimal_places_error != nil {
 								errors = append(errors, decimal_places_error...)
 							} else if decimal_places == nil {
 								errors = append(errors, fmt.Errorf("decimal_places is nil"))
 							} else {
-								format_time, format_time_errors := common.FormatTime(value, *decimal_places)
+								value, value_errors := column_data.GetTime(*decimal_places)
+								if value_errors != nil {
+									errors = append(errors, value_errors...)
+									continue
+								} else if common.IsNil(value) {
+									errors = append(errors, fmt.Errorf("time is nil"))
+									continue
+								}
+
+								format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
 								if format_time_errors != nil {
 									errors = append(errors, format_time_errors...)
 								} else if format_time == nil { 
@@ -2447,7 +2623,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								}
 							}
 						case "string":
-							value_escaped, value_escaped_errors := common.EscapeString(column_data.(string), "'")
+							column_data_value, column_data_value_errors := column_data.GetString()
+							if column_data_value_errors != nil {
+								errors = append(errors, column_data_value_errors...)
+								continue
+							} else if common.IsNil(column_data_value) {
+								errors = append(errors, fmt.Errorf("column data is nil"))
+								continue
+							}
+
+							value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
 							if value_escaped_errors != nil {
 								errors = append(errors, value_escaped_errors)
 							}
@@ -2459,7 +2644,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							}
 							
 						case "*string":
-							value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
+							column_data_value, column_data_value_errors := column_data.GetString()
+							if column_data_value_errors != nil {
+								errors = append(errors, column_data_value_errors...)
+								continue
+							} else if common.IsNil(column_data_value) {
+								errors = append(errors, fmt.Errorf("column data is nil"))
+								continue
+							}
+
+							value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
 							if value_escaped_errors != nil {
 								errors = append(errors, value_escaped_errors)
 							}
@@ -2471,13 +2665,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 							}
 						
 						case "bool":
-							if column_data.(bool) {
+
+							if column_data.IsBoolTrue() {
 								sql_command += "1"
 							} else {
 								sql_command += "0"
 							}
 						case "*bool":
-							if *(column_data.(*bool)) {
+							if column_data.IsBoolTrue() {
 								sql_command += "1"
 							} else {
 								sql_command += "0"
@@ -2566,7 +2761,15 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			var mapped_records []Record
 			for _, current_json := range *json_array {
-				current_record := current_json.(json.Map)
+				current_record, current_record_errors := current_json.GetMap()
+				if current_record_errors != nil {
+					errors = append(errors, current_record_errors...)
+					continue
+				} else if common.IsNil(current_record) {
+					errors = append(errors, fmt.Errorf("record is nil"))
+					continue
+				}
+
 				columns := current_record.Keys()
 				mapped_record := json.Map{}
 				for _, column := range columns {
