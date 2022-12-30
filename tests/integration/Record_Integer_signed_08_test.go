@@ -10,9 +10,12 @@ import (
 
 func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
+	
 	test_value := int8(100)
+	map_record := json.Map{}
+	map_record.SetInt8Value(helper.GetTestTableIntegerSigned08ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned08ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -31,8 +34,12 @@ func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 
 func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
+	
 	test_value := int8(101)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned08ColumnName():test_value})
+	map_record := json.Map{}
+	map_record.SetInt8Value(helper.GetTestTableIntegerSigned08ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,9 +60,12 @@ func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 
 func TestRecordCanCreateRecordWithIntegerSigned08ColumnNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
-	test_value := int8(100)
+	
+	test_value := int8(101)
+	map_record := json.Map{}
+	map_record.SetInt8(helper.GetTestTableIntegerSigned08ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned08ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -75,8 +85,12 @@ func TestRecordCanCreateRecordWithIntegerSigned08ColumnNotMandatory(t *testing.T
 
 func TestRecordCanUpdateRecordWithIntegerSigned08ColumNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
+	
 	test_value := int8(101)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerSigned08ColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetInt8(helper.GetTestTableIntegerSigned08ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

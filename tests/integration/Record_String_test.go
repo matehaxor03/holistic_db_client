@@ -11,7 +11,10 @@ import (
 func TestRecordCanCreateRecordWithString(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():"hello world"})
+	map_record := json.Map{}
+	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -31,7 +34,10 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 func TestRecordCanUpdateRecordWithString(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():"hello world"})
+	map_record := json.Map{}
+	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +59,10 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetString(helper.GetTestTableStringColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -71,17 +80,21 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithStringNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableStringColumnName():&test_value})
+	map_record := json.Map{}
+	map_record.SetString(helper.GetTestTableStringColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("record is nil")
 	} else {
 		update_value := "hello world2"
-		set_errors := record.SetString(helper.GetTestTableStringColumnName(), &update_value)
+		set_errors := record.SetString(helper.GetTestTableStringColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {

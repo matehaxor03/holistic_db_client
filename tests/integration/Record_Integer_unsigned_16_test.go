@@ -10,9 +10,12 @@ import (
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
+	
 	test_value := uint16(130)
+	map_record := json.Map{}
+	map_record.SetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("errro: %s", record_errors))
 	} else if record == nil {
@@ -31,8 +34,12 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
+	
 	test_value := uint16(150)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnName():test_value})
+	map_record := json.Map{}
+	map_record.SetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,9 +60,12 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
-	test_value := uint16(130)
+	
+	test_value := uint16(188)
+	map_record := json.Map{}
+	map_record.SetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -67,15 +77,19 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing
 		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
 		} else if *value != uint16(130) {
-			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", uint16(130),  *value))
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", uint16(188),  *value))
 		}
 	}
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16ColumNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
-	test_value := uint16(150)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory():&test_value})
+	
+	test_value := uint16(255)
+	map_record := json.Map{}
+	map_record.SetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

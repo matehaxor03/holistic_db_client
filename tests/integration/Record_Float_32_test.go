@@ -11,7 +11,10 @@ import (
 func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat32ColumnName():float32(123456789.987654321)})
+	map_record := json.Map{}
+	map_record.SetFloat32Value(helper.GetTestTableFloat32ColumnName(), float32(123456789.987654321))
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -31,7 +34,10 @@ func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
 func TestRecordCanUpdateRecordWithFloat32(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat32ColumnName():float32(123456789.987654321)})
+	map_record := json.Map{}
+	map_record.SetFloat32Value(helper.GetTestTableFloat32ColumnName(), float32(123456789.987654321))
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,7 +59,10 @@ func TestRecordCanCreateRecordWithFloat32NotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(987654321.987654321)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat32ColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetFloat32(helper.GetTestTableFloat32ColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -74,7 +83,10 @@ func TestRecordCanUpdateRecordWithFloat32NotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(123456789.123456789)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableFloat32ColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetFloat32(helper.GetTestTableFloat32ColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

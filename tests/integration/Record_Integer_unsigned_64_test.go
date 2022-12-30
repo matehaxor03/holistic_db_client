@@ -10,9 +10,12 @@ import (
 
 func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
+	
 	test_value := uint64(555)
+	map_record := json.Map{}
+	map_record.SetUInt64Value(helper.GetTestTableIntegerUnsigned64ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned64ColumnName():test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -31,8 +34,12 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
-	test_value := uint64(343443)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned64ColumnName():test_value})
+	
+	test_value := uint64(555)
+	map_record := json.Map{}
+	map_record.SetUInt64Value(helper.GetTestTableIntegerUnsigned64ColumnName(), test_value)
+    record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -53,9 +60,12 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
 
 func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
+	
 	test_value := uint64(349734)
+	map_record := json.Map{}
+	map_record.SetUInt64(helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -74,8 +84,12 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned64ColumNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
-	test_value := uint64(343443)
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory():&test_value})
+	
+	test_value := uint64(349734)
+	map_record := json.Map{}
+	map_record.SetUInt64(helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
+	
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
