@@ -21,11 +21,19 @@ func GetTestTableIntegerSigned08ColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithIntegerSigned08Column() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned08ColumnName(): json.Map {"type": "int8"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "int8")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerSigned08ColumnName(), column_schema)
+	return table_schema
 }
 
 func GetTestSchemaWithIntegerSigned08NotMandatoryColumn() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned08ColumnNameNotMandatory(): json.Map {"type": "*int8"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "*int8")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerSigned08ColumnNameNotMandatory(), column_schema)
+	return table_schema
 }

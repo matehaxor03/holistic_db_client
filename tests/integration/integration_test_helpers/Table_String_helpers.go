@@ -21,11 +21,21 @@ func GetTestTableStringColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithStringColumn() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableStringColumnName(): json.Map {"type": "string", "max_length":100}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "string")
+	column_schema.SetIntValue("max_length", 100)
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableStringColumnName(), column_schema)
+	return table_schema
 }
 
 func GetTestSchemaWithStringColumnNotMandatory() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableStringColumnNameNotMandatory(): json.Map {"type": "*string", "max_length":100}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "*string")
+	column_schema.SetIntValue("max_length", 100)
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableStringColumnNameNotMandatory(), column_schema)
+	return table_schema
 }

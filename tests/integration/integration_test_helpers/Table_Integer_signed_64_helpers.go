@@ -17,17 +17,25 @@ func GetTestTableIntegerSigned64ColumnName() string {
 	return "integer_signed_64_column"
 }
 
-func GetTestTableInteger64SignedColumnNameNotMandatory() string {
+func GetTestTableIntegerSigned64ColumnNameNotMandatory() string {
 	return "integer_signed_64_column_not_mandatory"
 }
 
 
 func GetTestSchemaWithIntegerSigned64Column() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerSigned64ColumnName(): json.Map {"type": "int64"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "int64")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerSigned64ColumnName(), column_schema)
+	return table_schema
 }
 
 func GetTestSchemaWithIntegerSigned64ColumnNotMandatory() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-	                  GetTestTableInteger64SignedColumnNameNotMandatory(): json.Map {"type": "*int64"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "*int64")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerSigned64ColumnNameNotMandatory(), column_schema)
+	return table_schema
 }

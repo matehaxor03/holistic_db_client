@@ -11,7 +11,9 @@ import (
 func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():true})
+	map_record := json.Map{}
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), true)
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -31,7 +33,9 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():false})
+	map_record := json.Map{}
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), false)
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -51,7 +55,9 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():false})
+	map_record := json.Map{}
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), false)
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -72,7 +78,9 @@ func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():true})
+	map_record := json.Map{}
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), true)
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -94,7 +102,10 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
+	
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -115,7 +126,9 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := false
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnNameNotMandatory():&test_value})
+	map_record := json.Map{}
+	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
+    record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
@@ -133,16 +146,19 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
-	test_value := false
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():&test_value})
+	test_value := true
+	map_record := json.Map{}
+	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {
 		t.Errorf("error: record is nil")
 	} else {
-		update_value := true
+		update_value := false
 		set_errors := record.SetBool(helper.GetTestTableBoolColumnName(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
@@ -156,10 +172,13 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-    record, record_errors := table.CreateRecord(json.Map{helper.GetTestTableBoolColumnName():&test_value})
+	map_record := json.Map{}
+	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
+	record, record_errors := table.CreateRecord(map_record)
+
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
 	} else if record == nil {

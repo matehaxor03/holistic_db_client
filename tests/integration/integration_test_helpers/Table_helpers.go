@@ -30,15 +30,25 @@ func GetTestTablePrimaryKeyName2() string {
 }
 
 func GetTestSchema() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}}
+	table_schema := json.Map{}
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	return table_schema
 }
 
 func GetTestSchemaColumn() json.Map {
-	return json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
+	schema := json.Map{}
+	schema.SetStringValue("type", "uint64")
+	schema.SetBoolValue("auto_increment", true)
+	schema.SetBoolValue("primary_key", true)
+	return schema
 }
 
 func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
-	return json.Map {"type": "uint64", "auto_increment": true, "primary_key": true}
+	schema := json.Map{}
+	schema.SetStringValue("type", "uint64")
+	schema.SetBoolValue("auto_increment", true)
+	schema.SetBoolValue("primary_key", true)
+	return schema
 }
 
 func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (*class.Table) {

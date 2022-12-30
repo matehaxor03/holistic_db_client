@@ -5,26 +5,47 @@ import(
 )
 
 func GetTestColumnSchemaNoPrimaryKey() json.Map {
-	return json.Map {"type": "uint64" }
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "uint64")
+	column := json.Map{}
+	column.SetMapValue(GetTestTablePrimaryKeyName(), column_schema)
+	return column
 }
 
 func GetTestColumnSchemaNoType() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"primary_key": true}}
+	column_schema := json.Map{}
+	column_schema.SetBoolValue("primary_key", true)
+	column := json.Map{}
+	column.SetMapValue(GetTestTablePrimaryKeyName(), column_schema)
+	return column
 }
 
 func GetTestColumnSchemaWithValue() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "value":"something", "auto_increment": true, "primary_key": true}}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "uint64")
+	column_schema.SetStringValue("value", "something")
+	column_schema.SetBoolValue("auto_increment", true)
+	column_schema.SetBoolValue("primary_key", true)
+	column := json.Map{}
+	column.SetMapValue(GetTestTablePrimaryKeyName(), column_schema)
+	return column
 }
 
 func GetTestTableSchemaNoPrimaryKey() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoPrimaryKey()}
+	table_schema := json.Map{}
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestColumnSchemaNoPrimaryKey())
+	return table_schema
 }
 
 func GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestSchemaColumnPrimaryKeyAutoIncrement(),
-	                  GetTestTablePrimaryKeyName2(): GetTestSchemaColumnPrimaryKeyAutoIncrement()}
+	table_schema := json.Map{}
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName2(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	return table_schema
 }
 
 func GetTestTableSchemaNoType() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): GetTestColumnSchemaNoType()}
+	table_schema := json.Map{}
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestColumnSchemaNoType())
+	return table_schema
 }

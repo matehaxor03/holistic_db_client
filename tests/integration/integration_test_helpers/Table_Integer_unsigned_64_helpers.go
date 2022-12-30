@@ -22,11 +22,19 @@ func GetTestTableIntegerUnsigned64ColumnNameNotMandatory() string {
 
 
 func GetTestSchemaWithIntegerUnsigned64Column() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerUnsigned64ColumnName(): json.Map {"type": "uint64"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "uint64")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerUnsigned64ColumnName(), column_schema)
+	return table_schema
 }
 
 func GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory() json.Map {
-	return json.Map {GetTestTablePrimaryKeyName(): json.Map {"type": "uint64", "auto_increment": true, "primary_key": true},
-					  GetTestTableIntegerUnsigned64ColumnNameNotMandatory(): json.Map {"type": "*uint64"}}
+	table_schema := json.Map{}
+	column_schema := json.Map{}
+	column_schema.SetStringValue("type", "*uint64")
+	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
+	table_schema.SetMapValue(GetTestTableIntegerUnsigned64ColumnNameNotMandatory(), column_schema)
+	return table_schema
 }
