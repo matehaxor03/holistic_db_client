@@ -39,6 +39,47 @@ type DatabaseCreateOptions struct {
 func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 	struct_type := "*class.DatabaseCreateOptions"
 
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[character_set]", character_set)
+	map_system_fields.SetObject("[collate]", collate)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+
+
+	map_character_set_schema := json.Map{}
+	map_character_set_schema.SetStringValue("type", "*string")
+
+	map_character_set_schema_filters := json.Array{}
+	map_character_set_schema_filter := json.Map{}
+	map_character_set_schema_filter.SetObject("values", GET_CHARACTER_SETS())
+	map_character_set_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_character_set_schema_filters.AppendMapValue(map_character_set_schema_filter)
+	map_character_set_schema.SetArrayValue("filters", map_character_set_schema_filters)
+	map_system_schema.SetMapValue("[character_set]", map_character_set_schema)
+
+
+	map_collate_schema := json.Map{}
+	map_collate_schema.SetStringValue("type", "*string")
+
+	map_collate_schema_filters := json.Array{}
+	map_collate_schema_filter := json.Map{}
+	map_collate_schema_filter.SetObject("values", GET_CHARACTER_SETS())
+	map_collate_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_collate_schema_filters.AppendMapValue(map_collate_schema_filter)
+	map_collate_schema.SetArrayValue("filters", map_collate_schema_filters)
+	map_system_schema.SetMapValue("[collate]", map_collate_schema)
+
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -48,7 +89,7 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 			"[collate]": json.Map{"type":"*string",
 			"filters": json.Array{json.Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
 		},
-	}
+	}*/
 
 	getData := func() *json.Map {
 		return &data
