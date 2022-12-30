@@ -53,7 +53,7 @@ func newTableSchemaCache() (*TableSchemaCache) {
 		if common.IsNil(schema) {
 			return cache.GetMap(key)
 		} else {
-			cache[key] = schema
+			cache.SetMap(key, schema)
 			return nil, nil
 		}
 	}

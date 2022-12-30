@@ -53,7 +53,7 @@ func newTableStatusCache() (*TableStatusCache) {
 		if common.IsNil(table_status) {
 			return cache.GetMap(key)
 		} else {
-			cache[key] = table_status
+			cache.SetMap(key, table_status)
 			return nil, nil
 		}
 	}

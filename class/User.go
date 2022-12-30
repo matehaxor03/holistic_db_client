@@ -26,6 +26,37 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		errors = append(errors, SQLCommand_errors...)
 	}
 
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[client]", client)
+	map_system_fields.SetObject("[credentials]", credentials)
+	map_system_fields.SetObject("[domain_name]", domain_name)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+	
+	map_client_schema := json.Map{}
+	map_client_schema.SetStringValue("type", "class.Client")
+	map_system_schema.SetMapValue("[client]", map_client_schema)
+
+
+	map_credentials_schema := json.Map{}
+	map_credentials_schema.SetStringValue("type", "class.Credentials")
+	map_system_schema.SetMapValue("[credentials]", map_credentials_schema)
+
+	map_domain_name_schema := json.Map{}
+	map_domain_name_schema.SetStringValue("type", "class.DomainName")
+	map_system_schema.SetMapValue("[domain_name]", map_domain_name_schema)
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -34,7 +65,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		                "[credentials]":json.Map{"type":"class.Credentials"},
 						"[domain_name]":json.Map{"type":"class.DomainName"},
 		},
-	}
+	}*/
 
 	getData := func() *json.Map {
 		return &data
@@ -176,7 +207,8 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return validate()
 		},
 		Create: func() []error {
-			options := json.Map{"use_file": true}
+			options := json.Map{}
+			options.SetBoolValue("use_file", true)
 			sql_command, options, sql_command_errors := getCreateSQL(options)
 
 			if sql_command_errors != nil {
@@ -224,7 +256,8 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return temp_client.UserExists(temp_username)
 		},
 		UpdatePassword: func(new_password string) []error {
-			options := json.Map{"use_file": true}
+			options := json.Map{}
+			options.SetBoolValue("use_file", true)
 			var errors []error
 
 			validate_errors := validate()
@@ -232,16 +265,8 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				errors = append(errors, validate_errors...)
 			}
 
-			password_data := json.Map{
-				"[fields]": json.Map{},
-				"[schema]": json.Map{},
-				"[system_fields]":json.Map{"[password]":new_password},
-				"[system_schema]":json.Map{"[password]": json.Map{"type":"string", "min_length":1}},
-			}
-
-			validate_password_errors := ValidateData(&password_data, "NewUserPassword")
-			if validate_password_errors != nil {
-				errors = append(errors, validate_password_errors...)
+			if len(new_password) == 0 {
+				errors = append(errors, fmt.Errorf("password cannot be empty"))
 			}
 
 			if len(errors) > 0 {
@@ -311,7 +336,9 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				return errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, json.Map{"use_file": true})
+			options_update := json.Map{}
+			options_update.SetBoolValue("use_file", true)
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, options_update)
 
 			if execute_errors != nil {
 				return execute_errors
