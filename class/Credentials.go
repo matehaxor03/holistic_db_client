@@ -83,6 +83,40 @@ func GetCredentialsUsernameValidCharacters() json.Map {
 func newCredentials(username string, password *string) (*Credentials, []error) {
 	struct_type := "*Credentials"
 
+
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[username]", username)
+	map_system_fields.SetObject("[password]", password)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+	
+	map_username_schema := json.Map{}
+	map_username_schema.SetStringValue("type", "string")
+	map_username_schema.SetIntValue("min_length", 1)
+	array_username_filters := json.Array{}
+	map_username_filter := json.Map{}
+	map_username_filter.SetObject("values", GetCredentialsUsernameValidCharacters())
+	map_username_filter.SetObject("function",  getWhitelistCharactersFunc())
+	array_username_filters.AppendMapValue(map_username_filter)
+	map_username_schema.SetArrayValue("filters", array_username_filters)
+	map_system_schema.SetMapValue("[username]", map_username_schema)
+
+	map_password_schema := json.Map{}
+	map_password_schema.SetStringValue("type", "*string")
+	map_password_schema.SetIntValue("min_length", 1)
+	map_system_schema.SetMapValue("[password]", map_password_schema)
+	
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+	
+	/*
 	data := json.Map{
 		"[fields]":json.Map{},
 		"[schema]":json.Map{},
@@ -91,7 +125,7 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 			"[username]":json.Map{"type":"string", "min_length":1,
 			"filters":json.Array{json.Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
 							 "[password]":json.Map{"type":"*string", "min_length":1}},
-	}
+	}*/
 
 	getData := func() *json.Map {
 		return &data

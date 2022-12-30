@@ -86,7 +86,10 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	array_database_username_filters.AppendMapValue(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
 	map_system_schema.SetMapValue("[database_username]", map_database_username)
+	
 	data.SetMapValue("[system_schema]", map_system_schema)
+
+	
 
 	/*data := json.Map{
 		"[fields]": json.Value{},

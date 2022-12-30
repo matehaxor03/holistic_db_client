@@ -49,6 +49,45 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
+
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[client]", client)
+	map_system_fields.SetObject("[database_name]", database_name)
+	map_system_fields.SetObject("[database_create_options]", database_create_options)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+	
+	map_client_schema := json.Map{}
+	map_client_schema.SetStringValue("type", "class.Client")
+
+	map_database_name_schema := json.Map{}
+	map_database_name_schema.SetStringValue("type", "string")
+	map_database_name_schema.SetIntValue("min_length", 2)
+	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
+
+	map_database_name_schema_filters := json.Array{}
+	map_database_name_schema_filter := json.Map{}
+	map_database_name_schema_filter.SetObject("values", database_name_whitelist_characters)
+	map_database_name_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
+	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
+	map_system_schema.SetMapValue("[database_name]", map_database_name_schema)
+
+	map_create_options_schema := json.Map{}
+	map_create_options_schema.SetStringValue("type", "*class.DatabaseCreateOptions")
+	map_system_schema.SetMapValue("[database_create_options]", map_create_options_schema)
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -59,7 +98,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			"[database_name]": json.Map{"type":"string","min_length":2,"not_empty_string_value":true,
 			"filters": json.Array{ json.Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()}}},
 			"[database_create_options]": json.Map{"type":"*class.DatabaseCreateOptions"}},
-	}
+	}*/
 
 	getData := func() (*json.Map) {
 		return &data
@@ -166,7 +205,9 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	create := func() []error {
-		options := json.Map{"use_file":false, "creating_database":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("creating_database", true)
 
 		sql_command, generate_sql_errors := getCreateSQL(options)
 
@@ -188,7 +229,9 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.Map{"use_file":false, "checking_database_exists":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("checking_database_exists", true)
 
 		errors := validate()
 
@@ -237,7 +280,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getTableNames := func() (*[]string, []error) {
-		options := json.Map{"use_file": false}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
 
 		errors := validate()
 
@@ -285,12 +329,21 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		var table_names []string
 		column_name := "Tables_in_" + database_name_escaped
 		for _, record := range *records {
-			table_name, table_name_errors := record.(json.Map).GetString(column_name)
+			record_map, record_map_errors := record.GetMap()
+			if record_map_errors != nil {
+				errors = append(errors, record_map_errors...)
+				continue
+			} else if common.IsNil(record_map) {
+				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) record_map is nil"))
+				continue
+			}
+
+			table_name, table_name_errors := record_map.GetString(column_name)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
 				continue
 			} else if table_name == nil {
-				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) was nil available fields are: %s", column_name, record.(json.Map).Keys()))
+				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) was nil available fields are: %s", column_name, record_map.Keys()))
 				continue
 			}
 			table_names = append(table_names, *table_name)
@@ -304,7 +357,9 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	delete := func() ([]error) {
-		options := json.Map{"use_file": false, "deleting_database":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("deleting_database", true)
 		
 		errors := validate()
 
@@ -351,7 +406,9 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.Map{"use_file": false, "deleting_database":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("deleting_database", true)
 		
 		errors := validate()
 
