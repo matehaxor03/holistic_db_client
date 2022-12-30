@@ -70,7 +70,7 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 	map_collate_schema_filters := json.Array{}
 	map_collate_schema_filter := json.Map{}
-	map_collate_schema_filter.SetObject("values", GET_CHARACTER_SETS())
+	map_collate_schema_filter.SetObject("values", GET_COLLATES())
 	map_collate_schema_filter.SetObject("function",  getWhitelistStringFunc())
 	map_collate_schema_filters.AppendMapValue(map_collate_schema_filter)
 	map_collate_schema.SetArrayValue("filters", map_collate_schema_filters)
