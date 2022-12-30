@@ -196,12 +196,14 @@ func newSQLCommand() (*SQLCommand, []error) {
 				if reading_columns {
 					if current_value == "\n" {
 						column_name := common.CloneString(&value)
-						columns = append(columns, *column_name)
+						columns.AppendStringValue( *column_name)
+						//columns = append(columns, *column_name)
 						value = ""
 						reading_columns = false
 					} else if current_value == "\t" {
 						column_name := common.CloneString(&value)
-						columns = append(columns, *column_name)
+						columns.AppendStringValue( *column_name)
+						//columns = append(columns, *column_name)
 						value = ""
 					} else {
 						value = value + current_value
@@ -209,14 +211,31 @@ func newSQLCommand() (*SQLCommand, []error) {
 				} else {
 					if current_value == "\n" {
 						column_value := common.CloneString(&value)
-						record.SetString(columns[columns_count].(string), column_value)
-						records = append(records, record)
+						x, x_errors := columns.GetStringValue(columns_count)
+						if x_errors != nil {
+							errors = append(errors, x_errors...)
+							continue
+						} else if common.IsNil(x) {
+							errors = append(errors,	fmt.Errorf("SQLCommand x is nil"))
+							continue
+						}
+						record.SetStringValue(*column_value, x)
+						records.AppendMapValue(record)
 						record = json.Map{}
 						value = ""
 						columns_count = 0
 					} else if current_value == "\t" {
 						column_value := common.CloneString(&value)
-						record.SetString(columns[columns_count].(string), column_value)
+						y, y_errors := columns.GetStringValue(columns_count)
+						if y_errors != nil {
+							errors = append(errors, y_errors...)
+							continue
+						} else if common.IsNil(y) {
+							errors = append(errors,	fmt.Errorf("SQLCommand y is nil"))
+							continue
+						}
+
+						record.SetStringValue(*column_value, y)
 						columns_count += 1
 						value = ""
 					} else {

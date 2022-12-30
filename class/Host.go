@@ -71,6 +71,48 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 		return temp
 	}
 
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[host_name]", host_name)
+	map_system_fields.SetObject("[port_number]", port_number)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+
+	// Start host_name
+	map_host_name_schema := json.Map{}
+	map_host_name_schema.SetStringValue("type", "string")
+
+	map_host_name_schema_filters := json.Array{}
+	map_host_name_schema_filter := json.Map{}
+	map_host_name_schema_filter.SetObject("values", getHostNameValidCharacters())
+	map_host_name_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+	map_host_name_schema_filters.AppendMapValue(map_host_name_schema_filter)
+	map_host_name_schema.SetArrayValue("filters", map_host_name_schema_filters)
+	map_system_schema.SetMapValue("[host_name]", map_host_name_schema)
+	// End host_name
+
+	// Start port_number
+	map_port_number_schema := json.Map{}
+	map_port_number_schema.SetStringValue("type", "string")
+
+	map_port_number_schema_filters := json.Array{}
+	map_port_number_schema_filter := json.Map{}
+	map_port_number_schema_filter.SetObject("values", getValidPortCharacters())
+	map_port_number_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+	map_port_number_schema_filters.AppendMapValue(map_port_number_schema_filter)
+	map_port_number_schema.SetArrayValue("filters", map_port_number_schema_filters)
+	map_system_schema.SetMapValue("[port_number]", map_port_number_schema)
+	// End port_number
+
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -81,7 +123,7 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 			"[port_number]": json.Map{"type":"string",
 			"filters": json.Array{json.Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
 		},
-	}
+	}*/
 
 	getData := func() *json.Map {
 		return &data

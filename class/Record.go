@@ -95,9 +95,31 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 
+	data := json.Map{}
+	data.SetMapValue("[fields]", record_data)
+	data.SetMapValue("[schema]", *table_schema)
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[table]", table)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+
+	// Start table
+	
+	map_table_schema := json.Map{}
+	map_table_schema.SetStringValue("type", "class.Table")
+	// End table
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+	/*
 	data := json.Map{"[fields]": record_data, "[system_fields]": json.Map{"[table]": table}}
 	data["[schema]"] = table_schema
 	data["[system_schema]"] = json.Map{"[table]": json.Map{"type":"class.Table"}}
+	*/
 
 	schema_column_names := table_schema.Keys()
 	for _, schema_column_name := range schema_column_names {
@@ -233,7 +255,11 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getCreateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{"use_file": false, "no_column_headers": true, "get_last_insert_id": false, "transactional":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("no_column_headers", true)
+		options.SetBoolValue("get_last_insert_id", false)
+		options.SetBoolValue("transactional", true)
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -273,7 +299,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		for _, record_column := range *record_columns {
 			if strings.HasPrefix(record_column, "credential") {
-				options["use_file"] = true
+				options.SetBoolValue("use_file", true)
 			}
 		}
 
@@ -312,8 +338,8 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				continue
 			}
 
-			options["get_last_insert_id"] = true
-			options["auto_increment_column_name"] = valid_column
+			options.SetBoolValue("get_last_insert_id", true)
+			options.SetStringValue("auto_increment_column_name", valid_column)
 			auto_increment_columns += 1
 		}
 
@@ -554,7 +580,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getUpdateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{"use_file": false, "transactional":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("transactional", true)
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -595,7 +623,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		for _, record_column := range *record_columns {
 			if strings.HasPrefix(record_column, "credential") {
-				options["use_file"] = true
+				options.SetBoolValue("use_file", true)
 			}
 		}
 
@@ -1140,13 +1168,20 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 				return errors
 			}
 
-			if options["get_last_insert_id"].(bool) && options["auto_increment_column_name"] != "" {
+			if options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
 				if len(*json_array) != 1 {
 					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
 					return errors
 				}
 
-				record_from_db := (*json_array)[0].(json.Map)
+				record_from_db, record_from_db_errors := ((*json_array)[0]).GetMap()
+				if record_from_db_errors != nil {
+					errors = append(errors, record_from_db_errors...)
+					return errors
+				} else if common.IsNil(record_from_db) {
+					errors = append(errors, fmt.Errorf("Record.Create record_from_db is nil"))
+					return errors
+				}
 
 				last_insert_id, last_insert_id_errors := record_from_db.GetString("LAST_INSERT_ID()")
 				if last_insert_id_errors != nil {

@@ -69,7 +69,91 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			schema_is_nil = true
 			schema_from_db = json.Map{}
 		}
+
+		d := json.Map{}
+		d.SetMapValue("[fields]", json.Map{})
+		d.SetMapValue("[schema]", json.Map{})
+
+		map_system_fields := json.Map{}
+		map_system_fields.SetObject("[database]", b)
+		map_system_fields.SetObject("[table_name]", n)
+		d.SetMapValue("[system_fields]", map_system_fields)
+
+		///
+
+		map_system_schema := json.Map{}
+
+		// Start database
+		map_database_schema := json.Map{}
+		map_database_schema.SetStringValue("type", "class.Database")
+		map_system_schema.SetMapValue("[database]", map_database_schema)
+		// End database
+
+		// Start table_name
+		map_table_name_schema := json.Map{}
+		map_table_name_schema.SetStringValue("type", "string")
+		map_table_name_schema.SetBoolValue("not_empty_string_value", true)
+		map_table_name_schema.SetIntValue("min_length", 2)
+
+		map_table_name_schema_filters := json.Array{}
+		map_table_name_schema_filter := json.Map{}
+		map_table_name_schema_filter.SetObject("values", table_name_whitelist_characters)
+		map_table_name_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+		map_table_name_schema_filters.AppendMapValue(map_table_name_schema_filter)
+		map_table_name_schema.SetArrayValue("filters", map_table_name_schema_filters)
+		map_system_schema.SetMapValue("[table_name]", map_table_name_schema)
+		// End table_name
+
+
+		d.SetMapValue("[system_schema]", map_system_schema)
+
+		// Start active
+		map_active_schema := json.Map{}
+		map_active_schema.SetStringValue("type", "bool")
+		map_active_schema.SetBoolValue("default", true)
+		merged_schema.SetMapValue("active",map_active_schema)
+		// End active
+
+
+		// Start archieved
+		map_archieved_schema := json.Map{}
+		map_archieved_schema.SetStringValue("type", "bool")
+		map_archieved_schema.SetBoolValue("default", false)
+		merged_schema.SetMapValue("archieved", map_archieved_schema)
+		// End archieved
+
+		// Start created_date
+		map_created_date_schema := json.Map{}
+		map_created_date_schema.SetStringValue("type", "time.Time")
+		map_created_date_schema.SetStringValue("default", "now")
+		map_created_date_schema.SetUInt8Value("decimal_places", uint8(6))
+		merged_schema.SetMapValue("created_date", map_created_date_schema)
+		// End created_date
+
+		// Start last_modified_date
+		map_last_modified_date_schema := json.Map{}
+		map_last_modified_date_schema.SetStringValue("type", "time.Time")
+		map_last_modified_date_schema.SetStringValue("default", "now")
+		map_last_modified_date_schema.SetUInt8Value("decimal_places", uint8(6))
+		merged_schema.SetMapValue("last_modified_date", map_last_modified_date_schema)
+		// End last_modified_date
+
+
+		// Start archieved_date
+		map_archieved_date_date_schema := json.Map{}
+		map_archieved_date_date_schema.SetStringValue("type", "time.Time")
+		map_archieved_date_date_schema.SetStringValue("default", "zero")
+		map_archieved_date_date_schema.SetUInt8Value("decimal_places", uint8(6))
+		merged_schema.SetMapValue("archieved_date", map_archieved_date_date_schema)
+		// End archieved_date
+
 	
+		if schema_is_nil {
+			d.SetBoolValue("[schema_is_nil]", true)
+		} else {
+			d.SetBoolValue("[schema_is_nil]", false)
+		}
+		/*
 		d := json.Map{
 			"[fields]": json.Map{},
 			"[schema]": json.Map{},
@@ -92,7 +176,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		merged_schema["archieved"] = json.Map{"type": "bool", "default": false}
 		merged_schema["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
 		merged_schema["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
-		merged_schema["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}
+		merged_schema["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}*/
 	
 		for _, schema_key_from_db := range schema_from_db.Keys() {
 			current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMap(schema_key_from_db)
@@ -102,7 +186,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				errors = append(errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
 			} else {
 				if !merged_schema.HasKey(schema_key_from_db) {
-					merged_schema[schema_key_from_db] = *current_schema_from_db
+					merged_schema.SetMapValue(schema_key_from_db, *current_schema_from_db)
 				} else if current_schema_from_db.IsArray("filters") {
 					filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
 					if filters_from_db_errors != nil {
@@ -133,7 +217,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			}
 		}
 		
-		d["[schema]"] = merged_schema
+		d.SetMapValue("[schema]", merged_schema)
 
 		return d
 	}
@@ -317,7 +401,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.Map{"use_file": false}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
 		
 		var errors []error
 		validate_errors := validate()
@@ -373,7 +458,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	delete := func() ([]error) {
-		options := json.Map{"use_file": false}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
 		
 		errors := validate()
 		if errors != nil {
@@ -423,7 +509,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.Map{"use_file": false}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
 		
 		errors := validate()
 		if errors != nil {
@@ -472,7 +559,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 	
 	updateRecords := func(records json.Array) []error {
-		options := json.Map{"use_file": false, "transactional":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("transactional", true)
 
 		errors := validate()
 		if errors != nil {
@@ -493,28 +582,24 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		records_obj := json.Array{}
+		var records_obj []Record
 		for _, record := range records {
-			type_of := common.GetType(record)
-			var current_map json.Map
-			valid := false
-			if type_of == "json.Map" {
-				current_map = record.(json.Map)
-				valid = true
-			} else if type_of == "*json.Map" {
-				current_map = *(record.(*json.Map))
-				valid = true
-			} else {
-				errors = append(errors, fmt.Errorf("type is not a map %s", type_of))
+			current_map, current_map_errors := record.GetMap()
+			if current_map_errors != nil {
+				errors = append(errors, current_map_errors...)
+			} else if common.IsNil(current_map) {
+				errors = append(errors, fmt.Errorf("record is nil"))
 			}
-
-			if !valid {
+			
+			if len(errors) > 0 {
 				continue
 			}
 
-			record_obj, record_errors := newRecord(*getTable(), current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record_obj, record_errors := newRecord(*getTable(), *current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
+			} else if common.IsNil(record_obj) {
+				errors = append(errors, fmt.Errorf("record_obj is nil"))
 			} else {
 				records_obj = append(records_obj, *record_obj)
 			}
@@ -526,7 +611,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		sql := ""
 		for _, record_obj := range records_obj {
-			sql_update_snippet, sql_update_snippet_errors := record_obj.(Record).GetUpdateSQL()
+			sql_update_snippet, sql_update_snippet_errors := record_obj.GetUpdateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
@@ -563,7 +648,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	updateRecord := func(record json.Map) []error {
-		options := json.Map{"use_file": false, "transactional":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("transactional", true)
 
 		errors := validate()
 		if errors != nil {
@@ -610,7 +697,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	createRecords := func(records json.Array) []error {
-		options := json.Map{"use_file": false, "transactional":true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("transactional", true)
 
 		errors := validate()
 		if errors != nil {
@@ -631,28 +720,24 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		records_obj := json.Array{}
+		var records_obj []Record
 		for _, record := range records {
-			type_of := common.GetType(record)
-			var current_map json.Map
-			valid := false
-			if type_of == "json.Map" {
-				current_map = record.(json.Map)
-				valid = true
-			} else if type_of == "*json.Map" {
-				current_map = *(record.(*json.Map))
-				valid = true
-			} else {
-				errors = append(errors, fmt.Errorf("type is not a map %s", type_of))
+			current_map, current_map_errors := record.GetMap()
+			if current_map_errors != nil {
+				errors = append(errors, current_map_errors...)
+			} else if common.IsNil(current_map) {
+				errors = append(errors, fmt.Errorf("record is nil"))
 			}
-
-			if !valid {
+			
+			if len(errors) > 0 {
 				continue
 			}
 
-			record_obj, record_errors := newRecord(*getTable(), current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record_obj, record_errors := newRecord(*getTable(), *current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
+			} else if common.IsNil(record_obj) {
+				errors = append(errors, fmt.Errorf("record_obj is nil"))
 			} else {
 				records_obj = append(records_obj, *record_obj)
 			}
@@ -664,7 +749,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		sql := ""
 		for _, record_obj := range records_obj {
-			sql_update_snippet, sql_update_snippet_errors := record_obj.(Record).GetCreateSQL()
+			sql_update_snippet, sql_update_snippet_errors := record_obj.GetCreateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
@@ -708,7 +793,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-		options := json.Map{"use_file": false, "json_output": true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("json_output", true)
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
@@ -783,7 +870,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		table_status := json.Map{}
 		for _, column_details := range *json_array {
-			column_map := column_details.(json.Map)
+			column_map, column_map_errors := column_details.GetMap()
+			if column_map_errors != nil {
+				return nil, column_map_errors
+			} else if common.IsNil(column_map) {
+				errors = append(errors, fmt.Errorf("column_map is nil"))
+				return nil, errors
+			}
 			column_attributes := column_map.Keys()
 
 			for _, column_attribute := range column_attributes {
@@ -796,13 +889,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 						errors = append(errors, fmt.Errorf("comment is nil"))
 					} else {
 						if strings.TrimSpace(*comment_value) != "" {
-							comment_as_map, comment_as_map_value_errors := json.ParseJSON(strings.TrimSpace(*comment_value))
+							comment_as_map, comment_as_map_value_errors := json.Parse(strings.TrimSpace(*comment_value))
 							if comment_as_map_value_errors != nil {
 								errors = append(errors, comment_as_map_value_errors...)
 							} else if common.IsNil(comment_as_map) {
 								errors = append(errors, fmt.Errorf("comment is nil"))
 							} else {
-								table_status["Comment"] = comment_as_map
+								table_status.SetMap("Comment", comment_as_map)
 							}
 						}
 					}
@@ -813,7 +906,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					} else if common.IsNil(column_attribute_value) {
 						errors = append(errors, fmt.Errorf("%s is nil", column_attribute))
 					} else {
-						table_status[column_attribute] = *column_attribute_value
+						table_status.SetStringValue(column_attribute, *column_attribute_value)
 					}
 				}
 			}
@@ -837,7 +930,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-		options := json.Map{"use_file": false, "json_output": true}
+		options := json.Map{}
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("json_output", true)
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
@@ -898,7 +993,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		schema := json.Map{}
 		for _, column_details := range *json_array {
-			column_map := column_details.(json.Map)
+			column_map, column_map_errors := column_details.GetMap()
+			if column_map_errors != nil {
+				return nil, column_map_errors
+			} else if common.IsNil(column_map) {
+				errors = append(errors, fmt.Errorf("column_map is nil"))
+				return nil, errors
+			}
 			column_attributes := column_map.Keys()
 
 			column_schema := json.Map{}
@@ -1072,7 +1173,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 					} else {
 						comment_value = *comment_val
 						if strings.TrimSpace(comment_value) != "" {
-							comment_as_map, comment_as_map_value_errors := json.ParseJSON(strings.TrimSpace(comment_value))
+							comment_as_map, comment_as_map_value_errors := json.Parse(strings.TrimSpace(comment_value))
 							if comment_as_map_value_errors != nil {
 								errors = append(errors, comment_as_map_value_errors...)
 							} else if common.IsNil(comment_as_map) {
@@ -1084,20 +1185,35 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 								} else if !common.IsNil(rules_array) {
 									filters := json.Array{}
 									for _, rule := range *rules_array {
-										rule_value := *(rule.(*string))
-										switch rule_value {
+										rule_value, rule_value_errors := rule.GetString()
+										if rule_value_errors != nil {
+											return nil, rule_value_errors
+										} else if common.IsNil(rule_value) {
+											errors = append(errors, fmt.Errorf("rule value is nil"))
+											return nil, errors
+										}
+
+										switch *rule_value {
 										case "domain_name":
-											domain_name_filter := json.Map{"values": get_domain_name_characters(), "function": getWhitelistCharactersFunc()}
-											filters = append(filters, domain_name_filter)
+											domain_name_filter := json.Map{}
+											domain_name_filter.SetObject("values", get_domain_name_characters())
+											domain_name_filter.SetObject("function", getWhitelistCharactersFunc())
+											filters.AppendMapValue(domain_name_filter)
 										case "repository_name":
-											repostiory_name_filter := json.Map{"values": get_repository_name_characters(), "function": getWhitelistCharactersFunc()}
-											filters = append(filters, repostiory_name_filter)
+											repostiory_name_filter := json.Map{}
+											repostiory_name_filter.SetObject("values", get_repository_name_characters())
+											repostiory_name_filter.SetObject("function", getWhitelistCharactersFunc())
+											filters.AppendMapValue(repostiory_name_filter)
 										case "repository_account_name":
-											repository_account_name := json.Map{"values": get_repository_account_name_characters(), "function": getWhitelistCharactersFunc()}
-											filters = append(filters, repository_account_name)
+											repository_account_name_filter := json.Map{}
+											repository_account_name_filter.SetObject("values", get_repository_account_name_characters())
+											repository_account_name_filter.SetObject("function", getWhitelistCharactersFunc())
+											filters.AppendMapValue(repository_account_name_filter)
 										case "branch_name":
-											branch_name := json.Map{"values": get_branch_name_characters(), "function": getWhitelistCharactersFunc()}
-											filters = append(filters, branch_name)
+											branch_name_filter := json.Map{}
+											branch_name_filter.SetObject("values", get_branch_name_characters())
+											branch_name_filter.SetObject("function", getWhitelistCharactersFunc())
+											filters.AppendMapValue(branch_name_filter)
 										default:
 											errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
 										}
