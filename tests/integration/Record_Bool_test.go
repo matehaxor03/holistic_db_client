@@ -159,7 +159,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := false
-		set_errors := record.SetBool(helper.GetTestTableBoolColumnName(), &update_value)
+		set_errors := record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {
@@ -185,7 +185,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 		t.Errorf("error: record is nil")
 	} else {
 		update_value := false
-		set_errors := record.SetBool(helper.GetTestTableBoolColumnName(), &update_value)
+		set_errors := record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &update_value)
 		if set_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", set_errors))
 		} else {

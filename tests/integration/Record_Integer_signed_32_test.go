@@ -63,7 +63,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T
 	
 	test_value := int32(188)
 	map_record := json.Map{}
-	map_record.SetInt32(helper.GetTestTableIntegerSigned32ColumnName(), &test_value)
+	map_record.SetInt32(helper.GetTestTableIntegerSigned32ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
 	if record_errors != nil {

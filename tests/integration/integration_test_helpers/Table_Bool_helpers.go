@@ -9,7 +9,7 @@ func GetTestTableNameWithBoolColumn() string {
 }
 
 func GetTestTableNameWithBoolColumnNotMandatory() string {
-	return "holistic_test_table_with_boool_not_mandatory"
+	return "holistic_test_table_with_bool_not_mandatory"
 }
 
 func GetTestTableBoolColumnName() string {

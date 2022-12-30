@@ -58,6 +58,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	map_system_fields.SetObject("[client_manager]", client_manager)
 	map_system_fields.SetObject("[host]", host)
 	map_system_fields.SetObject("[database]", database)
+	
 	map_system_fields.SetObject("[database_username]", database_username)
 	data.SetMapValue("[system_fields]", map_system_fields)
 

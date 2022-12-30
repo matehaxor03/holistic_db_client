@@ -111,6 +111,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	
 	map_table_schema := json.Map{}
 	map_table_schema.SetStringValue("type", "class.Table")
+	map_system_schema.SetMapValue("[table]", map_table_schema)
 	// End table
 
 	data.SetMapValue("[system_schema]", map_system_schema)

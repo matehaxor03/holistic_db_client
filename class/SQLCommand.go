@@ -219,7 +219,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 							errors = append(errors,	fmt.Errorf("SQLCommand x is nil"))
 							continue
 						}
-						record.SetStringValue(*column_value, x)
+						record.SetStringValue(x, *column_value)
 						records.AppendMapValue(record)
 						record = json.Map{}
 						value = ""
@@ -235,7 +235,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 							continue
 						}
 
-						record.SetStringValue(*column_value, y)
+						record.SetStringValue(y, *column_value)
 						columns_count += 1
 						value = ""
 					} else {

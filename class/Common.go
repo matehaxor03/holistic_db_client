@@ -279,6 +279,28 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	}
 
 	object_type := common.GetType(result)
+	if object_type == "*json.Value" {
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := result.(*json.Value).GetObject()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			errors = append(errors, fmt.Errorf("GetField.GetObject unboxing had errors"))
+		} else {
+			result = value_to_validate_unboxed
+		}
+	} else if object_type == "json.Value" {
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := result.(json.Value).GetObjectForValue()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			errors = append(errors, fmt.Errorf("GetField.GetObjectForValue unboxing had errors"))
+		} else {
+			result = value_to_validate_unboxed
+		}
+	} 
+	object_type = common.GetType(result)
+
+
 	if strings.ReplaceAll(object_type, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
 		object_type_simple := strings.ReplaceAll(object_type, "*", "")
 		schema_type_value_simple := strings.ReplaceAll(*schema_type_value, "*", "") 
@@ -1021,6 +1043,37 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
+	type_of_parameter_value := common.GetType(value_to_validate)
+	if type_of_parameter_value == "*json.Value" {
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(*json.Value).GetObject()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			value_is_set = false
+			value_is_null = true
+		} else {
+			value_is_set = true
+			value_is_null = false
+		}
+	} else if type_of_parameter_value == "json.Value" {
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(json.Value).GetObjectForValue()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			value_is_set = false
+			value_is_null = true
+		} else {
+			value_is_set = true
+			value_is_null = false
+		}
+	} 
+
+	if len(errors) > 0 {
+		return errors
+	} 
+
+	
+
 	if value_is_null && default_is_null && !value_is_mandatory {
 		return nil
 	}
@@ -1058,8 +1111,30 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
-	type_of_parameter_value := common.GetType(value_to_validate)
+	type_of_parameter_value = common.GetType(value_to_validate)
+	if type_of_parameter_value == "*json.Value" {
+		type_of_parameter_value = value_to_validate.(*json.Value).GetType()
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(*json.Value).GetObject()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			fmt.Println(struct_type + " " + parameters_type + " " + parameter + " " + fmt.Sprintf("%s", value_to_validate))
 
+			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject unboxing had errors"))
+		} else {
+			value_to_validate = value_to_validate_unboxed
+		}
+	} else if type_of_parameter_value == "json.Value" {
+		type_of_parameter_value = value_to_validate.(json.Value).GetTypeForValue()
+		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(json.Value).GetObjectForValue()
+		if value_to_validate_unboxed_errors != nil {
+			errors = append(errors, value_to_validate_unboxed_errors...)
+		} else if common.IsNil(value_to_validate_unboxed) {
+			errors = append(errors, fmt.Errorf("ValidateParameterData GetObjectForValue unboxing had errors"))
+		} else {
+			value_to_validate = value_to_validate_unboxed
+		}
+	} 
 
 	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" {
 		decimal_places, decimal_places_error := schema_of_parameter.GetInt("decimal_places")
@@ -1104,9 +1179,10 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		if type_of_parameter_value == "*string" {
 			string_value = value_to_validate.(*string)
 		} else {
-			temp_string := value_to_validate.(string)
+			temp_string :=  value_to_validate.(string)
 			string_value = &temp_string
 		}
+		
 
 		if schema_of_parameter.IsInteger("min_length") {
 			min_length, min_length_errors := schema_of_parameter.GetUInt64("min_length")

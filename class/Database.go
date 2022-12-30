@@ -66,12 +66,14 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	
 	map_client_schema := json.Map{}
 	map_client_schema.SetStringValue("type", "class.Client")
+	map_system_schema.SetMapValue("[client]", map_client_schema)
 
+
+	// START database_name
 	map_database_name_schema := json.Map{}
 	map_database_name_schema.SetStringValue("type", "string")
 	map_database_name_schema.SetIntValue("min_length", 2)
 	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
-
 	map_database_name_schema_filters := json.Array{}
 	map_database_name_schema_filter := json.Map{}
 	map_database_name_schema_filter.SetObject("values", database_name_whitelist_characters)
@@ -79,6 +81,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
 	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
 	map_system_schema.SetMapValue("[database_name]", map_database_name_schema)
+	// END database_name
+
 
 	map_create_options_schema := json.Map{}
 	map_create_options_schema.SetStringValue("type", "*class.DatabaseCreateOptions")

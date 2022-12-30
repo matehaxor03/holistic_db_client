@@ -52,6 +52,8 @@ func GetTestClient(t *testing.T) (*class.Client) {
 	client, client_errors := client_manager.GetClient("holistic_db_config#127.0.0.1#3306#holistic_test#root")
 	if client_errors != nil {
 		errors = append(errors, client_errors...)
+	} else if common.IsNil(client) {
+		errors = append(errors, fmt.Errorf("client is nil"))
 	}
 
 	if len(errors) > 0 {
