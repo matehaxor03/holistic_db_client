@@ -47,6 +47,109 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 	
+
+data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_schema := json.Map{}
+
+	// Start Client
+	map_system_fields.SetObject("[client]", client)
+	map_client_schema := json.Map{}
+	map_client_schema.SetStringValue("type", "class.Client")
+	map_system_schema.SetMapValue("[client]", map_client_schema)
+	// End Client
+
+
+	// Start User
+	map_system_fields.SetObject("[user]", user)
+	map_user_schema := json.Map{}
+	map_user_schema.SetStringValue("type", "class.User")
+	map_system_schema.SetMapValue("[user]", map_user_schema)
+	// End User
+
+
+	// Start Grant
+	map_system_fields.SetObject("[grant]", grant)
+	map_grant_schema := json.Map{}
+	map_grant_schema.SetStringValue("type", "string")
+
+	map_grant_schema_filters := json.Array{}
+	map_grant_schema_filter := json.Map{}
+	map_grant_schema_filter.SetObject("values", GET_ALLOWED_GRANTS())
+	map_grant_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_grant_schema_filters.AppendMapValue(map_grant_schema_filter)
+	map_grant_schema.SetArrayValue("filters", map_grant_schema_filters)
+	map_system_schema.SetMapValue("[grant]", map_grant_schema)
+	// End Grant
+
+
+	// Start Database Filter
+	if database_filter != nil {
+		map_system_fields.SetObject("[database_filter]", database_filter)
+		map_database_filter_schema := json.Map{}
+		map_database_filter_schema.SetStringValue("type", "string")
+
+		map_database_filter_schema_filters := json.Array{}
+		if *database_filter == "*" {
+			map_database_filter_schema_filter := json.Map{}
+			map_database_filter_schema_filter.SetObject("values", GET_ALLOWED_FILTERS())
+			map_database_filter_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter)
+		} else {
+			map_database_filter_schema_filter1 := json.Map{}
+			map_database_filter_schema_filter1.SetObject("values", database_name_whitelist_characters)
+			map_database_filter_schema_filter1.SetObject("function",  getWhitelistCharactersFunc())
+			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter1)
+
+			map_database_filter_schema_filter2 := json.Map{}
+			map_database_filter_schema_filter2.SetObject("values", database_reserved_words)
+			map_database_filter_schema_filter2.SetObject("function",  getBlacklistStringToUpperFunc())
+			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter2)
+		}
+		map_database_filter_schema.SetArrayValue("filters", map_database_filter_schema_filters)
+		map_system_schema.SetMapValue("[database_filter]", map_database_filter_schema)
+	}
+	// End Database Filter
+
+
+	// Start Table Filter
+	if table_filter != nil {
+		map_system_fields.SetObject("[table_filter]", table_filter)
+		map_table_filter_schema := json.Map{}
+		map_table_filter_schema.SetStringValue("type", "string")
+
+		map_table_filter_schema_filters := json.Array{}
+		if *database_filter == "*" {
+			map_table_filter_schema_filter := json.Map{}
+			map_table_filter_schema_filter.SetObject("values", GET_ALLOWED_FILTERS())
+			map_table_filter_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter)
+		} else {
+			map_table_filter_schema_filter1 := json.Map{}
+			map_table_filter_schema_filter1.SetObject("values", table_name_whitelist_characters_obj)
+			map_table_filter_schema_filter1.SetObject("function",  getWhitelistCharactersFunc())
+			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter1)
+
+			map_table_filter_schema_filter2 := json.Map{}
+			map_table_filter_schema_filter2.SetObject("values", database_reserved_words)
+			map_table_filter_schema_filter2.SetObject("function",  getBlacklistStringToUpperFunc())
+			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter2)
+		}
+		map_table_filter_schema.SetArrayValue("filters", map_table_filter_schema_filters)
+		map_system_schema.SetMapValue("[table_filter]", map_table_filter_schema)
+	}
+	// End Table Filter
+
+	
+
+	data.SetMapValue("[system_fields]", map_system_fields)
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -60,7 +163,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	if database_filter != nil {
 		data["[system_fields]"].(json.Map)["[database_filter]"] = database_filter
 		if *database_filter == "*" {
-			data["[ssystem_chema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
+			data["[system_schema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
 		} else {
 			data["[system_schema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, json.Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
 		}
@@ -73,7 +176,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 		} else {
 			data["[system_schema]"].(json.Map)["[table_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
 		}
-	}
+	}*/
 
 
 	if table_filter == nil && database_filter == nil {
@@ -214,6 +317,8 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	}
 
 	executeGrant := func() []error {
+		options := json.Map{}
+		options.SetBoolValue("use_file", true)
 		sql_command, sql_command_errors := getSQL()
 
 		if sql_command_errors != nil {
@@ -225,7 +330,7 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, json.Map{"use_file": true})
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors

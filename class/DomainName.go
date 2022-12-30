@@ -88,6 +88,35 @@ type DomainName struct {
 func NewDomainName(domain_name string) (*DomainName, []error) {
 	struct_type := "*DomainName"
 
+
+	data := json.Map{}
+	data.SetMapValue("[fields]", json.Map{})
+	data.SetMapValue("[schema]", json.Map{})
+
+	map_system_fields := json.Map{}
+	map_system_fields.SetObject("[domain_name]", domain_name)
+	data.SetMapValue("[system_fields]", map_system_fields)
+
+	///
+
+	map_system_schema := json.Map{}
+
+
+	map_domain_name_schema := json.Map{}
+	map_domain_name_schema.SetStringValue("type", "string")
+
+	map_domain_name_schema_filters := json.Array{}
+	map_domain_name_schema_filter := json.Map{}
+	map_domain_name_schema_filter.SetObject("values", GET_ALLOWED_DOMAIN_NAMES())
+	map_domain_name_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_domain_name_schema_filters.AppendMapValue(map_domain_name_schema_filter)
+	map_domain_name_schema.SetArrayValue("filters", map_domain_name_schema_filters)
+	map_system_schema.SetMapValue("[domain_name]", map_domain_name_schema)
+
+
+	data.SetMapValue("[system_schema]", map_system_schema)
+
+	/*
 	data := json.Map{
 		"[fields]": json.Map{},
 		"[schema]": json.Map{},
@@ -95,7 +124,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 		"[system_schema]": json.Map{"[domain_name]": json.Map{"type":"string",
 			"filters": json.Array{json.Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
 		},
-	}
+	}*/
 
 	getData := func() *json.Map {
 		return &data
