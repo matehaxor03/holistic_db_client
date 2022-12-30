@@ -11,8 +11,9 @@ import (
 func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
+	test_value := true
 	map_record := json.Map{}
-	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), true)
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
@@ -24,8 +25,8 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 			t.Errorf(fmt.Sprintf("%s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("value is nil")
-		} else if value != true {
-			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", true,  value))
+		} else if value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %t actual: %t", test_value,  value))
 		}
 	}
 }
@@ -33,8 +34,9 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
+	test_value := false
 	map_record := json.Map{}
-	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), false)
+	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", record_errors))
@@ -46,8 +48,8 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 			t.Errorf(fmt.Sprintf("%s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
-		} else if value != false {
-			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", false,  value))
+		} else if value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %t actual: %t", test_value,  value))
 		}
 	}
 }
@@ -116,8 +118,8 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
-		} else if *value != true {
-			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", true,  *value))
+		} else if *value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %t actual: %t", test_value,  *value))
 		}
 	}
 }
@@ -139,8 +141,8 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
-		} else if *value != false {
-			t.Errorf(fmt.Sprintf("value not equal expected: %t actual: %t", false,  *value))
+		} else if *value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %t actual: %t", test_value,  *value))
 		}
 	}
 }

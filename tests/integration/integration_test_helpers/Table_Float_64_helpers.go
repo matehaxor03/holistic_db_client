@@ -35,6 +35,6 @@ func GetTestSchemaWithFloat64ColumnNotMandatory() json.Map {
 	column_schema := json.Map{}
 	column_schema.SetStringValue("type", "*float64")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
-	table_schema.SetMapValue(GetTestTableFloat64ColumnName(), column_schema)
+	table_schema.SetMapValue(GetTestTableFloat64ColumnNameNotMandatory(), column_schema)
 	return table_schema
 }

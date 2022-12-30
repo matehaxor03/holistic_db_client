@@ -11,8 +11,9 @@ import (
 func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64Column(), helper.GetTestSchemaWithFloat64Column())
 
+	test_value := float64(123456789.987654321)
 	map_record := json.Map{}
-	map_record.SetFloat64Value(helper.GetTestTableFloat64ColumnName(), float64(123456789.987654321))
+	map_record.SetFloat64Value(helper.GetTestTableFloat64ColumnName(), test_value)
 	record, record_errors := table.CreateRecord(map_record)
 
 	if record_errors != nil {
@@ -25,8 +26,8 @@ func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
 			t.Errorf(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
-		} else if value != float64(123456789.987654321) {
-			t.Errorf(fmt.Sprintf("error:  value not equal expected: %f actual: %f", float64(123456789.987654321),  value))
+		} else if value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %f actual: %f", test_value,  value))
 		}
 	}
 }
@@ -73,8 +74,8 @@ func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value) {
 			t.Errorf("error: value is nil")
-		} else if *value != float64(987654321.987654321) {
-			t.Errorf(fmt.Sprintf("error:  value not equal expected: %f actual: %f",	float64(987654321.987654321), *value))
+		} else if *value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %f actual: %f", test_value,  *value))
 		}
 	}
 }

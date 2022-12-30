@@ -26,8 +26,8 @@ func TestRecordCanCreateRecordWithIntegerUnsigned32Column(t *testing.T) {
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
-		} else if value != uint32(188) {
-			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", uint32(188),  value))
+		} else if value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", test_value, value))
 		}
 	}
 }
@@ -77,8 +77,8 @@ func TestRecordCanCreateRecordWithIntegerUnsigned32ColumnNotMandatory(t *testing
 			t.Error(fmt.Sprintf("error: %s", value_errors))
 		} else if common.IsNil(value_errors) {
 			t.Errorf("error: value is nil")
-		} else if *value != uint32(188) {
-			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", uint32(188),  *value))
+		} else if *value != test_value {
+			t.Errorf(fmt.Sprintf("error: value not equal expected: %d actual: %d", test_value,  *value))
 		}
 	}
 }

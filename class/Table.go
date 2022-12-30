@@ -270,11 +270,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			if column_schema.IsBoolFalse("primary_key") {
-				continue
+			if column_schema.IsBoolTrue("primary_key") {
+				columns = append(columns, column)
 			}
-
-			columns = append(columns, column)
 		}
 
 		if len(errors) > 0 {
@@ -307,11 +305,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			if column_schema.IsBoolFalse("foreign_key") {
-				continue
+			if column_schema.IsBoolTrue("foreign_key") {
+				columns = append(columns, column)
 			}
-
-			columns = append(columns, column)
 		}
 
 		if len(errors) > 0 {
@@ -344,11 +340,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			if column_schema.IsBoolFalse("primary_key") && column_schema.IsBoolFalse("foreign_key") {
-				continue
+			if column_schema.IsBoolTrue("primary_key") || column_schema.IsBoolTrue("foreign_key") {
+				columns = append(columns, column)
 			}
-
-			columns = append(columns, column)
 		}
 
 		if len(errors) > 0 {
@@ -381,11 +375,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			if column_schema.IsBoolTrue("primary_key") {
-				continue
+			if !(column_schema.IsBoolTrue("primary_key")) {
+				columns = append(columns, column)
 			}
-
-			columns = append(columns, column)
 		}
 		return &columns, nil
 	}

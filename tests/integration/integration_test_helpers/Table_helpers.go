@@ -3,6 +3,7 @@ package integration_test_helpers
 import (
     "testing"
 	"fmt"
+	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	class "github.com/matehaxor03/holistic_db_client/class"
@@ -18,9 +19,17 @@ func EnsureTableIsDeleted(t *testing.T, table *class.Table) {
 	}
 }
 
+var table_count uint64 = 0
+var lock_get_table_name = &sync.Mutex{}
+
 func GetTestTableName() string {
-	return "holistic_test_table"
+	lock_get_table_name.Lock()
+	defer lock_get_table_name.Unlock()
+	table_count++
+	uppercase := false
+	return "holistic_test_table" + *(common.GenerateRandomLetters(10, &uppercase)) + fmt.Sprintf("_%d", table_count)
 }
+
 func GetTestTablePrimaryKeyName() string {
 	return "test_table_id"
 }

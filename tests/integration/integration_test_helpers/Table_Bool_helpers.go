@@ -34,6 +34,6 @@ func GetTestSchemaWithBoolColumnNotMandatory() json.Map {
 	column_schema := json.Map{}
 	column_schema.SetStringValue("type", "*bool")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
-	table_schema.SetMapValue(GetTestTableNameWithBoolColumnNotMandatory(), column_schema)
+	table_schema.SetMapValue(GetTestTableBoolColumnNameNotMandatory(), column_schema)
 	return table_schema
 }
