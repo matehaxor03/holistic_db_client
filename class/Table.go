@@ -152,30 +152,6 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		} else {
 			d.SetBoolValue("[schema_is_nil]", false)
 		}
-		/*
-		d := json.Map{
-			"[fields]": json.NewMapValue(),
-			"[schema]": json.NewMapValue(),
-			"[system_fields]":json.Map{"[database]":b, "[table_name]":n},
-			"[system_schema]": json.Map{
-				"[database]": json.Map{"type":"class.Database"},
-				"[table_name]": json.Map{"type": "string", "not_empty_string_value": true, "min_length": 2,
-				"filters": json.Array{json.Map{"values": table_name_whitelist_characters, "function": getWhitelistCharactersFunc()}},
-				},
-			},
-		}
-	
-		if schema_is_nil {
-			d["[schema_is_nil]"] = true
-		} else {
-			d["[schema_is_nil]"] = false
-		}
-	
-		merged_schema["active"] = json.Map{"type": "bool", "default": true}
-		merged_schema["archieved"] = json.Map{"type": "bool", "default": false}
-		merged_schema["created_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
-		merged_schema["last_modified_date"] = json.Map{"type": "time.Time", "default": "now", "decimal_places":uint(6)}
-		merged_schema["archieved_date"] = json.Map{"type": "time.Time", "default":"zero", "decimal_places":uint(6)}*/
 	
 		for _, schema_key_from_db := range schema_from_db.Keys() {
 			current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMap(schema_key_from_db)

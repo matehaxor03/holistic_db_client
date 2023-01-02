@@ -117,18 +117,6 @@ func newCredentials(username string, password *string) (*Credentials, []error) {
 	
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-	
-	/*
-	data := json.Map{
-		"[fields]":json.NewMapValue(),
-		"[schema]":json.NewMapValue(),
-		"[system_fields]":json.Map{"[username]":username,"[password]":password},
-		"[system_schema]":json.Map{
-			"[username]":json.Map{"type":"string", "min_length":1,
-			"filters":json.Array{json.Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-							 "[password]":json.Map{"type":"*string", "min_length":1}},
-	}*/
-
 	getData := func() *json.Map {
 		return &data
 	}

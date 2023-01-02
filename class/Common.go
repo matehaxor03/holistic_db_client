@@ -1043,8 +1043,8 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			value_is_set = true
 			value_is_null = false
 		}
-	} 
-
+	}
+	
 	if len(errors) > 0 {
 		return errors
 	} 
@@ -1088,24 +1088,15 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
+
 	type_of_parameter_value = common.GetType(value_to_validate)
 	if type_of_parameter_value == "*json.Value" {
 		type_of_parameter_value = value_to_validate.(*json.Value).GetType()
-		value_to_validate_unboxed := value_to_validate.(*json.Value).GetObject()
-		if common.IsNil(value_to_validate_unboxed) {
-			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject is nil for *json.Value"))
-		} else {
-			value_to_validate = value_to_validate_unboxed
-		}
+		value_to_validate = value_to_validate.(*json.Value).GetObject()
 	} else if type_of_parameter_value == "json.Value" {
 		type_of_parameter_value = value_to_validate.(json.Value).GetType()
-		value_to_validate_unboxed := value_to_validate.(json.Value).GetObject()
-		if common.IsNil(value_to_validate_unboxed) {
-			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject is nil for json.Value"))
-		} else {
-			value_to_validate = value_to_validate_unboxed
-		}
-	} 
+		value_to_validate = value_to_validate.(json.Value).GetObject()
+	}
 
 	if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") == "time.Time" {
 		decimal_places, decimal_places_error := schema_of_parameter.GetInt("decimal_places")
@@ -1121,6 +1112,14 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	if len(errors) > 0 {
 		return errors
 	} 
+	
+	if strings.HasPrefix(*type_of_parameter_schema_value, "*") && common.IsNil(value_to_validate) {
+		return nil
+	}
+
+	if !value_is_mandatory && common.IsNil(value_to_validate) {
+		return nil
+	}
 
 	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
@@ -1131,7 +1130,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			} else if strings.Contains(type_of_parameter_schema_value_simple, "float") && strings.Contains(type_of_parameter_value_simple, "float"){
 
 			} else {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, strings.ReplaceAll(*type_of_parameter_schema_value, "*", ""), strings.ReplaceAll(type_of_parameter_value, "*", "")))
+				errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData %s column: %s mismatched schema type expected: %s actual: %s", struct_type, parameter, *type_of_parameter_schema_value, type_of_parameter_value))
 			}
 		}
 	}

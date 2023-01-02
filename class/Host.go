@@ -141,19 +141,8 @@ func newHost(host_name string, port_number string) (*Host, []error) {
 
 
 	data.SetMapValue("[system_schema]", map_system_schema)
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]": json.Map{"[host_name]":host_name, "[port_number]":port_number},
-		"[system_schema]": json.Map{
-			"[host_name]":json.Map{"type":"string",
-			"filters": json.Array{json.Map{"values": getHostNameValidCharacters(), "function": getWhitelistCharactersFunc()}}},
-			"[port_number]": json.Map{"type":"string",
-			"filters": json.Array{json.Map{"values": getValidPortCharacters(), "function": getWhitelistCharactersFunc()}}},
-		},
-	}*/
 
+	
 	getData := func() *json.Map {
 		return &data
 	}

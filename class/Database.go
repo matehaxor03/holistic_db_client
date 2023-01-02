@@ -90,20 +90,6 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]": json.Map{
-			"[client]":client, "[database_name]":database_name,"[database_create_options]":database_create_options},
-		"[system_schema]": json.Map{
-			"[client]": json.Map{"type":"class.Client"},
-			"[database_name]": json.Map{"type":"string","min_length":2,"not_empty_string_value":true,
-			"filters": json.Array{ json.Map{"values":database_name_whitelist_characters,"function":getWhitelistCharactersFunc()}}},
-			"[database_create_options]": json.Map{"type":"*class.DatabaseCreateOptions"}},
-	}*/
-
 	getData := func() (*json.Map) {
 		return &data
 	}

@@ -120,16 +120,6 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]": json.Map{"[domain_name]": domain_name},
-		"[system_schema]": json.Map{"[domain_name]": json.Map{"type":"string",
-			"filters": json.Array{json.Map{"values": GET_ALLOWED_DOMAIN_NAMES(), "function": getWhitelistStringFunc()}}},
-		},
-	}*/
-
 	getData := func() *json.Map {
 		return &data
 	}

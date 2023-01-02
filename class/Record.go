@@ -116,12 +116,6 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-	/*
-	data := json.Map{"[fields]": record_data, "[system_fields]": json.Map{"[table]": table}}
-	data["[schema]"] = table_schema
-	data["[system_schema]"] = json.Map{"[table]": json.Map{"type":"class.Table"}}
-	*/
-
 	schema_column_names := table_schema.Keys()
 	for _, schema_column_name := range schema_column_names {
 		validate_database_column_name_errors := ValidateDatabaseColumnName(schema_column_name)

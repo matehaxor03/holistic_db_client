@@ -90,21 +90,6 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-	
-
-	/*data := json.Map{
-		"[fields]": json.Value{},
-		"[schema]": json.NewMapValue(),
-		"[system_fields]":json.Map{
-			"[client_manager]": client_manager, "[host]": host, "[database]": database, "[database_username]": database_username },
-		"[system_schema]":json.Map{
-			"[client_manager]": json.Map{"type":"class.ClientManager"},
-			"[host]": json.Map{"type":"*class.Host"},
-			"[database]": json.Map{"type":"*class.Database"},
-			"[database_username]": json.Map{"type":"*string",
-				"filters": json.Array{json.Map{"values": GetCredentialsUsernameValidCharacters(), "function": getWhitelistCharactersFunc()}}}},
-	}*/
-
 	getData := func() *json.Map {
 		return &data
 	}
