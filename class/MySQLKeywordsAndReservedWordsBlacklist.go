@@ -1,903 +1,898 @@
 package class
-
 import (
     json "github.com/matehaxor03/holistic_json/json"
 )
-
 func GetMySQLKeywordsAndReservedWordsInvalidWords() json.Map {
-    return json.NewMapValue()
+value := json.NewMapValue()
+    value.SetNil("A")
+    value.SetNil("ACCESSIBLE")
+    value.SetNil("ACCOUNT")
+    value.SetNil("ACTION")
+    value.SetNil("ACTIVE")
+    value.SetNil("ACTIVE;")
+    value.SetNil("ADD")
+    value.SetNil("ADMIN")
+    value.SetNil("ADMIN;")
+    value.SetNil("AFTER")
+    value.SetNil("AGAINST")
+    value.SetNil("AGGREGATE")
+    value.SetNil("ALGORITHM")
+    value.SetNil("ALL")
+    value.SetNil("ALTER")
+    value.SetNil("ALWAYS")
+    value.SetNil("ANALYSE")
+    value.SetNil("ANALYSE;")
+    value.SetNil("ANALYZE")
+    value.SetNil("AND")
+    value.SetNil("ANY")
+    value.SetNil("ARRAY")
+    value.SetNil("ARRAY;")
+    value.SetNil("AS")
+    value.SetNil("ASC")
+    value.SetNil("ASCII")
+    value.SetNil("ASENSITIVE")
+    value.SetNil("AT")
+    value.SetNil("ATTRIBUTE")
+    value.SetNil("ATTRIBUTE;")
+    value.SetNil("AUTHENTICATION")
+    value.SetNil("AUTHENTICATION;")
+    value.SetNil("AUTOEXTEND_SIZE")
+    value.SetNil("AUTO_INCREMENT")
+    value.SetNil("AVG")
+    value.SetNil("AVG_ROW_LENGTH")
+    value.SetNil("B")
+    value.SetNil("BACKUP")
+    value.SetNil("BEFORE")
+    value.SetNil("BEGIN")
+    value.SetNil("BETWEEN")
+    value.SetNil("BIGINT")
+    value.SetNil("BINARY")
+    value.SetNil("BINLOG")
+    value.SetNil("BIT")
+    value.SetNil("BLOB")
+    value.SetNil("BLOCK")
+    value.SetNil("BOOL")
+    value.SetNil("BOOLEAN")
+    value.SetNil("BOTH")
+    value.SetNil("BTREE")
+    value.SetNil("BUCKETS")
+    value.SetNil("BUCKETS;")
+    value.SetNil("BY")
+    value.SetNil("BYTE")
+    value.SetNil("C")
+    value.SetNil("CACHE")
+    value.SetNil("CALL")
+    value.SetNil("CASCADE")
+    value.SetNil("CASCADED")
+    value.SetNil("CASE")
+    value.SetNil("CATALOG_NAME")
+    value.SetNil("CHAIN")
+    value.SetNil("CHALLENGE_RESPONSE")
+    value.SetNil("CHALLENGE_RESPONSE;")
+    value.SetNil("CHANGE")
+    value.SetNil("CHANGED")
+    value.SetNil("CHANNEL")
+    value.SetNil("CHAR")
+    value.SetNil("CHARACTER")
+    value.SetNil("CHARSET")
+    value.SetNil("CHECK")
+    value.SetNil("CHECKSUM")
+    value.SetNil("CIPHER")
+    value.SetNil("CLASS_ORIGIN")
+    value.SetNil("CLIENT")
+    value.SetNil("CLONE")
+    value.SetNil("CLONE;")
+    value.SetNil("CLOSE")
+    value.SetNil("COALESCE")
+    value.SetNil("CODE")
+    value.SetNil("COLLATE")
+    value.SetNil("COLLATION")
+    value.SetNil("COLUMN")
+    value.SetNil("COLUMNS")
+    value.SetNil("COLUMN_FORMAT")
+    value.SetNil("COLUMN_NAME")
+    value.SetNil("COMMENT")
+    value.SetNil("COMMIT")
+    value.SetNil("COMMITTED")
+    value.SetNil("COMPACT")
+    value.SetNil("COMPLETION")
+    value.SetNil("COMPONENT")
+    value.SetNil("COMPRESSED")
+    value.SetNil("COMPRESSION")
+    value.SetNil("CONCURRENT")
+    value.SetNil("CONDITION")
+    value.SetNil("CONNECTION")
+    value.SetNil("CONSISTENT")
+    value.SetNil("CONSTRAINT")
+    value.SetNil("CONSTRAINT_CATALOG")
+    value.SetNil("CONSTRAINT_NAME")
+    value.SetNil("CONSTRAINT_SCHEMA")
+    value.SetNil("CONTAINS")
+    value.SetNil("CONTEXT")
+    value.SetNil("CONTINUE")
+    value.SetNil("CONVERT")
+    value.SetNil("CPU")
+    value.SetNil("CREATE")
+    value.SetNil("CROSS")
+    value.SetNil("CUBE")
+    value.SetNil("CUME_DIST")
+    value.SetNil("CURRENT")
+    value.SetNil("CURRENT_DATE")
+    value.SetNil("CURRENT_TIME")
+    value.SetNil("CURRENT_TIMESTAMP")
+    value.SetNil("CURRENT_USER")
+    value.SetNil("CURSOR")
+    value.SetNil("CURSOR_NAME")
+    value.SetNil("D")
+    value.SetNil("DATA")
+    value.SetNil("DATABASE")
+    value.SetNil("DATABASES")
+    value.SetNil("DATAFILE")
+    value.SetNil("DATE")
+    value.SetNil("DATETIME")
+    value.SetNil("DAY")
+    value.SetNil("DAY_HOUR")
+    value.SetNil("DAY_MICROSECOND")
+    value.SetNil("DAY_MINUTE")
+    value.SetNil("DAY_SECOND")
+    value.SetNil("DEALLOCATE")
+    value.SetNil("DEC")
+    value.SetNil("DECIMAL")
+    value.SetNil("DECLARE")
+    value.SetNil("DEFAULT")
+    value.SetNil("DEFAULT_AUTH")
+    value.SetNil("DEFINER")
+    value.SetNil("DEFINITION")
+    value.SetNil("DEFINITION;")
+    value.SetNil("DELAYED")
+    value.SetNil("DELAY_KEY_WRITE")
+    value.SetNil("DELETE")
+    value.SetNil("DENSE_RANK")
+    value.SetNil("DESC")
+    value.SetNil("DESCRIBE")
+    value.SetNil("DESCRIPTION")
+    value.SetNil("DESCRIPTION;")
+    value.SetNil("DES_KEY_FILE")
+    value.SetNil("DES_KEY_FILE;")
+    value.SetNil("DETERMINISTIC")
+    value.SetNil("DIAGNOSTICS")
+    value.SetNil("DIRECTORY")
+    value.SetNil("DISABLE")
+    value.SetNil("DISCARD")
+    value.SetNil("DISK")
+    value.SetNil("DISTINCT")
+    value.SetNil("DISTINCTROW")
+    value.SetNil("DIV")
+    value.SetNil("DO")
+    value.SetNil("DOUBLE")
+    value.SetNil("DROP")
+    value.SetNil("DUAL")
+    value.SetNil("DUMPFILE")
+    value.SetNil("DUPLICATE")
+    value.SetNil("DYNAMIC")
+    value.SetNil("E")
+    value.SetNil("EACH")
+    value.SetNil("ELSE")
+    value.SetNil("ELSEIF")
+    value.SetNil("EMPTY")
+    value.SetNil("ENABLE")
+    value.SetNil("ENCLOSED")
+    value.SetNil("ENCRYPTION")
+    value.SetNil("END")
+    value.SetNil("ENDS")
+    value.SetNil("ENFORCED")
+    value.SetNil("ENFORCED;")
+    value.SetNil("ENGINE")
+    value.SetNil("ENGINES")
+    value.SetNil("ENGINE_ATTRIBUTE")
+    value.SetNil("ENGINE_ATTRIBUTE;")
+    value.SetNil("ENUM")
+    value.SetNil("ERROR")
+    value.SetNil("ERRORS")
+    value.SetNil("ESCAPE")
+    value.SetNil("ESCAPED")
+    value.SetNil("EVENT")
+    value.SetNil("EVENTS")
+    value.SetNil("EVERY")
+    value.SetNil("EXCEPT")
+    value.SetNil("EXCHANGE")
+    value.SetNil("EXCLUDE")
+    value.SetNil("EXCLUDE;")
+    value.SetNil("EXECUTE")
+    value.SetNil("EXISTS")
+    value.SetNil("EXIT")
+    value.SetNil("EXPANSION")
+    value.SetNil("EXPIRE")
+    value.SetNil("EXPLAIN")
+    value.SetNil("EXPORT")
+    value.SetNil("EXTENDED")
+    value.SetNil("EXTENT_SIZE")
+    value.SetNil("F")
+    value.SetNil("FACTOR")
+    value.SetNil("FACTOR;")
+    value.SetNil("FAILED_LOGIN_ATTEMPTS")
+    value.SetNil("FAILED_LOGIN_ATTEMPTS;")
+    value.SetNil("FALSE")
+    value.SetNil("FAST")
+    value.SetNil("FAULTS")
+    value.SetNil("FETCH")
+    value.SetNil("FIELDS")
+    value.SetNil("FILE")
+    value.SetNil("FILE_BLOCK_SIZE")
+    value.SetNil("FILTER")
+    value.SetNil("FINISH")
+    value.SetNil("FINISH;")
+    value.SetNil("FIRST")
+    value.SetNil("FIRST_VALUE")
+    value.SetNil("FIXED")
+    value.SetNil("FLOAT")
+    value.SetNil("FLOAT4")
+    value.SetNil("FLOAT8")
+    value.SetNil("FLUSH")
+    value.SetNil("FOLLOWING")
+    value.SetNil("FOLLOWING;")
+    value.SetNil("FOLLOWS")
+    value.SetNil("FOR")
+    value.SetNil("FORCE")
+    value.SetNil("FOREIGN")
+    value.SetNil("FORMAT")
+    value.SetNil("FOUND")
+    value.SetNil("FROM")
+    value.SetNil("FULL")
+    value.SetNil("FULLTEXT")
+    value.SetNil("FUNCTION")
+    value.SetNil("G")
+    value.SetNil("GENERAL")
+    value.SetNil("GENERATED")
+    value.SetNil("GEOMCOLLECTION")
+    value.SetNil("GEOMCOLLECTION;")
+    value.SetNil("GEOMETRY")
+    value.SetNil("GEOMETRYCOLLECTION")
+    value.SetNil("GET")
+    value.SetNil("GET_FORMAT")
+    value.SetNil("GET_MASTER_PUBLIC_KEY")
+    value.SetNil("GET_MASTER_PUBLIC_KEY;")
+    value.SetNil("GET_SOURCE_PUBLIC_KEY")
+    value.SetNil("GET_SOURCE_PUBLIC_KEY;")
+    value.SetNil("GLOBAL")
+    value.SetNil("GRANT")
+    value.SetNil("GRANTS")
+    value.SetNil("GROUP")
+    value.SetNil("GROUPING")
+    value.SetNil("GROUPS")
+    value.SetNil("GROUP_REPLICATION")
+    value.SetNil("GTID_ONLY")
+    value.SetNil("GTID_ONLY;")
+    value.SetNil("H")
+    value.SetNil("HANDLER")
+    value.SetNil("HASH")
+    value.SetNil("HAVING")
+    value.SetNil("HELP")
+    value.SetNil("HIGH_PRIORITY")
+    value.SetNil("HISTOGRAM")
+    value.SetNil("HISTOGRAM;")
+    value.SetNil("HISTORY")
+    value.SetNil("HISTORY;")
+    value.SetNil("HOST")
+    value.SetNil("HOSTS")
+    value.SetNil("HOUR")
+    value.SetNil("HOUR_MICROSECOND")
+    value.SetNil("HOUR_MINUTE")
+    value.SetNil("HOUR_SECOND")
+    value.SetNil("I")
+    value.SetNil("IDENTIFIED")
+    value.SetNil("IF")
+    value.SetNil("IGNORE")
+    value.SetNil("IGNORE_SERVER_IDS")
+    value.SetNil("IMPORT")
+    value.SetNil("IN")
+    value.SetNil("INACTIVE")
+    value.SetNil("INACTIVE;")
+    value.SetNil("INDEX")
+    value.SetNil("INDEXES")
+    value.SetNil("INFILE")
+    value.SetNil("INITIAL")
+    value.SetNil("INITIAL;")
+    value.SetNil("INITIAL_SIZE")
+    value.SetNil("INITIATE")
+    value.SetNil("INITIATE;")
+    value.SetNil("INNER")
+    value.SetNil("INOUT")
+    value.SetNil("INSENSITIVE")
+    value.SetNil("INSERT")
+    value.SetNil("INSERT_METHOD")
+    value.SetNil("INSTALL")
+    value.SetNil("INSTANCE")
+    value.SetNil("INT")
+    value.SetNil("INT1")
+    value.SetNil("INT2")
+    value.SetNil("INT3")
+    value.SetNil("INT4")
+    value.SetNil("INT8")
+    value.SetNil("INTEGER")
+    value.SetNil("INTERSECT")
+    value.SetNil("INTERVAL")
+    value.SetNil("INTO")
+    value.SetNil("INVISIBLE")
+    value.SetNil("INVOKER")
+    value.SetNil("IO")
+    value.SetNil("IO_AFTER_GTIDS")
+    value.SetNil("IO_BEFORE_GTIDS")
+    value.SetNil("IO_THREAD")
+    value.SetNil("IPC")
+    value.SetNil("IS")
+    value.SetNil("ISOLATION")
+    value.SetNil("ISSUER")
+    value.SetNil("ITERATE")
+    value.SetNil("J")
+    value.SetNil("JOIN")
+    value.SetNil("JSON")
+    value.SetNil("JSON_TABLE")
+    value.SetNil("JSON_VALUE")
+    value.SetNil("JSON_VALUE;")
+    value.SetNil("K")
+    value.SetNil("KEY")
+    value.SetNil("KEYRING")
+    value.SetNil("KEYRING;")
+    value.SetNil("KEYS")
+    value.SetNil("KEY_BLOCK_SIZE")
+    value.SetNil("KILL")
+    value.SetNil("L")
+    value.SetNil("LAG")
+    value.SetNil("LANGUAGE")
+    value.SetNil("LAST")
+    value.SetNil("LAST_VALUE")
+    value.SetNil("LATERAL")
+    value.SetNil("LEAD")
+    value.SetNil("LEADING")
+    value.SetNil("LEAVE")
+    value.SetNil("LEAVES")
+    value.SetNil("LEFT")
+    value.SetNil("LESS")
+    value.SetNil("LEVEL")
+    value.SetNil("LIKE")
+    value.SetNil("LIMIT")
+    value.SetNil("LINEAR")
+    value.SetNil("LINES")
+    value.SetNil("LINESTRING")
+    value.SetNil("LIST")
+    value.SetNil("LOAD")
+    value.SetNil("LOCAL")
+    value.SetNil("LOCALTIME")
+    value.SetNil("LOCALTIMESTAMP")
+    value.SetNil("LOCK")
+    value.SetNil("LOCKED")
+    value.SetNil("LOCKED;")
+    value.SetNil("LOCKS")
+    value.SetNil("LOGFILE")
+    value.SetNil("LOGS")
+    value.SetNil("LONG")
+    value.SetNil("LONGBLOB")
+    value.SetNil("LONGTEXT")
+    value.SetNil("LOOP")
+    value.SetNil("LOW_PRIORITY")
+    value.SetNil("M")
+    value.SetNil("MASTER")
+    value.SetNil("MASTER_AUTO_POSITION")
+    value.SetNil("MASTER_BIND")
+    value.SetNil("MASTER_COMPRESSION_ALGORITHMS")
+    value.SetNil("MASTER_COMPRESSION_ALGORITHMS;")
+    value.SetNil("MASTER_CONNECT_RETRY")
+    value.SetNil("MASTER_DELAY")
+    value.SetNil("MASTER_HEARTBEAT_PERIOD")
+    value.SetNil("MASTER_HOST")
+    value.SetNil("MASTER_LOG_FILE")
+    value.SetNil("MASTER_LOG_POS")
+    value.SetNil("MASTER_PASSWORD")
+    value.SetNil("MASTER_PORT")
+    value.SetNil("MASTER_PUBLIC_KEY_PATH")
+    value.SetNil("MASTER_PUBLIC_KEY_PATH;")
+    value.SetNil("MASTER_RETRY_COUNT")
+    value.SetNil("MASTER_SERVER_ID")
+    value.SetNil("MASTER_SERVER_ID;")
+    value.SetNil("MASTER_SSL")
+    value.SetNil("MASTER_SSL_CA")
+    value.SetNil("MASTER_SSL_CAPATH")
+    value.SetNil("MASTER_SSL_CERT")
+    value.SetNil("MASTER_SSL_CIPHER")
+    value.SetNil("MASTER_SSL_CRL")
+    value.SetNil("MASTER_SSL_CRLPATH")
+    value.SetNil("MASTER_SSL_KEY")
+    value.SetNil("MASTER_SSL_VERIFY_SERVER_CERT")
+    value.SetNil("MASTER_TLS_CIPHERSUITES")
+    value.SetNil("MASTER_TLS_CIPHERSUITES;")
+    value.SetNil("MASTER_TLS_VERSION")
+    value.SetNil("MASTER_USER")
+    value.SetNil("MASTER_ZSTD_COMPRESSION_LEVEL")
+    value.SetNil("MASTER_ZSTD_COMPRESSION_LEVEL;")
+    value.SetNil("MATCH")
+    value.SetNil("MAXVALUE")
+    value.SetNil("MAX_CONNECTIONS_PER_HOUR")
+    value.SetNil("MAX_QUERIES_PER_HOUR")
+    value.SetNil("MAX_ROWS")
+    value.SetNil("MAX_SIZE")
+    value.SetNil("MAX_UPDATES_PER_HOUR")
+    value.SetNil("MAX_USER_CONNECTIONS")
+    value.SetNil("MEDIUM")
+    value.SetNil("MEDIUMBLOB")
+    value.SetNil("MEDIUMINT")
+    value.SetNil("MEDIUMTEXT")
+    value.SetNil("MEMBER")
+    value.SetNil("MEMBER;")
+    value.SetNil("MEMORY")
+    value.SetNil("MERGE")
+    value.SetNil("MESSAGE_TEXT")
+    value.SetNil("MICROSECOND")
+    value.SetNil("MIDDLEINT")
+    value.SetNil("MIGRATE")
+    value.SetNil("MINUTE")
+    value.SetNil("MINUTE_MICROSECOND")
+    value.SetNil("MINUTE_SECOND")
+    value.SetNil("MIN_ROWS")
+    value.SetNil("MOD")
+    value.SetNil("MODE")
+    value.SetNil("MODIFIES")
+    value.SetNil("MODIFY")
+    value.SetNil("MONTH")
+    value.SetNil("MULTILINESTRING")
+    value.SetNil("MULTIPOINT")
+    value.SetNil("MULTIPOLYGON")
+    value.SetNil("MUTEX")
+    value.SetNil("MYSQL_ERRNO")
+    value.SetNil("N")
+    value.SetNil("NAME")
+    value.SetNil("NAMES")
+    value.SetNil("NATIONAL")
+    value.SetNil("NATURAL")
+    value.SetNil("NCHAR")
+    value.SetNil("NDB")
+    value.SetNil("NDBCLUSTER")
+    value.SetNil("NESTED")
+    value.SetNil("NESTED;")
+    value.SetNil("NETWORK_NAMESPACE")
+    value.SetNil("NETWORK_NAMESPACE;")
+    value.SetNil("NEVER")
+    value.SetNil("NEW")
+    value.SetNil("NEXT")
+    value.SetNil("NO")
+    value.SetNil("NODEGROUP")
+    value.SetNil("NONE")
+    value.SetNil("NOT")
+    value.SetNil("NOWAIT")
+    value.SetNil("NOWAIT;")
+    value.SetNil("NO_WAIT")
+    value.SetNil("NO_WRITE_TO_BINLOG")
+    value.SetNil("NTH_VALUE")
+    value.SetNil("NTILE")
+    value.SetNil("NULL")
+    value.SetNil("NULLS")
+    value.SetNil("NULLS;")
+    value.SetNil("NUMBER")
+    value.SetNil("NUMERIC")
+    value.SetNil("NVARCHAR")
+    value.SetNil("O")
+    value.SetNil("OF")
+    value.SetNil("OFF")
+    value.SetNil("OFF;")
+    value.SetNil("OFFSET")
+    value.SetNil("OJ")
+    value.SetNil("OJ;")
+    value.SetNil("OLD")
+    value.SetNil("OLD;")
+    value.SetNil("ON")
+    value.SetNil("ONE")
+    value.SetNil("ONLY")
+    value.SetNil("OPEN")
+    value.SetNil("OPTIMIZE")
+    value.SetNil("OPTIMIZER_COSTS")
+    value.SetNil("OPTION")
+    value.SetNil("OPTIONAL")
+    value.SetNil("OPTIONAL;")
+    value.SetNil("OPTIONALLY")
+    value.SetNil("OPTIONS")
+    value.SetNil("OR")
+    value.SetNil("ORDER")
+    value.SetNil("ORDINALITY")
+    value.SetNil("ORDINALITY;")
+    value.SetNil("ORGANIZATION")
+    value.SetNil("ORGANIZATION;")
+    value.SetNil("OTHERS")
+    value.SetNil("OTHERS;")
+    value.SetNil("OUT")
+    value.SetNil("OUTER")
+    value.SetNil("OUTFILE")
+    value.SetNil("OVER")
+    value.SetNil("OWNER")
+    value.SetNil("P")
+    value.SetNil("PACK_KEYS")
+    value.SetNil("PAGE")
+    value.SetNil("PARSER")
+    value.SetNil("PARSE_GCOL_EXPR")
+    value.SetNil("PARTIAL")
+    value.SetNil("PARTITION")
+    value.SetNil("PARTITIONING")
+    value.SetNil("PARTITIONS")
+    value.SetNil("PASSWORD")
+    value.SetNil("PASSWORD_LOCK_TIME")
+    value.SetNil("PASSWORD_LOCK_TIME;")
+    value.SetNil("PATH")
+    value.SetNil("PATH;")
+    value.SetNil("PERCENT_RANK")
+    value.SetNil("PERSIST")
+    value.SetNil("PERSIST;")
+    value.SetNil("PERSIST_ONLY")
+    value.SetNil("PERSIST_ONLY;")
+    value.SetNil("PHASE")
+    value.SetNil("PLUGIN")
+    value.SetNil("PLUGINS")
+    value.SetNil("PLUGIN_DIR")
+    value.SetNil("POINT")
+    value.SetNil("POLYGON")
+    value.SetNil("PORT")
+    value.SetNil("PRECEDES")
+    value.SetNil("PRECEDING")
+    value.SetNil("PRECEDING;")
+    value.SetNil("PRECISION")
+    value.SetNil("PREPARE")
+    value.SetNil("PRESERVE")
+    value.SetNil("PREV")
+    value.SetNil("PRIMARY")
+    value.SetNil("PRIVILEGES")
+    value.SetNil("PRIVILEGE_CHECKS_USER")
+    value.SetNil("PRIVILEGE_CHECKS_USER;")
+    value.SetNil("PROCEDURE")
+    value.SetNil("PROCESS")
+    value.SetNil("PROCESS;")
+    value.SetNil("PROCESSLIST")
+    value.SetNil("PROFILE")
+    value.SetNil("PROFILES")
+    value.SetNil("PROXY")
+    value.SetNil("PURGE")
+    value.SetNil("Q")
+    value.SetNil("QUARTER")
+    value.SetNil("QUERY")
+    value.SetNil("QUICK")
+    value.SetNil("R")
+    value.SetNil("RANDOM")
+    value.SetNil("RANDOM;")
+    value.SetNil("RANGE")
+    value.SetNil("RANK")
+    value.SetNil("READ")
+    value.SetNil("READS")
+    value.SetNil("READ_ONLY")
+    value.SetNil("READ_WRITE")
+    value.SetNil("REAL")
+    value.SetNil("REBUILD")
+    value.SetNil("RECOVER")
+    value.SetNil("RECURSIVE")
+    value.SetNil("REDOFILE")
+    value.SetNil("REDOFILE;")
+    value.SetNil("REDO_BUFFER_SIZE")
+    value.SetNil("REDUNDANT")
+    value.SetNil("REFERENCE")
+    value.SetNil("REFERENCE;")
+    value.SetNil("REFERENCES")
+    value.SetNil("REGEXP")
+    value.SetNil("REGISTRATION")
+    value.SetNil("REGISTRATION;")
+    value.SetNil("RELAY")
+    value.SetNil("RELAYLOG")
+    value.SetNil("RELAY_LOG_FILE")
+    value.SetNil("RELAY_LOG_POS")
+    value.SetNil("RELAY_THREAD")
+    value.SetNil("RELEASE")
+    value.SetNil("RELOAD")
+    value.SetNil("REMOTE")
+    value.SetNil("REMOTE;")
+    value.SetNil("REMOVE")
+    value.SetNil("RENAME")
+    value.SetNil("REORGANIZE")
+    value.SetNil("REPAIR")
+    value.SetNil("REPEAT")
+    value.SetNil("REPEATABLE")
+    value.SetNil("REPLACE")
+    value.SetNil("REPLICA")
+    value.SetNil("REPLICA;")
+    value.SetNil("REPLICAS")
+    value.SetNil("REPLICAS;")
+    value.SetNil("REPLICATE_DO_DB")
+    value.SetNil("REPLICATE_DO_TABLE")
+    value.SetNil("REPLICATE_IGNORE_DB")
+    value.SetNil("REPLICATE_IGNORE_TABLE")
+    value.SetNil("REPLICATE_REWRITE_DB")
+    value.SetNil("REPLICATE_WILD_DO_TABLE")
+    value.SetNil("REPLICATE_WILD_IGNORE_TABLE")
+    value.SetNil("REPLICATION")
+    value.SetNil("REQUIRE")
+    value.SetNil("REQUIRE_ROW_FORMAT")
+    value.SetNil("REQUIRE_ROW_FORMAT;")
+    value.SetNil("RESET")
+    value.SetNil("RESIGNAL")
+    value.SetNil("RESOURCE")
+    value.SetNil("RESOURCE;")
+    value.SetNil("RESPECT")
+    value.SetNil("RESPECT;")
+    value.SetNil("RESTART")
+    value.SetNil("RESTART;")
+    value.SetNil("RESTORE")
+    value.SetNil("RESTRICT")
+    value.SetNil("RESUME")
+    value.SetNil("RETAIN")
+    value.SetNil("RETAIN;")
+    value.SetNil("RETURN")
+    value.SetNil("RETURNED_SQLSTATE")
+    value.SetNil("RETURNING")
+    value.SetNil("RETURNING;")
+    value.SetNil("RETURNS")
+    value.SetNil("REUSE")
+    value.SetNil("REUSE;")
+    value.SetNil("REVERSE")
+    value.SetNil("REVOKE")
+    value.SetNil("RIGHT")
+    value.SetNil("RLIKE")
+    value.SetNil("ROLE")
+    value.SetNil("ROLE;")
+    value.SetNil("ROLLBACK")
+    value.SetNil("ROLLUP")
+    value.SetNil("ROTATE")
+    value.SetNil("ROUTINE")
+    value.SetNil("ROW")
+    value.SetNil("ROWS")
+    value.SetNil("ROW_COUNT")
+    value.SetNil("ROW_FORMAT")
+    value.SetNil("ROW_NUMBER")
+    value.SetNil("RTREE")
+    value.SetNil("S")
+    value.SetNil("SAVEPOINT")
+    value.SetNil("SCHEDULE")
+    value.SetNil("SCHEMA")
+    value.SetNil("SCHEMAS")
+    value.SetNil("SCHEMA_NAME")
+    value.SetNil("SECOND")
+    value.SetNil("SECONDARY")
+    value.SetNil("SECONDARY;")
+    value.SetNil("SECONDARY_ENGINE")
+    value.SetNil("SECONDARY_ENGINE;")
+    value.SetNil("SECONDARY_ENGINE_ATTRIBUTE")
+    value.SetNil("SECONDARY_ENGINE_ATTRIBUTE;")
+    value.SetNil("SECONDARY_LOAD")
+    value.SetNil("SECONDARY_LOAD;")
+    value.SetNil("SECONDARY_UNLOAD")
+    value.SetNil("SECONDARY_UNLOAD;")
+    value.SetNil("SECOND_MICROSECOND")
+    value.SetNil("SECURITY")
+    value.SetNil("SELECT")
+    value.SetNil("SENSITIVE")
+    value.SetNil("SEPARATOR")
+    value.SetNil("SERIAL")
+    value.SetNil("SERIALIZABLE")
+    value.SetNil("SERVER")
+    value.SetNil("SESSION")
+    value.SetNil("SET")
+    value.SetNil("SHARE")
+    value.SetNil("SHOW")
+    value.SetNil("SHUTDOWN")
+    value.SetNil("SIGNAL")
+    value.SetNil("SIGNED")
+    value.SetNil("SIMPLE")
+    value.SetNil("SKIP")
+    value.SetNil("SKIP;")
+    value.SetNil("SLAVE")
+    value.SetNil("SLOW")
+    value.SetNil("SMALLINT")
+    value.SetNil("SNAPSHOT")
+    value.SetNil("SOCKET")
+    value.SetNil("SOME")
+    value.SetNil("SONAME")
+    value.SetNil("SOUNDS")
+    value.SetNil("SOURCE")
+    value.SetNil("SOURCE_AUTO_POSITION")
+    value.SetNil("SOURCE_AUTO_POSITION;")
+    value.SetNil("SOURCE_BIND")
+    value.SetNil("SOURCE_BIND;")
+    value.SetNil("SOURCE_COMPRESSION_ALGORITHMS")
+    value.SetNil("SOURCE_COMPRESSION_ALGORITHMS;")
+    value.SetNil("SOURCE_CONNECT_RETRY")
+    value.SetNil("SOURCE_CONNECT_RETRY;")
+    value.SetNil("SOURCE_DELAY")
+    value.SetNil("SOURCE_DELAY;")
+    value.SetNil("SOURCE_HEARTBEAT_PERIOD")
+    value.SetNil("SOURCE_HEARTBEAT_PERIOD;")
+    value.SetNil("SOURCE_HOST")
+    value.SetNil("SOURCE_HOST;")
+    value.SetNil("SOURCE_LOG_FILE")
+    value.SetNil("SOURCE_LOG_FILE;")
+    value.SetNil("SOURCE_LOG_POS")
+    value.SetNil("SOURCE_LOG_POS;")
+    value.SetNil("SOURCE_PASSWORD")
+    value.SetNil("SOURCE_PASSWORD;")
+    value.SetNil("SOURCE_PORT")
+    value.SetNil("SOURCE_PORT;")
+    value.SetNil("SOURCE_PUBLIC_KEY_PATH")
+    value.SetNil("SOURCE_PUBLIC_KEY_PATH;")
+    value.SetNil("SOURCE_RETRY_COUNT")
+    value.SetNil("SOURCE_RETRY_COUNT;")
+    value.SetNil("SOURCE_SSL")
+    value.SetNil("SOURCE_SSL;")
+    value.SetNil("SOURCE_SSL_CA")
+    value.SetNil("SOURCE_SSL_CA;")
+    value.SetNil("SOURCE_SSL_CAPATH")
+    value.SetNil("SOURCE_SSL_CAPATH;")
+    value.SetNil("SOURCE_SSL_CERT")
+    value.SetNil("SOURCE_SSL_CERT;")
+    value.SetNil("SOURCE_SSL_CIPHER")
+    value.SetNil("SOURCE_SSL_CIPHER;")
+    value.SetNil("SOURCE_SSL_CRL")
+    value.SetNil("SOURCE_SSL_CRL;")
+    value.SetNil("SOURCE_SSL_CRLPATH")
+    value.SetNil("SOURCE_SSL_CRLPATH;")
+    value.SetNil("SOURCE_SSL_KEY")
+    value.SetNil("SOURCE_SSL_KEY;")
+    value.SetNil("SOURCE_SSL_VERIFY_SERVER_CERT")
+    value.SetNil("SOURCE_SSL_VERIFY_SERVER_CERT;")
+    value.SetNil("SOURCE_TLS_CIPHERSUITES")
+    value.SetNil("SOURCE_TLS_CIPHERSUITES;")
+    value.SetNil("SOURCE_TLS_VERSION")
+    value.SetNil("SOURCE_TLS_VERSION;")
+    value.SetNil("SOURCE_USER")
+    value.SetNil("SOURCE_USER;")
+    value.SetNil("SOURCE_ZSTD_COMPRESSION_LEVEL")
+    value.SetNil("SOURCE_ZSTD_COMPRESSION_LEVEL;")
+    value.SetNil("SPATIAL")
+    value.SetNil("SPECIFIC")
+    value.SetNil("SQL")
+    value.SetNil("SQLEXCEPTION")
+    value.SetNil("SQLSTATE")
+    value.SetNil("SQLWARNING")
+    value.SetNil("SQL_AFTER_GTIDS")
+    value.SetNil("SQL_AFTER_MTS_GAPS")
+    value.SetNil("SQL_BEFORE_GTIDS")
+    value.SetNil("SQL_BIG_RESULT")
+    value.SetNil("SQL_BUFFER_RESULT")
+    value.SetNil("SQL_CACHE")
+    value.SetNil("SQL_CACHE;")
+    value.SetNil("SQL_CALC_FOUND_ROWS")
+    value.SetNil("SQL_NO_CACHE")
+    value.SetNil("SQL_SMALL_RESULT")
+    value.SetNil("SQL_THREAD")
+    value.SetNil("SQL_TSI_DAY")
+    value.SetNil("SQL_TSI_HOUR")
+    value.SetNil("SQL_TSI_MINUTE")
+    value.SetNil("SQL_TSI_MONTH")
+    value.SetNil("SQL_TSI_QUARTER")
+    value.SetNil("SQL_TSI_SECOND")
+    value.SetNil("SQL_TSI_WEEK")
+    value.SetNil("SQL_TSI_YEAR")
+    value.SetNil("SRID")
+    value.SetNil("SRID;")
+    value.SetNil("SSL")
+    value.SetNil("STACKED")
+    value.SetNil("START")
+    value.SetNil("STARTING")
+    value.SetNil("STARTS")
+    value.SetNil("STATS_AUTO_RECALC")
+    value.SetNil("STATS_PERSISTENT")
+    value.SetNil("STATS_SAMPLE_PAGES")
+    value.SetNil("STATUS")
+    value.SetNil("STOP")
+    value.SetNil("STORAGE")
+    value.SetNil("STORED")
+    value.SetNil("STRAIGHT_JOIN")
+    value.SetNil("STREAM")
+    value.SetNil("STREAM;")
+    value.SetNil("STRING")
+    value.SetNil("SUBCLASS_ORIGIN")
+    value.SetNil("SUBJECT")
+    value.SetNil("SUBPARTITION")
+    value.SetNil("SUBPARTITIONS")
+    value.SetNil("SUPER")
+    value.SetNil("SUSPEND")
+    value.SetNil("SWAPS")
+    value.SetNil("SWITCHES")
+    value.SetNil("SYSTEM")
+    value.SetNil("T")
+    value.SetNil("TABLE")
+    value.SetNil("TABLES")
+    value.SetNil("TABLESPACE")
+    value.SetNil("TABLE_CHECKSUM")
+    value.SetNil("TABLE_NAME")
+    value.SetNil("TEMPORARY")
+    value.SetNil("TEMPTABLE")
+    value.SetNil("TERMINATED")
+    value.SetNil("TEXT")
+    value.SetNil("THAN")
+    value.SetNil("THEN")
+    value.SetNil("THREAD_PRIORITY")
+    value.SetNil("THREAD_PRIORITY;")
+    value.SetNil("TIES")
+    value.SetNil("TIES;")
+    value.SetNil("TIME")
+    value.SetNil("TIMESTAMP")
+    value.SetNil("TIMESTAMPADD")
+    value.SetNil("TIMESTAMPDIFF")
+    value.SetNil("TINYBLOB")
+    value.SetNil("TINYINT")
+    value.SetNil("TINYTEXT")
+    value.SetNil("TLS")
+    value.SetNil("TLS;")
+    value.SetNil("TO")
+    value.SetNil("TRAILING")
+    value.SetNil("TRANSACTION")
+    value.SetNil("TRIGGER")
+    value.SetNil("TRIGGERS")
+    value.SetNil("TRUE")
+    value.SetNil("TRUNCATE")
+    value.SetNil("TYPE")
+    value.SetNil("TYPES")
+    value.SetNil("U")
+    value.SetNil("UNBOUNDED")
+    value.SetNil("UNBOUNDED;")
+    value.SetNil("UNCOMMITTED")
+    value.SetNil("UNDEFINED")
+    value.SetNil("UNDO")
+    value.SetNil("UNDOFILE")
+    value.SetNil("UNDO_BUFFER_SIZE")
+    value.SetNil("UNICODE")
+    value.SetNil("UNINSTALL")
+    value.SetNil("UNION")
+    value.SetNil("UNIQUE")
+    value.SetNil("UNKNOWN")
+    value.SetNil("UNLOCK")
+    value.SetNil("UNREGISTER")
+    value.SetNil("UNREGISTER;")
+    value.SetNil("UNSIGNED")
+    value.SetNil("UNTIL")
+    value.SetNil("UPDATE")
+    value.SetNil("UPGRADE")
+    value.SetNil("USAGE")
+    value.SetNil("USE")
+    value.SetNil("USER")
+    value.SetNil("USER_RESOURCES")
+    value.SetNil("USE_FRM")
+    value.SetNil("USING")
+    value.SetNil("UTC_DATE")
+    value.SetNil("UTC_TIME")
+    value.SetNil("UTC_TIMESTAMP")
+    value.SetNil("V")
+    value.SetNil("VALIDATION")
+    value.SetNil("VALUE")
+    value.SetNil("VALUES")
+    value.SetNil("VARBINARY")
+    value.SetNil("VARCHAR")
+    value.SetNil("VARCHARACTER")
+    value.SetNil("VARIABLES")
+    value.SetNil("VARYING")
+    value.SetNil("VCPU")
+    value.SetNil("VCPU;")
+    value.SetNil("VIEW")
+    value.SetNil("VIRTUAL")
+    value.SetNil("VISIBLE")
+    value.SetNil("W")
+    value.SetNil("WAIT")
+    value.SetNil("WARNINGS")
+    value.SetNil("WEEK")
+    value.SetNil("WEIGHT_STRING")
+    value.SetNil("WHEN")
+    value.SetNil("WHERE")
+    value.SetNil("WHILE")
+    value.SetNil("WINDOW")
+    value.SetNil("WITH")
+    value.SetNil("WITHOUT")
+    value.SetNil("WORK")
+    value.SetNil("WRAPPER")
+    value.SetNil("WRITE")
+    value.SetNil("X")
+    value.SetNil("X509")
+    value.SetNil("XA")
+    value.SetNil("XID")
+    value.SetNil("XML")
+    value.SetNil("XOR")
+    value.SetNil("Y")
+    value.SetNil("YEAR")
+    value.SetNil("YEAR_MONTH")
+    value.SetNil("Z")
+    value.SetNil("ZEROFILL")
+    value.SetNil("ZONE")
+    value.SetNil("ZONE;")
+    value.SetNil("_FILENAME")return value 
 }
-/*
-    return json.Map{
-    "A": nil,
-    "ACCESSIBLE": nil,
-    "ACCOUNT": nil,
-    "ACTION": nil,
-    "ACTIVE": nil,
-    "ACTIVE;": nil,
-    "ADD": nil,
-    "ADMIN": nil,
-    "ADMIN;": nil,
-    "AFTER": nil,
-    "AGAINST": nil,
-    "AGGREGATE": nil,
-    "ALGORITHM": nil,
-    "ALL": nil,
-    "ALTER": nil,
-    "ALWAYS": nil,
-    "ANALYSE": nil,
-    "ANALYSE;": nil,
-    "ANALYZE": nil,
-    "AND": nil,
-    "ANY": nil,
-    "ARRAY": nil,
-    "ARRAY;": nil,
-    "AS": nil,
-    "ASC": nil,
-    "ASCII": nil,
-    "ASENSITIVE": nil,
-    "AT": nil,
-    "ATTRIBUTE": nil,
-    "ATTRIBUTE;": nil,
-    "AUTHENTICATION": nil,
-    "AUTHENTICATION;": nil,
-    "AUTOEXTEND_SIZE": nil,
-    "AUTO_INCREMENT": nil,
-    "AVG": nil,
-    "AVG_ROW_LENGTH": nil,
-    "B": nil,
-    "BACKUP": nil,
-    "BEFORE": nil,
-    "BEGIN": nil,
-    "BETWEEN": nil,
-    "BIGINT": nil,
-    "BINARY": nil,
-    "BINLOG": nil,
-    "BIT": nil,
-    "BLOB": nil,
-    "BLOCK": nil,
-    "BOOL": nil,
-    "BOOLEAN": nil,
-    "BOTH": nil,
-    "BTREE": nil,
-    "BUCKETS": nil,
-    "BUCKETS;": nil,
-    "BY": nil,
-    "BYTE": nil,
-    "C": nil,
-    "CACHE": nil,
-    "CALL": nil,
-    "CASCADE": nil,
-    "CASCADED": nil,
-    "CASE": nil,
-    "CATALOG_NAME": nil,
-    "CHAIN": nil,
-    "CHALLENGE_RESPONSE": nil,
-    "CHALLENGE_RESPONSE;": nil,
-    "CHANGE": nil,
-    "CHANGED": nil,
-    "CHANNEL": nil,
-    "CHAR": nil,
-    "CHARACTER": nil,
-    "CHARSET": nil,
-    "CHECK": nil,
-    "CHECKSUM": nil,
-    "CIPHER": nil,
-    "CLASS_ORIGIN": nil,
-    "CLIENT": nil,
-    "CLONE": nil,
-    "CLONE;": nil,
-    "CLOSE": nil,
-    "COALESCE": nil,
-    "CODE": nil,
-    "COLLATE": nil,
-    "COLLATION": nil,
-    "COLUMN": nil,
-    "COLUMNS": nil,
-    "COLUMN_FORMAT": nil,
-    "COLUMN_NAME": nil,
-    "COMMENT": nil,
-    "COMMIT": nil,
-    "COMMITTED": nil,
-    "COMPACT": nil,
-    "COMPLETION": nil,
-    "COMPONENT": nil,
-    "COMPRESSED": nil,
-    "COMPRESSION": nil,
-    "CONCURRENT": nil,
-    "CONDITION": nil,
-    "CONNECTION": nil,
-    "CONSISTENT": nil,
-    "CONSTRAINT": nil,
-    "CONSTRAINT_CATALOG": nil,
-    "CONSTRAINT_NAME": nil,
-    "CONSTRAINT_SCHEMA": nil,
-    "CONTAINS": nil,
-    "CONTEXT": nil,
-    "CONTINUE": nil,
-    "CONVERT": nil,
-    "CPU": nil,
-    "CREATE": nil,
-    "CROSS": nil,
-    "CUBE": nil,
-    "CUME_DIST": nil,
-    "CURRENT": nil,
-    "CURRENT_DATE": nil,
-    "CURRENT_TIME": nil,
-    "CURRENT_TIMESTAMP": nil,
-    "CURRENT_USER": nil,
-    "CURSOR": nil,
-    "CURSOR_NAME": nil,
-    "D": nil,
-    "DATA": nil,
-    "DATABASE": nil,
-    "DATABASES": nil,
-    "DATAFILE": nil,
-    "DATE": nil,
-    "DATETIME": nil,
-    "DAY": nil,
-    "DAY_HOUR": nil,
-    "DAY_MICROSECOND": nil,
-    "DAY_MINUTE": nil,
-    "DAY_SECOND": nil,
-    "DEALLOCATE": nil,
-    "DEC": nil,
-    "DECIMAL": nil,
-    "DECLARE": nil,
-    "DEFAULT": nil,
-    "DEFAULT_AUTH": nil,
-    "DEFINER": nil,
-    "DEFINITION": nil,
-    "DEFINITION;": nil,
-    "DELAYED": nil,
-    "DELAY_KEY_WRITE": nil,
-    "DELETE": nil,
-    "DENSE_RANK": nil,
-    "DESC": nil,
-    "DESCRIBE": nil,
-    "DESCRIPTION": nil,
-    "DESCRIPTION;": nil,
-    "DES_KEY_FILE": nil,
-    "DES_KEY_FILE;": nil,
-    "DETERMINISTIC": nil,
-    "DIAGNOSTICS": nil,
-    "DIRECTORY": nil,
-    "DISABLE": nil,
-    "DISCARD": nil,
-    "DISK": nil,
-    "DISTINCT": nil,
-    "DISTINCTROW": nil,
-    "DIV": nil,
-    "DO": nil,
-    "DOUBLE": nil,
-    "DROP": nil,
-    "DUAL": nil,
-    "DUMPFILE": nil,
-    "DUPLICATE": nil,
-    "DYNAMIC": nil,
-    "E": nil,
-    "EACH": nil,
-    "ELSE": nil,
-    "ELSEIF": nil,
-    "EMPTY": nil,
-    "ENABLE": nil,
-    "ENCLOSED": nil,
-    "ENCRYPTION": nil,
-    "END": nil,
-    "ENDS": nil,
-    "ENFORCED": nil,
-    "ENFORCED;": nil,
-    "ENGINE": nil,
-    "ENGINES": nil,
-    "ENGINE_ATTRIBUTE": nil,
-    "ENGINE_ATTRIBUTE;": nil,
-    "ENUM": nil,
-    "ERROR": nil,
-    "ERRORS": nil,
-    "ESCAPE": nil,
-    "ESCAPED": nil,
-    "EVENT": nil,
-    "EVENTS": nil,
-    "EVERY": nil,
-    "EXCEPT": nil,
-    "EXCHANGE": nil,
-    "EXCLUDE": nil,
-    "EXCLUDE;": nil,
-    "EXECUTE": nil,
-    "EXISTS": nil,
-    "EXIT": nil,
-    "EXPANSION": nil,
-    "EXPIRE": nil,
-    "EXPLAIN": nil,
-    "EXPORT": nil,
-    "EXTENDED": nil,
-    "EXTENT_SIZE": nil,
-    "F": nil,
-    "FACTOR": nil,
-    "FACTOR;": nil,
-    "FAILED_LOGIN_ATTEMPTS": nil,
-    "FAILED_LOGIN_ATTEMPTS;": nil,
-    "FALSE": nil,
-    "FAST": nil,
-    "FAULTS": nil,
-    "FETCH": nil,
-    "FIELDS": nil,
-    "FILE": nil,
-    "FILE_BLOCK_SIZE": nil,
-    "FILTER": nil,
-    "FINISH": nil,
-    "FINISH;": nil,
-    "FIRST": nil,
-    "FIRST_VALUE": nil,
-    "FIXED": nil,
-    "FLOAT": nil,
-    "FLOAT4": nil,
-    "FLOAT8": nil,
-    "FLUSH": nil,
-    "FOLLOWING": nil,
-    "FOLLOWING;": nil,
-    "FOLLOWS": nil,
-    "FOR": nil,
-    "FORCE": nil,
-    "FOREIGN": nil,
-    "FORMAT": nil,
-    "FOUND": nil,
-    "FROM": nil,
-    "FULL": nil,
-    "FULLTEXT": nil,
-    "FUNCTION": nil,
-    "G": nil,
-    "GENERAL": nil,
-    "GENERATED": nil,
-    "GEOMCOLLECTION": nil,
-    "GEOMCOLLECTION;": nil,
-    "GEOMETRY": nil,
-    "GEOMETRYCOLLECTION": nil,
-    "GET": nil,
-    "GET_FORMAT": nil,
-    "GET_MASTER_PUBLIC_KEY": nil,
-    "GET_MASTER_PUBLIC_KEY;": nil,
-    "GET_SOURCE_PUBLIC_KEY": nil,
-    "GET_SOURCE_PUBLIC_KEY;": nil,
-    "GLOBAL": nil,
-    "GRANT": nil,
-    "GRANTS": nil,
-    "GROUP": nil,
-    "GROUPING": nil,
-    "GROUPS": nil,
-    "GROUP_REPLICATION": nil,
-    "GTID_ONLY": nil,
-    "GTID_ONLY;": nil,
-    "H": nil,
-    "HANDLER": nil,
-    "HASH": nil,
-    "HAVING": nil,
-    "HELP": nil,
-    "HIGH_PRIORITY": nil,
-    "HISTOGRAM": nil,
-    "HISTOGRAM;": nil,
-    "HISTORY": nil,
-    "HISTORY;": nil,
-    "HOST": nil,
-    "HOSTS": nil,
-    "HOUR": nil,
-    "HOUR_MICROSECOND": nil,
-    "HOUR_MINUTE": nil,
-    "HOUR_SECOND": nil,
-    "I": nil,
-    "IDENTIFIED": nil,
-    "IF": nil,
-    "IGNORE": nil,
-    "IGNORE_SERVER_IDS": nil,
-    "IMPORT": nil,
-    "IN": nil,
-    "INACTIVE": nil,
-    "INACTIVE;": nil,
-    "INDEX": nil,
-    "INDEXES": nil,
-    "INFILE": nil,
-    "INITIAL": nil,
-    "INITIAL;": nil,
-    "INITIAL_SIZE": nil,
-    "INITIATE": nil,
-    "INITIATE;": nil,
-    "INNER": nil,
-    "INOUT": nil,
-    "INSENSITIVE": nil,
-    "INSERT": nil,
-    "INSERT_METHOD": nil,
-    "INSTALL": nil,
-    "INSTANCE": nil,
-    "INT": nil,
-    "INT1": nil,
-    "INT2": nil,
-    "INT3": nil,
-    "INT4": nil,
-    "INT8": nil,
-    "INTEGER": nil,
-    "INTERSECT": nil,
-    "INTERVAL": nil,
-    "INTO": nil,
-    "INVISIBLE": nil,
-    "INVOKER": nil,
-    "IO": nil,
-    "IO_AFTER_GTIDS": nil,
-    "IO_BEFORE_GTIDS": nil,
-    "IO_THREAD": nil,
-    "IPC": nil,
-    "IS": nil,
-    "ISOLATION": nil,
-    "ISSUER": nil,
-    "ITERATE": nil,
-    "J": nil,
-    "JOIN": nil,
-    "JSON": nil,
-    "JSON_TABLE": nil,
-    "JSON_VALUE": nil,
-    "JSON_VALUE;": nil,
-    "K": nil,
-    "KEY": nil,
-    "KEYRING": nil,
-    "KEYRING;": nil,
-    "KEYS": nil,
-    "KEY_BLOCK_SIZE": nil,
-    "KILL": nil,
-    "L": nil,
-    "LAG": nil,
-    "LANGUAGE": nil,
-    "LAST": nil,
-    "LAST_VALUE": nil,
-    "LATERAL": nil,
-    "LEAD": nil,
-    "LEADING": nil,
-    "LEAVE": nil,
-    "LEAVES": nil,
-    "LEFT": nil,
-    "LESS": nil,
-    "LEVEL": nil,
-    "LIKE": nil,
-    "LIMIT": nil,
-    "LINEAR": nil,
-    "LINES": nil,
-    "LINESTRING": nil,
-    "LIST": nil,
-    "LOAD": nil,
-    "LOCAL": nil,
-    "LOCALTIME": nil,
-    "LOCALTIMESTAMP": nil,
-    "LOCK": nil,
-    "LOCKED": nil,
-    "LOCKED;": nil,
-    "LOCKS": nil,
-    "LOGFILE": nil,
-    "LOGS": nil,
-    "LONG": nil,
-    "LONGBLOB": nil,
-    "LONGTEXT": nil,
-    "LOOP": nil,
-    "LOW_PRIORITY": nil,
-    "M": nil,
-    "MASTER": nil,
-    "MASTER_AUTO_POSITION": nil,
-    "MASTER_BIND": nil,
-    "MASTER_COMPRESSION_ALGORITHMS": nil,
-    "MASTER_COMPRESSION_ALGORITHMS;": nil,
-    "MASTER_CONNECT_RETRY": nil,
-    "MASTER_DELAY": nil,
-    "MASTER_HEARTBEAT_PERIOD": nil,
-    "MASTER_HOST": nil,
-    "MASTER_LOG_FILE": nil,
-    "MASTER_LOG_POS": nil,
-    "MASTER_PASSWORD": nil,
-    "MASTER_PORT": nil,
-    "MASTER_PUBLIC_KEY_PATH": nil,
-    "MASTER_PUBLIC_KEY_PATH;": nil,
-    "MASTER_RETRY_COUNT": nil,
-    "MASTER_SERVER_ID": nil,
-    "MASTER_SERVER_ID;": nil,
-    "MASTER_SSL": nil,
-    "MASTER_SSL_CA": nil,
-    "MASTER_SSL_CAPATH": nil,
-    "MASTER_SSL_CERT": nil,
-    "MASTER_SSL_CIPHER": nil,
-    "MASTER_SSL_CRL": nil,
-    "MASTER_SSL_CRLPATH": nil,
-    "MASTER_SSL_KEY": nil,
-    "MASTER_SSL_VERIFY_SERVER_CERT": nil,
-    "MASTER_TLS_CIPHERSUITES": nil,
-    "MASTER_TLS_CIPHERSUITES;": nil,
-    "MASTER_TLS_VERSION": nil,
-    "MASTER_USER": nil,
-    "MASTER_ZSTD_COMPRESSION_LEVEL": nil,
-    "MASTER_ZSTD_COMPRESSION_LEVEL;": nil,
-    "MATCH": nil,
-    "MAXVALUE": nil,
-    "MAX_CONNECTIONS_PER_HOUR": nil,
-    "MAX_QUERIES_PER_HOUR": nil,
-    "MAX_ROWS": nil,
-    "MAX_SIZE": nil,
-    "MAX_UPDATES_PER_HOUR": nil,
-    "MAX_USER_CONNECTIONS": nil,
-    "MEDIUM": nil,
-    "MEDIUMBLOB": nil,
-    "MEDIUMINT": nil,
-    "MEDIUMTEXT": nil,
-    "MEMBER": nil,
-    "MEMBER;": nil,
-    "MEMORY": nil,
-    "MERGE": nil,
-    "MESSAGE_TEXT": nil,
-    "MICROSECOND": nil,
-    "MIDDLEINT": nil,
-    "MIGRATE": nil,
-    "MINUTE": nil,
-    "MINUTE_MICROSECOND": nil,
-    "MINUTE_SECOND": nil,
-    "MIN_ROWS": nil,
-    "MOD": nil,
-    "MODE": nil,
-    "MODIFIES": nil,
-    "MODIFY": nil,
-    "MONTH": nil,
-    "MULTILINESTRING": nil,
-    "MULTIPOINT": nil,
-    "MULTIPOLYGON": nil,
-    "MUTEX": nil,
-    "MYSQL_ERRNO": nil,
-    "N": nil,
-    "NAME": nil,
-    "NAMES": nil,
-    "NATIONAL": nil,
-    "NATURAL": nil,
-    "NCHAR": nil,
-    "NDB": nil,
-    "NDBCLUSTER": nil,
-    "NESTED": nil,
-    "NESTED;": nil,
-    "NETWORK_NAMESPACE": nil,
-    "NETWORK_NAMESPACE;": nil,
-    "NEVER": nil,
-    "NEW": nil,
-    "NEXT": nil,
-    "NO": nil,
-    "NODEGROUP": nil,
-    "NONE": nil,
-    "NOT": nil,
-    "NOWAIT": nil,
-    "NOWAIT;": nil,
-    "NO_WAIT": nil,
-    "NO_WRITE_TO_BINLOG": nil,
-    "NTH_VALUE": nil,
-    "NTILE": nil,
-    "NULL": nil,
-    "NULLS": nil,
-    "NULLS;": nil,
-    "NUMBER": nil,
-    "NUMERIC": nil,
-    "NVARCHAR": nil,
-    "O": nil,
-    "OF": nil,
-    "OFF": nil,
-    "OFF;": nil,
-    "OFFSET": nil,
-    "OJ": nil,
-    "OJ;": nil,
-    "OLD": nil,
-    "OLD;": nil,
-    "ON": nil,
-    "ONE": nil,
-    "ONLY": nil,
-    "OPEN": nil,
-    "OPTIMIZE": nil,
-    "OPTIMIZER_COSTS": nil,
-    "OPTION": nil,
-    "OPTIONAL": nil,
-    "OPTIONAL;": nil,
-    "OPTIONALLY": nil,
-    "OPTIONS": nil,
-    "OR": nil,
-    "ORDER": nil,
-    "ORDINALITY": nil,
-    "ORDINALITY;": nil,
-    "ORGANIZATION": nil,
-    "ORGANIZATION;": nil,
-    "OTHERS": nil,
-    "OTHERS;": nil,
-    "OUT": nil,
-    "OUTER": nil,
-    "OUTFILE": nil,
-    "OVER": nil,
-    "OWNER": nil,
-    "P": nil,
-    "PACK_KEYS": nil,
-    "PAGE": nil,
-    "PARSER": nil,
-    "PARSE_GCOL_EXPR": nil,
-    "PARTIAL": nil,
-    "PARTITION": nil,
-    "PARTITIONING": nil,
-    "PARTITIONS": nil,
-    "PASSWORD": nil,
-    "PASSWORD_LOCK_TIME": nil,
-    "PASSWORD_LOCK_TIME;": nil,
-    "PATH": nil,
-    "PATH;": nil,
-    "PERCENT_RANK": nil,
-    "PERSIST": nil,
-    "PERSIST;": nil,
-    "PERSIST_ONLY": nil,
-    "PERSIST_ONLY;": nil,
-    "PHASE": nil,
-    "PLUGIN": nil,
-    "PLUGINS": nil,
-    "PLUGIN_DIR": nil,
-    "POINT": nil,
-    "POLYGON": nil,
-    "PORT": nil,
-    "PRECEDES": nil,
-    "PRECEDING": nil,
-    "PRECEDING;": nil,
-    "PRECISION": nil,
-    "PREPARE": nil,
-    "PRESERVE": nil,
-    "PREV": nil,
-    "PRIMARY": nil,
-    "PRIVILEGES": nil,
-    "PRIVILEGE_CHECKS_USER": nil,
-    "PRIVILEGE_CHECKS_USER;": nil,
-    "PROCEDURE": nil,
-    "PROCESS": nil,
-    "PROCESS;": nil,
-    "PROCESSLIST": nil,
-    "PROFILE": nil,
-    "PROFILES": nil,
-    "PROXY": nil,
-    "PURGE": nil,
-    "Q": nil,
-    "QUARTER": nil,
-    "QUERY": nil,
-    "QUICK": nil,
-    "R": nil,
-    "RANDOM": nil,
-    "RANDOM;": nil,
-    "RANGE": nil,
-    "RANK": nil,
-    "READ": nil,
-    "READS": nil,
-    "READ_ONLY": nil,
-    "READ_WRITE": nil,
-    "REAL": nil,
-    "REBUILD": nil,
-    "RECOVER": nil,
-    "RECURSIVE": nil,
-    "REDOFILE": nil,
-    "REDOFILE;": nil,
-    "REDO_BUFFER_SIZE": nil,
-    "REDUNDANT": nil,
-    "REFERENCE": nil,
-    "REFERENCE;": nil,
-    "REFERENCES": nil,
-    "REGEXP": nil,
-    "REGISTRATION": nil,
-    "REGISTRATION;": nil,
-    "RELAY": nil,
-    "RELAYLOG": nil,
-    "RELAY_LOG_FILE": nil,
-    "RELAY_LOG_POS": nil,
-    "RELAY_THREAD": nil,
-    "RELEASE": nil,
-    "RELOAD": nil,
-    "REMOTE": nil,
-    "REMOTE;": nil,
-    "REMOVE": nil,
-    "RENAME": nil,
-    "REORGANIZE": nil,
-    "REPAIR": nil,
-    "REPEAT": nil,
-    "REPEATABLE": nil,
-    "REPLACE": nil,
-    "REPLICA": nil,
-    "REPLICA;": nil,
-    "REPLICAS": nil,
-    "REPLICAS;": nil,
-    "REPLICATE_DO_DB": nil,
-    "REPLICATE_DO_TABLE": nil,
-    "REPLICATE_IGNORE_DB": nil,
-    "REPLICATE_IGNORE_TABLE": nil,
-    "REPLICATE_REWRITE_DB": nil,
-    "REPLICATE_WILD_DO_TABLE": nil,
-    "REPLICATE_WILD_IGNORE_TABLE": nil,
-    "REPLICATION": nil,
-    "REQUIRE": nil,
-    "REQUIRE_ROW_FORMAT": nil,
-    "REQUIRE_ROW_FORMAT;": nil,
-    "RESET": nil,
-    "RESIGNAL": nil,
-    "RESOURCE": nil,
-    "RESOURCE;": nil,
-    "RESPECT": nil,
-    "RESPECT;": nil,
-    "RESTART": nil,
-    "RESTART;": nil,
-    "RESTORE": nil,
-    "RESTRICT": nil,
-    "RESUME": nil,
-    "RETAIN": nil,
-    "RETAIN;": nil,
-    "RETURN": nil,
-    "RETURNED_SQLSTATE": nil,
-    "RETURNING": nil,
-    "RETURNING;": nil,
-    "RETURNS": nil,
-    "REUSE": nil,
-    "REUSE;": nil,
-    "REVERSE": nil,
-    "REVOKE": nil,
-    "RIGHT": nil,
-    "RLIKE": nil,
-    "ROLE": nil,
-    "ROLE;": nil,
-    "ROLLBACK": nil,
-    "ROLLUP": nil,
-    "ROTATE": nil,
-    "ROUTINE": nil,
-    "ROW": nil,
-    "ROWS": nil,
-    "ROW_COUNT": nil,
-    "ROW_FORMAT": nil,
-    "ROW_NUMBER": nil,
-    "RTREE": nil,
-    "S": nil,
-    "SAVEPOINT": nil,
-    "SCHEDULE": nil,
-    "SCHEMA": nil,
-    "SCHEMAS": nil,
-    "SCHEMA_NAME": nil,
-    "SECOND": nil,
-    "SECONDARY": nil,
-    "SECONDARY;": nil,
-    "SECONDARY_ENGINE": nil,
-    "SECONDARY_ENGINE;": nil,
-    "SECONDARY_ENGINE_ATTRIBUTE": nil,
-    "SECONDARY_ENGINE_ATTRIBUTE;": nil,
-    "SECONDARY_LOAD": nil,
-    "SECONDARY_LOAD;": nil,
-    "SECONDARY_UNLOAD": nil,
-    "SECONDARY_UNLOAD;": nil,
-    "SECOND_MICROSECOND": nil,
-    "SECURITY": nil,
-    "SELECT": nil,
-    "SENSITIVE": nil,
-    "SEPARATOR": nil,
-    "SERIAL": nil,
-    "SERIALIZABLE": nil,
-    "SERVER": nil,
-    "SESSION": nil,
-    "SET": nil,
-    "SHARE": nil,
-    "SHOW": nil,
-    "SHUTDOWN": nil,
-    "SIGNAL": nil,
-    "SIGNED": nil,
-    "SIMPLE": nil,
-    "SKIP": nil,
-    "SKIP;": nil,
-    "SLAVE": nil,
-    "SLOW": nil,
-    "SMALLINT": nil,
-    "SNAPSHOT": nil,
-    "SOCKET": nil,
-    "SOME": nil,
-    "SONAME": nil,
-    "SOUNDS": nil,
-    "SOURCE": nil,
-    "SOURCE_AUTO_POSITION": nil,
-    "SOURCE_AUTO_POSITION;": nil,
-    "SOURCE_BIND": nil,
-    "SOURCE_BIND;": nil,
-    "SOURCE_COMPRESSION_ALGORITHMS": nil,
-    "SOURCE_COMPRESSION_ALGORITHMS;": nil,
-    "SOURCE_CONNECT_RETRY": nil,
-    "SOURCE_CONNECT_RETRY;": nil,
-    "SOURCE_DELAY": nil,
-    "SOURCE_DELAY;": nil,
-    "SOURCE_HEARTBEAT_PERIOD": nil,
-    "SOURCE_HEARTBEAT_PERIOD;": nil,
-    "SOURCE_HOST": nil,
-    "SOURCE_HOST;": nil,
-    "SOURCE_LOG_FILE": nil,
-    "SOURCE_LOG_FILE;": nil,
-    "SOURCE_LOG_POS": nil,
-    "SOURCE_LOG_POS;": nil,
-    "SOURCE_PASSWORD": nil,
-    "SOURCE_PASSWORD;": nil,
-    "SOURCE_PORT": nil,
-    "SOURCE_PORT;": nil,
-    "SOURCE_PUBLIC_KEY_PATH": nil,
-    "SOURCE_PUBLIC_KEY_PATH;": nil,
-    "SOURCE_RETRY_COUNT": nil,
-    "SOURCE_RETRY_COUNT;": nil,
-    "SOURCE_SSL": nil,
-    "SOURCE_SSL;": nil,
-    "SOURCE_SSL_CA": nil,
-    "SOURCE_SSL_CA;": nil,
-    "SOURCE_SSL_CAPATH": nil,
-    "SOURCE_SSL_CAPATH;": nil,
-    "SOURCE_SSL_CERT": nil,
-    "SOURCE_SSL_CERT;": nil,
-    "SOURCE_SSL_CIPHER": nil,
-    "SOURCE_SSL_CIPHER;": nil,
-    "SOURCE_SSL_CRL": nil,
-    "SOURCE_SSL_CRL;": nil,
-    "SOURCE_SSL_CRLPATH": nil,
-    "SOURCE_SSL_CRLPATH;": nil,
-    "SOURCE_SSL_KEY": nil,
-    "SOURCE_SSL_KEY;": nil,
-    "SOURCE_SSL_VERIFY_SERVER_CERT": nil,
-    "SOURCE_SSL_VERIFY_SERVER_CERT;": nil,
-    "SOURCE_TLS_CIPHERSUITES": nil,
-    "SOURCE_TLS_CIPHERSUITES;": nil,
-    "SOURCE_TLS_VERSION": nil,
-    "SOURCE_TLS_VERSION;": nil,
-    "SOURCE_USER": nil,
-    "SOURCE_USER;": nil,
-    "SOURCE_ZSTD_COMPRESSION_LEVEL": nil,
-    "SOURCE_ZSTD_COMPRESSION_LEVEL;": nil,
-    "SPATIAL": nil,
-    "SPECIFIC": nil,
-    "SQL": nil,
-    "SQLEXCEPTION": nil,
-    "SQLSTATE": nil,
-    "SQLWARNING": nil,
-    "SQL_AFTER_GTIDS": nil,
-    "SQL_AFTER_MTS_GAPS": nil,
-    "SQL_BEFORE_GTIDS": nil,
-    "SQL_BIG_RESULT": nil,
-    "SQL_BUFFER_RESULT": nil,
-    "SQL_CACHE": nil,
-    "SQL_CACHE;": nil,
-    "SQL_CALC_FOUND_ROWS": nil,
-    "SQL_NO_CACHE": nil,
-    "SQL_SMALL_RESULT": nil,
-    "SQL_THREAD": nil,
-    "SQL_TSI_DAY": nil,
-    "SQL_TSI_HOUR": nil,
-    "SQL_TSI_MINUTE": nil,
-    "SQL_TSI_MONTH": nil,
-    "SQL_TSI_QUARTER": nil,
-    "SQL_TSI_SECOND": nil,
-    "SQL_TSI_WEEK": nil,
-    "SQL_TSI_YEAR": nil,
-    "SRID": nil,
-    "SRID;": nil,
-    "SSL": nil,
-    "STACKED": nil,
-    "START": nil,
-    "STARTING": nil,
-    "STARTS": nil,
-    "STATS_AUTO_RECALC": nil,
-    "STATS_PERSISTENT": nil,
-    "STATS_SAMPLE_PAGES": nil,
-    "STATUS": nil,
-    "STOP": nil,
-    "STORAGE": nil,
-    "STORED": nil,
-    "STRAIGHT_JOIN": nil,
-    "STREAM": nil,
-    "STREAM;": nil,
-    "STRING": nil,
-    "SUBCLASS_ORIGIN": nil,
-    "SUBJECT": nil,
-    "SUBPARTITION": nil,
-    "SUBPARTITIONS": nil,
-    "SUPER": nil,
-    "SUSPEND": nil,
-    "SWAPS": nil,
-    "SWITCHES": nil,
-    "SYSTEM": nil,
-    "T": nil,
-    "TABLE": nil,
-    "TABLES": nil,
-    "TABLESPACE": nil,
-    "TABLE_CHECKSUM": nil,
-    "TABLE_NAME": nil,
-    "TEMPORARY": nil,
-    "TEMPTABLE": nil,
-    "TERMINATED": nil,
-    "TEXT": nil,
-    "THAN": nil,
-    "THEN": nil,
-    "THREAD_PRIORITY": nil,
-    "THREAD_PRIORITY;": nil,
-    "TIES": nil,
-    "TIES;": nil,
-    "TIME": nil,
-    "TIMESTAMP": nil,
-    "TIMESTAMPADD": nil,
-    "TIMESTAMPDIFF": nil,
-    "TINYBLOB": nil,
-    "TINYINT": nil,
-    "TINYTEXT": nil,
-    "TLS": nil,
-    "TLS;": nil,
-    "TO": nil,
-    "TRAILING": nil,
-    "TRANSACTION": nil,
-    "TRIGGER": nil,
-    "TRIGGERS": nil,
-    "TRUE": nil,
-    "TRUNCATE": nil,
-    "TYPE": nil,
-    "TYPES": nil,
-    "U": nil,
-    "UNBOUNDED": nil,
-    "UNBOUNDED;": nil,
-    "UNCOMMITTED": nil,
-    "UNDEFINED": nil,
-    "UNDO": nil,
-    "UNDOFILE": nil,
-    "UNDO_BUFFER_SIZE": nil,
-    "UNICODE": nil,
-    "UNINSTALL": nil,
-    "UNION": nil,
-    "UNIQUE": nil,
-    "UNKNOWN": nil,
-    "UNLOCK": nil,
-    "UNREGISTER": nil,
-    "UNREGISTER;": nil,
-    "UNSIGNED": nil,
-    "UNTIL": nil,
-    "UPDATE": nil,
-    "UPGRADE": nil,
-    "USAGE": nil,
-    "USE": nil,
-    "USER_RESOURCES": nil,
-    "USE_FRM": nil,
-    "USING": nil,
-    "UTC_DATE": nil,
-    "UTC_TIME": nil,
-    "UTC_TIMESTAMP": nil,
-    "V": nil,
-    "VALIDATION": nil,
-    "VALUE": nil,
-    "VALUES": nil,
-    "VARBINARY": nil,
-    "VARCHAR": nil,
-    "VARCHARACTER": nil,
-    "VARIABLES": nil,
-    "VARYING": nil,
-    "VCPU": nil,
-    "VCPU;": nil,
-    "VIEW": nil,
-    "VIRTUAL": nil,
-    "VISIBLE": nil,
-    "W": nil,
-    "WAIT": nil,
-    "WARNINGS": nil,
-    "WEEK": nil,
-    "WEIGHT_STRING": nil,
-    "WHEN": nil,
-    "WHERE": nil,
-    "WHILE": nil,
-    "WINDOW": nil,
-    "WITH": nil,
-    "WITHOUT": nil,
-    "WORK": nil,
-    "WRAPPER": nil,
-    "WRITE": nil,
-    "X": nil,
-    "X509": nil,
-    "XA": nil,
-    "XID": nil,
-    "XML": nil,
-    "XOR": nil,
-    "Y": nil,
-    "YEAR": nil,
-    "YEAR_MONTH": nil,
-    "Z": nil,
-    "ZEROFILL": nil,
-    "ZONE": nil,
-    "ZONE;": nil,
-    "_FILENAME": nil}
-}
-*/

@@ -16,7 +16,6 @@ import (
 )
 
 func main() {
-	errors := []error{}
 	const CLS_USER string = "username"
 	const CLS_HOST string = "host_name"
 	const CLS_PORT string = "port_number"
@@ -50,8 +49,7 @@ func main() {
 	}
 
 	params, errors := getParams(os.Args[1:])
-	if errors != nil || len((errors)) > 0 {
-		context.LogErrors(errors)
+	if context.HasErrors() {
 		os.Exit(1)
 	}
 
@@ -81,12 +79,11 @@ func main() {
 		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
-	if database_username_value == nil || !database_username_value_found {
+	if !database_username_value_found || common.IsNil(database_username_value) {
 		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
 	}
 
-	if len(errors) > 0 {
-		context.LogErrors(errors)
+	if context.HasErrors() {
 		os.Exit(1)
 	}
 
@@ -574,7 +571,7 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 	}
 	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nimport (\n    json \"github.com/matehaxor03/holistic_json/json\"\n)\nfunc %s Map {\nreturn Map{\n", package_name, method_name)); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nimport (\n    json \"github.com/matehaxor03/holistic_json/json\"\n)\nfunc %s json.Map {\nvalue := json.NewMapValue()\n", package_name, method_name)); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
@@ -588,20 +585,20 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 
 	length := len(valid_runes)
 	for index, key := range sorted_keys {
-		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", key)); valid_error != nil {
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    value.SetNil(\"%s\")", key)); valid_error != nil {
 			errors = append(errors, valid_error)
 			return errors
 		}
 
 		if uint64(index) < uint64(length-1) {
-			if _, valid_error := valid_rune_file.WriteString(",\n"); valid_error != nil {
+			if _, valid_error := valid_rune_file.WriteString("\n"); valid_error != nil {
 				errors = append(errors, valid_error)
 				return errors
 			}
 		}
 	}
 
-	if _, valid_error := valid_rune_file.WriteString("}\n}"); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString("return value \n}"); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
