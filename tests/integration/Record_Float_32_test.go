@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
 
 	test_value := float32(123456789.987654321)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetFloat32Value(helper.GetTestTableFloat32ColumnName(), test_value)
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -35,7 +35,7 @@ func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
 func TestRecordCanUpdateRecordWithFloat32(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
 
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetFloat32Value(helper.GetTestTableFloat32ColumnName(), float32(123456789.987654321))
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -60,7 +60,7 @@ func TestRecordCanCreateRecordWithFloat32NotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(987654321.987654321)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetFloat32(helper.GetTestTableFloat32ColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -84,7 +84,7 @@ func TestRecordCanUpdateRecordWithFloat32NotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(123456789.123456789)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetFloat32(helper.GetTestTableFloat32ColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 

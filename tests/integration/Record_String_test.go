@@ -11,7 +11,7 @@ import (
 func TestRecordCanCreateRecordWithString(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -34,7 +34,7 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 func TestRecordCanUpdateRecordWithString(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
 
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -59,7 +59,7 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetString(helper.GetTestTableStringColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -83,7 +83,7 @@ func TestRecordCanUpdateRecordWithStringNotMandatory(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetString(helper.GetTestTableStringColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 

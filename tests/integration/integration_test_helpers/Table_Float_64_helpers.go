@@ -21,8 +21,8 @@ func GetTestTableFloat64ColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithFloat64Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "float64")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableFloat64ColumnName(), column_schema)
@@ -31,8 +31,8 @@ func GetTestSchemaWithFloat64Column() json.Map {
 
 
 func GetTestSchemaWithFloat64ColumnNotMandatory() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*float64")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableFloat64ColumnNameNotMandatory(), column_schema)

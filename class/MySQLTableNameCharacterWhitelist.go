@@ -5,70 +5,70 @@ import (
 )
 
 func GetMySQLTableNameWhitelistCharacters() json.Map {
-return json.Map{
-    "$": nil,
-    ".": nil,
-    "0": nil,
-    "1": nil,
-    "2": nil,
-    "3": nil,
-    "4": nil,
-    "5": nil,
-    "6": nil,
-    "7": nil,
-    "8": nil,
-    "9": nil,
-    "A": nil,
-    "B": nil,
-    "C": nil,
-    "D": nil,
-    "E": nil,
-    "F": nil,
-    "G": nil,
-    "H": nil,
-    "I": nil,
-    "J": nil,
-    "K": nil,
-    "L": nil,
-    "M": nil,
-    "N": nil,
-    "O": nil,
-    "P": nil,
-    "Q": nil,
-    "R": nil,
-    "S": nil,
-    "T": nil,
-    "U": nil,
-    "V": nil,
-    "W": nil,
-    "X": nil,
-    "Y": nil,
-    "Z": nil,
-    "_": nil,
-    "a": nil,
-    "b": nil,
-    "c": nil,
-    "d": nil,
-    "e": nil,
-    "f": nil,
-    "g": nil,
-    "h": nil,
-    "i": nil,
-    "j": nil,
-    "k": nil,
-    "l": nil,
-    "m": nil,
-    "n": nil,
-    "o": nil,
-    "p": nil,
-    "q": nil,
-    "r": nil,
-    "s": nil,
-    "t": nil,
-    "u": nil,
-    "v": nil,
-    "w": nil,
-    "x": nil,
-    "y": nil,
-    "z": nil}
+    valid_chars := json.NewMapValue()
+	valid_chars.SetNil("0")
+	valid_chars.SetNil("1")
+	valid_chars.SetNil("2")
+	valid_chars.SetNil("3")
+	valid_chars.SetNil("4")
+	valid_chars.SetNil("5")
+	valid_chars.SetNil("6")
+	valid_chars.SetNil("7")
+	valid_chars.SetNil("8")
+	valid_chars.SetNil("9")
+	valid_chars.SetNil("A")
+	valid_chars.SetNil("B")
+	valid_chars.SetNil("C")
+	valid_chars.SetNil("D")
+	valid_chars.SetNil("E")
+	valid_chars.SetNil("F")
+	valid_chars.SetNil("G")
+	valid_chars.SetNil("H")
+	valid_chars.SetNil("I")
+	valid_chars.SetNil("J")
+	valid_chars.SetNil("K")
+	valid_chars.SetNil("L")
+	valid_chars.SetNil("M")
+	valid_chars.SetNil("N")
+	valid_chars.SetNil("O")
+	valid_chars.SetNil("P")
+	valid_chars.SetNil("Q")
+	valid_chars.SetNil("R")
+	valid_chars.SetNil("S")
+	valid_chars.SetNil("T")
+	valid_chars.SetNil("U")
+	valid_chars.SetNil("V")
+	valid_chars.SetNil("W")
+	valid_chars.SetNil("X")
+	valid_chars.SetNil("Y")
+	valid_chars.SetNil("Z")
+	valid_chars.SetNil("_")
+	valid_chars.SetNil("-")
+	valid_chars.SetNil("a")
+	valid_chars.SetNil("b")
+	valid_chars.SetNil("c")
+	valid_chars.SetNil("d")
+	valid_chars.SetNil("e")
+	valid_chars.SetNil("f")
+	valid_chars.SetNil("g")
+	valid_chars.SetNil("h")
+	valid_chars.SetNil("i")
+	valid_chars.SetNil("j")
+	valid_chars.SetNil("k")
+	valid_chars.SetNil("l")
+	valid_chars.SetNil("m")
+	valid_chars.SetNil("n")
+	valid_chars.SetNil("o")
+	valid_chars.SetNil("p")
+	valid_chars.SetNil("q")
+	valid_chars.SetNil("r")
+	valid_chars.SetNil("s")
+	valid_chars.SetNil("t")
+	valid_chars.SetNil("u")
+	valid_chars.SetNil("v")
+	valid_chars.SetNil("w")
+	valid_chars.SetNil("x")
+	valid_chars.SetNil("y")
+	valid_chars.SetNil("z")
+	return valid_chars
 }

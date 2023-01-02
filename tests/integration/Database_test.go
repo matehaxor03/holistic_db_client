@@ -149,7 +149,7 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	previous_database_name, _ := database.GetDatabaseName()
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
-	for blacklist_database_name := range blacklist_map {
+	for _, blacklist_database_name := range blacklist_map.Keys() {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -184,7 +184,7 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 	
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for blacklist_database_name := range blacklist_map {
+	for _, blacklist_database_name := range blacklist_map.Keys() {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -209,7 +209,7 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for blacklist_database_name := range blacklist_map {
+	for _, blacklist_database_name := range blacklist_map.Keys() {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -235,7 +235,7 @@ func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for blacklist_database_name := range blacklist_map {
+	for _, blacklist_database_name := range blacklist_map.Keys() {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -260,7 +260,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
 
-	for whitelist_database_character := range whitelist_map {
+	for _, whitelist_database_character := range whitelist_map.Keys() {
 		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
 			
 		if new_database_errors != nil {
@@ -286,9 +286,11 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	character_set := class.GET_CHARACTER_SET_UTF8MB4()
 	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	non_whitelist_map := json.Map{"(":nil, ")":nil}
+	non_whitelist_map := json.NewMap()
+	non_whitelist_map.SetNil("(")
+	non_whitelist_map.SetNil(")")
 
-	for non_whitelist_characters := range non_whitelist_map {
+	for _, non_whitelist_characters := range non_whitelist_map.Keys() {
 		database, new_database_errors := client.GetDatabaseInterface("a" + non_whitelist_characters + "a", &character_set, &collate)
 		
 		if new_database_errors == nil {
@@ -306,7 +308,7 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 
 	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
 
-	for whitelist_database_character := range whitelist_map {
+	for _, whitelist_database_character := range whitelist_map.Keys() {
 		database, new_database_errors := client.GetDatabaseInterface(whitelist_database_character, &character_set, &collate)
 		
 		if new_database_errors == nil {
@@ -319,7 +321,8 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 
 func TestDatabaseCanGetTableNames(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
-	database.CreateTable("some_table", helper.GetTestSchema())
+	table_name := helper.GetTestTableName()
+	database.CreateTable(table_name, helper.GetTestSchema())
 
 	table_names, tables_name_errors := database.GetTableNames()
 	if tables_name_errors != nil {
@@ -331,7 +334,7 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 	} else if !(len(*table_names) >= 0) {
 		t.Errorf("error: database.GetTables should return at least one table name")
 
-		if !common.Contains(*table_names, "some_table") {
+		if !common.Contains(*table_names, table_name) {
 			t.Errorf("error: some_table not found in table_names")
 		}
 	}
@@ -339,7 +342,7 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 
 func TestDatabaseCanGetTables(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
-	database.CreateTable("some_table", helper.GetTestSchema())
+	database.CreateTable("some_table",  helper.GetTestSchema())
 
 	tables, tables_errors := database.GetTables()
 	if tables_errors != nil {

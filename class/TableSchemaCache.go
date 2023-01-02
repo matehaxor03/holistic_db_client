@@ -10,7 +10,7 @@ type TableSchemaCache struct {
 }
 
 func newTableSchemaCache() (*TableSchemaCache) {
-	cache := json.Map{}
+	cache := json.NewMapValue()
 	
 	getOrSetSchema := func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {		
 		client, client_errors := database.GetClient()

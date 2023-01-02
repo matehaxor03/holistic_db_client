@@ -21,8 +21,8 @@ func GetTestTableIntegerSigned08ColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithIntegerSigned08Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "int8")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerSigned08ColumnName(), column_schema)
@@ -30,8 +30,8 @@ func GetTestSchemaWithIntegerSigned08Column() json.Map {
 }
 
 func GetTestSchemaWithIntegerSigned08NotMandatoryColumn() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*int8")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerSigned08ColumnNameNotMandatory(), column_schema)

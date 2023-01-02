@@ -21,8 +21,8 @@ func GetTestTableIntegerUnsigned16ColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithIntegerUnsigned16Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "uint16")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerUnsigned16ColumnName(), column_schema)
@@ -30,8 +30,8 @@ func GetTestSchemaWithIntegerUnsigned16Column() json.Map {
 }
 
 func GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*uint16")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), column_schema)

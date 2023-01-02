@@ -22,8 +22,8 @@ func GetTestTableIntegerUnsigned32ColumnNameNotMandatory() string {
 
 
 func GetTestSchemaWithIntegerUnsigned32Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "uint32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerUnsigned32ColumnName(), column_schema)
@@ -31,8 +31,8 @@ func GetTestSchemaWithIntegerUnsigned32Column() json.Map {
 }
 
 func GetTestSchemaWithIntegerUnsigned32ColumnNotMandatory() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*uint32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerUnsigned32ColumnNameNotMandatory(), column_schema)

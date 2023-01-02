@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnName(), helper.GetTestSchemaWithIntegerUnsigned08Column())
 
 	test_value := uint8(100)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt8Value(helper.GetTestTableIntegerUnsigned08ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned08Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnName(), helper.GetTestSchemaWithIntegerUnsigned08Column())
 
     test_value := uint8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt8Value(helper.GetTestTableIntegerUnsigned08ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08ColumnNotMandatory(t *testing
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	
 	test_value := uint8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt8(helper.GetTestTableIntegerUnsigned08ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned08ColumNotMandatory(t *testing.
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	
 	test_value := uint8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt8(helper.GetTestTableIntegerUnsigned08ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 

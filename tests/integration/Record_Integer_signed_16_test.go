@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned16ColumnName(), helper.GetTestSchemaWithIntegerSigned16Column())
 	
 	test_value := int16(130)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt16Value(helper.GetTestTableIntegerSigned16ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned16Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned16ColumnName(), helper.GetTestSchemaWithIntegerSigned16Column())
 	
 	test_value := int16(150)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt16Value(helper.GetTestTableIntegerSigned16ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerSigned16ColumnNotMandatory(t *testing.T
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned16ColumnNotMandatory())
 	
 	test_value := int16(130)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt16(helper.GetTestTableIntegerSigned16ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned16ColumNotMandatory(t *testing.T)
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned16ColumnNotMandatory())
 	
 	test_value := int16(130)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt16(helper.GetTestTableIntegerSigned16ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 	

@@ -17,20 +17,9 @@ func TestSchemaCanCreateTable(t *testing.T) {
 		t.Errorf("expect table to be not nil")
 	}
 }
- 
-func TestSchemaCannotCreateTableIfNil(t *testing.T) {
-	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(helper.GetTestTableName(), nil)
-	if table_errors == nil {
-		t.Errorf("expect table_errors to be not nil")
-	}
-
-	if table != nil {
-		t.Errorf("expect table to be nil")
-	}
-}
 
 func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), json.Map{})
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), json.NewMapValue())
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}

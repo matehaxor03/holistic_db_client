@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
 	
 	test_value := int8(100)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt8Value(helper.GetTestTableIntegerSigned08ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
 	
 	test_value := int8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt8Value(helper.GetTestTableIntegerSigned08ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerSigned08ColumnNotMandatory(t *testing.T
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
 	
 	test_value := int8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt8(helper.GetTestTableIntegerSigned08ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -87,7 +87,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned08ColumNotMandatory(t *testing.T)
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
 	
 	test_value := int8(101)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt8(helper.GetTestTableIntegerSigned08ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 

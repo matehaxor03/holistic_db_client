@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnName(), helper.GetTestSchemaWithIntegerSigned32Column())
 	
 	test_value := int32(188)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt32Value(helper.GetTestTableIntegerSigned32ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned32Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnName(), helper.GetTestSchemaWithIntegerSigned32Column())
 	
 	test_value := int32(199)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt32Value(helper.GetTestTableIntegerSigned32ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	
 	test_value := int32(188)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt32(helper.GetTestTableIntegerSigned32ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned32ColumNotMandatory(t *testing.T)
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	
 	test_value := int32(199)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt32(helper.GetTestTableIntegerSigned32ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 	

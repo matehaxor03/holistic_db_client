@@ -22,8 +22,8 @@ func GetTestTableIntegerSigned32ColumnNameNotMandatory() string {
 
 
 func GetTestSchemaWithIntegerSigned32Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "int32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerSigned32ColumnName(), column_schema)
@@ -31,8 +31,8 @@ func GetTestSchemaWithIntegerSigned32Column() json.Map {
 }
 
 func GetTestSchemaWithIntegerSigned32ColumnNotMandatory() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*int32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableIntegerSigned32ColumnNameNotMandatory(), column_schema)

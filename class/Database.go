@@ -50,41 +50,41 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 
 
-	data := json.Map{}
-	data.SetMapValue("[fields]", json.Map{})
-	data.SetMapValue("[schema]", json.Map{})
+	data := json.NewMapValue()
+	data.SetMapValue("[fields]", json.NewMapValue())
+	data.SetMapValue("[schema]", json.NewMapValue())
 
-	map_system_fields := json.Map{}
-	map_system_fields.SetObject("[client]", client)
-	map_system_fields.SetObject("[database_name]", database_name)
-	map_system_fields.SetObject("[database_create_options]", database_create_options)
+	map_system_fields := json.NewMapValue()
+	map_system_fields.SetObjectForMap("[client]", client)
+	map_system_fields.SetObjectForMap("[database_name]", database_name)
+	map_system_fields.SetObjectForMap("[database_create_options]", database_create_options)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
 	///
 
-	map_system_schema := json.Map{}
+	map_system_schema := json.NewMapValue()
 	
-	map_client_schema := json.Map{}
+	map_client_schema := json.NewMapValue()
 	map_client_schema.SetStringValue("type", "class.Client")
 	map_system_schema.SetMapValue("[client]", map_client_schema)
 
 
 	// START database_name
-	map_database_name_schema := json.Map{}
+	map_database_name_schema := json.NewMapValue()
 	map_database_name_schema.SetStringValue("type", "string")
 	map_database_name_schema.SetIntValue("min_length", 2)
 	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
-	map_database_name_schema_filters := json.Array{}
-	map_database_name_schema_filter := json.Map{}
-	map_database_name_schema_filter.SetObject("values", database_name_whitelist_characters)
-	map_database_name_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+	map_database_name_schema_filters := json.NewArrayValue()
+	map_database_name_schema_filter := json.NewMapValue()
+	map_database_name_schema_filter.SetObjectForMap("values", database_name_whitelist_characters)
+	map_database_name_schema_filter.SetObjectForMap("function",  getWhitelistCharactersFunc())
 	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
 	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
 	map_system_schema.SetMapValue("[database_name]", map_database_name_schema)
 	// END database_name
 
 
-	map_create_options_schema := json.Map{}
+	map_create_options_schema := json.NewMapValue()
 	map_create_options_schema.SetStringValue("type", "*class.DatabaseCreateOptions")
 	map_system_schema.SetMapValue("[database_create_options]", map_create_options_schema)
 
@@ -93,8 +93,8 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 	/*
 	data := json.Map{
-		"[fields]": json.Map{},
-		"[schema]": json.Map{},
+		"[fields]": json.NewMapValue(),
+		"[schema]": json.NewMapValue(),
 		"[system_fields]": json.Map{
 			"[client]":client, "[database_name]":database_name,"[database_create_options]":database_create_options},
 		"[system_schema]": json.Map{
@@ -209,7 +209,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	create := func() []error {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
 
@@ -233,7 +233,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)
 
@@ -284,7 +284,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getTableNames := func() (*[]string, []error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 
 		errors := validate()
@@ -332,7 +332,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 		var table_names []string
 		column_name := "Tables_in_" + database_name_escaped
-		for _, record := range *records {
+		for _, record := range *(records.Values()) {
 			record_map, record_map_errors := record.GetMap()
 			if record_map_errors != nil {
 				errors = append(errors, record_map_errors...)
@@ -361,7 +361,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	delete := func() ([]error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		
@@ -410,7 +410,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		
@@ -485,15 +485,11 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			errors = append(errors, schema_errors...)
 		}
 
-		if table_schema == nil {
-			errors = append(errors, fmt.Errorf("error: Database.getTable schema is nil for table: %s", table_name))
-		}
-
 		if len(errors) > 0 {
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(*getDatabase(), table_name, table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -551,7 +547,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, &schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -566,7 +562,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, &schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors

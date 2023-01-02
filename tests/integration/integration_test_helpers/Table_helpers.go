@@ -39,13 +39,13 @@ func GetTestTablePrimaryKeyName2() string {
 }
 
 func GetTestSchema() json.Map {
-	table_schema := json.Map{}
+	table_schema := json.NewMapValue()
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	return table_schema
 }
 
 func GetTestSchemaColumn() json.Map {
-	schema := json.Map{}
+	schema := json.NewMapValue()
 	schema.SetStringValue("type", "uint64")
 	schema.SetBoolValue("auto_increment", true)
 	schema.SetBoolValue("primary_key", true)
@@ -53,7 +53,7 @@ func GetTestSchemaColumn() json.Map {
 }
 
 func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
-	schema := json.Map{}
+	schema := json.NewMapValue()
 	schema.SetStringValue("type", "uint64")
 	schema.SetBoolValue("auto_increment", true)
 	schema.SetBoolValue("primary_key", true)

@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
 	
 	test_value := uint16(130)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
 	
 	test_value := uint16(150)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt16Value(helper.GetTestTableIntegerUnsigned16ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	
 	test_value := uint16(188)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned16ColumNotMandatory(t *testing.
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	
 	test_value := uint16(255)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt16(helper.GetTestTableIntegerUnsigned16ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 

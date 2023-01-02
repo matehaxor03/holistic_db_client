@@ -14,7 +14,10 @@ func GET_CHARACTER_SET_UTF8MB4() string {
 }
 
 func GET_CHARACTER_SETS() json.Map {
-	return json.Map{GET_CHARACTER_SET_UTF8(): nil, GET_CHARACTER_SET_UTF8MB4(): nil}
+	valid_chars := json.NewMapValue()
+	valid_chars.SetNil(GET_CHARACTER_SET_UTF8())
+	valid_chars.SetNil(GET_CHARACTER_SET_UTF8MB4())
+	return valid_chars
 }
 
 func GET_COLLATE_UTF8_GENERAL_CI() string {
@@ -26,7 +29,10 @@ func GET_COLLATE_UTF8MB4_0900_AI_CI() string {
 }
 
 func GET_COLLATES() json.Map {
-	return json.Map{GET_COLLATE_UTF8_GENERAL_CI(): nil, GET_COLLATE_UTF8MB4_0900_AI_CI(): nil}
+	valid_chars := json.NewMapValue()
+	valid_chars.SetNil(GET_COLLATE_UTF8_GENERAL_CI())
+	valid_chars.SetNil(GET_COLLATE_UTF8MB4_0900_AI_CI())
+	return valid_chars
 }
 
 type DatabaseCreateOptions struct {
@@ -39,39 +45,39 @@ type DatabaseCreateOptions struct {
 func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 	struct_type := "*class.DatabaseCreateOptions"
 
-	data := json.Map{}
-	data.SetMapValue("[fields]", json.Map{})
-	data.SetMapValue("[schema]", json.Map{})
+	data := json.NewMapValue()
+	data.SetMapValue("[fields]", json.NewMapValue())
+	data.SetMapValue("[schema]", json.NewMapValue())
 
-	map_system_fields := json.Map{}
-	map_system_fields.SetObject("[character_set]", character_set)
-	map_system_fields.SetObject("[collate]", collate)
+	map_system_fields := json.NewMapValue()
+	map_system_fields.SetObjectForMap("[character_set]", character_set)
+	map_system_fields.SetObjectForMap("[collate]", collate)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
 	///
 
-	map_system_schema := json.Map{}
+	map_system_schema := json.NewMapValue()
 
 
-	map_character_set_schema := json.Map{}
+	map_character_set_schema := json.NewMapValue()
 	map_character_set_schema.SetStringValue("type", "*string")
 
-	map_character_set_schema_filters := json.Array{}
-	map_character_set_schema_filter := json.Map{}
-	map_character_set_schema_filter.SetObject("values", GET_CHARACTER_SETS())
-	map_character_set_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_character_set_schema_filters := json.NewArrayValue()
+	map_character_set_schema_filter := json.NewMapValue()
+	map_character_set_schema_filter.SetObjectForMap("values", GET_CHARACTER_SETS())
+	map_character_set_schema_filter.SetObjectForMap("function",  getWhitelistStringFunc())
 	map_character_set_schema_filters.AppendMapValue(map_character_set_schema_filter)
 	map_character_set_schema.SetArrayValue("filters", map_character_set_schema_filters)
 	map_system_schema.SetMapValue("[character_set]", map_character_set_schema)
 
 
-	map_collate_schema := json.Map{}
+	map_collate_schema := json.NewMapValue()
 	map_collate_schema.SetStringValue("type", "*string")
 
-	map_collate_schema_filters := json.Array{}
-	map_collate_schema_filter := json.Map{}
-	map_collate_schema_filter.SetObject("values", GET_COLLATES())
-	map_collate_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_collate_schema_filters := json.NewArrayValue()
+	map_collate_schema_filter := json.NewMapValue()
+	map_collate_schema_filter.SetObjectForMap("values", GET_COLLATES())
+	map_collate_schema_filter.SetObjectForMap("function",  getWhitelistStringFunc())
 	map_collate_schema_filters.AppendMapValue(map_collate_schema_filter)
 	map_collate_schema.SetArrayValue("filters", map_collate_schema_filters)
 	map_system_schema.SetMapValue("[collate]", map_collate_schema)
@@ -81,8 +87,8 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 	/*
 	data := json.Map{
-		"[fields]": json.Map{},
-		"[schema]": json.Map{},
+		"[fields]": json.NewMapValue(),
+		"[schema]": json.NewMapValue(),
 		"[system_fields]":json.Map{"[character_set]":character_set, "[collate]":collate},
 		"[system_schema]":json.Map{"[character_set]":json.Map{"type":"*string",
 			"filters": json.Array{json.Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},

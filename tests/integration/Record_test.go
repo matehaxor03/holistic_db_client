@@ -11,7 +11,7 @@ import (
 func TestRecordCanCreateRecord(t *testing.T) {
 	table := helper.GetTestTableCreated(t)
 
-    record, record_errors := table.CreateRecord(json.Map{})
+    record, record_errors := table.CreateRecord(json.NewMapValue())
 	if record_errors != nil {
 		t.Error(record_errors)
 	} else if record == nil {

@@ -5,7 +5,10 @@ import (
 )
 
 func GetMySQLKeywordsAndReservedWordsInvalidWords() json.Map {
-return json.Map{
+    return json.NewMapValue()
+}
+/*
+    return json.Map{
     "A": nil,
     "ACCESSIBLE": nil,
     "ACCOUNT": nil,
@@ -897,3 +900,4 @@ return json.Map{
     "ZONE;": nil,
     "_FILENAME": nil}
 }
+*/

@@ -21,8 +21,8 @@ func GetTestTableFloat32ColumnNameNotMandatory() string {
 }
 
 func GetTestSchemaWithFloat32Column() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "float32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableFloat32ColumnName(), column_schema)
@@ -30,8 +30,8 @@ func GetTestSchemaWithFloat32Column() json.Map {
 }
 
 func GetTestSchemaWithFloat32ColumnNotMandatory() json.Map {
-	table_schema := json.Map{}
-	column_schema := json.Map{}
+	table_schema := json.NewMapValue()
+	column_schema := json.NewMapValue()
 	column_schema.SetStringValue("type", "*float32")
 	table_schema.SetMapValue(GetTestTablePrimaryKeyName(), GetTestSchemaColumnPrimaryKeyAutoIncrement())
 	table_schema.SetMapValue(GetTestTableFloat32ColumnNameNotMandatory(), column_schema)

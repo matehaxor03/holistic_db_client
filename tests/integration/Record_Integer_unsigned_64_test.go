@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
 	
 	test_value := uint64(555)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt64Value(helper.GetTestTableIntegerUnsigned64ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
 	
 	test_value := uint64(555)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt64Value(helper.GetTestTableIntegerUnsigned64ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	
 	test_value := uint64(349734)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt64(helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned64ColumNotMandatory(t *testing.
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	
 	test_value := uint64(349734)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetUInt64(helper.GetTestTableIntegerUnsigned64ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 	

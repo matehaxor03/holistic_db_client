@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
 	test_value := true
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
@@ -35,7 +35,7 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
 	test_value := false
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
@@ -57,7 +57,7 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), false)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
@@ -80,7 +80,7 @@ func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 func TestRecordCanUpdateRecordWithBoolFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), true)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
@@ -104,7 +104,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
 	
     record, record_errors := table.CreateRecord(map_record)
@@ -128,7 +128,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := false
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 	if record_errors != nil {
@@ -151,7 +151,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 
@@ -177,7 +177,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetBool(helper.GetTestTableBoolColumnNameNotMandatory(), &test_value)
 	record, record_errors := table.CreateRecord(map_record)
 

@@ -12,7 +12,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
 	
 	test_value := int64(555)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt64Value(helper.GetTestTableIntegerSigned64ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -36,7 +36,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned64Colum(t *testing.T) {
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
 	
 	test_value := int64(234234)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt64Value(helper.GetTestTableIntegerSigned64ColumnName(), test_value)
     record, record_errors := table.CreateRecord(map_record)
 	
@@ -62,7 +62,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	
 	test_value := int64(555)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt64(helper.GetTestTableIntegerSigned64ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 
@@ -86,7 +86,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned64ColumNotMandatory(t *testing.T)
 	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	
 	test_value := int64(435345)
-	map_record := json.Map{}
+	map_record := json.NewMapValue()
 	map_record.SetInt64(helper.GetTestTableIntegerSigned64ColumnNameNotMandatory(), &test_value)
     record, record_errors := table.CreateRecord(map_record)
 

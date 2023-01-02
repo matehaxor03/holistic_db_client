@@ -50,40 +50,40 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 		return this_client
 	}
 
-	data := json.Map{}
-	data.SetMapValue("[fields]", json.Map{})
-	data.SetMapValue("[schema]", json.Map{})
+	data := json.NewMapValue()
+	data.SetMapValue("[fields]", json.NewMapValue())
+	data.SetMapValue("[schema]", json.NewMapValue())
 
-	map_system_fields := json.Map{}
-	map_system_fields.SetObject("[client_manager]", client_manager)
-	map_system_fields.SetObject("[host]", host)
-	map_system_fields.SetObject("[database]", database)
+	map_system_fields := json.NewMapValue()
+	map_system_fields.SetObjectForMap("[client_manager]", client_manager)
+	map_system_fields.SetObjectForMap("[host]", host)
+	map_system_fields.SetObjectForMap("[database]", database)
 	
-	map_system_fields.SetObject("[database_username]", database_username)
+	map_system_fields.SetObjectForMap("[database_username]", database_username)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
 	///
 
-	map_system_schema := json.Map{}
+	map_system_schema := json.NewMapValue()
 	
-	map_client_manager := json.Map{}
+	map_client_manager := json.NewMapValue()
 	map_client_manager.SetStringValue("type", "class.ClientManager")
 	map_system_schema.SetMapValue("[client_manager]", map_client_manager)
 
-	map_host := json.Map{}
+	map_host := json.NewMapValue()
 	map_host.SetStringValue("type", "*class.Host")
 	map_system_schema.SetMapValue("[host]", map_host)
 
-	map_database := json.Map{}
+	map_database := json.NewMapValue()
 	map_database.SetStringValue("type", "*class.Database")
 	map_system_schema.SetMapValue("[database]", map_database)
 
-	map_database_username := json.Map{}
+	map_database_username := json.NewMapValue()
 	map_database_username.SetStringValue("type", "*string")
-	array_database_username_filters := json.Array{}
-	map_database_username_filter := json.Map{}
-	map_database_username_filter.SetObject("values", GetCredentialsUsernameValidCharacters())
-	map_database_username_filter.SetObject("function",  getWhitelistCharactersFunc())
+	array_database_username_filters := json.NewArrayValue()
+	map_database_username_filter := json.NewMapValue()
+	map_database_username_filter.SetObjectForMap("values", GetCredentialsUsernameValidCharacters())
+	map_database_username_filter.SetObjectForMap("function",  getWhitelistCharactersFunc())
 	array_database_username_filters.AppendMapValue(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
 	map_system_schema.SetMapValue("[database_username]", map_database_username)
@@ -94,7 +94,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 
 	/*data := json.Map{
 		"[fields]": json.Value{},
-		"[schema]": json.Map{},
+		"[schema]": json.NewMapValue(),
 		"[system_fields]":json.Map{
 			"[client_manager]": client_manager, "[host]": host, "[database]": database, "[database_username]": database_username },
 		"[system_schema]":json.Map{
@@ -362,7 +362,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalGeneralLogDisable: func() []error {
-			options := json.Map{}
+			options := json.NewMapValue()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'OFF';"
@@ -373,7 +373,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalGeneralLogEnable: func() []error {
-			options := json.Map{}
+			options := json.NewMapValue()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'ON';"
@@ -384,7 +384,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalSetTimeZoneUTC: func() []error {
-			options := json.Map{}
+			options := json.NewMapValue()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL time_zone = '+00:00';"
@@ -395,7 +395,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalSetSQLMode: func() []error {
-			options := json.Map{}
+			options := json.NewMapValue()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
@@ -458,10 +458,10 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 				return nil, errors
 			}
 
-			select_fields := json.Array{}
+			select_fields := json.NewArray()
 			select_fields.AppendStringValue("User")
 
-			filter_fields := json.Map{}
+			filter_fields := json.NewMap()
 			filter_fields.SetStringValue("User", username_escaped)
 
 			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil)

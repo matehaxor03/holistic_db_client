@@ -76,7 +76,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 	struct_type := "*class.Record"
 
-	if record_data == nil {
+	if common.IsNil(record_data) {
 		errors = append(errors, fmt.Errorf("error: record_data is nil"))
 	}
 
@@ -95,21 +95,21 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 
-	data := json.Map{}
+	data := json.NewMapValue()
 	data.SetMapValue("[fields]", record_data)
 	data.SetMapValue("[schema]", *table_schema)
 
-	map_system_fields := json.Map{}
-	map_system_fields.SetObject("[table]", table)
+	map_system_fields := json.NewMapValue()
+	map_system_fields.SetObjectForMap("[table]", table)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
 	///
 
-	map_system_schema := json.Map{}
+	map_system_schema := json.NewMapValue()
 
 	// Start table
 	
-	map_table_schema := json.Map{}
+	map_table_schema := json.NewMapValue()
 	map_table_schema.SetStringValue("type", "class.Table")
 	map_system_schema.SetMapValue("[table]", map_table_schema)
 	// End table
@@ -256,7 +256,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getCreateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -264,38 +264,38 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		errors := validate()
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		table, table_errors := getTable()
 		if table_errors != nil {
-			return nil, nil, table_errors
+			return nil, options, table_errors
 		}
 
 		table_schema, table_schema_errors := table.GetSchema()
 		
 		if table_schema_errors != nil {
-			return nil, nil, table_schema_errors
+			return nil, options, table_schema_errors
 		}
 
 		valid_columns, valid_columns_errors := table.GetTableColumns()
 		if valid_columns_errors != nil {
-			return nil, nil, valid_columns_errors
+			return nil, options, valid_columns_errors
 		}
 		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
-			return nil, nil, record_columns_errors
+			return nil, options, record_columns_errors
 		}
 
 		table_name, table_name_errors := table.GetTableName() 
 		if table_name_errors != nil {
-			return nil, nil, table_name_errors
+			return nil, options, table_name_errors
 		}
 
 		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
 		if table_name_escaped_errors != nil {
 			errors = append(errors, table_name_escaped_errors)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		for _, record_column := range *record_columns {
@@ -349,7 +349,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		
@@ -574,52 +574,52 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		sql_command += ");"
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		return &sql_command, options, nil
 	}
 
 	getUpdateSQL := func() (*string, json.Map, []error) {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", true)
 		errors := validate()
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		table, table_errors := getTable()
 		if table_errors != nil {
-			return nil, nil, table_errors
+			return nil, options, table_errors
 		}
 
 		table_name, table_name_errors := table.GetTableName()
 		if table_name_errors != nil {
-			return nil, nil, table_name_errors
+			return nil, options, table_name_errors
 		}
 
 		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
 		if table_name_escaped_errors != nil {
 			errors = append(errors, table_name_escaped_errors)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		table_schema, table_schema_errors := table.GetSchema()
 
 		if table_schema_errors != nil {
-			return nil, nil, table_schema_errors
+			return nil, options, table_schema_errors
 		}
 
 		_, valid_columns_errors := table.GetTableColumns()
 		if valid_columns_errors != nil {
-			return nil, nil, valid_columns_errors
+			return nil, options, valid_columns_errors
 		}
 
 		record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
-			return nil, nil, record_columns_errors
+			return nil, options, record_columns_errors
 		}
 
 		for _, record_column := range *record_columns {
@@ -630,27 +630,27 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		primary_key_table_columns, primary_key_table_columns_errors := table.GetPrimaryKeyColumns()
 		if primary_key_table_columns_errors != nil {
-			return nil, nil, primary_key_table_columns_errors
+			return nil, options, primary_key_table_columns_errors
 		}
 
 		foreign_key_table_columns, foreign_key_table_columns_errors := table.GetForeignKeyColumns()
 		if foreign_key_table_columns_errors != nil {
-			return nil, nil, foreign_key_table_columns_errors
+			return nil, options, foreign_key_table_columns_errors
 		}
 
 		table_non_primary_key_columns, table_non_primary_key_columns_errors := table.GetNonPrimaryKeyColumns()
 		if table_non_primary_key_columns_errors != nil {
-			return nil, nil, table_non_primary_key_columns_errors
+			return nil, options, table_non_primary_key_columns_errors
 		}
 
 		record_primary_key_columns, record_primary_key_columns_errors := getPrimaryKeyColumns()
 		if record_primary_key_columns_errors != nil {
-			return nil, nil, record_primary_key_columns_errors
+			return nil, options, record_primary_key_columns_errors
 		}
 
 		record_foreign_key_columns, record_foreign_key_columns_errors := getForeignKeyColumns()
 		if record_foreign_key_columns_errors != nil {
-			return nil, nil, record_foreign_key_columns_errors
+			return nil, options, record_foreign_key_columns_errors
 		}
 
 		for _, primary_key_table_column := range *primary_key_table_columns {
@@ -699,7 +699,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 
 		record_non_primary_key_columns, record_non_primary_key_columns_errors := getNonPrimaryKeyColumnsUpdate()
 		if record_non_primary_key_columns_errors != nil {
-			return nil, nil, record_non_primary_key_columns_errors
+			return nil, options, record_non_primary_key_columns_errors
 		}
 
 		if len(*record_non_primary_key_columns) == 0 {
@@ -715,7 +715,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		sql_command := "UPDATE "
@@ -1121,7 +1121,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		sql_command += " ;"
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		return &sql_command, options, nil
@@ -1170,12 +1170,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
-				if len(*json_array) != 1 {
+				if len(*(json_array.Values())) != 1 {
 					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
 					return errors
 				}
 
-				record_from_db, record_from_db_errors := ((*json_array)[0]).GetMap()
+				record_from_db, record_from_db_errors := (*(json_array.Values()))[0].GetMap()
 				if record_from_db_errors != nil {
 					errors = append(errors, record_from_db_errors...)
 					return errors

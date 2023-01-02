@@ -9,24 +9,24 @@ import (
 )
 
 func GetValidSchemaFields() json.Map {
-	return json.Map{
-		"type": nil,
-		"primary_key": nil,
-		"foreign_key": nil,
-		"foreign_key_table_name": nil,
-		"foreign_key_column_name": nil,
-		"foreign_key_type": nil,
-		"unique":nil,
-		"unsigned":nil,
-		"auto_increment": nil,
-		"default": nil,
-		"validated": nil,
-		"filters": nil,
-		"not_empty_string_value":nil,
-		"min_length": nil,
-		"max_length": nil,
-		"decimal_places": nil,
-	}
+	schema_fields := json.NewMapValue()
+	schema_fields.SetNil("type")
+	schema_fields.SetNil("primary_key")
+	schema_fields.SetNil("foreign_key")
+	schema_fields.SetNil("foreign_key_table_name")
+	schema_fields.SetNil("foreign_key_column_name")
+	schema_fields.SetNil("foreign_key_type")
+	schema_fields.SetNil("unique")
+	schema_fields.SetNil("unsigned")
+	schema_fields.SetNil("auto_increment")
+	schema_fields.SetNil("default")
+	schema_fields.SetNil("validated")
+	schema_fields.SetNil("filters")
+	schema_fields.SetNil("not_empty_string_value")
+	schema_fields.SetNil("min_length")
+	schema_fields.SetNil("max_length")
+	schema_fields.SetNil("decimal_places")
+	return schema_fields
 }
 
 func getWhitelistStringFunc() *func(m json.Map) []error {
@@ -55,7 +55,7 @@ func WhiteListString(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if  map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has nil map", *data_type, *label))
-	} else if len(*map_values) == 0 {
+	} else if len(map_values.Keys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has empty array", *data_type, *label))
 	}
 
@@ -69,9 +69,7 @@ func WhiteListString(m json.Map) []error {
 		return errors
 	}
 
-	_, found := (*map_values)[*str]
-
-	if !found {
+	if !map_values.HasKey(*str) {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: did not find value", *data_type, *label))
 	}
 
@@ -93,7 +91,7 @@ func BlackListString(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(*map_values) == 0 {
+	} else if len(map_values.Keys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -107,9 +105,7 @@ func BlackListString(m json.Map) []error {
 		return errors
 	}
 
-	_, found := (*map_values)[*str]
-
-	if found {
+	if map_values.HasKey(*str) {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	
@@ -246,12 +242,12 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	var result interface{}
 	if fields_map.IsNil(field) {
 		if schema_map.HasKey("default") && !schema_map.IsNil("default") {
-			result = schema_map.GetObject("default")
+			result = schema_map.GetObjectForMap("default")
 		} else {
 			result = nil
 		}
 	} else {
-		result = fields_map.GetObject(field)
+		result = fields_map.GetObjectForMap(field)
 	}
 
 	if common.IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
@@ -280,23 +276,11 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 
 	object_type := common.GetType(result)
 	if object_type == "*json.Value" {
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := result.(*json.Value).GetObject()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
-			errors = append(errors, fmt.Errorf("GetField.GetObject unboxing had errors"))
-		} else {
-			result = value_to_validate_unboxed
-		}
+		value_to_validate_unboxed := result.(*json.Value).GetObject()
+		result = value_to_validate_unboxed
 	} else if object_type == "json.Value" {
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := result.(json.Value).GetObjectForValue()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
-			errors = append(errors, fmt.Errorf("GetField.GetObjectForValue unboxing had errors"))
-		} else {
-			result = value_to_validate_unboxed
-		}
+		value_to_validate_unboxed := result.(json.Value).GetObject()
+		result = value_to_validate_unboxed
 	} 
 	object_type = common.GetType(result)
 
@@ -677,7 +661,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		return nil, errors
 	}
 
-	return fields_map.GetObject(field), nil
+	return fields_map.GetObjectForMap(field), nil
 }
 
 func SetField(struct_type string, m *json.Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
@@ -730,9 +714,9 @@ func SetField(struct_type string, m *json.Map, schema_type string, parameter_typ
 		return errors
 	}
 
-	fields_map.SetObject(parameter, object)
+	fields_map.SetObjectForMap(parameter, object)
 	validated_true := true
-	schema_of_parameter_map.SetObject("validated", validated_true)
+	schema_of_parameter_map.SetObjectForMap("validated", validated_true)
 	return nil
 }
 
@@ -747,7 +731,7 @@ func BlackListStringToUpper(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(*map_values) == 0 {
+	} else if len(map_values.Keys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -761,9 +745,7 @@ func BlackListStringToUpper(m json.Map) []error {
 		return errors
 	}
 
-	_, found := (*map_values)[strings.ToUpper(*str)]
-
-	if found {
+	if map_values.HasKey(strings.ToUpper(*str)) {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	
@@ -790,7 +772,7 @@ func WhitelistCharacters(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has nil map", *data_type, *label))
-	} else if len(*map_values) == 0 {
+	} else if len(map_values.Keys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has empty array", *data_type, *label))
 	}
 
@@ -807,9 +789,8 @@ func WhitelistCharacters(m json.Map) []error {
 	var invalid_letters []string
 	for _, letter_rune := range *str {
 		letter_string := string(letter_rune)
-		_, found := (*map_values)[letter_string]
 
-		if !found {
+		if !map_values.HasKey(letter_string) {
 			invalid_letters = append(invalid_letters, letter_string)
 		}
 	}
@@ -827,8 +808,8 @@ func WhitelistCharacters(m json.Map) []error {
 
 func ValidateDatabaseColumnName(value string) []error {
 	var errors []error
-	column_name_params := json.Map{}
-	column_name_params.SetObject("values", GetMySQLColumnNameWhitelistCharacters())
+	column_name_params := json.NewMapValue()
+	column_name_params.SetObjectForMap("values", GetMySQLColumnNameWhitelistCharacters())
 	column_name_params.SetStringValue("value", value)
 	column_name_params.SetStringValue("label", "column_name")
 	column_name_params.SetStringValue("data_type", "Table")
@@ -963,7 +944,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			if parameters.IsNil(parameter) {
 				value_is_null = true
 			} else {
-				value_to_validate = parameters.GetObject(parameter)
+				value_to_validate = parameters.GetObjectForMap(parameter)
 				value_is_null = false
 			}
 		} else {
@@ -1045,10 +1026,8 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	type_of_parameter_value := common.GetType(value_to_validate)
 	if type_of_parameter_value == "*json.Value" {
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(*json.Value).GetObject()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
+		value_to_validate_unboxed := value_to_validate.(*json.Value).GetObject()
+		if common.IsNil(value_to_validate_unboxed) {
 			value_is_set = false
 			value_is_null = true
 		} else {
@@ -1056,10 +1035,8 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			value_is_null = false
 		}
 	} else if type_of_parameter_value == "json.Value" {
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(json.Value).GetObjectForValue()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
+		value_to_validate_unboxed := value_to_validate.(json.Value).GetObject()
+		if common.IsNil(value_to_validate_unboxed) {
 			value_is_set = false
 			value_is_null = true
 		} else {
@@ -1085,7 +1062,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		if default_set && default_is_null {
 			value_to_validate = nil
 		} else if default_set && !default_is_null {
-			value_to_validate = schema_of_parameter.GetObject("default")
+			value_to_validate = schema_of_parameter.GetObjectForMap("default")
 		} else if !default_set { 
 			if value_is_mandatory {
 				errors = append(errors,  fmt.Errorf("error: struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
@@ -1095,9 +1072,9 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 	} else if !value_is_set {
 		if default_set && default_is_null {
-			value_to_validate = schema_of_parameter.GetObject("default")
+			value_to_validate = schema_of_parameter.GetObjectForMap("default")
 		} else if default_set && !default_is_null {
-			value_to_validate = schema_of_parameter.GetObject("default")
+			value_to_validate = schema_of_parameter.GetObjectForMap("default")
 		} else if !default_set {
 			if value_is_mandatory {
 				errors = append(errors,  fmt.Errorf("error: struct: %s column: %s does not have a value or a default value, value_set=%t value_nil=%t default_set=%t default_nil=%t", struct_type, parameter, value_is_set, value_is_null, default_set, default_is_null))
@@ -1114,23 +1091,17 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	type_of_parameter_value = common.GetType(value_to_validate)
 	if type_of_parameter_value == "*json.Value" {
 		type_of_parameter_value = value_to_validate.(*json.Value).GetType()
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(*json.Value).GetObject()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
-			fmt.Println(struct_type + " " + parameters_type + " " + parameter + " " + fmt.Sprintf("%s", value_to_validate))
-
-			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject unboxing had errors"))
+		value_to_validate_unboxed := value_to_validate.(*json.Value).GetObject()
+		if common.IsNil(value_to_validate_unboxed) {
+			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject is nil for *json.Value"))
 		} else {
 			value_to_validate = value_to_validate_unboxed
 		}
 	} else if type_of_parameter_value == "json.Value" {
-		type_of_parameter_value = value_to_validate.(json.Value).GetTypeForValue()
-		value_to_validate_unboxed, value_to_validate_unboxed_errors := value_to_validate.(json.Value).GetObjectForValue()
-		if value_to_validate_unboxed_errors != nil {
-			errors = append(errors, value_to_validate_unboxed_errors...)
-		} else if common.IsNil(value_to_validate_unboxed) {
-			errors = append(errors, fmt.Errorf("ValidateParameterData GetObjectForValue unboxing had errors"))
+		type_of_parameter_value = value_to_validate.(json.Value).GetType()
+		value_to_validate_unboxed := value_to_validate.(json.Value).GetObject()
+		if common.IsNil(value_to_validate_unboxed) {
+			errors = append(errors, fmt.Errorf("ValidateParameterData GetObject is nil for json.Value"))
 		} else {
 			value_to_validate = value_to_validate_unboxed
 		}
@@ -1235,12 +1206,12 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			return errors
 		}
 
-		if len(*filters) == 0 {
+		if len(*(filters.Values())) == 0 {
 			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s has no filters", struct_type, parameter, "filters"))
 			return errors
 		}
 
-		for filter_index, filter := range *filters {
+		for filter_index, filter := range *(filters.Values()) {
 			filter_map, filter_map_errors := filter.GetMap()
 			if filter_map_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d getting filter had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", filter_map_errors)))
@@ -1255,7 +1226,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 				return errors
 			}
 
-			function, function_errors := filter_map.Func("function")
+			function, function_errors := filter_map.GetFunc("function")
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
 				return errors
@@ -1481,204 +1452,210 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 }
 
 func get_repository_name_characters() json.Map {
-	return json.Map{
-		"0": nil,
-		"1": nil,
-		"2": nil,
-		"3": nil,
-		"4": nil,
-		"5": nil,
-		"6": nil,
-		"7": nil,
-		"8": nil,
-		"9": nil,
-		"A": nil,
-		"B": nil,
-		"C": nil,
-		"D": nil,
-		"E": nil,
-		"F": nil,
-		"G": nil,
-		"H": nil,
-		"I": nil,
-		"J": nil,
-		"K": nil,
-		"L": nil,
-		"M": nil,
-		"N": nil,
-		"O": nil,
-		"P": nil,
-		"Q": nil,
-		"R": nil,
-		"S": nil,
-		"T": nil,
-		"U": nil,
-		"V": nil,
-		"W": nil,
-		"X": nil,
-		"Y": nil,
-		"Z": nil,
-		"_": nil,
-		"a": nil,
-		"b": nil,
-		"c": nil,
-		"d": nil,
-		"e": nil,
-		"f": nil,
-		"g": nil,
-		"h": nil,
-		"i": nil,
-		"j": nil,
-		"k": nil,
-		"l": nil,
-		"m": nil,
-		"n": nil,
-		"o": nil,
-		"p": nil,
-		"q": nil,
-		"r": nil,
-		"s": nil,
-		"t": nil,
-		"u": nil,
-		"v": nil,
-		"w": nil,
-		"x": nil,
-		"y": nil,
-		"z": nil}
+	valid_chars := json.NewMapValue()
+	valid_chars.SetNil("0")
+	valid_chars.SetNil("1")
+	valid_chars.SetNil("2")
+	valid_chars.SetNil("3")
+	valid_chars.SetNil("4")
+	valid_chars.SetNil("5")
+	valid_chars.SetNil("6")
+	valid_chars.SetNil("7")
+	valid_chars.SetNil("8")
+	valid_chars.SetNil("9")
+	valid_chars.SetNil("A")
+	valid_chars.SetNil("B")
+	valid_chars.SetNil("C")
+	valid_chars.SetNil("D")
+	valid_chars.SetNil("E")
+	valid_chars.SetNil("F")
+	valid_chars.SetNil("G")
+	valid_chars.SetNil("H")
+	valid_chars.SetNil("I")
+	valid_chars.SetNil("J")
+	valid_chars.SetNil("K")
+	valid_chars.SetNil("L")
+	valid_chars.SetNil("M")
+	valid_chars.SetNil("N")
+	valid_chars.SetNil("O")
+	valid_chars.SetNil("P")
+	valid_chars.SetNil("Q")
+	valid_chars.SetNil("R")
+	valid_chars.SetNil("S")
+	valid_chars.SetNil("T")
+	valid_chars.SetNil("U")
+	valid_chars.SetNil("V")
+	valid_chars.SetNil("W")
+	valid_chars.SetNil("X")
+	valid_chars.SetNil("Y")
+	valid_chars.SetNil("Z")
+	valid_chars.SetNil("_")
+	valid_chars.SetNil("-")
+	valid_chars.SetNil("a")
+	valid_chars.SetNil("b")
+	valid_chars.SetNil("c")
+	valid_chars.SetNil("d")
+	valid_chars.SetNil("e")
+	valid_chars.SetNil("f")
+	valid_chars.SetNil("g")
+	valid_chars.SetNil("h")
+	valid_chars.SetNil("i")
+	valid_chars.SetNil("j")
+	valid_chars.SetNil("k")
+	valid_chars.SetNil("l")
+	valid_chars.SetNil("m")
+	valid_chars.SetNil("n")
+	valid_chars.SetNil("o")
+	valid_chars.SetNil("p")
+	valid_chars.SetNil("q")
+	valid_chars.SetNil("r")
+	valid_chars.SetNil("s")
+	valid_chars.SetNil("t")
+	valid_chars.SetNil("u")
+	valid_chars.SetNil("v")
+	valid_chars.SetNil("w")
+	valid_chars.SetNil("x")
+	valid_chars.SetNil("y")
+	valid_chars.SetNil("z")
+	return valid_chars
 }
 
 func get_repository_account_name_characters() json.Map {
-	return json.Map{
-		"0": nil,
-		"1": nil,
-		"2": nil,
-		"3": nil,
-		"4": nil,
-		"5": nil,
-		"6": nil,
-		"7": nil,
-		"8": nil,
-		"9": nil,
-		"A": nil,
-		"B": nil,
-		"C": nil,
-		"D": nil,
-		"E": nil,
-		"F": nil,
-		"G": nil,
-		"H": nil,
-		"I": nil,
-		"J": nil,
-		"K": nil,
-		"L": nil,
-		"M": nil,
-		"N": nil,
-		"O": nil,
-		"P": nil,
-		"Q": nil,
-		"R": nil,
-		"S": nil,
-		"T": nil,
-		"U": nil,
-		"V": nil,
-		"W": nil,
-		"X": nil,
-		"Y": nil,
-		"Z": nil,
-		"_": nil,
-		"a": nil,
-		"b": nil,
-		"c": nil,
-		"d": nil,
-		"e": nil,
-		"f": nil,
-		"g": nil,
-		"h": nil,
-		"i": nil,
-		"j": nil,
-		"k": nil,
-		"l": nil,
-		"m": nil,
-		"n": nil,
-		"o": nil,
-		"p": nil,
-		"q": nil,
-		"r": nil,
-		"s": nil,
-		"t": nil,
-		"u": nil,
-		"v": nil,
-		"w": nil,
-		"x": nil,
-		"y": nil,
-		"z": nil}
+	valid_chars := json.NewMapValue()
+	valid_chars.SetNil("0")
+	valid_chars.SetNil("1")
+	valid_chars.SetNil("2")
+	valid_chars.SetNil("3")
+	valid_chars.SetNil("4")
+	valid_chars.SetNil("5")
+	valid_chars.SetNil("6")
+	valid_chars.SetNil("7")
+	valid_chars.SetNil("8")
+	valid_chars.SetNil("9")
+	valid_chars.SetNil("A")
+	valid_chars.SetNil("B")
+	valid_chars.SetNil("C")
+	valid_chars.SetNil("D")
+	valid_chars.SetNil("E")
+	valid_chars.SetNil("F")
+	valid_chars.SetNil("G")
+	valid_chars.SetNil("H")
+	valid_chars.SetNil("I")
+	valid_chars.SetNil("J")
+	valid_chars.SetNil("K")
+	valid_chars.SetNil("L")
+	valid_chars.SetNil("M")
+	valid_chars.SetNil("N")
+	valid_chars.SetNil("O")
+	valid_chars.SetNil("P")
+	valid_chars.SetNil("Q")
+	valid_chars.SetNil("R")
+	valid_chars.SetNil("S")
+	valid_chars.SetNil("T")
+	valid_chars.SetNil("U")
+	valid_chars.SetNil("V")
+	valid_chars.SetNil("W")
+	valid_chars.SetNil("X")
+	valid_chars.SetNil("Y")
+	valid_chars.SetNil("Z")
+	valid_chars.SetNil("_")
+	valid_chars.SetNil("-")
+	valid_chars.SetNil("a")
+	valid_chars.SetNil("b")
+	valid_chars.SetNil("c")
+	valid_chars.SetNil("d")
+	valid_chars.SetNil("e")
+	valid_chars.SetNil("f")
+	valid_chars.SetNil("g")
+	valid_chars.SetNil("h")
+	valid_chars.SetNil("i")
+	valid_chars.SetNil("j")
+	valid_chars.SetNil("k")
+	valid_chars.SetNil("l")
+	valid_chars.SetNil("m")
+	valid_chars.SetNil("n")
+	valid_chars.SetNil("o")
+	valid_chars.SetNil("p")
+	valid_chars.SetNil("q")
+	valid_chars.SetNil("r")
+	valid_chars.SetNil("s")
+	valid_chars.SetNil("t")
+	valid_chars.SetNil("u")
+	valid_chars.SetNil("v")
+	valid_chars.SetNil("w")
+	valid_chars.SetNil("x")
+	valid_chars.SetNil("y")
+	valid_chars.SetNil("z")
+	return valid_chars
 }
 
 func get_branch_name_characters() json.Map {
-	return json.Map{
-		"0": nil,
-		"1": nil,
-		"2": nil,
-		"3": nil,
-		"4": nil,
-		"5": nil,
-		"6": nil,
-		"7": nil,
-		"8": nil,
-		"9": nil,
-		"A": nil,
-		"B": nil,
-		"C": nil,
-		"D": nil,
-		"E": nil,
-		"F": nil,
-		"G": nil,
-		"H": nil,
-		"I": nil,
-		"J": nil,
-		"K": nil,
-		"L": nil,
-		"M": nil,
-		"N": nil,
-		"O": nil,
-		"P": nil,
-		"Q": nil,
-		"R": nil,
-		"S": nil,
-		"T": nil,
-		"U": nil,
-		"V": nil,
-		"W": nil,
-		"X": nil,
-		"Y": nil,
-		"Z": nil,
-		"_": nil,
-		"a": nil,
-		"b": nil,
-		"c": nil,
-		"d": nil,
-		"e": nil,
-		"f": nil,
-		"g": nil,
-		"h": nil,
-		"i": nil,
-		"j": nil,
-		"k": nil,
-		"l": nil,
-		"m": nil,
-		"n": nil,
-		"o": nil,
-		"p": nil,
-		"q": nil,
-		"r": nil,
-		"s": nil,
-		"t": nil,
-		"u": nil,
-		"v": nil,
-		"w": nil,
-		"x": nil,
-		"y": nil,
-		"z": nil}
+	valid_chars := json.NewMapValue()
+	valid_chars.SetNil("0")
+	valid_chars.SetNil("1")
+	valid_chars.SetNil("2")
+	valid_chars.SetNil("3")
+	valid_chars.SetNil("4")
+	valid_chars.SetNil("5")
+	valid_chars.SetNil("6")
+	valid_chars.SetNil("7")
+	valid_chars.SetNil("8")
+	valid_chars.SetNil("9")
+	valid_chars.SetNil("A")
+	valid_chars.SetNil("B")
+	valid_chars.SetNil("C")
+	valid_chars.SetNil("D")
+	valid_chars.SetNil("E")
+	valid_chars.SetNil("F")
+	valid_chars.SetNil("G")
+	valid_chars.SetNil("H")
+	valid_chars.SetNil("I")
+	valid_chars.SetNil("J")
+	valid_chars.SetNil("K")
+	valid_chars.SetNil("L")
+	valid_chars.SetNil("M")
+	valid_chars.SetNil("N")
+	valid_chars.SetNil("O")
+	valid_chars.SetNil("P")
+	valid_chars.SetNil("Q")
+	valid_chars.SetNil("R")
+	valid_chars.SetNil("S")
+	valid_chars.SetNil("T")
+	valid_chars.SetNil("U")
+	valid_chars.SetNil("V")
+	valid_chars.SetNil("W")
+	valid_chars.SetNil("X")
+	valid_chars.SetNil("Y")
+	valid_chars.SetNil("Z")
+	valid_chars.SetNil("_")
+	valid_chars.SetNil("-")
+	valid_chars.SetNil("a")
+	valid_chars.SetNil("b")
+	valid_chars.SetNil("c")
+	valid_chars.SetNil("d")
+	valid_chars.SetNil("e")
+	valid_chars.SetNil("f")
+	valid_chars.SetNil("g")
+	valid_chars.SetNil("h")
+	valid_chars.SetNil("i")
+	valid_chars.SetNil("j")
+	valid_chars.SetNil("k")
+	valid_chars.SetNil("l")
+	valid_chars.SetNil("m")
+	valid_chars.SetNil("n")
+	valid_chars.SetNil("o")
+	valid_chars.SetNil("p")
+	valid_chars.SetNil("q")
+	valid_chars.SetNil("r")
+	valid_chars.SetNil("s")
+	valid_chars.SetNil("t")
+	valid_chars.SetNil("u")
+	valid_chars.SetNil("v")
+	valid_chars.SetNil("w")
+	valid_chars.SetNil("x")
+	valid_chars.SetNil("y")
+	valid_chars.SetNil("z")
+	return valid_chars
 }
 
 

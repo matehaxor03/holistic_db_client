@@ -390,8 +390,8 @@ func testTableName(client *class.Client) []error {
 
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
-		schema := json.Map{}
-		schema_column := json.Map{}
+		schema := json.NewMapValue()
+		schema_column := json.NewMapValue()
 		schema_column.SetStringValue("type", "uint64")
 		schema_column.SetBoolValue("primary_key", true)
 		schema_column.SetBoolValue("auto_increment", true)
@@ -481,8 +481,8 @@ func testColumnName(client *class.Client) []error {
 
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
-		schema := json.Map{}
-		schema_column := json.Map{}
+		schema := json.NewMapValue()
+		schema_column := json.NewMapValue()
 		schema_column.SetStringValue("type", "uint64")
 		schema_column.SetBoolValue("primary_key", true)
 		schema_column.SetBoolValue("auto_increment", true)

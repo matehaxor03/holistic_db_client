@@ -10,7 +10,7 @@ type TableStatusCache struct {
 }
 
 func newTableStatusCache() (*TableStatusCache) {
-	cache := json.Map{}
+	cache := json.NewMapValue()
 	
 	getOrSetTableStatus := func(database Database, table_name string, table_status *json.Map) (*json.Map, []error) {		
 		client, client_errors := database.GetClient()

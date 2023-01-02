@@ -179,7 +179,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			records := json.Array{}
+			records := json.NewArrayValue()
 
 			if shell_output == nil || strings.TrimSpace(*shell_output) == "" {
 				return &records, nil
@@ -189,8 +189,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 			reading_columns := true
 			value := ""
 			columns_count := 0
-			columns := json.Array{}
-			record := json.Map{}
+			columns := json.NewArrayValue()
+			record := json.NewMapValue()
 			for i := 0; i < len(rune_array); i++ {
 				current_value := string(rune_array[i])
 				if reading_columns {
@@ -221,7 +221,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 						}
 						record.SetStringValue(x, *column_value)
 						records.AppendMapValue(record)
-						record = json.Map{}
+						record = json.NewMapValue()
 						value = ""
 						columns_count = 0
 					} else if current_value == "\t" {

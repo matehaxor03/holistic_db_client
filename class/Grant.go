@@ -23,11 +23,18 @@ func GRANT_SELECT() string {
 }
 
 func GET_ALLOWED_GRANTS() json.Map {
-	return json.Map{GRANT_ALL(): nil, GRANT_INSERT(): nil, GRANT_UPDATE(): nil, GRANT_SELECT(): nil}
+	valid := json.NewMapValue()
+	valid.SetNil(GRANT_ALL())
+	valid.SetNil(GRANT_INSERT())
+	valid.SetNil(GRANT_UPDATE())
+	valid.SetNil(GRANT_SELECT())
+	return valid
 }
 
 func GET_ALLOWED_FILTERS() json.Map {
-	return json.Map{"*": nil}
+	valid := json.NewMapValue()
+	valid.SetNil("*")
+	return valid
 }
 
 type Grant struct {
@@ -48,38 +55,38 @@ func newGrant(client Client, user User, grant string, database_filter *string, t
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
 	
 
-data := json.Map{}
-	data.SetMapValue("[fields]", json.Map{})
-	data.SetMapValue("[schema]", json.Map{})
+data := json.NewMapValue()
+	data.SetMapValue("[fields]", json.NewMapValue())
+	data.SetMapValue("[schema]", json.NewMapValue())
 
-	map_system_fields := json.Map{}
-	map_system_schema := json.Map{}
+	map_system_fields := json.NewMapValue()
+	map_system_schema := json.NewMapValue()
 
 	// Start Client
-	map_system_fields.SetObject("[client]", client)
-	map_client_schema := json.Map{}
+	map_system_fields.SetObjectForMap("[client]", client)
+	map_client_schema := json.NewMapValue()
 	map_client_schema.SetStringValue("type", "class.Client")
 	map_system_schema.SetMapValue("[client]", map_client_schema)
 	// End Client
 
 
 	// Start User
-	map_system_fields.SetObject("[user]", user)
-	map_user_schema := json.Map{}
+	map_system_fields.SetObjectForMap("[user]", user)
+	map_user_schema := json.NewMapValue()
 	map_user_schema.SetStringValue("type", "class.User")
 	map_system_schema.SetMapValue("[user]", map_user_schema)
 	// End User
 
 
 	// Start Grant
-	map_system_fields.SetObject("[grant]", grant)
-	map_grant_schema := json.Map{}
+	map_system_fields.SetObjectForMap("[grant]", grant)
+	map_grant_schema := json.NewMapValue()
 	map_grant_schema.SetStringValue("type", "string")
 
-	map_grant_schema_filters := json.Array{}
-	map_grant_schema_filter := json.Map{}
-	map_grant_schema_filter.SetObject("values", GET_ALLOWED_GRANTS())
-	map_grant_schema_filter.SetObject("function",  getWhitelistStringFunc())
+	map_grant_schema_filters := json.NewArrayValue()
+	map_grant_schema_filter := json.NewMapValue()
+	map_grant_schema_filter.SetObjectForMap("values", GET_ALLOWED_GRANTS())
+	map_grant_schema_filter.SetObjectForMap("function",  getWhitelistStringFunc())
 	map_grant_schema_filters.AppendMapValue(map_grant_schema_filter)
 	map_grant_schema.SetArrayValue("filters", map_grant_schema_filters)
 	map_system_schema.SetMapValue("[grant]", map_grant_schema)
@@ -88,25 +95,25 @@ data := json.Map{}
 
 	// Start Database Filter
 	if database_filter != nil {
-		map_system_fields.SetObject("[database_filter]", database_filter)
-		map_database_filter_schema := json.Map{}
+		map_system_fields.SetObjectForMap("[database_filter]", database_filter)
+		map_database_filter_schema := json.NewMapValue()
 		map_database_filter_schema.SetStringValue("type", "string")
 
-		map_database_filter_schema_filters := json.Array{}
+		map_database_filter_schema_filters := json.NewArrayValue()
 		if *database_filter == "*" {
-			map_database_filter_schema_filter := json.Map{}
-			map_database_filter_schema_filter.SetObject("values", GET_ALLOWED_FILTERS())
-			map_database_filter_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+			map_database_filter_schema_filter := json.NewMapValue()
+			map_database_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
+			map_database_filter_schema_filter.SetObjectForMap("function",  getWhitelistCharactersFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter)
 		} else {
-			map_database_filter_schema_filter1 := json.Map{}
-			map_database_filter_schema_filter1.SetObject("values", database_name_whitelist_characters)
-			map_database_filter_schema_filter1.SetObject("function",  getWhitelistCharactersFunc())
+			map_database_filter_schema_filter1 := json.NewMapValue()
+			map_database_filter_schema_filter1.SetObjectForMap("values", database_name_whitelist_characters)
+			map_database_filter_schema_filter1.SetObjectForMap("function",  getWhitelistCharactersFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter1)
 
-			map_database_filter_schema_filter2 := json.Map{}
-			map_database_filter_schema_filter2.SetObject("values", database_reserved_words)
-			map_database_filter_schema_filter2.SetObject("function",  getBlacklistStringToUpperFunc())
+			map_database_filter_schema_filter2 := json.NewMapValue()
+			map_database_filter_schema_filter2.SetObjectForMap("values", database_reserved_words)
+			map_database_filter_schema_filter2.SetObjectForMap("function",  getBlacklistStringToUpperFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter2)
 		}
 		map_database_filter_schema.SetArrayValue("filters", map_database_filter_schema_filters)
@@ -117,25 +124,25 @@ data := json.Map{}
 
 	// Start Table Filter
 	if table_filter != nil {
-		map_system_fields.SetObject("[table_filter]", table_filter)
-		map_table_filter_schema := json.Map{}
+		map_system_fields.SetObjectForMap("[table_filter]", table_filter)
+		map_table_filter_schema := json.NewMapValue()
 		map_table_filter_schema.SetStringValue("type", "string")
 
-		map_table_filter_schema_filters := json.Array{}
+		map_table_filter_schema_filters := json.NewArrayValue()
 		if *database_filter == "*" {
-			map_table_filter_schema_filter := json.Map{}
-			map_table_filter_schema_filter.SetObject("values", GET_ALLOWED_FILTERS())
-			map_table_filter_schema_filter.SetObject("function",  getWhitelistCharactersFunc())
+			map_table_filter_schema_filter := json.NewMapValue()
+			map_table_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
+			map_table_filter_schema_filter.SetObjectForMap("function",  getWhitelistCharactersFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter)
 		} else {
-			map_table_filter_schema_filter1 := json.Map{}
-			map_table_filter_schema_filter1.SetObject("values", table_name_whitelist_characters_obj)
-			map_table_filter_schema_filter1.SetObject("function",  getWhitelistCharactersFunc())
+			map_table_filter_schema_filter1 := json.NewMapValue()
+			map_table_filter_schema_filter1.SetObjectForMap("values", table_name_whitelist_characters_obj)
+			map_table_filter_schema_filter1.SetObjectForMap("function",  getWhitelistCharactersFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter1)
 
-			map_table_filter_schema_filter2 := json.Map{}
-			map_table_filter_schema_filter2.SetObject("values", database_reserved_words)
-			map_table_filter_schema_filter2.SetObject("function",  getBlacklistStringToUpperFunc())
+			map_table_filter_schema_filter2 := json.NewMapValue()
+			map_table_filter_schema_filter2.SetObjectForMap("values", database_reserved_words)
+			map_table_filter_schema_filter2.SetObjectForMap("function",  getBlacklistStringToUpperFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter2)
 		}
 		map_table_filter_schema.SetArrayValue("filters", map_table_filter_schema_filters)
@@ -151,8 +158,8 @@ data := json.Map{}
 
 	/*
 	data := json.Map{
-		"[fields]": json.Map{},
-		"[schema]": json.Map{},
+		"[fields]": json.NewMapValue(),
+		"[schema]": json.NewMapValue(),
 		"[system_fields]": json.Map{"[client]":client, "[user]":user, "[grant]":grant},
 		"[system_schema]": json.Map{"[client]": json.Map{"type":"class.Client"},
 						"[user]": json.Map{"type":"class.User"},
@@ -317,7 +324,7 @@ data := json.Map{}
 	}
 
 	executeGrant := func() []error {
-		options := json.Map{}
+		options := json.NewMapValue()
 		options.SetBoolValue("use_file", true)
 		sql_command, sql_command_errors := getSQL()
 
