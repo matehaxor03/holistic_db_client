@@ -894,5 +894,6 @@ value := json.NewMapValue()
     value.SetNil("ZEROFILL")
     value.SetNil("ZONE")
     value.SetNil("ZONE;")
-    value.SetNil("_FILENAME")return value 
+    value.SetNil("_FILENAME")
+    return value 
 }

@@ -1205,12 +1205,12 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			return errors
 		}
 
-		if len(*(filters.Values())) == 0 {
+		if len(*(filters.GetValues())) == 0 {
 			errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s has no filters", struct_type, parameter, "filters"))
 			return errors
 		}
 
-		for filter_index, filter := range *(filters.Values()) {
+		for filter_index, filter := range *(filters.GetValues()) {
 			filter_map, filter_map_errors := filter.GetMap()
 			if filter_map_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d getting filter had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", filter_map_errors)))

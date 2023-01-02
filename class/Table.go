@@ -182,7 +182,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 									merged_schema_map.SetArray("filters", &new_filters_array)
 									filters_array = &new_filters_array
 								}
-								for _, filter_from_db := range *(filters_from_db.Values()) {
+								for _, filter_from_db := range *(filters_from_db.GetValues()) {
 									filters_array.AppendValue(filter_from_db)
 								}
 							}
@@ -535,11 +535,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return errors
 		}
 
-		if len(*(records.Values())) == 0 {
+		if len(*(records.GetValues())) == 0 {
 			return nil
 		}
 
-		for _, record := range *(records.Values()) {
+		for _, record := range *(records.GetValues()) {
 			if !common.IsMap(record) {
 				errors = append(errors, fmt.Errorf("record is not a map"))
 			}
@@ -550,7 +550,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		}
 
 		var records_obj []Record
-		for _, record := range *(records.Values()) {
+		for _, record := range *(records.GetValues()) {
 			current_map, current_map_errors := record.GetMap()
 			if current_map_errors != nil {
 				errors = append(errors, current_map_errors...)
@@ -673,11 +673,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return errors
 		}
 
-		if len(*(records.Values())) == 0 {
+		if len(*(records.GetValues())) == 0 {
 			return nil
 		}
 
-		for _, record := range *(records.Values()) {
+		for _, record := range *(records.GetValues()) {
 			if !common.IsMap(record) {
 				errors = append(errors, fmt.Errorf("record is not a map"))
 			}
@@ -688,7 +688,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		}
 
 		var records_obj []Record
-		for _, record := range *(records.Values()) {
+		for _, record := range *(records.GetValues()) {
 			current_map, current_map_errors := record.GetMap()
 			if current_map_errors != nil {
 				errors = append(errors, current_map_errors...)
@@ -830,13 +830,13 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		if len(*(json_array.Values())) == 0 {
+		if len(*(json_array.GetValues())) == 0 {
 			errors = append(errors, fmt.Errorf("error:  show table status did not return any records"))
 			return nil, errors
 		}
 
 		table_status := json.NewMapValue()
-		for _, column_details := range *(json_array.Values()) {
+		for _, column_details := range *(json_array.GetValues()) {
 			column_map, column_map_errors := column_details.GetMap()
 			if column_map_errors != nil {
 				return nil, column_map_errors
@@ -953,13 +953,13 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		if len(*(json_array.Values())) == 0 {
+		if len(*(json_array.GetValues())) == 0 {
 			errors = append(errors, fmt.Errorf("error: show columns did not return any records"))
 			return nil, errors
 		}
 
 		schema := json.NewMapValue()
-		for _, column_details := range *(json_array.Values()) {
+		for _, column_details := range *(json_array.GetValues()) {
 			column_map, column_map_errors := column_details.GetMap()
 			if column_map_errors != nil {
 				return nil, column_map_errors
@@ -1151,7 +1151,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 									errors = append(errors, rules_array_errors...)
 								} else if !common.IsNil(rules_array) {
 									filters := json.NewArrayValue()
-									for _, rule := range *(rules_array.Values()) {
+									for _, rule := range *(rules_array.GetValues()) {
 										rule_value, rule_value_errors := rule.GetString()
 										if rule_value_errors != nil {
 											return nil, rule_value_errors
@@ -1938,12 +1938,12 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				return nil, errors
 			}
 
-			if len(*(json_array.Values())) != 1 {
+			if len(*(json_array.GetValues())) != 1 {
 				errors = append(errors, fmt.Errorf("error: count record does not exist"))
 				return nil, errors
 			}
 
-			map_record, map_record_errors := (*(json_array.Values()))[0].GetMap()
+			map_record, map_record_errors := (*(json_array.GetValues()))[0].GetMap()
 			if map_record_errors != nil {
 				errors = append(errors, map_record_errors...)
 				return nil, errors
@@ -2093,7 +2093,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					return nil, table_columns_errors
 				}
 
-				for _, select_field := range *(select_fields.Values()) {
+				for _, select_field := range *(select_fields.GetValues()) {
 					select_field_value, select_field_value_errors := select_field.GetString()
 					if select_field_value_errors != nil {
 						return nil, select_field_value_errors
@@ -2147,8 +2147,8 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					return nil, table_columns_errors
 				}
 
-				order_by_columns := len(*(order_by.Values()))
-				for order_by_index, order_by_field := range *(order_by.Values()) {
+				order_by_columns := len(*(order_by.GetValues()))
+				for order_by_index, order_by_field := range *(order_by.GetValues()) {
 					order_by_map, order_by_map_errors := order_by_field.GetMap()
 					if order_by_map_errors != nil {
 						errors = append(errors, order_by_map_errors...)
@@ -2225,9 +2225,9 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			}
 
 			sql_command := "SELECT "
-			if select_fields != nil && len(*(select_fields.Values())) > 0 {
-				select_fields_values_length := len(*(select_fields.Values()))
-				for i, _ := range *(select_fields.Values()) {
+			if select_fields != nil && len(*(select_fields.GetValues())) > 0 {
+				select_fields_values_length := len(*(select_fields.GetValues()))
+				for i, _ := range *(select_fields.GetValues()) {
 					select_fields_value, select_fields_value_errors := select_fields.GetStringValue(i)
 					if select_fields_value_errors != nil {
 						errors = append(errors, select_fields_value_errors...)
@@ -2727,7 +2727,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			}
 
 			var mapped_records []Record
-			for _, current_json := range *(json_array.Values()) {
+			for _, current_json := range *(json_array.GetValues()) {
 				current_record, current_record_errors := current_json.GetMap()
 				if current_record_errors != nil {
 					errors = append(errors, current_record_errors...)

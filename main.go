@@ -598,7 +598,7 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 		}
 	}
 
-	if _, valid_error := valid_rune_file.WriteString("return value \n}"); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString("\nreturn value \n}"); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}

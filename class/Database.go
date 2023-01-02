@@ -318,7 +318,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 		var table_names []string
 		column_name := "Tables_in_" + database_name_escaped
-		for _, record := range *(records.Values()) {
+		for _, record := range *(records.GetValues()) {
 			record_map, record_map_errors := record.GetMap()
 			if record_map_errors != nil {
 				errors = append(errors, record_map_errors...)

@@ -1164,12 +1164,12 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 			}
 
 			if options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
-				if len(*(json_array.Values())) != 1 {
+				if len(*(json_array.GetValues())) != 1 {
 					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
 					return errors
 				}
 
-				record_from_db, record_from_db_errors := (*(json_array.Values()))[0].GetMap()
+				record_from_db, record_from_db_errors := (*(json_array.GetValues()))[0].GetMap()
 				if record_from_db_errors != nil {
 					errors = append(errors, record_from_db_errors...)
 					return errors
