@@ -106,41 +106,41 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		return temp_value.(*DomainName), nil
 	}
 
-	getCreateSQL := func(options json.Map) (*string, json.Map, []error) {
+	getCreateSQL := func(options *json.Map) (*string, *json.Map, []error) {
 		errors := validate()
 		if len(errors) > 0 {
-			return nil, options, errors
+			return nil, nil, errors
 		}
 
 		temp_credentials, temp_credentials_errors := getCredentials()
 		if temp_credentials_errors != nil {
-			return nil, options, temp_credentials_errors
+			return nil, nil, temp_credentials_errors
 		}
 
 		temp_username, temp_username_errors := temp_credentials.GetUsername()
 		if temp_username_errors != nil {
-			return nil, options, temp_username_errors
+			return nil, nil, temp_username_errors
 		}
 
 		temp_password, temp_password_errors := temp_credentials.GetPassword()
 		if temp_password_errors != nil {
-			return nil, options, temp_password_errors
+			return nil, nil, temp_password_errors
 		} else if common.IsNil(temp_password) {
 			errors = append(errors, fmt.Errorf("error: User.getCreateSQL password is nil"))
 		}
 
 		if len(errors) > 0 {
-			return nil, options, errors
+			return nil, nil, errors
 		}
 
 		temp_domain_name, temp_domain_name_errors := getDomainName()
 		if temp_domain_name_errors != nil {
-			return nil, options, temp_domain_name_errors
+			return nil, nil, temp_domain_name_errors
 		}
 
 		temp_domain_name_value, temp_domain_name_value_errors := temp_domain_name.GetDomainName()
 		if temp_domain_name_value_errors != nil {
-			return nil, options, temp_domain_name_value_errors
+			return nil, nil, temp_domain_name_value_errors
 		}
 
 		username_escaped, username_escaped_errors := common.EscapeString(temp_username, "'")
@@ -159,7 +159,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		}
 
 		if len(errors) > 0 {
-			return nil, options, errors
+			return nil, nil, errors
 		}
 
 		if options.IsBoolTrue("use_file") {
@@ -188,7 +188,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		sql_command += fmt.Sprintf("%s", temp_password_escaped)
 
 		sql_command += ";"
-		return &sql_command, options, nil
+		return &sql_command, nil, nil
 	}
 
 
@@ -207,7 +207,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return validate()
 		},
 		Create: func() []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", true)
 			sql_command, options, sql_command_errors := getCreateSQL(options)
 
@@ -220,7 +220,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				return temp_client_errors
 			}
 
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -256,7 +256,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 			return temp_client.UserExists(temp_username)
 		},
 		UpdatePassword: func(new_password string) []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", true)
 			var errors []error
 
@@ -336,9 +336,9 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 				return errors
 			}
 
-			options_update := json.NewMapValue()
+			options_update := json.NewMap()
 			options_update.SetBoolValue("use_file", true)
-			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(client, &sql_command, options_update)
+			_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options_update)
 
 			if execute_errors != nil {
 				return execute_errors

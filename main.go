@@ -20,7 +20,7 @@ func main() {
 	const CLS_HOST string = "host_name"
 	const CLS_PORT string = "port_number"
 	const CLS_COMMAND string = "command"
-	const CLS_CLASS string = "class"
+	const CLS_CLASS string = "struct"
 	//const CLS_IF_EXISTS string = "if_exists"
 	//const CLS_IF_NOT_EXISTS string = "if_not_exists"
 	const CLS_DATABASE_NAME string = "database_name"
@@ -149,7 +149,7 @@ func main() {
 				}
 			}
 		} else {
-			fmt.Printf("class: %s is not supported", class_value)
+			fmt.Printf("struct: %s is not supported", class_value)
 			os.Exit(1)
 		}
 	} else if command_value == COMMAND_TEST_DATABASE_NAME_WHITELIST {
@@ -187,7 +187,7 @@ func generateKeywordAndReservedWordsBlacklist(client *db_client.Client) []error 
 	var errors []error
 	invalid_strings := map[string]bool{}
 	
-	package_name := "class"
+	package_name := "db_client"
 	filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.go", package_name)
 	raw_text_filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.txt", package_name)
 	method_name := "GetMySQLKeywordsAndReservedWordsInvalidWords()"
@@ -267,7 +267,7 @@ func testDatabaseName(client *db_client.Client) []error {
 	current_value = 0
 	max_value = 127
 
-	package_name := "class"
+	package_name := "db_client"
 
 	valid_runes := map[uint64]bool{}
 	filename_whitelist := fmt.Sprintf("./%s/MySQLDatabaseNameWhitelistCharacters.go", package_name)
@@ -346,7 +346,7 @@ func testTableName(client *db_client.Client) []error {
 	current_value = 0
 	max_value = 127
 
-	package_name := "class"
+	package_name := "db_client"
 	filename := fmt.Sprintf("./%s/MySQLTableNameCharacterWhitelist.go", package_name)
 	method_name := "GetMySQLTableNameWhitelistCharacters()"
 	database_name := "holistic_test"
@@ -437,7 +437,7 @@ func testColumnName(client *db_client.Client) []error {
 	current_value = 0
 	max_value = 127
 
-	package_name := "class"
+	package_name := "db_client"
 	filename := fmt.Sprintf("./%s/MySQLColumnNameWhitelistCharacters.go", package_name)
 	method_name := "GetMySQLColumnNameWhitelistCharacters()"
 	database_name := "holistic_test"

@@ -25,7 +25,7 @@ type Database struct {
 	GetTableNames   func() (*[]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
 	UseDatabase     func() []error
-	ExecuteUnsafeCommand func(sql_command *string, options json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(sql_command *string, options *json.Map) (*json.Array, []error)
 }
 
 func newDatabase(client Client, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *DatabaseReservedWords, database_name_whitelist_characters_obj *DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *TableNameCharacterWhitelist, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Database, []error) {
@@ -136,7 +136,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", &new_database_name)
 	}
 
-	getCreateSQL := func(options json.Map) (*string, []error) {
+	getCreateSQL := func(options *json.Map) (*string, []error) {
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -195,7 +195,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	create := func() []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
 
@@ -209,7 +209,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		if temp_client_errors != nil {
 			return temp_client_errors
 		}
-		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
+		_, execute_sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -219,7 +219,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)
 
@@ -252,7 +252,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -270,7 +270,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getTableNames := func() (*[]string, []error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
 		errors := validate()
@@ -302,7 +302,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return nil, temp_client_errors
 		}
 
-		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		records, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -347,7 +347,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	delete := func() ([]error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		
@@ -382,7 +382,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -396,7 +396,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		
@@ -430,7 +430,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -647,7 +647,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 		SetDatabaseName: func(database_name string) []error {
 			return setDatabaseName(database_name)
 		},
-		ExecuteUnsafeCommand: func(sql_command *string, options json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(sql_command *string, options *json.Map) (*json.Array, []error) {
 			errors := validate()
 
 			if len(errors) > 0 {
@@ -659,7 +659,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 				return nil, temp_client_errors
 			}
 
-			return SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
+			return SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 		},
 		UseDatabase: func() []error {
 			temp_database := getDatabase()

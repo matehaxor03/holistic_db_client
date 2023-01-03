@@ -11,7 +11,7 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(client Client, sql_command *string, options json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(client *Client, sql_command *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -28,14 +28,30 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(client Client, sql_command *string, options json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(client *Client, sql_command *string, options *json.Map) (*json.Array, []error) {
 			var errors []error
+
+			if common.IsNil(client) {
+				errors = append(errors, fmt.Errorf("client is nil"))
+			}
+
+			if common.IsNil(sql_command) {
+				errors = append(errors, fmt.Errorf("sql_command is nil"))
+			}
+
+			if common.IsNil(options) {
+				options = json.NewMap()
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
 
 			client_errs := client.Validate()
 			if client_errs != nil {
 				errors = append(errors, client_errs...)
 			}
-			
+
 			if len(errors) > 0 {
 				return nil, errors
 			}

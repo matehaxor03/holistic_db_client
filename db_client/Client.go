@@ -347,44 +347,44 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 			return nil
 		},
 		GlobalGeneralLogDisable: func() []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'OFF';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, options)
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &command, options)
 			if command_errors != nil {
 				return command_errors
 			}
 			return nil
 		},
 		GlobalGeneralLogEnable: func() []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'ON';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, options)
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &command, options)
 			if command_errors != nil {
 				return command_errors
 			}
 			return nil
 		},
 		GlobalSetTimeZoneUTC: func() []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL time_zone = '+00:00';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, options)
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &command, options)
 			if command_errors != nil {
 				return command_errors
 			}
 			return nil
 		},
 		GlobalSetSQLMode: func() []error {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
-			_, command_errors := SQLCommand.ExecuteUnsafeCommand(*getClient(), &command, options)
+			_, command_errors := SQLCommand.ExecuteUnsafeCommand(getClient(), &command, options)
 			if command_errors != nil {
 				return command_errors
 			}

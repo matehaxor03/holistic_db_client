@@ -324,7 +324,7 @@ data := json.NewMapValue()
 	}
 
 	executeGrant := func() []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
 		sql_command, sql_command_errors := getSQL()
 
@@ -337,7 +337,7 @@ data := json.NewMapValue()
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors

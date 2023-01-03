@@ -368,7 +368,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		
 		var errors []error
@@ -407,7 +407,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, temp_client_errors
 		}
 		
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -425,7 +425,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	delete := func() ([]error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		
 		errors := validate()
@@ -462,7 +462,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -476,7 +476,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		
 		errors := validate()
@@ -512,7 +512,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -526,7 +526,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 	
 	updateRecords := func(records json.Array) []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
 
@@ -601,7 +601,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -615,7 +615,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	updateRecord := func(record json.Map) []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
 
@@ -650,7 +650,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -664,7 +664,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	createRecords := func(records json.Array) []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
 
@@ -716,7 +716,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 		sql := ""
 		for _, record_obj := range records_obj {
-			sql_update_snippet, sql_update_snippet_errors := record_obj.GetCreateSQL()
+			sql_update_snippet, _, sql_update_snippet_errors := record_obj.GetCreateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
@@ -739,7 +739,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -760,7 +760,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 
@@ -818,7 +818,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 		sql_command += "WHERE name='" + table_name_escaped + "';"
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -897,7 +897,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 
@@ -941,7 +941,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			sql_command += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
 		}
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -1405,7 +1405,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", new_table_name)
 	}
 
-	getCreateSQL := func(options json.Map) (*string, []error) {
+	getCreateSQL := func(options *json.Map) (*string, []error) {
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -1761,7 +1761,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	createTable := func() []error {
-		options := json.NewMapValue()
+		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
 		sql_command, sql_command_errors := getCreateSQL(options)
@@ -1780,7 +1780,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, sql_command, options)
+		_, execute_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors
@@ -1893,7 +1893,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil
 		},
 		Count: func() (*uint64, []error) {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			errors := validate()
 			if errors != nil {
@@ -1928,7 +1928,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql, options)
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -2000,7 +2000,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return record, nil
 		},
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
-			options := json.NewMapValue()
+			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			cacheable := false
 			var errors []error
@@ -2721,7 +2721,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				}
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(*temp_client, &sql_command, options)
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
