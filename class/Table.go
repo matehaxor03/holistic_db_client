@@ -2152,11 +2152,8 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					if common.IsNil(order_by_field) {
 						errors = append(errors, fmt.Errorf("order_by_field is nil"))
 						continue
-					} else {
-						string_value, _ := order_by_field.GetStringValue()
-						fmt.Println(string_value)
-					}
-
+					} 
+					
 					order_by_map, order_by_map_errors := order_by_field.GetMap()
 					if order_by_map_errors != nil {
 						errors = append(errors, order_by_map_errors...)
