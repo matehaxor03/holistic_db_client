@@ -540,7 +540,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		}
 
 		for _, record := range *(records.GetValues()) {
-			if !common.IsMap(record) {
+			if !record.IsMap() {
 				errors = append(errors, fmt.Errorf("record is not a map"))
 			}
 		}
@@ -678,7 +678,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		}
 
 		for _, record := range *(records.GetValues()) {
-			if !common.IsMap(record) {
+			if !record.IsMap() {
 				errors = append(errors, fmt.Errorf("record is not a map"))
 			}
 		}
