@@ -5,7 +5,7 @@ package main
 
 import (
 	"fmt"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 	common "github.com/matehaxor03/holistic_common/common"
 	json "github.com/matehaxor03/holistic_json/json"
 	"os"
@@ -41,8 +41,8 @@ func main() {
 	var DATABASE_CLASS = "DATABASE"
 	var USER_CLASS = "USER"
 
-	context := class.NewContext()
-	client_manager, client_manager_errors := class.NewClientManager()
+	context := db_client.NewContext()
+	client_manager, client_manager_errors := db_client.NewClientManager()
 	if client_manager_errors != nil {
 		context.LogErrors(client_manager_errors)
 		os.Exit(1)
@@ -183,7 +183,7 @@ func main() {
 	os.Exit(0)
 }
 
-func generateKeywordAndReservedWordsBlacklist(client *class.Client) []error {
+func generateKeywordAndReservedWordsBlacklist(client *db_client.Client) []error {
 	var errors []error
 	invalid_strings := map[string]bool{}
 	
@@ -257,7 +257,7 @@ func basicFilter(value rune) bool {
 	return true
 }
 
-func testDatabaseName(client *class.Client) []error {
+func testDatabaseName(client *db_client.Client) []error {
 	var errors []error
 	
 	var percent_completed float64
@@ -336,7 +336,7 @@ func testDatabaseName(client *class.Client) []error {
 	return nil
 }
 
-func testTableName(client *class.Client) []error {
+func testTableName(client *db_client.Client) []error {
 	var errors []error
 	valid_runes := map[uint64]bool{}
 	var percent_completed float64
@@ -427,7 +427,7 @@ func testTableName(client *class.Client) []error {
 	return nil
 }
 
-func testColumnName(client *class.Client) []error {
+func testColumnName(client *db_client.Client) []error {
 	var errors []error
 	valid_runes := map[uint64]bool{}
 	var percent_completed float64

@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -488,166 +488,166 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.ClientManager":
+	case "*db_client.ClientManager":
 		switch desired_type {
-		case "class.ClientManager":
+		case "db_client.ClientManager":
 			return *(result.(*ClientManager)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Client":
+	case "*db_client.Client":
 		switch desired_type {
-		case "class.Client":
+		case "db_client.Client":
 			return *(result.(*Client)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Host":
+	case "*db_client.Host":
 		switch desired_type {
-		case "class.Host":
+		case "db_client.Host":
 			return *(result.(*Host)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: ommon.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Database":
+	case "*db_client.Database":
 		switch desired_type {
-		case "class.Database":
+		case "db_client.Database":
 			return *(result.(*Database)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Table":
+	case "*db_client.Table":
 		switch desired_type {
-		case "class.Table":
+		case "db_client.Table":
 			return *(result.(*Table)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Record":
+	case "*db_client.Record":
 		switch desired_type {
-		case "class.Record":
+		case "db_client.Record":
 			return *(result.(*Record)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.DomainName":
+	case "*db_client.DomainName":
 		switch desired_type {
-		case "class.DomainName":
+		case "db_client.DomainName":
 			return *(result.(*DomainName)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Grant":
+	case "*db_client.Grant":
 		switch desired_type {
-		case "class.Grant":
+		case "db_client.Grant":
 			return *(result.(*Grant)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.Credentials":
+	case "*db_client.Credentials":
 		switch desired_type {
-		case "class.Credentials":
+		case "db_client.Credentials":
 			return *(result.(*Credentials)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.User":
+	case "*db_client.User":
 		switch desired_type {
-		case "class.User":
+		case "db_client.User":
 			return *(result.(*User)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "*class.DatabaseCreateOptions":
+	case "*db_client.DatabaseCreateOptions":
 		switch desired_type {
-		case "class.DatabaseCreateOptions":
+		case "db_client.DatabaseCreateOptions":
 			return *(result.(*DatabaseCreateOptions)), nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.ClientManager":
+	case "db_client.ClientManager":
 		switch desired_type {
-		case "*class.ClientManager":
+		case "*db_client.ClientManager":
 			temp_result := result.(ClientManager)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Client":
+	case "db_client.Client":
 		switch desired_type {
-		case "*class.Client":
+		case "*db_client.Client":
 			temp_result := result.(Client)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Host":
+	case "db_client.Host":
 		switch desired_type {
-		case "*class.Host":
+		case "*db_client.Host":
 			temp_result := result.(Host)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Database":
+	case "db_client.Database":
 		switch desired_type {
-		case "*class.Database":
+		case "*db_client.Database":
 			temp_result := result.(Database)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Table":
+	case "db_client.Table":
 		switch desired_type {
-		case "*class.Table":
+		case "*db_client.Table":
 			temp_result := result.(Table)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Record":
+	case "db_client.Record":
 		switch desired_type {
-		case "*class.Record":
+		case "*db_client.Record":
 			temp_result := result.(Record)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.DomainName":
+	case "db_client.DomainName":
 		switch desired_type {
-		case "*class.DomainName":
+		case "*db_client.DomainName":
 			temp_result := result.(DomainName)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Grant":
+	case "db_client.Grant":
 		switch desired_type {
-		case "*class.Grant":
+		case "*db_client.Grant":
 			temp_result := result.(Grant)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.Credentials":
+	case "db_client.Credentials":
 		switch desired_type {
-		case "*class.Credentials":
+		case "*db_client.Credentials":
 			temp_result := result.(Credentials)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.User":
+	case "db_client.User":
 		switch desired_type {
-		case "*class.User":
+		case "*db_client.User":
 			temp_result := result.(User)
 			return &temp_result, nil
 		default:
 			errors = append(errors, fmt.Errorf("error: Common.GetField mapping not supported please implement %s->%s", type_of, desired_type))
 		}
-	case "class.DatabaseCreateOptions":
+	case "db_client.DatabaseCreateOptions":
 		switch desired_type {
-		case "*class.DatabaseCreateOptions":
+		case "*db_client.DatabaseCreateOptions":
 			temp_result := result.(DatabaseCreateOptions)
 			return &temp_result, nil
 		default:
@@ -842,7 +842,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 		return errors
 	}
 
-	if (struct_type == "*class.Table" || struct_type  == "class.Table") && data.HasKey("[schema_is_nil]") {
+	if (struct_type == "*db_client.Table" || struct_type  == "db_client.Table") && data.HasKey("[schema_is_nil]") {
 		if data.IsBoolTrue("[schema_is_nil]") {
 			ignore_identity_errors = true
 		}
@@ -897,7 +897,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 		errors = append(errors, system_field_errors...)
 	}
 
-	if (struct_type == "*class.Table" || struct_type == "class.Table") && !ignore_identity_errors {
+	if (struct_type == "*db_client.Table" || struct_type == "db_client.Table") && !ignore_identity_errors {
 		if *primary_key_count <= 0 {
 			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys", struct_type))
 		}
@@ -987,7 +987,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 	}
  
-	if struct_type == "*class.Table" || struct_type == "class.Table" || struct_type == "*class.Record" || struct_type == "class.Record" {
+	if struct_type == "*db_client.Table" || struct_type == "db_client.Table" || struct_type == "*db_client.Record" || struct_type == "db_client.Record" {
 		if schema_of_parameter.IsBoolTrue("primary_key") {
 			value_is_mandatory = true
 			*primary_key_count++ 
@@ -1016,7 +1016,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 	}
 
-	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" {
+	if (struct_type == "*db_client.Table" || struct_type == "db_client.Table") && parameters_type == "[fields]" {
 		value_is_mandatory = false
 	}
 
@@ -1121,7 +1121,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return nil
 	}
 
-	if !((struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]") {
+	if !((struct_type == "*db_client.Table" || struct_type == "db_client.Table") && parameters_type == "[fields]") {
 		if strings.ReplaceAll(*type_of_parameter_schema_value, "*", "") != strings.ReplaceAll(type_of_parameter_value, "*", "") {
 			type_of_parameter_schema_value_simple := strings.ReplaceAll(*type_of_parameter_schema_value, "*", "")
 			type_of_parameter_value_simple := strings.ReplaceAll(type_of_parameter_value, "*", "")
@@ -1139,7 +1139,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
-	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" && len(parameters.GetKeys()) == 0 {
+	if (struct_type == "*db_client.Table" || struct_type == "db_client.Table") && parameters_type == "[fields]" && len(parameters.GetKeys()) == 0 {
 		return nil
 	}
 
@@ -1263,7 +1263,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	case "*float32", "float32":
 	case "*float64", "float64":
 	case "*time.Time", "time.Time":
-	case "*class.Database":
+	case "*db_client.Database":
 		database := value_to_validate.(*Database)
 
 		errors_for_database := database.Validate()
@@ -1271,7 +1271,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			errors = append(errors, errors_for_database...)
 		}
 		break
-	case "class.Database":
+	case "db_client.Database":
 		database := value_to_validate.(Database)
 
 		errors_for_database := database.Validate()
@@ -1279,7 +1279,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			errors = append(errors, errors_for_database...)
 		}
 		break
-	case "*class.DomainName":
+	case "*db_client.DomainName":
 		domain_name := value_to_validate.(*DomainName)
 
 		errors_for_domain_name := domain_name.Validate()
@@ -1287,7 +1287,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			errors = append(errors, errors_for_domain_name...)
 		}
 		break
-	case "class.DomainName":
+	case "db_client.DomainName":
 		domain_name := value_to_validate.(DomainName)
 
 		errors_for_domain_name := domain_name.Validate()
@@ -1295,7 +1295,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			errors = append(errors, errors_for_domain_name...)
 		}
 		break
-	case "*class.Host":
+	case "*db_client.Host":
 		host := value_to_validate.(*Host)
 
 		errors_for_host := host.Validate()
@@ -1304,7 +1304,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.Host":
+	case "db_client.Host":
 		host := value_to_validate.(Host)
 
 		errors_for_host := host.Validate()
@@ -1313,7 +1313,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.Credentials":
+	case "*db_client.Credentials":
 		credentials := value_to_validate.(*Credentials)
 
 		errors_for_credentaials := credentials.Validate()
@@ -1322,7 +1322,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.Credentials":
+	case "db_client.Credentials":
 		credentials := value_to_validate.(Credentials)
 
 		errors_for_credentaials := credentials.Validate()
@@ -1331,7 +1331,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.DatabaseCreateOptions":
+	case "*db_client.DatabaseCreateOptions":
 		database_create_options := value_to_validate.(*DatabaseCreateOptions)
 
 		errors_for_database_create_options := database_create_options.Validate()
@@ -1340,7 +1340,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.DatabaseCreateOptions":
+	case "db_client.DatabaseCreateOptions":
 		database_create_options := value_to_validate.(DatabaseCreateOptions)
 
 		errors_for_database_create_options := database_create_options.Validate()
@@ -1349,7 +1349,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.Client":
+	case "*db_client.Client":
 		client := value_to_validate.(*Client)
 
 		errors_for_client := client.Validate()
@@ -1358,7 +1358,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.Client":
+	case "db_client.Client":
 		client := value_to_validate.(Client)
 
 		errors_for_client := client.Validate()
@@ -1367,7 +1367,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.Grant":
+	case "*db_client.Grant":
 		grant := value_to_validate.(*Grant)
 
 		errors_for_grant := grant.Validate()
@@ -1376,7 +1376,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.Grant":
+	case "db_client.Grant":
 		grant := value_to_validate.(Grant)
 
 		errors_for_grant := grant.Validate()
@@ -1385,7 +1385,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.User":
+	case "*db_client.User":
 		user := value_to_validate.(*User)
 
 		errors_for_user := user.Validate()
@@ -1394,7 +1394,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.User":
+	case "db_client.User":
 		user := value_to_validate.(User)
 
 		errors_for_user := user.Validate()
@@ -1403,7 +1403,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.Table":
+	case "*db_client.Table":
 		table := value_to_validate.(*Table)
 
 		errors_for_table := table.Validate()
@@ -1412,7 +1412,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.Table":
+	case "db_client.Table":
 		table := value_to_validate.(Table)
 
 		errors_for_table := table.Validate()
@@ -1421,7 +1421,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "*class.ClientManager":
+	case "*db_client.ClientManager":
 		client_manager := value_to_validate.(*ClientManager)
 
 		errors_for_client_manager := client_manager.Validate()
@@ -1430,7 +1430,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "class.ClientManager":
+	case "db_client.ClientManager":
 		client_manager := value_to_validate.(ClientManager)
 
 		errors_for_client_manager := client_manager.Validate()

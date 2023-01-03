@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -65,7 +65,7 @@ data := json.NewMapValue()
 	// Start Client
 	map_system_fields.SetObjectForMap("[client]", client)
 	map_client_schema := json.NewMapValue()
-	map_client_schema.SetStringValue("type", "class.Client")
+	map_client_schema.SetStringValue("type", "db_client.Client")
 	map_system_schema.SetMapValue("[client]", map_client_schema)
 	// End Client
 
@@ -73,7 +73,7 @@ data := json.NewMapValue()
 	// Start User
 	map_system_fields.SetObjectForMap("[user]", user)
 	map_user_schema := json.NewMapValue()
-	map_user_schema.SetStringValue("type", "class.User")
+	map_user_schema.SetStringValue("type", "db_client.User")
 	map_system_schema.SetMapValue("[user]", map_user_schema)
 	// End User
 
@@ -161,8 +161,8 @@ data := json.NewMapValue()
 		"[fields]": json.NewMapValue(),
 		"[schema]": json.NewMapValue(),
 		"[system_fields]": json.Map{"[client]":client, "[user]":user, "[grant]":grant},
-		"[system_schema]": json.Map{"[client]": json.Map{"type":"class.Client"},
-						"[user]": json.Map{"type":"class.User"},
+		"[system_schema]": json.Map{"[client]": json.Map{"type":"db_client.Client"},
+						"[user]": json.Map{"type":"db_client.User"},
 						"[grant]": json.Map{"type":"string","filters": json.Array{json.Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
 		},
 	}
@@ -199,7 +199,7 @@ data := json.NewMapValue()
 	}
 
 	getClient := func() (*Client, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[client]", "*class.Client")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[client]", "*db_client.Client")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		}
@@ -207,7 +207,7 @@ data := json.NewMapValue()
 	}
 
 	getUser := func() (*User, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "*class.User")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "*db_client.User")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		}

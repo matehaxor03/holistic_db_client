@@ -1,18 +1,18 @@
-package class
+package db_client
 
 import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-type TableSchemaCache struct {
-	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
+type TableStatusCache struct {
+	GetOrSetTableStatus func(database Database, table_name string, table_status *json.Map) (*json.Map, []error)
 }
 
-func newTableSchemaCache() (*TableSchemaCache) {
+func newTableStatusCache() (*TableStatusCache) {
 	cache := json.NewMapValue()
 	
-	getOrSetSchema := func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {		
+	getOrSetTableStatus := func(database Database, table_name string, table_status *json.Map) (*json.Map, []error) {		
 		client, client_errors := database.GetClient()
 		if client_errors != nil {
 			return nil, client_errors
@@ -50,17 +50,17 @@ func newTableSchemaCache() (*TableSchemaCache) {
 
 		key := host_name + "#" + port_number + "#" + database_name + "#" + table_name
 		
-		if common.IsNil(schema) {
+		if common.IsNil(table_status) {
 			return cache.GetMap(key)
 		} else {
-			cache.SetMap(key, schema)
+			cache.SetMap(key, table_status)
 			return nil, nil
 		}
 	}
 
-	return &TableSchemaCache{
-		GetOrSetSchema: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
-			return getOrSetSchema(database, table_name, schema)
+	return &TableStatusCache{
+		GetOrSetTableStatus: func(database Database, table_name string, table_status *json.Map) (*json.Map, []error) {
+			return getOrSetTableStatus(database, table_name, table_status)
 		},
 	}
 }

@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -74,7 +74,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		errors = append(errors, SQLCommand_errors...)
 	}
 
-	struct_type := "*class.Record"
+	struct_type := "*db_client.Record"
 
 	if common.IsNil(record_data) {
 		errors = append(errors, fmt.Errorf("error: record_data is nil"))
@@ -110,7 +110,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	// Start table
 	
 	map_table_schema := json.NewMapValue()
-	map_table_schema.SetStringValue("type", "class.Table")
+	map_table_schema.SetStringValue("type", "db_client.Table")
 	map_system_schema.SetMapValue("[table]", map_table_schema)
 	// End table
 
@@ -138,7 +138,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getTable := func() (*Table, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*class.Table")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*db_client.Table")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {

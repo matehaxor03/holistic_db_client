@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -40,7 +40,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	}
 
 	var this_client *Client
-	struct_type := "*class.Client"
+	struct_type := "*db_client.Client"
 
 	setClient := func(client *Client) {
 		this_client = client
@@ -67,15 +67,15 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	map_system_schema := json.NewMapValue()
 	
 	map_client_manager := json.NewMapValue()
-	map_client_manager.SetStringValue("type", "class.ClientManager")
+	map_client_manager.SetStringValue("type", "db_client.ClientManager")
 	map_system_schema.SetMapValue("[client_manager]", map_client_manager)
 
 	map_host := json.NewMapValue()
-	map_host.SetStringValue("type", "*class.Host")
+	map_host.SetStringValue("type", "*db_client.Host")
 	map_system_schema.SetMapValue("[host]", map_host)
 
 	map_database := json.NewMapValue()
-	map_database.SetStringValue("type", "*class.Database")
+	map_database.SetStringValue("type", "*db_client.Database")
 	map_system_schema.SetMapValue("[database]", map_database)
 
 	map_database_username := json.NewMapValue()
@@ -109,7 +109,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	}
 
 	getHost := func() (*Host, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]", "*class.Host")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]", "*db_client.Host")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -129,7 +129,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*class.Database")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*db_client.Database")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -139,7 +139,7 @@ func newClient(client_manager ClientManager, host *Host, database_username *stri
 	}
 
 	getClientManager := func() (*ClientManager, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "*class.ClientManager")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "*db_client.ClientManager")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {

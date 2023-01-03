@@ -6,10 +6,10 @@ import (
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 )
 
-func EnsureTableIsDeleted(t *testing.T, table *class.Table) {
+func EnsureTableIsDeleted(t *testing.T, table *db_client.Table) {
 	table_delete_errors := table.DeleteIfExists()
 	
 	if table_delete_errors != nil {
@@ -60,7 +60,7 @@ func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
 	return schema
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (*db_client.Table) {
 	var errors []error
 
 	database := GetTestDatabaseCreated(t)
@@ -107,7 +107,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	return table
 }
 
-func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (*db_client.Table) {
 	var errors []error
 
 	database := GetTestDatabase(t)
@@ -137,11 +137,11 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 	return table
 }
 
-func GetTestTableBasic(t *testing.T) *class.Table {
+func GetTestTableBasic(t *testing.T) *db_client.Table {
 	return GetTestTableWithTableNameAndSchema(t, GetTestTableName(), GetTestSchema())
 }
 
-func GetTestTableBasicWithCreatedDatabase(t *testing.T) *class.Table {
+func GetTestTableBasicWithCreatedDatabase(t *testing.T) *db_client.Table {
 	return GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), GetTestSchema())
 }
 

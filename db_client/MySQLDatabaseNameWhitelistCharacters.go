@@ -1,10 +1,10 @@
-package class
+package db_client
 
 import (
     json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetMySQLColumnNameWhitelistCharacters() json.Map {
+func GetMySQLDatabaseNameWhitelistCharacters() json.Map {
     valid_chars := json.NewMapValue()
 	valid_chars.SetNil("0")
 	valid_chars.SetNil("1")

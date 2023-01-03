@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -36,7 +36,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	var this_database *Database
-	struct_type := "*class.Database"
+	struct_type := "*db_client.Database"
 
 	setDatabase := func(database *Database) {
 		this_database = database
@@ -65,7 +65,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	map_system_schema := json.NewMapValue()
 	
 	map_client_schema := json.NewMapValue()
-	map_client_schema.SetStringValue("type", "class.Client")
+	map_client_schema.SetStringValue("type", "db_client.Client")
 	map_system_schema.SetMapValue("[client]", map_client_schema)
 
 
@@ -85,7 +85,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 
 
 	map_create_options_schema := json.NewMapValue()
-	map_create_options_schema.SetStringValue("type", "*class.DatabaseCreateOptions")
+	map_create_options_schema.SetStringValue("type", "*db_client.DatabaseCreateOptions")
 	map_system_schema.SetMapValue("[database_create_options]", map_create_options_schema)
 
 	data.SetMapValue("[system_schema]", map_system_schema)
@@ -99,7 +99,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*class.DatabaseCreateOptions")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*db_client.DatabaseCreateOptions")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -109,7 +109,7 @@ func newDatabase(client Client, database_name string, database_create_options *D
 	}
 
 	getClient := func() (*Client, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*db_client.Client")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {

@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -41,16 +41,16 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 	map_system_schema := json.NewMapValue()
 	
 	map_client_schema := json.NewMapValue()
-	map_client_schema.SetStringValue("type", "class.Client")
+	map_client_schema.SetStringValue("type", "db_client.Client")
 	map_system_schema.SetMapValue("[client]", map_client_schema)
 
 
 	map_credentials_schema := json.NewMapValue()
-	map_credentials_schema.SetStringValue("type", "class.Credentials")
+	map_credentials_schema.SetStringValue("type", "db_client.Credentials")
 	map_system_schema.SetMapValue("[credentials]", map_credentials_schema)
 
 	map_domain_name_schema := json.NewMapValue()
-	map_domain_name_schema.SetStringValue("type", "class.DomainName")
+	map_domain_name_schema.SetStringValue("type", "db_client.DomainName")
 	map_system_schema.SetMapValue("[domain_name]", map_domain_name_schema)
 
 	data.SetMapValue("[system_schema]", map_system_schema)
@@ -61,9 +61,9 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 		"[fields]": json.NewMapValue(),
 		"[schema]": json.NewMapValue(),
 		"[system_fields]": json.Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
-		"[system_schema]": json.Map{"[client]":json.Map{"type":"class.Client"},
-		                "[credentials]":json.Map{"type":"class.Credentials"},
-						"[domain_name]":json.Map{"type":"class.DomainName"},
+		"[system_schema]": json.Map{"[client]":json.Map{"type":"db_client.Client"},
+		                "[credentials]":json.Map{"type":"db_client.Credentials"},
+						"[domain_name]":json.Map{"type":"db_client.DomainName"},
 		},
 	}*/
 
@@ -76,7 +76,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 	}
 
 	getClient := func() (*Client, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*class.Client")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", "*db_client.Client")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -87,7 +87,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "*class.Credentials")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "*db_client.Credentials")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -97,7 +97,7 @@ func newUser(client Client, credentials Credentials, domain_name DomainName) (*U
 	}
 
 	getDomainName := func() (*DomainName, []error) {
-		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*class.DomainName")
+		temp_value, temp_value_errors :=  GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*db_client.DomainName")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {

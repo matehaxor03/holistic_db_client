@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"fmt"
@@ -84,7 +84,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 		// Start database
 		map_database_schema := json.NewMapValue()
-		map_database_schema.SetStringValue("type", "class.Database")
+		map_database_schema.SetStringValue("type", "db_client.Database")
 		map_system_schema.SetMapValue("[database]", map_database_schema)
 		// End database
 
@@ -359,11 +359,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "*class.Table")
+		return ValidateData(getData(), "*db_client.Table")
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*class.Database")
+		temp_value, temp_value_errors := GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*db_client.Database")
 		return temp_value.(*Database), temp_value_errors
 	}
 

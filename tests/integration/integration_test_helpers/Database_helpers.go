@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"sync"
 	common "github.com/matehaxor03/holistic_common/common"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 )
 
 var database_count uint64 = 0
 var lock_get_client_manager = &sync.Mutex{}
 var lock_get_database = &sync.Mutex{}
-var client_manager *class.ClientManager
+var client_manager *db_client.ClientManager
 
 func getTestDatabaseName() string {
 	database_count++
@@ -19,7 +19,7 @@ func getTestDatabaseName() string {
 	return "holistic_test_" + *(common.GenerateRandomLetters(10, &uppercase)) + fmt.Sprintf("_%d", database_count)
 }
 
-func EnsureDatabaseIsDeleted(t *testing.T, database *class.Database) {
+func EnsureDatabaseIsDeleted(t *testing.T, database *db_client.Database) {
 	database_delete_errors := database.DeleteIfExists()
 	
 	if database_delete_errors != nil {
@@ -29,12 +29,12 @@ func EnsureDatabaseIsDeleted(t *testing.T, database *class.Database) {
 	}
 }
 
-func GetTestClient(t *testing.T) (*class.Client) {
+func GetTestClient(t *testing.T) (*db_client.Client) {
 	lock_get_client_manager.Lock()
 	defer lock_get_client_manager.Unlock()
 	var errors []error
 	if common.IsNil(client_manager) {
-		temp_client_manager, temp_client_manager_errors := class.NewClientManager()
+		temp_client_manager, temp_client_manager_errors := db_client.NewClientManager()
 		if temp_client_manager_errors != nil {
 			errors = append(errors, temp_client_manager_errors...)
 		} else if temp_client_manager == nil {
@@ -65,7 +65,7 @@ func GetTestClient(t *testing.T) (*class.Client) {
 	return client
 }
 
-func GetTestDatabase(t *testing.T) (*class.Database) {
+func GetTestDatabase(t *testing.T) (*db_client.Database) {
 	lock_get_database.Lock()
 	defer lock_get_database.Unlock()
 	var errors []error
@@ -77,8 +77,8 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 		return nil
 	}
 
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 	database, database_errors := client.GetDatabaseInterface(getTestDatabaseName(), &character_set, &collate)
 	if database_errors != nil {
 		errors = append(errors, database_errors...)
@@ -104,7 +104,7 @@ func GetTestDatabase(t *testing.T) (*class.Database) {
 	return database
 }
 
-func GetTestDatabaseDeleted(t *testing.T) (*class.Database) {
+func GetTestDatabaseDeleted(t *testing.T) (*db_client.Database) {
 	var errors []error
 
 	database := GetTestDatabase(t)
@@ -129,7 +129,7 @@ func GetTestDatabaseDeleted(t *testing.T) (*class.Database) {
 	return database
 }
 
-func GetTestDatabaseCreated(t *testing.T) (*class.Database) {
+func GetTestDatabaseCreated(t *testing.T) (*db_client.Database) {
 	var errors []error
 
 	database := GetTestDatabase(t)

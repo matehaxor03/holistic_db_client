@@ -1,4 +1,4 @@
-package class
+package db_client
 import (
     json "github.com/matehaxor03/holistic_json/json"
 )

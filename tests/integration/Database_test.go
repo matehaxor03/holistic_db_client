@@ -6,7 +6,7 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
  
@@ -148,7 +148,7 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	database := helper.GetTestDatabase(t)
 	previous_database_name, _ := database.GetDatabaseName()
 
-	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+	blacklist_map := db_client.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	for _, blacklist_database_name := range blacklist_map.GetKeys() {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
@@ -179,10 +179,10 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 	
-	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+	blacklist_map := db_client.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for _, blacklist_database_name := range blacklist_map.GetKeys() {
 		
@@ -204,10 +204,10 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+	blacklist_map := db_client.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for _, blacklist_database_name := range blacklist_map.GetKeys() {
 		
@@ -230,10 +230,10 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
+	blacklist_map := db_client.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	for _, blacklist_database_name := range blacklist_map.GetKeys() {
 		
@@ -255,10 +255,10 @@ func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 
 func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
+	whitelist_map := db_client.GetMySQLDatabaseNameWhitelistCharacters()
 
 	for _, whitelist_database_character := range whitelist_map.GetKeys() {
 		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
@@ -283,8 +283,8 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	non_whitelist_map := json.NewMap()
 	non_whitelist_map.SetNil("(")
@@ -303,10 +303,10 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := class.GET_CHARACTER_SET_UTF8MB4()
-	collate := class.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := db_client.GET_CHARACTER_SET_UTF8MB4()
+	collate := db_client.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
-	whitelist_map := class.GetMySQLDatabaseNameWhitelistCharacters()
+	whitelist_map := db_client.GetMySQLDatabaseNameWhitelistCharacters()
 
 	for _, whitelist_database_character := range whitelist_map.GetKeys() {
 		database, new_database_errors := client.GetDatabaseInterface(whitelist_database_character, &character_set, &collate)

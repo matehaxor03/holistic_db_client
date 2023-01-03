@@ -1,17 +1,18 @@
-package class
+package db_client
 
 import (
+	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-type TableReadRecordsCache struct {
-	GetOrSetReadRecords func(database Database, sql string, records *[]Record) (*[]Record, []error)
+type TableSchemaCache struct {
+	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
 }
 
-func newTableReadRecordsCache() (*TableReadRecordsCache) {
-	cache := map[string](*[]Record){}
+func newTableSchemaCache() (*TableSchemaCache) {
+	cache := json.NewMapValue()
 	
-	getOrSetReadRecords := func(database Database, sql string, records *[]Record) (*[]Record, []error) {		
+	getOrSetSchema := func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {		
 		client, client_errors := database.GetClient()
 		if client_errors != nil {
 			return nil, client_errors
@@ -47,19 +48,19 @@ func newTableReadRecordsCache() (*TableReadRecordsCache) {
 			return nil, nil
 		}
 
-		key := host_name + "#" + port_number + "#" + database_name + "#" + sql
+		key := host_name + "#" + port_number + "#" + database_name + "#" + table_name
 		
-		if common.IsNil(records) {
-			return cache[key], nil
+		if common.IsNil(schema) {
+			return cache.GetMap(key)
 		} else {
-			cache[key] = records
+			cache.SetMap(key, schema)
 			return nil, nil
 		}
 	}
 
-	return &TableReadRecordsCache{
-		GetOrSetReadRecords: func(database Database, sql string, records *[]Record) (*[]Record, []error) {
-			return getOrSetReadRecords(database, sql, records)
+	return &TableSchemaCache{
+		GetOrSetSchema: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
+			return getOrSetSchema(database, table_name, schema)
 		},
 	}
 }

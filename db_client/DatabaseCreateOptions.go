@@ -1,4 +1,4 @@
-package class
+package db_client
 
 import (
 	"strings"
@@ -43,7 +43,7 @@ type DatabaseCreateOptions struct {
 }
 
 func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
-	struct_type := "*class.DatabaseCreateOptions"
+	struct_type := "*db_client.DatabaseCreateOptions"
 
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())

@@ -4,10 +4,10 @@ import (
     "testing"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	class "github.com/matehaxor03/holistic_db_client/class"
+	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 )
 
-func GetTestTableCreated(t *testing.T) (*class.Table) {
+func GetTestTableCreated(t *testing.T) (*db_client.Table) {
 	var errors []error
 
 	table := GetTestTableBasicWithCreatedDatabase(t)
@@ -32,7 +32,7 @@ func GetTestTableCreated(t *testing.T) (*class.Table) {
 	return table
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema json.Map) (*class.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema json.Map) (*db_client.Table) {
 	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, schema)
 	
 	table_create_errors := table.Create()
