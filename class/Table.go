@@ -2153,7 +2153,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 						errors = append(errors, fmt.Errorf("order_by_field is nil"))
 						continue
 					} 
-					
+
 					order_by_map, order_by_map_errors := order_by_field.GetMap()
 					if order_by_map_errors != nil {
 						errors = append(errors, order_by_map_errors...)
@@ -2963,6 +2963,8 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				mapped_record_obj, mapped_record_obj_errors := newRecord(*getTable(), mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
+				} else if common.IsNil(mapped_record_obj){
+					errors = append(errors, fmt.Errorf("mapped record is nil"))
 				} else {
 					mapped_records = append(mapped_records, *mapped_record_obj)
 				}
