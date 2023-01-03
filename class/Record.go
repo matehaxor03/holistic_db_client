@@ -254,7 +254,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", true)
 		options.SetBoolValue("get_last_insert_id", false)
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 		errors := validate()
 
 		if len(errors) > 0 {
@@ -577,7 +577,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	getUpdateSQL := func() (*string, json.Map, []error) {
 		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 		errors := validate()
 
 		if len(errors) > 0 {

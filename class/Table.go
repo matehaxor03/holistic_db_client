@@ -528,7 +528,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	updateRecords := func(records json.Array) []error {
 		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 
 		errors := validate()
 		if errors != nil {
@@ -617,7 +617,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	updateRecord := func(record json.Map) []error {
 		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 
 		errors := validate()
 		if errors != nil {
@@ -666,7 +666,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	createRecords := func(records json.Array) []error {
 		options := json.NewMapValue()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 
 		errors := validate()
 		if errors != nil {
