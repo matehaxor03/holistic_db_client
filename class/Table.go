@@ -2010,7 +2010,6 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				return nil, errors
 			}
 
-			
 
 			table_schema, table_schema_errors := getSchema()
 			if table_schema_errors != nil {
@@ -2141,7 +2140,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			}
 
 			order_by_clause := ""
-			if order_by != nil {
+			if !common.IsNil(order_by) && len(*(order_by.GetValues())) > 0 {
 				table_columns, table_columns_errors := getTableColumns()
 				if table_columns_errors != nil {
 					return nil, table_columns_errors
@@ -2149,7 +2148,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 				order_by_columns := len(*(order_by.GetValues()))
 				for order_by_index, order_by_field := range *(order_by.GetValues()) {
-					
+
 					if common.IsNil(order_by_field) {
 						errors = append(errors, fmt.Errorf("order_by_field is nil"))
 						continue
