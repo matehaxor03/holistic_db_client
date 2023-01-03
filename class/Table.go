@@ -2149,6 +2149,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 				order_by_columns := len(*(order_by.GetValues()))
 				for order_by_index, order_by_field := range *(order_by.GetValues()) {
+					fmt.Println(order_by_field)
 					order_by_map, order_by_map_errors := order_by_field.GetMap()
 					if order_by_map_errors != nil {
 						errors = append(errors, order_by_map_errors...)
