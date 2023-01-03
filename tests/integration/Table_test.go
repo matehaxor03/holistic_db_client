@@ -135,7 +135,7 @@ func TestTableCanSetTableNameWithBlackListName(t *testing.T) {
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	table := helper.GetTestTableBasic(t)
 
-	for _, blacklist_table_name := range (blacklist_map.Keys()) {
+	for _, blacklist_table_name := range (blacklist_map.GetKeys()) {
 		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
 			continue
 		}
@@ -167,7 +167,7 @@ func TestTableCanCreateWithBlackListName(t *testing.T) {
 	database := helper.GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_table_name := range (blacklist_map.Keys()) {
+	for _, blacklist_table_name := range (blacklist_map.GetKeys()) {
 		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
 			continue
 		}
@@ -188,7 +188,7 @@ func TestTableCanCreateWithBlackListNameUppercase(t *testing.T) {
 	database := helper.GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_table_name := range (blacklist_map.Keys()) {
+	for _, blacklist_table_name := range (blacklist_map.GetKeys()) {
 		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
 			continue
 		}
@@ -210,7 +210,7 @@ func TestTableCanCreateWithBlackListNameLowercase(t *testing.T) {
 	database := helper.GetTestDatabase(t)
 	blacklist_map := class.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_table_name := range (blacklist_map.Keys()) {
+	for _, blacklist_table_name := range (blacklist_map.GetKeys()) {
 		if len(blacklist_table_name) == 1 || strings.Contains(blacklist_table_name, ";") {
 			continue
 		}
@@ -231,7 +231,7 @@ func TestTableCanCreateWithWhiteListCharacters(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
 	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
-	for _, valid_character := range (valid_characters_map.Keys()) {
+	for _, valid_character := range (valid_characters_map.GetKeys()) {
 		table, get_table_interface_errors := database.GetTableInterface("a" + valid_character + "a", helper.GetTestSchema())
 
 		if get_table_interface_errors != nil {
@@ -253,7 +253,7 @@ func TestTableCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	non_whitelist_map.SetNil("(")
 	non_whitelist_map.SetNil(")")
 
-	for _, invalid_character := range (non_whitelist_map.Keys()) {
+	for _, invalid_character := range (non_whitelist_map.GetKeys()) {
 		table, get_table_interface_errors := database.GetTableInterface(invalid_character + invalid_character, helper.GetTestSchema())
 
 		if get_table_interface_errors == nil {
@@ -270,7 +270,7 @@ func TestTableCannotCreateWithWhiteListCharactersIfTableNameLength1(t *testing.T
 	database := helper.GetTestDatabase(t)
 	valid_characters_map := class.GetMySQLTableNameWhitelistCharacters()
 
-	for _, valid_character := range (valid_characters_map.Keys()) {
+	for _, valid_character := range (valid_characters_map.GetKeys()) {
 		table, get_table_interface_errors := database.GetTableInterface(valid_character, helper.GetTestSchema())
 
 		if get_table_interface_errors == nil {

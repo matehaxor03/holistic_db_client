@@ -153,7 +153,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			d.SetBoolValue("[schema_is_nil]", false)
 		}
 	
-		for _, schema_key_from_db := range schema_from_db.Keys() {
+		for _, schema_key_from_db := range schema_from_db.GetKeys() {
 			current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMap(schema_key_from_db)
 			if current_schema_error_from_db != nil {
 				errors = append(errors, current_schema_error_from_db...)
@@ -219,7 +219,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		if temp_schemas_error != nil {
 			return nil, temp_schemas_error
 		}
-		columns := temp_schemas.Keys()
+		columns := temp_schemas.GetKeys()
 		return &columns, nil
 	}
 
@@ -236,7 +236,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		for _, column := range schema_map.Keys() {
+		for _, column := range schema_map.GetKeys() {
 			column_schema, column_schema_errors := schema_map.GetMap(column)
 			if column_schema_errors != nil {
 				errors = append(errors, column_schema_errors...)
@@ -271,7 +271,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		for _, column := range schema_map.Keys() {
+		for _, column := range schema_map.GetKeys() {
 			column_schema, column_schema_errors := schema_map.GetMap(column)
 			if column_schema_errors != nil {
 				errors = append(errors, column_schema_errors...)
@@ -306,7 +306,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		for _, column := range schema_map.Keys() {
+		for _, column := range schema_map.GetKeys() {
 			column_schema, column_schema_errors := schema_map.GetMap(column)
 			if column_schema_errors != nil {
 				errors = append(errors, column_schema_errors...)
@@ -341,7 +341,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		for _, column := range schema_map.Keys() {
+		for _, column := range schema_map.GetKeys() {
 			column_schema, column_schema_errors := schema_map.GetMap(column)
 			if column_schema_errors != nil {
 				errors = append(errors, column_schema_errors...)
@@ -844,7 +844,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				errors = append(errors, fmt.Errorf("column_map is nil"))
 				return nil, errors
 			}
-			column_attributes := column_map.Keys()
+			column_attributes := column_map.GetKeys()
 
 			for _, column_attribute := range column_attributes {
 				switch column_attribute {
@@ -967,7 +967,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				errors = append(errors, fmt.Errorf("column_map is nil"))
 				return nil, errors
 			}
-			column_attributes := column_map.Keys()
+			column_attributes := column_map.GetKeys()
 
 			column_schema := json.NewMapValue()
 			default_value := ""
@@ -1845,7 +1845,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, schemas_map_errors
 		}
 
-		schema_column_names := schemas_map.Keys()
+		schema_column_names := schemas_map.GetKeys()
 		return &schema_column_names, nil
 	}
 
@@ -2033,7 +2033,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					return nil, table_columns_errors
 				}
 
-				filter_columns := filters.Keys()
+				filter_columns := filters.GetKeys()
 				for _, filter_column := range filter_columns {
 					if !common.Contains(*table_columns, filter_column) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
@@ -2052,7 +2052,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					}
 					 
 					if table_schema.IsNil(filter_column) {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.Keys()))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.GetKeys()))
 						continue
 					}
 
@@ -2113,7 +2113,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					return nil, table_columns_errors
 				}
 
-				temp_filters_fields := filters_logic.Keys()
+				temp_filters_fields := filters_logic.GetKeys()
 				for _, temp_filters_field := range temp_filters_fields {
 					if !common.Contains(*table_columns, temp_filters_field) {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
@@ -2163,7 +2163,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 						continue
 					}
 					
-					order_by_map_column_names := order_by_map.Keys()
+					order_by_map_column_names := order_by_map.GetKeys()
 					if len(order_by_map_column_names) != 1 {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by field at index %d was a map however did not have a column name", order_by_index))
 						continue
@@ -2264,7 +2264,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			}
 
 			if filters != nil {
-				if len(filters.Keys()) > 0 {
+				if len(filters.GetKeys()) > 0 {
 					sql_command += "WHERE "
 				}
 
@@ -2273,7 +2273,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				column_name_params.SetNil("value")
 				column_name_params.SetStringValue("label","column_name")
 				column_name_params.SetStringValue("data_type", "Table")
-				for index, column_filter := range filters.Keys() {
+				for index, column_filter := range filters.GetKeys() {
 					
 					column_definition, column_definition_errors := table_schema.GetMap(column_filter)
 					if column_definition_errors != nil {
@@ -2655,7 +2655,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 						sql_command += " "
 					}
 
-					if index < len(filters.Keys()) - 1 {
+					if index < len(filters.GetKeys()) - 1 {
 						sql_command += "AND "
 					}
 				}
@@ -2742,7 +2742,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					continue
 				}
 
-				columns := current_record.Keys()
+				columns := current_record.GetKeys()
 				mapped_record := json.NewMapValue()
 				for _, column := range columns {
 					table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)

@@ -55,7 +55,7 @@ func WhiteListString(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if  map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has nil map", *data_type, *label))
-	} else if len(map_values.Keys()) == 0 {
+	} else if len(map_values.GetKeys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhiteListString: has empty array", *data_type, *label))
 	}
 
@@ -91,7 +91,7 @@ func BlackListString(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(map_values.Keys()) == 0 {
+	} else if len(map_values.GetKeys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -120,7 +120,7 @@ func BlackListString(m json.Map) []error {
 func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, []error) {
 	var errors []error
 	if !(field_type == "[fields]" || field_type == "[system_fields]") {
-		available_fields := m.Keys()
+		available_fields := m.GetKeys()
 		errors = append(errors, fmt.Errorf("error: %s %s is not a valid root field, available root fields: %s", struct_type, field_type, available_fields))
 	}
 
@@ -145,7 +145,7 @@ func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, [
 func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map, []error) {
 	var errors []error
 	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
-		available_fields := m.Keys()
+		available_fields := m.GetKeys()
 		errors = append(errors, fmt.Errorf("error: %s, %s is not a valid root system schema, available root fields: %s", struct_type, schema_type, available_fields))
 	}
 
@@ -159,7 +159,7 @@ func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map,
 	} else if common.IsNil(schemas_map) {
 		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, schema_type))
 	} else {
-		schema_paramters := schemas_map.Keys()
+		schema_paramters := schemas_map.GetKeys()
 		for _, schema_paramter := range schema_paramters {
 			if !schemas_map.IsMap(schema_paramter) {
 				errors = append(errors, fmt.Errorf("error: %s %s %s is not a map", struct_type, schema_type, schema_paramter))
@@ -168,11 +168,11 @@ func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map,
 				if schema_paramter_map_errors != nil {
 					errors = append(errors, fmt.Errorf("error: %s %s %s had errors getting map: %s", struct_type, schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
 				} else {
-					attributes := schema_paramter_map.Keys()
+					attributes := schema_paramter_map.GetKeys()
 					valid_attributes_map := GetValidSchemaFields()
 					for _, attribute := range attributes {
 						if !valid_attributes_map.HasKey(attribute) {
-							errors = append(errors, fmt.Errorf("error: %s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.Keys()))
+							errors = append(errors, fmt.Errorf("error: %s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.GetKeys()))
 						}
 					}
 				}
@@ -193,7 +193,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	} else if !schemas_map.HasKey(field) {
-		available_fields := schemas_map.Keys()
+		available_fields := schemas_map.GetKeys()
 		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s does not exist available fields are: %s", struct_type, schema_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schemas_map.IsMap(field) {
 		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s is not a map and has type: %s", struct_type, schema_type, field, schemas_map.GetType(field)))
@@ -218,7 +218,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	} else if schema_map == nil {
 		errors = append(errors, fmt.Errorf("error: %s %s map is nil", struct_type, schema_type))
 	} else if !schema_map.HasKey("type") {
-		available_fields := schemas_map.Keys()
+		available_fields := schemas_map.GetKeys()
 		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute does not exist available fields are: %s", struct_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_map.IsString("type") {
 		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute value is not a string it's %s", struct_type, field, schema_map.GetType("type")))
@@ -687,7 +687,7 @@ func SetField(struct_type string, m *json.Map, schema_type string, parameter_typ
 	} else if schema_of_parameter_map == nil {
 		errors = append(errors, fmt.Errorf("error: field: %s schema map is nil", parameter))
 	} else if !schema_of_parameter_map.HasKey("type") {
-		available_fields := schema_of_parameter_map.Keys()
+		available_fields := schema_of_parameter_map.GetKeys()
 		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute does not exist available fields are: %s", parameter, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_of_parameter_map.IsString("type") {
 		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute value is not a string it's %s", parameter, schema_of_parameter_map.GetType("type")))
@@ -731,7 +731,7 @@ func BlackListStringToUpper(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(map_values.Keys()) == 0 {
+	} else if len(map_values.GetKeys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -772,7 +772,7 @@ func WhitelistCharacters(m json.Map) []error {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
 	} else if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has nil map", *data_type, *label))
-	} else if len(map_values.Keys()) == 0 {
+	} else if len(map_values.GetKeys()) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: WhitelistCharacters: has empty array", *data_type, *label))
 	}
 
@@ -860,7 +860,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	}
 
 	if len(field_errors) == 0 {
-		for _, parameter := range (*schemas).Keys() {
+		for _, parameter := range (*schemas).GetKeys() {
 			value_errors := ValidateParameterData(struct_type, schemas, "[schema]", field_parameters, "[fields]", parameter, nil, primary_key_count, auto_increment_count)
 
 			if value_errors != nil {
@@ -885,7 +885,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	}
 	
 	if len(system_field_errors) == 0 {
-		for _, parameter := range (*system_schemas).Keys() {
+		for _, parameter := range (*system_schemas).GetKeys() {
 			value_errors := ValidateParameterData(struct_type, system_schemas, "[system_schema]", system_field_parameters, "[system_fields]", parameter, nil, primary_key_count, auto_increment_count)
 			if value_errors != nil {
 				system_field_errors = append(system_field_errors, value_errors...)
@@ -1139,7 +1139,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		return errors
 	} 
 
-	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" && len(parameters.Keys()) == 0 {
+	if (struct_type == "*class.Table" || struct_type == "class.Table") && parameters_type == "[fields]" && len(parameters.GetKeys()) == 0 {
 		return nil
 	}
 

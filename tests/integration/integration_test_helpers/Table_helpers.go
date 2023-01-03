@@ -156,7 +156,7 @@ func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema
 		if read_errors != nil {
 			t.Errorf(fmt.Sprintf("error: %s", read_errors))
 		} else {
-			expected_schema_column_names := expected_schema.Keys()
+			expected_schema_column_names := expected_schema.GetKeys()
 			actual_schema, actual_schema_errors := table.GetSchema()
 			if actual_schema_errors != nil {
 				t.Errorf(fmt.Sprintf("error: %s", actual_schema_errors))
