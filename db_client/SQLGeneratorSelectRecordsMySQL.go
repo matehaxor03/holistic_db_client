@@ -123,7 +123,7 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 			}
 
 			if !common.Contains(*table_columns, *select_field_value) {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", select_field, temp_table_name, *table_columns))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *select_field_value, temp_table_name, *table_columns))
 			}
 		}
 	}
