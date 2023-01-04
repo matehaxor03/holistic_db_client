@@ -478,28 +478,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 	deleteIfExists := func() ([]error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
-		
-		errors := validate()
-		if errors != nil {
-			return errors
-		}
 
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			return temp_table_name_errors
-		}
-
-		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-		if table_name_escaped_errors != nil {
-			errors = append(errors, table_name_escaped_errors)
-			return errors
-		}
-
-		sql := "DROP TABLE IF EXISTS "
-		if options.IsBoolTrue("use_file") {
-			sql += fmt.Sprintf("`%s`;", table_name_escaped)
-		} else {
-			sql += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+		drop_table_if_exists := true
+		sql_command, new_options, sql_command_errors := getDropTableSQLMySQL(struct_type, getTable(), &drop_table_if_exists, options)
+		if sql_command_errors != nil {
+			return sql_command_errors
 		}
 
 		temp_database, temp_database_errors := getDatabase()
@@ -512,7 +495,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return temp_client_errors
 		}
 
-		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
+		_, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
