@@ -749,11 +749,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, temp_client_manager_errors
 		}
 
-		cached_table_status, cached_table_status_errors := temp_client_manager.GetOrSetAdditonalSchema(*temp_database, temp_table_name, nil)
-		if cached_table_status_errors != nil {
-			return nil, cached_table_status_errors
-		} else if !common.IsNil(cached_table_status) {
-			return cached_table_status, nil
+		cached_additonal_schema, cached_additonal_schema_errors := temp_client_manager.GetOrSetAdditonalSchema(*temp_database, temp_table_name, nil)
+		if cached_additonal_schema_errors != nil {
+			return nil, cached_additonal_schema_errors
+		} else if !common.IsNil(cached_additonal_schema) {
+			return cached_additonal_schema, nil
 		}
 		
 		sql_command, new_options,  sql_command_errors := getTableSchemaAdditionalSQLMySQL(struct_type, getTable(), options)
