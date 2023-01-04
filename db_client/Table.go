@@ -26,7 +26,7 @@ type Table struct {
 	GetForeignKeyColumns  func() (*[]string, []error)
 
 	GetNonPrimaryKeyColumns func() (*[]string, []error)
-	Count                 func() (*uint64, []error)
+	Count                 func(filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
@@ -1055,30 +1055,14 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 			return nil
 		},
-		Count: func() (*uint64, []error) {
+		Count: func(filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
-			errors := validate()
-			if errors != nil {
-				return nil, errors
-			}
-
-			temp_table_name, temp_table_name_errors := getTableName()
-			if temp_table_name_errors != nil {
-				return nil, temp_table_name_errors
-			}
-
-			table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-			if table_name_escaped_errors != nil {
-				errors = append(errors, table_name_escaped_errors)
-				return nil, errors
-			}
-
-			sql := "SELECT COUNT(*) FROM "
-			if options.IsBoolTrue("use_file") {
-				sql += fmt.Sprintf("`%s`;", table_name_escaped)
-			} else {
-				sql += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+			select_fields := json.NewArray()
+			select_fields.AppendStringValue("COUNT(*)")
+			sql_command, new_options, sql_command_errors := getSelectRecordsSQLMySQL(getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
+			if sql_command_errors != nil {
+				return nil, sql_command_errors
 			}
 
 			temp_database, temp_database_errors := getDatabase()
@@ -1091,7 +1075,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				return nil, temp_client_errors
 			}
 
-			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql, options)
+			json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, new_options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
