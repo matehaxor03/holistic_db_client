@@ -11,12 +11,11 @@ func getTableSchemaSQLMySQL(struct_type string, table *Table, options *json.Map)
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
 		return nil, nil, errors
-	}
-
-	validation_errors := table.Validate()
-	if validation_errors != nil {
-		errors = append(errors, validation_errors...)
-		return nil, nil, errors
+	} else {
+		validation_errors := table.Validate()
+		if validation_errors != nil {
+			return nil, nil, validation_errors
+		}
 	}
 
 	if common.IsNil(options) {
@@ -27,13 +26,12 @@ func getTableSchemaSQLMySQL(struct_type string, table *Table, options *json.Map)
 
 	temp_table_name, temp_table_name_errors := table.GetTableName()
 	if temp_table_name_errors != nil {
-		errors = append(errors, temp_table_name_errors...)
-		return nil, nil, errors
+		return nil, nil, temp_table_name_errors
 	}
 
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
+	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
+	if table_name_escaped_error != nil {
+		errors = append(errors, table_name_escaped_error)
 		return nil, nil, errors
 	}
 

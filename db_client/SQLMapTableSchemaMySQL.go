@@ -11,9 +11,21 @@ import (
 func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *json.Array) (*json.Map, []error) {
 	var errors []error
 
+	if common.IsNil(table) {
+		errors = append(errors, fmt.Errorf("table is nil"))
+	} else {
+		table_validation_errors := table.Validate() 
+		if table_validation_errors != nil {
+			errors = append(errors, table_validation_errors...)
+		}
+	}
+
 	if common.IsNil(json_array) {
 		errors = append(errors, fmt.Errorf("error: show columns returned nil records"))
-		return nil, errors
+	}
+
+	if len(errors) > 0 {
+		return nil, errors 
 	}
 
 	if len(*(json_array.GetValues())) == 0 {

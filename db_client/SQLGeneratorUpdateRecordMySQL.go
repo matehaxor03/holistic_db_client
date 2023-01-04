@@ -12,7 +12,35 @@ import (
 
 func getUpdateRecordSQLMySQL(struct_type string, table *Table, record *Record, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	
+
+	if common.IsNil(table) {
+		errors = append(errors, fmt.Errorf("table is nil"))
+	} else {
+		table_validation_errors := table.Validate() 
+		if table_validation_errors != nil {
+			errors = append(errors, table_validation_errors...)
+		}
+	}
+
+	if common.IsNil(record) {
+		errors = append(errors, fmt.Errorf("record is nil"))
+	} else {
+		record_validation_errors := record.Validate() 
+		if record_validation_errors != nil {
+			errors = append(errors, record_validation_errors...)
+		}
+	}
+
+	if common.IsNil(options) {
+		options = json.NewMap()
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("transactional", false)
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
+	}
+
 	table_name, table_name_errors := table.GetTableName()
 	if table_name_errors != nil {
 		return nil, nil, table_name_errors

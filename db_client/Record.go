@@ -605,7 +605,6 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", true)
-		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("transactional", false)
 		
 		temp_table, temp_table_errors := getTable()

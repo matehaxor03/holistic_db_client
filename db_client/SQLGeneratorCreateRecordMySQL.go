@@ -11,7 +11,30 @@ import (
 
 func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	
+
+	if common.IsNil(table) {
+		errors = append(errors, fmt.Errorf("table is nil"))
+		return nil, nil, errors
+	} else {
+		table_validation_errors := table.Validate() 
+		if table_validation_errors != nil {
+			return nil, nil, table_validation_errors
+		}
+	}
+
+	if common.IsNil(record_data) {
+		errors = append(errors, fmt.Errorf("record_data is nil"))
+		return nil, nil, errors
+	}
+
+	if common.IsNil(options) {
+		options = json.NewMap()
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("no_column_headers", true)
+		options.SetBoolValue("get_last_insert_id", false)
+		options.SetBoolValue("transactional", false)
+	}
+
 	valid_columns, valid_columns_errors := table.GetTableColumns()
 	if valid_columns_errors != nil {
 		return nil, options, valid_columns_errors
@@ -27,9 +50,9 @@ func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json
 		return nil, nil, record_columns_errors
 	}
 
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
+	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
+	if table_name_escaped_error != nil {
+		errors = append(errors, table_name_escaped_error)
 		return nil, nil, errors
 	}
 

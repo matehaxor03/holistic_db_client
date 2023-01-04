@@ -12,10 +12,20 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 	var errors []error
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
+		return nil, nil, errors
+	} else {
+		validation_errors := table.Validate()
+		if len(validation_errors) > 0 {
+			return nil, nil, validation_errors 
+		}
 	}
 
 	if common.IsNil(table_data) {
 		errors = append(errors, fmt.Errorf("table data is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
 	}
 
 	if common.IsNil(options) {
@@ -23,25 +33,14 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 		options.SetBoolValue("use_file", false)
 	}
 
-	if len(errors) > 0 {
-		return nil, nil, errors
-	}
-	
-	validation_errors := table.Validate()
-
-	if len(validation_errors) > 0 {
-		errors = append(errors, validation_errors...)
-		return nil, nil, errors 
-	}
-
 	temp_table_name, temp_table_name_errors := table.GetTableName()
 	if temp_table_name_errors != nil {
 		return nil, nil, temp_table_name_errors
 	}
 
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
+	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
+	if table_name_escaped_error != nil {
+		errors = append(errors, table_name_escaped_error)
 		return nil, nil, errors
 	}
 

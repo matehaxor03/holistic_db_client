@@ -12,6 +12,14 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 	var errors []error
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
+	} else {
+		validate_errors := table.Validate()
+		if errors != nil {
+			errors = append(errors, validate_errors...)
+		}
+	}
+
+	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
@@ -19,21 +27,19 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 	}
-	
-	validate_errors := table.Validate()
-	if errors != nil {
-		errors = append(errors, validate_errors...)
-		return nil, nil, errors
-	}
 
 	table_schema, table_schema_errors := table.GetSchema()
 	if table_schema_errors != nil {
-		return nil, nil, table_schema_errors
+		errors = append(errors, table_schema_errors...)
 	}
 
 	temp_table_name, temp_table_name_errors := table.GetTableName()
 	if temp_table_name_errors != nil {
-		return nil, nil, temp_table_name_errors
+		errors = append(errors, temp_table_name_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
 	}
 
 	table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
