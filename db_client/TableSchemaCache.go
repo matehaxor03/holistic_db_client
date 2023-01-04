@@ -6,13 +6,13 @@ import (
 )
 
 type TableSchemaCache struct {
-	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
+	GetOrSet func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
 }
 
 func newTableSchemaCache() (*TableSchemaCache) {
 	cache := json.NewMapValue()
 	
-	getOrSetSchema := func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {		
+	getOrSet := func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {		
 		client, client_errors := database.GetClient()
 		if client_errors != nil {
 			return nil, client_errors
@@ -59,8 +59,8 @@ func newTableSchemaCache() (*TableSchemaCache) {
 	}
 
 	return &TableSchemaCache{
-		GetOrSetSchema: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
-			return getOrSetSchema(database, table_name, schema)
+		GetOrSet: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
+			return getOrSet(database, table_name, schema)
 		},
 	}
 }

@@ -16,7 +16,7 @@ type Table struct {
 	Delete                func() []error
 	DeleteIfExists        func() []error
 	GetSchema             func() (*json.Map, []error)
-	getTableStatus        func() (*json.Map, []error)
+	GetAdditionalSchema   func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
 	GetSchemaColumns      func() (*[]string, []error)
@@ -717,7 +717,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		return nil
 	}
 
-	getTableStatus := func() (*json.Map, []error) {
+	getAdditionalSchema := func() (*json.Map, []error) {
 		var errors []error
 		validate_errors := validate()
 		
@@ -749,7 +749,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, temp_client_manager_errors
 		}
 
-		cached_table_status, cached_table_status_errors := temp_client_manager.GetOrSetTableStatus(*temp_database, temp_table_name, nil)
+		cached_table_status, cached_table_status_errors := temp_client_manager.GetOrSetAdditonalSchema(*temp_database, temp_table_name, nil)
 		if cached_table_status_errors != nil {
 			return nil, cached_table_status_errors
 		} else if !common.IsNil(cached_table_status) {
@@ -778,7 +778,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, errors
 		}
 
-		table_status := json.NewMapValue()
+		additional_schema := json.NewMapValue()
 		for _, column_details := range *(json_array.GetValues()) {
 			column_map, column_map_errors := column_details.GetMap()
 			if column_map_errors != nil {
@@ -805,7 +805,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 							} else if common.IsNil(comment_as_map) {
 								errors = append(errors, fmt.Errorf("comment is nil"))
 							} else {
-								table_status.SetMap("Comment", comment_as_map)
+								additional_schema.SetMap("Comment", comment_as_map)
 							}
 						}
 					}
@@ -816,7 +816,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 					} else if common.IsNil(column_attribute_value) {
 						errors = append(errors, fmt.Errorf("%s is nil", column_attribute))
 					} else {
-						table_status.SetStringValue(column_attribute, *column_attribute_value)
+						additional_schema.SetStringValue(column_attribute, *column_attribute_value)
 					}
 				}
 			}
@@ -827,8 +827,8 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		}
 
 
-		temp_client_manager.GetOrSetTableStatus(*temp_database, temp_table_name, &table_status)
-		return &table_status, nil
+		temp_client_manager.GetOrSetAdditonalSchema(*temp_database, temp_table_name, &additional_schema)
+		return &additional_schema, nil
 	}
 
 
@@ -1132,9 +1132,9 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 				return nil, sql_command_errors
 			}
 
-			table_status, table_status_errors := getTableStatus()
-			if table_status_errors != nil {
-				return nil, table_status_errors
+			additional_schema, additional_schema_errors := getAdditionalSchema()
+			if additional_schema_errors != nil {
+				return nil, additional_schema_errors
 			}
 
 			temp_database, temp_database_errors := getDatabase()
@@ -1153,11 +1153,11 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			}
 
 			cacheable := false
-			table_status_comment, table_status_comment_errors := table_status.GetMap("Comment")
-			if table_status_comment_errors != nil {
-				return nil, table_status_comment_errors
-			} else if !common.IsNil(table_status_comment) {
-				cache, cache_errors := table_status_comment.GetBool("cache")
+			additional_schema_comment, additional_schema_comment_errors := additional_schema.GetMap("Comment")
+			if additional_schema_comment_errors != nil {
+				return nil, additional_schema_comment_errors
+			} else if !common.IsNil(additional_schema_comment) {
+				cache, cache_errors := additional_schema_comment.GetBool("cache")
 				if cache_errors != nil {
 					errors = append(errors, cache_errors...)
 				} else if !common.IsNil(cache) {
@@ -1221,8 +1221,8 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
 		},
-		getTableStatus: func() (*json.Map, []error) {
-			return getTableStatus()
+		GetAdditionalSchema: func() (*json.Map, []error) {
+			return getAdditionalSchema()
 		},
 		GetTableName: func() (string, []error) {
 			return getTableName()

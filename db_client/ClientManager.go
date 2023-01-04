@@ -18,7 +18,7 @@ type ClientManager struct {
 	GetClient func(label string) (*Client, []error)
 	GetTupleCredentials func(label string) (*TupleCredentials, []error)
 	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
-	GetOrSetTableStatus func(database Database, table_name string, table_status *json.Map) (*json.Map, []error)
+	GetOrSetAdditonalSchema func(database Database, table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(database Database, sql string, records *[]Record) (*[]Record, []error)
 	Validate func() []error
 }
@@ -40,8 +40,8 @@ func NewClientManager() (*ClientManager, []error) {
 	lock_table_schema_cache := &sync.Mutex{}
 	table_schema_cache := newTableSchemaCache()
 
-	lock_table_status_cache := &sync.Mutex{}
-	table_status_cache := newTableStatusCache()
+	lock_table_additional_schema_cache := &sync.Mutex{}
+	table_additional_schema_cache := newTableAdditionalSchemaCache()
 
 	lock_table_records_cache := &sync.Mutex{}
 	table_read_records_cache := newTableReadRecordsCache()
@@ -137,13 +137,13 @@ func NewClientManager() (*ClientManager, []error) {
 			// todo clone schema
 			lock_table_schema_cache.Lock()
 			defer lock_table_schema_cache.Unlock()
-			return table_schema_cache.GetOrSetSchema(database, table_name, schema)
+			return table_schema_cache.GetOrSet(database, table_name, schema)
 		},
-		GetOrSetTableStatus: func(database Database, table_name string, table_status *json.Map) (*json.Map, []error) {
+		GetOrSetAdditonalSchema: func(database Database, table_name string, additional_schema *json.Map) (*json.Map, []error) {
 			// todo clone schema
-			lock_table_status_cache.Lock()
-			defer lock_table_status_cache.Unlock()
-			return table_status_cache.GetOrSetTableStatus(database, table_name, table_status)
+			lock_table_additional_schema_cache.Lock()
+			defer lock_table_additional_schema_cache.Unlock()
+			return table_additional_schema_cache.GetOrSet(database, table_name, additional_schema)
 		},
 		GetOrSetReadRecords: func(database Database, sql string, records *[]Record) (*[]Record, []error) {
 			// todo clone schema
