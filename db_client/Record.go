@@ -298,6 +298,11 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getUpdateSQL := func() (*string, *json.Map, []error) {
+		validate_errors := validate()
+		if validate_errors != nil {
+			return nil, nil, validate_errors
+		}
+		
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
@@ -316,6 +321,11 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *D
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
+		validate_errors := validate()
+		if validate_errors != nil {
+			return nil, nil, validate_errors
+		}
+		
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", true)
