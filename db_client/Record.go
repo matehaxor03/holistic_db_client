@@ -9,6 +9,282 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
+func mapValueFromDBToRecord(table *Table, current_json *json.Value, database_reserved_words_obj *DatabaseReservedWords, column_name_whitelist_characters_obj *ColumnNameCharacterWhitelist) (*Record, []error) {
+	var errors []error
+
+	if common.IsNil(table) {
+		errors = append(errors, fmt.Errorf("table is nil"))
+	}
+
+	if common.IsNil(current_json) {
+		errors = append(errors, fmt.Errorf("current_json is nil"))
+	}
+	
+	current_record, current_record_errors := current_json.GetMap()
+	if current_record_errors != nil {
+		errors = append(errors, current_record_errors...)
+	} else if common.IsNil(current_record) {
+		errors = append(errors, fmt.Errorf("record is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	table_schema, table_schema_errors := table.GetSchema()
+	if table_schema_errors != nil {
+		errors = append(errors, table_schema_errors...)
+	} else if common.IsNil(table_schema) {
+		errors = append(errors, fmt.Errorf("table_schema is nil"))
+	}
+
+	table_name, table_name_errors := table.GetTableName()
+	if table_name_errors != nil {
+		errors = append(errors, table_name_errors...)
+	} else if common.IsNil(table_name) {
+		errors = append(errors, fmt.Errorf("table_name is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	columns := current_record.GetKeys()
+	mapped_record := json.NewMapValue()
+	for _, column := range columns {
+		table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)
+		if table_schema_column_map_errors != nil {
+			errors = append(errors, table_schema_column_map_errors...)
+			continue
+		}
+		
+		table_data_type, table_data_type_errors := table_schema_column_map.GetString("type")
+		if table_data_type_errors != nil {
+			errors = append(errors, table_data_type_errors...)
+			continue
+		}
+
+		switch *table_data_type {
+		case "*uint64":
+			value, value_errors := current_record.GetUInt64(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetUInt64(column, value)
+			}
+		case "uint64":
+			value, value_errors := current_record.GetUInt64Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetUInt64Value(column, value)
+			}
+		case "*uint32":
+			value, value_errors := current_record.GetUInt32(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetUInt32(column, value)
+			}
+		case "uint32":
+			value, value_errors := current_record.GetUInt32Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetUInt32Value(column, value)
+			}
+		case "*uint16":
+			value, value_errors := current_record.GetUInt16(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetUInt16(column, value)
+			}
+		case "uint16":
+			value, value_errors := current_record.GetUInt16Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetUInt16Value(column, value)
+			}
+		case "*uint8":
+			value, value_errors := current_record.GetUInt8(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetUInt8(column, value)
+			}
+		case "uint8":
+			value, value_errors := current_record.GetUInt8Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetUInt8Value(column, value)
+			}
+		case "*int64":
+			value, value_errors := current_record.GetInt64(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetInt64(column, value)
+			}
+		case "int64":
+			value, value_errors := current_record.GetInt64Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetInt64Value(column, value)
+			}
+		case "*int32":
+			value, value_errors := current_record.GetInt32(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetInt32(column, value)
+			}
+		case "int32":
+			value, value_errors := current_record.GetInt32Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetInt32Value(column, value)
+			}
+		case "*int16":
+			value, value_errors := current_record.GetInt16(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetInt16(column, value)
+			}
+		case "int16":
+			value, value_errors := current_record.GetInt16Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetInt16Value(column, value)
+			}
+		case "*int8":
+			value, value_errors := current_record.GetInt8(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetInt8(column, value)
+			}
+		case "int8":
+			value, value_errors := current_record.GetInt8Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetInt8Value(column, value)
+			}
+		case "*time.Time", "time.Time":
+			decimal_places, decimal_places_errors := table_schema_column_map.GetInt("decimal_places")
+			if decimal_places_errors != nil {
+				errors = append(errors, decimal_places_errors...)
+			} else if common.IsNil(decimal_places) {
+				errors = append(errors, fmt.Errorf("decimal places is nil"))
+			} else {
+				value, value_errors := current_record.GetTimeWithDecimalPlaces(column, *decimal_places)
+				if value_errors != nil {
+					errors = append(errors, value_errors...)
+				} else {
+					mapped_record.SetTime(column, value)
+				}
+			}
+		case "*bool", "bool":
+			value, value_errors := current_record.GetBool(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetBool(column, value)
+			}
+		case "*string":
+			value, value_errors := current_record.GetString(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetString(column, value)
+			}
+		case "string":
+			value, value_errors := current_record.GetStringValue(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetStringValue(column, value)
+			}
+		case "*float32":
+			value, value_errors := current_record.GetFloat32(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetFloat32(column, value)
+			}
+		case "float32":
+			value, value_errors := current_record.GetFloat32Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetFloat32Value(column, value)
+			}
+		case "*float64":
+			value, value_errors := current_record.GetFloat64(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else if value == nil {
+				mapped_record.SetNil(column)
+			} else {
+				mapped_record.SetFloat64(column, value)
+			}
+		case "float64":
+			value, value_errors := current_record.GetFloat64Value(column)
+			if value_errors != nil {
+				errors = append(errors, value_errors...)
+			} else {
+				mapped_record.SetFloat64Value(column, value)
+			}
+		default:
+			errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", table_name, column, *table_data_type))
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	mapped_record_obj, mapped_record_obj_errors := newRecord(*table, mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
+	if mapped_record_obj_errors != nil {
+		errors = append(errors, mapped_record_obj_errors...)
+	} else if common.IsNil(mapped_record_obj){
+		errors = append(errors, fmt.Errorf("mapped record is nil"))
+	} 
+	
+	if len(errors) > 0 {
+		return nil, errors
+	}
+	
+	return mapped_record_obj, nil
+}
+
 type Record struct {
 	Validate  func() []error
 	Create    func() []error
