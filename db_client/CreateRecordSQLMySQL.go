@@ -38,45 +38,6 @@ func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json
 		return nil, nil, table_schema_errors
 	}
 
-
-	/*
-	table, table_errors := getTable()
-	if table_errors != nil {
-		return nil, options, table_errors
-	}
-
-	table_schema, table_schema_errors := table.GetSchema()
-	
-	if table_schema_errors != nil {
-		return nil, options, table_schema_errors
-	}
-
-	valid_columns, valid_columns_errors := table.GetTableColumns()
-	if valid_columns_errors != nil {
-		return nil, options, valid_columns_errors
-	}
-	record_columns, record_columns_errors := getRecordColumns()
-	if record_columns_errors != nil {
-		return nil, options, record_columns_errors
-	}
-
-	table_name, table_name_errors := table.GetTableName() 
-	if table_name_errors != nil {
-		return nil, options, table_name_errors
-	}
-
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
-		return nil, options, errors
-	}
-
-	for _, record_column := range *record_columns {
-		if strings.HasPrefix(record_column, "credential") {
-			options.SetBoolValue("use_file", true)
-		}
-	}*/
-
 	auto_increment_columns := 0
 	for _, valid_column := range *valid_columns {
 		column_definition, column_definition_errors := table_schema.GetMap(valid_column)
