@@ -2,6 +2,7 @@ package db_client
 
 import (
 	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
@@ -77,4 +78,69 @@ func getTableSchemaAdditionalSQLMySQL(struct_type string, table *Table, options 
 	sql_command += "WHERE name='" + table_name_escaped + "';"
 
 	return &sql_command, options, nil
+}
+
+
+func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error) {
+	var errors []error
+	
+	if json_array == nil {
+		errors = append(errors, fmt.Errorf("error: show table status returned nil records"))
+		return nil, errors
+	}
+
+	if len(*(json_array.GetValues())) == 0 {
+		errors = append(errors, fmt.Errorf("error:  show table status did not return any records"))
+		return nil, errors
+	}
+
+	additional_schema := json.NewMap()
+	for _, column_details := range *(json_array.GetValues()) {
+		column_map, column_map_errors := column_details.GetMap()
+		if column_map_errors != nil {
+			return nil, column_map_errors
+		} else if common.IsNil(column_map) {
+			errors = append(errors, fmt.Errorf("column_map is nil"))
+			return nil, errors
+		}
+		column_attributes := column_map.GetKeys()
+
+		for _, column_attribute := range column_attributes {
+			switch column_attribute {
+			case "Comment":
+				comment_value, comment_errors := column_map.GetString("Comment")
+				if comment_errors != nil {
+					errors = append(errors, comment_errors...)
+				} else if common.IsNil(comment_value) {
+					errors = append(errors, fmt.Errorf("comment is nil"))
+				} else {
+					if strings.TrimSpace(*comment_value) != "" {
+						comment_as_map, comment_as_map_value_errors := json.Parse(strings.TrimSpace(*comment_value))
+						if comment_as_map_value_errors != nil {
+							errors = append(errors, comment_as_map_value_errors...)
+						} else if common.IsNil(comment_as_map) {
+							errors = append(errors, fmt.Errorf("comment is nil"))
+						} else {
+							additional_schema.SetMap("Comment", comment_as_map)
+						}
+					}
+				}
+			default:
+				column_attribute_value, column_attribute_value_errors := column_map.GetString(column_attribute)
+				if column_attribute_value_errors != nil {
+					errors = append(errors, column_attribute_value_errors...)
+				} else if common.IsNil(column_attribute_value) {
+					errors = append(errors, fmt.Errorf("%s is nil", column_attribute))
+				} else {
+					additional_schema.SetStringValue(column_attribute, *column_attribute_value)
+				}
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return additional_schema, nil
 }
