@@ -56,6 +56,11 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 
 		filter_columns := filters.GetKeys()
 		for _, filter_column := range filter_columns {
+			
+			if filter_column == getCountColumnNameSQLMySQL() {
+				continue
+			} 
+			
 			if !common.Contains(*table_columns, filter_column) {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 			}
@@ -122,9 +127,14 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 				return nil, nil, errors
 			}
 
+			if *select_field_value == getCountColumnNameSQLMySQL() {
+				continue
+			}
+
 			if !common.Contains(*table_columns, *select_field_value) {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *select_field_value, temp_table_name, *table_columns))
 			}
+			
 		}
 	}
 
@@ -136,9 +146,12 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 
 		temp_filters_fields := filters_logic.GetKeys()
 		for _, temp_filters_field := range temp_filters_fields {
-			if !common.Contains(*table_columns, temp_filters_field) {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
-				continue
+
+			if temp_filters_field != getCountColumnNameSQLMySQL() {
+				if !common.Contains(*table_columns, temp_filters_field) {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
+					continue
+				}
 			}
 
 			if !filters_logic.IsString(temp_filters_field) {
@@ -192,9 +205,11 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 
 			order_by_column_name := order_by_map_column_names[0]
 			
-			if !common.Contains(*table_columns, order_by_column_name) {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, temp_table_name, *table_columns))
-				continue
+			if order_by_column_name != getCountColumnNameSQLMySQL() {
+				if !common.Contains(*table_columns, order_by_column_name) {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, temp_table_name, *table_columns))
+					continue
+				}
 			}
 
 			order_by_string_value, order_by_string_value_errors := order_by_map.GetString(order_by_column_name)
