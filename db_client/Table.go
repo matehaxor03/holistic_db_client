@@ -739,11 +739,6 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 			return nil, temp_database_errors
 		}
 
-		temp_database_name, temp_database_name_errors := temp_database.GetDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
-
 		temp_client, temp_client_errors := temp_database.GetClient()
 		if temp_client_errors != nil {
 			return nil, temp_client_errors
@@ -760,30 +755,13 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		} else if !common.IsNil(cached_table_status) {
 			return cached_table_status, nil
 		}
-
-		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-		if table_name_escaped_errors != nil {
-			errors = append(errors, table_name_escaped_errors)
-			return nil, errors
-		}
-
-		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
-		if database_name_escaped_errors != nil {
-			errors = append(errors, database_name_escaped_errors)
-			return nil, errors
-		}
 		
-		sql_command := "SHOW TABLE STATUS FROM "
-		
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
-		} else {
-			sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
+		sql_command, new_options,  sql_command_errors := getTableSchemaAdditionalSQLMySQL(struct_type, getTable(), options)
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
 		}
 
-		sql_command += "WHERE name='" + table_name_escaped + "';"
-
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
