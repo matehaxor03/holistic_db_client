@@ -369,7 +369,7 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 
 	exists := func() (*bool, []error) {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		
 		var errors []error
 		validate_errors := validate()
@@ -927,21 +927,13 @@ func newTable(database Database, table_name string, schema *json.Map, database_r
 		} else if !common.IsNil(cached_schema) {
 			return cached_schema, nil
 		}
-
-		table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-		if table_name_escaped_errors != nil {
-			errors = append(errors, table_name_escaped_errors)
-			return nil, errors
-		}
 		
-		sql_command := "SHOW FULL COLUMNS FROM "
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("`%s`;", table_name_escaped)
-		} else {
-			sql_command += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
+		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, getTable(), options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
 		}
 
-		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, &sql_command, options)
+		json_array, sql_errors := SQLCommand.ExecuteUnsafeCommand(temp_client, sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
