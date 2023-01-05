@@ -24,6 +24,7 @@ type Database struct {
 	GetDatabaseUsername func() (string, []error)
 	SetDatabaseUsername func(database_username string) []error
 	SetDatabaseName func(database_name string) []error
+	DeleteTableByTableNameIfExists func(table_name string, if_exists bool) []error
 	//SetHost       func(client *Host) []error
 	GetHost       func() (Host, []error)
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
@@ -33,7 +34,7 @@ type Database struct {
 	GetTableNames   func() (*[]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
 	ExecuteUnsafeCommand func(sql_command *string, options *json.Map) (*json.Array, []error)
-	GetOrSetSchema func(table_name string, schema *json.Map) (*json.Map, []error)
+	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
 
@@ -526,7 +527,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}
 
-		table, table_errors := newTable(*getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		table, table_errors := newTable(*getDatabase(), table_name, json.Map{}, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if table_errors != nil {
 			errors = append(errors, table_errors...)
 		}
@@ -545,7 +546,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(*getDatabase(), table_name, table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -588,7 +589,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 
-			table, table_errors := newTable(*getDatabase(), table_name, nil, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, table_errors := newTable(*getDatabase(), table_name, json.Map{}, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if table_errors != nil {
 				return nil, table_errors
@@ -603,7 +604,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, &schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -618,7 +619,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, &schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -740,11 +741,11 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)
 		},
-		GetOrSetSchema: func(table_name string, schema *json.Map) (*json.Map, []error) {
+		GetOrSetSchema: func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
 			// todo clone schema
 			lock_table_schema_cache.Lock()
 			defer lock_table_schema_cache.Unlock()
-			return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema)
+			return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
 		},
 		GetOrSetAdditonalSchema: func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
 			// todo clone schema
@@ -802,6 +803,25 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			}
 			return nil
 		},
+		DeleteTableByTableNameIfExists: func(table_name string, if_exists bool) []error {
+			options := json.NewMap()
+			options.SetBoolValue("use_file", false)
+
+			sql_command, new_options, generate_sql_errors := getDropTableSQLMySQL(struct_type, table_name, &if_exists, options)
+
+			if generate_sql_errors != nil {
+				return generate_sql_errors
+			}
+
+			_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+
+			if execute_sql_command_errors != nil {
+				return execute_sql_command_errors
+			}
+			getDatabase().GetOrSetSchema(table_name, nil, "delete")
+			return nil
+		},
+
 	}
 	setDatabase(&x)
 

@@ -6,10 +6,10 @@ import (
 )
 
 func TestTableCreateWithFloat32Column(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableFloat32ColumnName(), helper.GetTestSchemaWithFloat32Column())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithFloat32Column())
 }
 
 func TestTableCreateWithFloat32ColumnNotMandatory(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 }
  

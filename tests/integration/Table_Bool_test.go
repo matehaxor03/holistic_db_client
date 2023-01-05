@@ -6,10 +6,10 @@ import (
 )
 
 func TestTableCreateWithBoolColumn(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithBoolColumn())
 }
 
 func TestTableCreateWithBoolColumnNotMandatory(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithBoolColumnNotMandatory())
 }
  

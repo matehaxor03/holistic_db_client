@@ -10,7 +10,7 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, options *json.Map) (*string, *json.Map, []error) {
+func getUpdateRecordSQLMySQL(struct_type string, table *Table, record *Record, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	table_validation_errors := table.Validate() 
@@ -124,17 +124,26 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 	}
 
 	//SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", common.GetTimeNow())
-	record.SetLastModifiedDate(common.GetTimeNow())
+	set_last_modified_date_errors := record.SetLastModifiedDate(common.GetTimeNow())
+	if set_last_modified_date_errors != nil {
+		errors = append(errors, set_last_modified_date_errors...)
+	}
 
 	archieved, archieved_errors := record.GetArchieved()
 	if archieved_errors != nil {
 		errors = append(errors, archieved_errors...)
 	} else if !common.IsNil(archieved) {
 		if *archieved {
-			record.SetArchievedDate(common.GetTimeNow())
+			set_archieved_date_errors := record.SetArchievedDate(common.GetTimeNow())
+			if set_archieved_date_errors != nil {
+				errors = append(errors, set_archieved_date_errors...)
+			}
 			//SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", common.GetTimeNow())
 		} else {
-			record.SetField("archieved_date", "0000-00-00 00:00:00.000000")
+			set_archieved_date_errors := record.SetField("archieved_date", "0000-00-00 00:00:00.000000")
+			if set_archieved_date_errors != nil {
+				errors = append(errors, set_archieved_date_errors...)
+			}
 			//SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", "0000-00-00 00:00:00.000000")
 		}
 	}

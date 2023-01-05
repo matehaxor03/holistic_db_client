@@ -323,7 +323,7 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 func TestDatabaseCanGetTableNames(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
 	table_name := helper.GetTestTableName()
-	database.CreateTable(table_name, helper.GetTestSchema())
+	database.CreateTable(table_name, (helper.GetTestSchema()))
 
 	table_names, tables_name_errors := database.GetTableNames()
 	if tables_name_errors != nil {
@@ -343,7 +343,7 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 
 func TestDatabaseCanGetTables(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
-	database.CreateTable("some_table",  helper.GetTestSchema())
+	database.CreateTable("some_table",  (helper.GetTestSchema()))
 
 	tables, tables_errors := database.GetTables()
 	if tables_errors != nil {

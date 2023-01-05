@@ -48,7 +48,7 @@ func GetTestSchemaColumn() json.Map {
 	schema := json.NewMapValue()
 	schema.SetStringValue("type", "uint64")
 	schema.SetBoolValue("auto_increment", true)
-	schema.SetBoolValue("primary_key", true)
+	schema.SetBoolValue("primary_key",  true)
 	return schema
 }
 
@@ -64,6 +64,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	var errors []error
 
 	database := GetTestDatabaseCreated(t)
+	database.DeleteTableByTableNameIfExists(table_name, true)
 
 	table, table_errors := database.CreateTable(table_name, schema)
 	if table_errors != nil {
@@ -117,8 +118,8 @@ func GetTestTableBasicWithCreatedDatabase(t *testing.T) dao.Table {
 	return GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), GetTestSchema())
 }
 
-func CreateTableAndVerifySchema(t *testing.T, table_name string, expected_schema json.Map) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, expected_schema)
+func CreateTableAndVerifySchema(t *testing.T, expected_schema json.Map) {
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), expected_schema)
 
     table_errors := table.Create()
 	if table_errors != nil {

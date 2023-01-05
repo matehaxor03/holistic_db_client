@@ -11,7 +11,6 @@ import (
 
 func ValidateData(data *json.Map, struct_type string) []error {	
 	var errors []error
-	var ignore_identity_errors = false
 	
 	var primary_key_count *int
 	primary_key_count_value := 0 
@@ -23,12 +22,6 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if len(errors) > 0 {
 		return errors
-	}
-
-	if (struct_type == "*dao.Table" || struct_type  == "dao.Table") && data.HasKey("[schema_is_nil]") {
-		if data.IsBoolTrue("[schema_is_nil]") {
-			ignore_identity_errors = true
-		}
 	}
 
 	var field_errors []error
@@ -80,9 +73,9 @@ func ValidateData(data *json.Map, struct_type string) []error {
 		errors = append(errors, system_field_errors...)
 	}
 
-	if (struct_type == "*dao.Table" || struct_type == "dao.Table") && !ignore_identity_errors {
+	if ((struct_type == "*dao.Table" || struct_type == "dao.Table")) {
 		if *primary_key_count <= 0 {
-			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys %s", struct_type))
 		}
 
 		if *auto_increment_count > 1 {

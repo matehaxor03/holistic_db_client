@@ -200,7 +200,7 @@ func TestTableCanCreateWithBlackListNameUppercase(t *testing.T) {
 		}
 
 		if table == nil {
-			t.Errorf("error: database.GetTableInterface should not be nil table was not nil")
+			t.Errorf("error: database.GetTableInterface should not be nil but was nil")
 		}
 	}
 }

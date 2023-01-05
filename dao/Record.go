@@ -595,7 +595,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 			return nil, nil, temp_table_errors
 		}
 	
-		return getUpdateRecordSQLMySQL("*dao.Record", temp_table, *getThis(), options)
+		return getUpdateRecordSQLMySQL("*dao.Record", &temp_table, getThis(), options)
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {

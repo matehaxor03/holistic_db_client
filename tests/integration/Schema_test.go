@@ -8,7 +8,7 @@ import (
 )
 
 func TestSchemaCanCreateTable(t *testing.T) {
-	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(helper.GetTestTableName(), helper.GetTestSchema())
+	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(helper.GetTestTableName(), (helper.GetTestSchema()))
 	if table_errors != nil {
 		t.Errorf("expect table_errors to be nil: %s", fmt.Sprintf("%s", table_errors))
 	}
@@ -19,7 +19,7 @@ func TestSchemaCanCreateTable(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), json.NewMapValue())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(),  (json.NewMapValue()))
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -30,7 +30,7 @@ func TestSchemaCannotCreateTableIfNoColumns(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableNoPrimaryKey(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaNoPrimaryKey())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), (helper.GetTestTableSchemaNoPrimaryKey()))
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -41,7 +41,7 @@ func TestSchemaCannotCreateTableNoPrimaryKey(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), (helper.GetTestTableSchemaMoreThanOnePrimaryKeyAutoIncrement()))
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -52,7 +52,7 @@ func TestSchemaCannotCreateTableIfMoreThanOneAutoIncrementPrimaryKey(t *testing.
 }
 
 func TestSchemaCannotCreateTableIfNoTypeAttribute(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestTableSchemaNoType())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), (helper.GetTestTableSchemaNoType()))
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}
@@ -63,7 +63,7 @@ func TestSchemaCannotCreateTableIfNoTypeAttribute(t *testing.T) {
 }
 
 func TestSchemaCannotCreateTableIfHasValueAttribute(t *testing.T) {
-	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), helper.GetTestColumnSchemaWithValue())
+	table, table_errors := helper.GetTestDatabase(t).CreateTable(helper.GetTestTableName(), (helper.GetTestColumnSchemaWithValue()))
 	if table_errors == nil {
 		t.Errorf("expect table_errors to be not nil")
 	}

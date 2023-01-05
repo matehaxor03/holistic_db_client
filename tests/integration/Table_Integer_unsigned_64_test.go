@@ -6,10 +6,10 @@ import (
 )
 
 func TestTableCreateWithIntegerUnsigned64Column(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithIntegerUnsigned64Column())
 }
 
 func TestTableCreateWithIntegerUnsigned64NotMandatoryColumn(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 }
  

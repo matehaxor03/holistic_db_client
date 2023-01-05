@@ -6,10 +6,10 @@ import (
 )
 
 func TestTableCreateWithStringColumn(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableStringColumnName(), helper.GetTestSchemaWithStringColumn())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithStringColumn())
 }
 
 func TestTableCreateWithStringColumnNotMandatory(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestSchemaWithStringColumnNotMandatory())
 }
  
