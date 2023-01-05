@@ -6,7 +6,7 @@ import (
 )
 
 func TestTableCreateWithBoolColumn(t *testing.T) {
-	helper.CreateTableAndVerifySchema(t, helper.GetTestTableBoolColumnName(), helper.GetTestSchemaWithBoolColumn())
+	helper.CreateTableAndVerifySchema(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
 }
 
 func TestTableCreateWithBoolColumnNotMandatory(t *testing.T) {

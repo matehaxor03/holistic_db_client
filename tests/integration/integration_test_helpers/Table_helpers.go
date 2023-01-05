@@ -6,10 +6,10 @@ import (
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	db_client "github.com/matehaxor03/holistic_db_client/db_client"
+	dao "github.com/matehaxor03/holistic_db_client/dao"
 )
 
-func EnsureTableIsDeleted(t *testing.T, table *db_client.Table) {
+func EnsureTableIsDeleted(t *testing.T, table *dao.Table) {
 	table_delete_errors := table.DeleteIfExists()
 	
 	if table_delete_errors != nil {
@@ -60,27 +60,10 @@ func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
 	return schema
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (*db_client.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (dao.Table) {
 	var errors []error
 
 	database := GetTestDatabaseCreated(t)
-
-	if database == nil {
-		t.Error(fmt.Errorf("error: database is nil"))
-		t.FailNow()
-		return nil
-	}
-
-	use_database_errors := database.UseDatabase() 
-	if use_database_errors != nil {
-		errors = append(errors, use_database_errors...)
-	}
-
-	if len(errors) > 0 {
-		t.Error(errors)
-		t.FailNow()
-		return nil
-	}
 
 	table, table_errors := database.CreateTable(table_name, schema)
 	if table_errors != nil {
@@ -90,7 +73,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	if len(errors) > 0 {
 		t.Error(errors)
 		t.FailNow()
-		return nil
+		return dao.Table{}
 	}
 
 	table_delete_errors := table.DeleteIfExists()
@@ -101,27 +84,16 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	if len(errors) > 0 {
 		t.Error(errors)
 		t.FailNow()
-		return nil
+		return  dao.Table{}
 	}
 
-	return table
+	return *table
 }
 
-func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (*db_client.Table) {
+func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (dao.Table) {
 	var errors []error
 
 	database := GetTestDatabase(t)
-
-	if database == nil {
-		t.Error(fmt.Errorf("error: database is nil"))
-		t.FailNow()
-		return nil
-	}
-
-	use_database_errors := database.UseDatabase() 
-	if use_database_errors != nil {
-		errors = append(errors, use_database_errors...)
-	}
 
 	table, table_errors := database.GetTableInterface(table_name, schema)
 	if table_errors != nil {
@@ -131,17 +103,17 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 	if len(errors) > 0 {
 		t.Error(errors)
 		t.FailNow()
-		return nil
+		return dao.Table{}
 	}
 
-	return table
+	return *table
 }
 
-func GetTestTableBasic(t *testing.T) *db_client.Table {
+func GetTestTableBasic(t *testing.T) dao.Table {
 	return GetTestTableWithTableNameAndSchema(t, GetTestTableName(), GetTestSchema())
 }
 
-func GetTestTableBasicWithCreatedDatabase(t *testing.T) *db_client.Table {
+func GetTestTableBasicWithCreatedDatabase(t *testing.T) dao.Table {
 	return GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), GetTestSchema())
 }
 

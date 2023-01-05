@@ -363,12 +363,12 @@ func testTableName(client *db_client.Client) []error {
 		}
 	}
 
-	_, database_errors := client.CreateDatabase(database_name, nil, nil)
+	database, database_errors := client.CreateDatabase(database_name, nil, nil)
 	if database_errors != nil {
 		return database_errors
 	}
 
-	database, use_database_errors := client.UseDatabaseByName(database_name)
+	use_database_errors := client.UseDatabaseByName(database_name)
 	if use_database_errors != nil {
 		return use_database_errors
 	}
@@ -454,12 +454,12 @@ func testColumnName(client *db_client.Client) []error {
 		}
 	}
 
-	_, database_errors := client.CreateDatabase(database_name, nil, nil)
+	database, database_errors := client.CreateDatabase(database_name, nil, nil)
 	if database_errors != nil {
 		return database_errors
 	}
 
-	database, use_database_errors := client.UseDatabaseByName(database_name)
+	use_database_errors := client.UseDatabaseByName(database_name)
 	if use_database_errors != nil {
 		return use_database_errors
 	}

@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	json "github.com/matehaxor03/holistic_json/json"
+	dao "github.com/matehaxor03/holistic_db_client/dao"
+	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 )
 
 type TupleCredentials struct {
@@ -17,9 +18,6 @@ type TupleCredentials struct {
 type ClientManager struct {
 	GetClient func(label string) (*Client, []error)
 	GetTupleCredentials func(label string) (*TupleCredentials, []error)
-	GetOrSetSchema func(database Database, table_name string, schema *json.Map) (*json.Map, []error)
-	GetOrSetAdditonalSchema func(database Database, table_name string, additional_schema *json.Map) (*json.Map, []error)
-	GetOrSetReadRecords func(database Database, sql string, records *[]Record) (*[]Record, []error)
 	Validate func() []error
 }
 
@@ -37,20 +35,11 @@ func NewClientManager() (*ClientManager, []error) {
 	lock_client := &sync.Mutex{}
 	lock_tuple := &sync.Mutex{}
 	
-	lock_table_schema_cache := &sync.Mutex{}
-	table_schema_cache := newTableSchemaCache()
-
-	lock_table_additional_schema_cache := &sync.Mutex{}
-	table_additional_schema_cache := newTableAdditionalSchemaCache()
-
-	lock_table_records_cache := &sync.Mutex{}
-	table_read_records_cache := newTableReadRecordsCache()
-
 	tuple := make(map[string]TupleCredentials)
-	database_reserved_words_obj := newDatabaseReservedWords()
-	database_name_whitelist_characters_obj := newDatabaseNameCharacterWhitelist()
-	table_name_whitelist_characters_obj := newTableNameCharacterWhitelist()
-	column_name_whitelist_characters_obj := newColumnNameCharacterWhitelist()
+	database_reserved_words_obj := validation_constants.NewDatabaseReservedWords()
+	database_name_whitelist_characters_obj := validation_constants.NewDatabaseNameCharacterWhitelist()
+	table_name_whitelist_characters_obj := validation_constants.NewTableNameCharacterWhitelist()
+	column_name_whitelist_characters_obj := validation_constants.NewColumnNameCharacterWhitelist()
 
 	getTupleCredentials := func(label string) (*TupleCredentials, []error) {
 		if value, found_value := tuple[label]; found_value {
@@ -86,7 +75,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		host, host_errors := newHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
+		host, host_errors := dao.NewHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
 		
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
@@ -106,7 +95,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		_, use_database_errors := client.UseDatabaseByName(*(temp_tuple_creds.database_name))
+		use_database_errors := client.UseDatabaseByName(*(temp_tuple_creds.database_name))
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}
@@ -132,24 +121,6 @@ func NewClientManager() (*ClientManager, []error) {
 			lock_client.Lock()
 			defer lock_client.Unlock()
 			return getClient(label)
-		},
-		GetOrSetSchema: func(database Database, table_name string, schema *json.Map) (*json.Map, []error) {
-			// todo clone schema
-			lock_table_schema_cache.Lock()
-			defer lock_table_schema_cache.Unlock()
-			return table_schema_cache.GetOrSet(database, table_name, schema)
-		},
-		GetOrSetAdditonalSchema: func(database Database, table_name string, additional_schema *json.Map) (*json.Map, []error) {
-			// todo clone schema
-			lock_table_additional_schema_cache.Lock()
-			defer lock_table_additional_schema_cache.Unlock()
-			return table_additional_schema_cache.GetOrSet(database, table_name, additional_schema)
-		},
-		GetOrSetReadRecords: func(database Database, sql string, records *[]Record) (*[]Record, []error) {
-			// todo clone schema
-			lock_table_records_cache.Lock()
-			defer lock_table_records_cache.Unlock()
-			return table_read_records_cache.GetOrSetReadRecords(database, sql, records)
 		},
 	}
 	setClientManager(&x)
