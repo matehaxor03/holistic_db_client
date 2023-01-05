@@ -391,7 +391,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", record_data)
-	data.SetMapValue("[schema]", *table_schema)
+	data.SetMap("[schema]", table_schema)
 
 	map_system_fields := json.NewMapValue()
 	map_system_fields.SetObjectForMap("[table]", table)
@@ -614,7 +614,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 			return nil, nil, temp_table_errors
 		}
 
-		return getCreateRecordSQLMySQL("*dao.Record", temp_table, getData(), options)
+		return getCreateRecordSQLMySQL("*dao.Record", &temp_table, getData(), options)
 	}
 
 	created_record := Record{
@@ -667,9 +667,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 				if last_insert_id_errors != nil {
 					errors = append(errors, last_insert_id_errors...)
 					return errors
+				} else if common.IsNil(last_insert_id) {
+					errors = append(errors, fmt.Errorf("LAST_INSERT_ID() was nil available columns are: %s", record_from_db.GetKeys()))
+					return errors
+				} else {
+					fmt.Println(*last_insert_id)
 				}
 
-				last_insert_id_value, count_err := strconv.ParseUint(*last_insert_id, 10, 64)
+				last_insert_id_value, count_err := strconv.ParseUint(strings.TrimSpace(*last_insert_id), 10, 64)
 				if count_err != nil {
 					errors = append(errors, count_err)
 					return errors

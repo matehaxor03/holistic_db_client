@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 )
@@ -199,61 +199,67 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return &records, nil
 			}
 
-			rune_array := []rune(strings.Join(*shell_output, "\n"))
+
+			//rune_array := []rune(strings.Join(*shell_output, "\n"))
 			reading_columns := true
 			value := ""
 			columns_count := 0
 			columns := json.NewArrayValue()
 			record := json.NewMapValue()
-			for i := 0; i < len(rune_array); i++ {
-				current_value := string(rune_array[i])
-				if reading_columns {
-					if current_value == "\n" {
-						column_name := common.CloneString(&value)
-						columns.AppendStringValue( *column_name)
-						//columns = append(columns, *column_name)
-						value = ""
-						reading_columns = false
-					} else if current_value == "\t" {
-						column_name := common.CloneString(&value)
-						columns.AppendStringValue( *column_name)
-						//columns = append(columns, *column_name)
-						value = ""
+			for _, shell_row := range *shell_output {
+				shell_row = strings.TrimSpace(shell_row)
+				current_row_rune := []rune(shell_row)
+				current_row_length := len(current_row_rune)
+				for i := 0; i < current_row_length; i++ {
+					current_value := string(current_row_rune[i])
+					if reading_columns {
+						if i == current_row_length - 1 {
+							value = value + current_value
+							column_name := common.CloneString(&value)
+							columns.AppendStringValue(*column_name)
+							value = ""
+							reading_columns = false
+						} else if current_value == "\t" {
+							column_name := common.CloneString(&value)
+							columns.AppendStringValue(*column_name)
+							value = ""
+						} else {
+							value = value + current_value
+						}
 					} else {
-						value = value + current_value
-					}
-				} else {
-					if current_value == "\n" {
-						column_value := common.CloneString(&value)
-						x, x_errors := columns.GetStringValue(columns_count)
-						if x_errors != nil {
-							errors = append(errors, x_errors...)
-							continue
-						} else if common.IsNil(x) {
-							errors = append(errors,	fmt.Errorf("SQLCommand x is nil"))
-							continue
-						}
-						record.SetStringValue(x, *column_value)
-						records.AppendMapValue(record)
-						record = json.NewMapValue()
-						value = ""
-						columns_count = 0
-					} else if current_value == "\t" {
-						column_value := common.CloneString(&value)
-						y, y_errors := columns.GetStringValue(columns_count)
-						if y_errors != nil {
-							errors = append(errors, y_errors...)
-							continue
-						} else if common.IsNil(y) {
-							errors = append(errors,	fmt.Errorf("SQLCommand y is nil"))
-							continue
-						}
+						if i == current_row_length - 1  {
+							value = value + current_value
+							column_value := common.CloneString(&value)
+							x, x_errors := columns.GetStringValue(columns_count)
+							if x_errors != nil {
+								errors = append(errors, x_errors...)
+								continue
+							} else if common.IsNil(x) {
+								errors = append(errors,	fmt.Errorf("SQLCommand x is nil"))
+								continue
+							}
+							record.SetStringValue(x, *column_value)
+							records.AppendMapValue(record)
+							record = json.NewMapValue()
+							value = ""
+							columns_count = 0
+						} else if current_value == "\t" {
+							column_value := common.CloneString(&value)
+							y, y_errors := columns.GetStringValue(columns_count)
+							if y_errors != nil {
+								errors = append(errors, y_errors...)
+								continue
+							} else if common.IsNil(y) {
+								errors = append(errors,	fmt.Errorf("SQLCommand y is nil"))
+								continue
+							}
 
-						record.SetStringValue(y, *column_value)
-						columns_count += 1
-						value = ""
-					} else {
-						value = value + current_value
+							record.SetStringValue(y, *column_value)
+							columns_count += 1
+							value = ""
+						} else {
+							value = value + current_value
+						}
 					}
 				}
 			}

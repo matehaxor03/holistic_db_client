@@ -4,14 +4,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTestTableNameWithBoolColumn() string {
-	return "holistic_test_table_with_bool"
-}
-
-func GetTestTableNameWithBoolColumnNotMandatory() string {
-	return "holistic_test_table_with_bool_not_mandatory"
-}
-
 func GetTestTableBoolColumnName() string {
 	return "bool_column"
 }

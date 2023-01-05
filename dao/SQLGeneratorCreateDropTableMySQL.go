@@ -6,17 +6,12 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func getDropTableSQLMySQL(struct_type string, table_name string, drop_table_if_exists *bool, options *json.Map) (*string, *json.Map, []error) {
+func getDropTableSQLMySQL(struct_type string, table_name string, drop_table_if_exists bool, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
-	}
-
-	if common.IsNil(drop_table_if_exists) {
-		temp_drop_table_if_exists := true
-		drop_table_if_exists = &temp_drop_table_if_exists
 	}
 
 	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
@@ -26,7 +21,7 @@ func getDropTableSQLMySQL(struct_type string, table_name string, drop_table_if_e
 	}
 
 	sql_command := "DROP TABLE "
-	if *drop_table_if_exists {
+	if drop_table_if_exists {
 		sql_command += "IF EXISTS "
 	}
 

@@ -126,63 +126,56 @@ func CreateTableAndVerifySchema(t *testing.T, expected_schema json.Map) {
 	if table_errors != nil {
 		t.Errorf(fmt.Sprintf("error: %s", table_errors))
 	} else {
-		read_errors := table.Read()
-		if read_errors != nil {
-			t.Errorf(fmt.Sprintf("error: %s", read_errors))
+		expected_schema_column_names := expected_schema.GetKeys()
+		actual_schema, actual_schema_errors := table.GetSchema()
+		if actual_schema_errors != nil {
+			t.Errorf(fmt.Sprintf("error: %s", actual_schema_errors))
+		} else if common.IsNil(actual_schema) {
+			t.Errorf("error: actual schema is nil")
 		} else {
-			expected_schema_column_names := expected_schema.GetKeys()
-			actual_schema, actual_schema_errors := table.GetSchema()
-			if actual_schema_errors != nil {
-				t.Errorf(fmt.Sprintf("error: %s", actual_schema_errors))
-			} else if common.IsNil(actual_schema) {
-				t.Errorf("error: actual schema is nil")
-			} else {
-				for _, expected_schema_column_name := range expected_schema_column_names {
+			for _, expected_schema_column_name := range expected_schema_column_names {
 
-					expected_schema_field, expected_schema_field_errors := expected_schema.GetMap(expected_schema_column_name)
-					if expected_schema_field_errors != nil {
-						t.Error(expected_schema_field_errors)
-						continue
-					} else if !expected_schema.IsMap(expected_schema_column_name) {
-						t.Errorf("error: Table_test.CreateTableAndVerifySchema: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
-						continue
-					}
+				expected_schema_field, expected_schema_field_errors := expected_schema.GetMap(expected_schema_column_name)
+				if expected_schema_field_errors != nil {
+					t.Error(expected_schema_field_errors)
+					continue
+				} else if !expected_schema.IsMap(expected_schema_column_name) {
+					t.Errorf("error: Table_test.CreateTableAndVerifySchema: %s expected schema is not a map: %s", expected_schema_column_name, expected_schema.GetType(expected_schema_column_name))
+					continue
+				}
 
-					expected_schema_type, expected_schema_type_errors := expected_schema_field.GetString("type")
-					if expected_schema_type_errors != nil {
-						t.Errorf(fmt.Sprintf("error: %s", expected_schema_type_errors))
-						continue
-					} else if common.IsNil(expected_schema_type) {
-						t.Errorf("error: field: %s expected_schem type is nil", expected_schema_column_name)
-						continue
-					}
+				expected_schema_type, expected_schema_type_errors := expected_schema_field.GetString("type")
+				if expected_schema_type_errors != nil {
+					t.Errorf(fmt.Sprintf("error: %s", expected_schema_type_errors))
+					continue
+				} else if common.IsNil(expected_schema_type) {
+					t.Errorf("error: field: %s expected_schem type is nil", expected_schema_column_name)
+					continue
+				}
 
-					actual_schema_field_map, actual_schema_field_map_errors := actual_schema.GetMap(expected_schema_column_name)
-					if actual_schema_field_map_errors != nil {
-						t.Error(actual_schema_field_map_errors)
-						continue
-					} else if !actual_schema.IsMap(expected_schema_column_name) {
-						t.Errorf("error: field: %s actual schema is not a map: %s", expected_schema_column_name, actual_schema.GetType(expected_schema_column_name))
-						continue
-					}
+				actual_schema_field_map, actual_schema_field_map_errors := actual_schema.GetMap(expected_schema_column_name)
+				if actual_schema_field_map_errors != nil {
+					t.Error(actual_schema_field_map_errors)
+					continue
+				} else if !actual_schema.IsMap(expected_schema_column_name) {
+					t.Errorf("error: field: %s actual schema is not a map: %s", expected_schema_column_name, actual_schema.GetType(expected_schema_column_name))
+					continue
+				}
 
-					actual_schema_type, actual_schema_type_errors := actual_schema_field_map.GetString("type")
-					if actual_schema_type_errors != nil {
-						t.Error(actual_schema_type_errors)
-						continue
-					} else if common.IsNil(actual_schema_type) {
-						t.Errorf("error: field: %s actual_schema is nil", expected_schema_column_name)
-						continue
-					}
+				actual_schema_type, actual_schema_type_errors := actual_schema_field_map.GetString("type")
+				if actual_schema_type_errors != nil {
+					t.Error(actual_schema_type_errors)
+					continue
+				} else if common.IsNil(actual_schema_type) {
+					t.Errorf("error: field: %s actual_schema is nil", expected_schema_column_name)
+					continue
+				}
 
-					if *expected_schema_type != *actual_schema_type {
-						t.Errorf("error: schema types do not match expected: %s actual: %s", *expected_schema_type, *actual_schema_type)
-					}
+				if *expected_schema_type != *actual_schema_type {
+					t.Errorf("error: schema types do not match expected: %s actual: %s", *expected_schema_type, *actual_schema_type)
 				}
 			}
 		}
-		
-		
 	}
 }
  

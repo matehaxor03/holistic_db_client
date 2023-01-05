@@ -10,7 +10,7 @@ import (
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
 
-func getCreateRecordSQLMySQL(struct_type string, table Table, record_data *json.Map, options *json.Map) (*string, *json.Map, []error) {
+func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	table_validation_errors := table.Validate() 
@@ -26,8 +26,8 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data *json.
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("no_column_headers", true)
-		options.SetBoolValue("get_last_insert_id", false)
+		options.SetBoolValue("no_column_headers", false)
+		options.SetBoolValue("get_last_insert_id", true)
 		options.SetBoolValue("transactional", false)
 	}
 
@@ -64,7 +64,11 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data *json.
 			errors = append(errors, column_definition_errors...) 
 			continue
 		} else if common.IsNil(column_definition) {
-			errors = append(errors, fmt.Errorf("schema column definition is nil %s schema has keys %s", valid_column, table_schema.GetKeys())) 
+			var teeff strings.Builder
+			table_schema.ToJSONString(&teeff)
+
+
+			errors = append(errors, fmt.Errorf("schema column definition is nil %s schema has keys %s and schema: %s", valid_column, table_schema.GetKeys(), teeff.String())) 
 			continue
 		}
 

@@ -4,14 +4,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTestTableNameWithFloat32Column() string {
-	return "holistic_test_table_with_float32"
-}
-
-func GetTestTableNameWithFloat32ColumnNotMandatory() string {
-	return "holistic_test_table_with_float32_not_mandatory"
-}
-
 func GetTestTableFloat32ColumnName() string {
 	return "float32_column"
 }

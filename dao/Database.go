@@ -807,7 +807,8 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 
-			sql_command, new_options, generate_sql_errors := getDropTableSQLMySQL(struct_type, table_name, &if_exists, options)
+			getDatabase().GetOrSetSchema(table_name, nil, "delete")
+			sql_command, new_options, generate_sql_errors := getDropTableSQLMySQL(struct_type, table_name, if_exists, options)
 
 			if generate_sql_errors != nil {
 				return generate_sql_errors
@@ -818,7 +819,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			if execute_sql_command_errors != nil {
 				return execute_sql_command_errors
 			}
-			getDatabase().GetOrSetSchema(table_name, nil, "delete")
 			return nil
 		},
 

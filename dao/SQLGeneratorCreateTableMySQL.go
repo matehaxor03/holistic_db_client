@@ -311,8 +311,8 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			sql_command += " VARCHAR("
 			if !columnSchema.HasKey("max_length") {
 				errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s did not specify max_length attribute", column))
-			} else if columnSchema.GetType("max_length") != "int" {
-				errors = append(errors, fmt.Errorf("error: column: %s specified length attribute however it's not an int", column))
+			} else if !columnSchema.IsInteger("max_length") {
+				errors = append(errors, fmt.Errorf("error: column: %s specified max_length attribute however it's not an int", column))
 			} else {
 				max_length, max_length_errors := columnSchema.GetInt("max_length")
 				if max_length_errors != nil {
