@@ -26,8 +26,7 @@ func GetTestTableName() string {
 	lock_get_table_name.Lock()
 	defer lock_get_table_name.Unlock()
 	table_count++
-	uppercase := false
-	return "holistic_test_table" + *(common.GenerateRandomLetters(10, &uppercase)) + fmt.Sprintf("_%d", table_count)
+	return "holistic_test_table" + (common.GenerateRandomLetters(10, false, true)) + fmt.Sprintf("_%d", table_count)
 }
 
 func GetTestTablePrimaryKeyName() string {
@@ -60,9 +59,10 @@ func GetTestSchemaColumnPrimaryKeyAutoIncrement() json.Map {
 	return schema
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_name string, schema json.Map) (dao.Table) {
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, schema json.Map) (dao.Table) {
 	var errors []error
 
+	table_name := GetTestTableName()
 	database := GetTestDatabaseCreated(t)
 	database.DeleteTableByTableNameIfExists(table_name, true)
 
@@ -91,11 +91,12 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, table_n
 	return *table
 }
 
-func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema json.Map) (dao.Table) {
+func GetTestTableWithTableNameAndSchema(t *testing.T, schema json.Map) (dao.Table) {
 	var errors []error
 
 	database := GetTestDatabase(t)
-
+	
+	table_name := GetTestTableName()
 	table, table_errors := database.GetTableInterface(table_name, schema)
 	if table_errors != nil {
 		errors = append(errors, table_errors...)
@@ -111,15 +112,15 @@ func GetTestTableWithTableNameAndSchema(t *testing.T, table_name string, schema 
 }
 
 func GetTestTableBasic(t *testing.T) dao.Table {
-	return GetTestTableWithTableNameAndSchema(t, GetTestTableName(), GetTestSchema())
+	return GetTestTableWithTableNameAndSchema(t, GetTestSchema())
 }
 
 func GetTestTableBasicWithCreatedDatabase(t *testing.T) dao.Table {
-	return GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), GetTestSchema())
+	return GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestSchema())
 }
 
 func CreateTableAndVerifySchema(t *testing.T, expected_schema json.Map) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, GetTestTableName(), expected_schema)
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, expected_schema)
 
     table_errors := table.Create()
 	if table_errors != nil {

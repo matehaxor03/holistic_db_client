@@ -12,12 +12,14 @@ import (
 var database_count uint64 = 0
 var lock_get_client_manager = &sync.Mutex{}
 var lock_get_database = &sync.Mutex{}
+var lock_get_database_name = &sync.Mutex{}
 var client_manager *db_client.ClientManager
 
 func getTestDatabaseName() string {
+	lock_get_database_name.Lock()
+	defer lock_get_database_name.Unlock()
 	database_count++
-	uppercase := false
-	return "holistic_test_" + *(common.GenerateRandomLetters(10, &uppercase)) + fmt.Sprintf("_%d", database_count)
+	return "holistic_test_" + (common.GenerateRandomLetters(10, false, true)) + fmt.Sprintf("_%d", database_count)
 }
 
 func EnsureDatabaseIsDeleted(t *testing.T, database dao.Database) {

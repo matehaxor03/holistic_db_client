@@ -26,8 +26,8 @@ func GetTestTableCreated(t *testing.T) (dao.Table) {
 	return table
 }
 
-func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, table_name string, schema json.Map) (dao.Table) {
-	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, table_name, schema)
+func GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t *testing.T, schema json.Map) (dao.Table) {
+	table := GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t, schema)
 	
 	table_create_errors := table.Create()
 	if table_create_errors != nil {

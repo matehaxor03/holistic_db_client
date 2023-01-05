@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned08Column())
 	
 	test_value := int8(100)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerSigned08Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnName(), helper.GetTestSchemaWithIntegerSigned08Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithIntegerSigned08Column())
 	
 	test_value := int8(101)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned08Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerSigned08ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
 	
 	test_value := int8(101)
 	map_record := json.NewMapValue()
@@ -84,7 +84,7 @@ func TestRecordCanCreateRecordWithIntegerSigned08ColumnNotMandatory(t *testing.T
 
 
 func TestRecordCanUpdateRecordWithIntegerSigned08ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned08NotMandatoryColumn())
 	
 	test_value := int8(101)
 	map_record := json.NewMapValue()

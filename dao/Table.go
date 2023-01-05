@@ -53,13 +53,23 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return this_table
 	}
 
+	data := json.NewMap()
+	getData := func() (*json.Map) {
+		return data
+	}
+
+	setData := func(in_data *json.Map) {
+		data = in_data
+	}
+
 	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b Database, n string, schema_from_db *json.Map) (*json.Map) {
-		merged_schema := json.NewMap()
+	setupData := func(b Database, n string, schema_from_db *json.Map) (*json.Map, []error) {
+		var setup_errors []error
+		merged_schema := json.NewMapValue()
 
 		d := json.NewMapValue()
 
@@ -150,28 +160,38 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		// ovreride above values with values passed in from database
 		if !schema_passed_in_is_nil  {
 			for _, schema_key_from_db := range schema_from_db.GetKeys() {
-				current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMap(schema_key_from_db)
+				fmt.Println("found key that was passed in " + schema_key_from_db)
+				current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMapValue(schema_key_from_db)
+				var saved_copy json.Map
+				saved_copy = current_schema_from_db
 				if current_schema_error_from_db != nil {
-					errors = append(errors, current_schema_error_from_db...)
+					fmt.Println(current_schema_error_from_db)
+					setup_errors = append(setup_errors, current_schema_error_from_db...)
 				} else if common.IsNil(current_schema_from_db) {
-					errors = append(errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
+					fmt.Println("is nil " + schema_key_from_db)
+					setup_errors = append(setup_errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
 				} else {
 					if !merged_schema.HasKey(schema_key_from_db) {
-						merged_schema.SetMap(schema_key_from_db, current_schema_from_db)
+						fmt.Println("didn't have key setting " + common.GetType(current_schema_from_db))
+						var json_reuslt strings.Builder
+						current_schema_from_db.ToJSONString(&json_reuslt)
+						fmt.Println(json_reuslt.String())
+						
+						merged_schema.SetMapValue(schema_key_from_db, saved_copy)
 					} else if current_schema_from_db.IsArray("filters") {
 						filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
 						if filters_from_db_errors != nil {
-							errors = append(errors, filters_from_db_errors...)
+							setup_errors = append(setup_errors, filters_from_db_errors...)
 						} else if common.IsNil(filters_from_db) {
-							errors = append(errors, fmt.Errorf("filters from db is nil"))
+							setup_errors = append(setup_errors, fmt.Errorf("filters from db is nil"))
 						} else if merged_schema.IsMap(schema_key_from_db) {
 							merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
 							if merged_schema_map_errors != nil {
-								errors = append(errors, merged_schema_map_errors...)
+								setup_errors = append(setup_errors, merged_schema_map_errors...)
 							} else {
 								filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
 								if filters_array_errors != nil {
-									errors = append(errors, filters_array_errors...)
+									setup_errors = append(setup_errors, filters_array_errors...)
 								} else {
 									if common.IsNil(filters_array) {
 										new_filters_array := json.NewArrayValue()
@@ -189,14 +209,29 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			}
 		}
 		
-		d.SetMap("[schema]", merged_schema)
-		return &d
+		fmt.Println("merged schema")
+		var json_reuslt2 strings.Builder
+		merged_schema.ToJSONString(&json_reuslt2)
+		fmt.Println(json_reuslt2.String())
+		//merged_schema.SetObjectForMap(schema_key_from_db, schema_from_db.GetObjectForMap(schema_key_from_db))
+
+		d.SetMapValue("[schema]", merged_schema)
+
+		if setup_errors != nil {
+			return nil, setup_errors
+		}
+		return &d, nil
 	}
 
-	data := setupData(database, table_name, &schema)
-
-	getData := func() (*json.Map) {
-		return data
+	new_data, new_data_errors := setupData(database, table_name, &schema)
+	if new_data_errors != nil {
+		errors = append(errors, new_data_errors...)
+	} else {
+		data = new_data
+		fmt.Println("new schema")
+		var json_reuslt3 strings.Builder
+		data.ToJSONString(&json_reuslt3)
+		fmt.Println(json_reuslt3.String())
 	}
 
 	getTableName := func() (string, []error) {
@@ -853,7 +888,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		if execute_errors != nil {
 			return execute_errors
 		}
-
 		return nil
 	}
 
@@ -897,7 +931,11 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		data = setupData(temp_database, temp_table_name, temp_schema)
+		new_data, setup_data_errors := setupData(temp_database, temp_table_name, temp_schema)
+		if setup_data_errors != nil {
+			return setup_data_errors
+		}
+		setData(new_data)
 		return nil
 	}
 

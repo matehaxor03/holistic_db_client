@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned64Column())
 	
 	test_value := uint64(555)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnName(), helper.GetTestSchemaWithIntegerUnsigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned64Column())
 	
 	test_value := uint64(555)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned64Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	
 	test_value := uint64(349734)
 	map_record := json.NewMapValue()
@@ -83,7 +83,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned64ColumnNotMandatory(t *testing
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned64ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned64ColumnNotMandatory())
 	
 	test_value := uint64(349734)
 	map_record := json.NewMapValue()

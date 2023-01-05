@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64Column(), helper.GetTestSchemaWithFloat64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithFloat64Column())
 
 	test_value := float64(123456789.987654321)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithFloat64(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat64(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64Column(), helper.GetTestSchemaWithFloat64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithFloat64Column())
 
 	map_record := json.NewMapValue()
 	map_record.SetFloat64Value(helper.GetTestTableFloat64ColumnName(), float64(123456789.987654321))
@@ -57,7 +57,7 @@ func TestRecordCanUpdateRecordWithFloat64(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64ColumnNotMandatory(), helper.GetTestSchemaWithFloat64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithFloat64ColumnNotMandatory())
 
 	test_value := float64(987654321.987654321)
 	map_record := json.NewMapValue()
@@ -81,7 +81,7 @@ func TestRecordCanCreateRecordWithFloat64NotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat64NotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat64ColumnNotMandatory(), helper.GetTestSchemaWithFloat64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithFloat64ColumnNotMandatory())
 
 	test_value := float64(123456789.123456789)
 	map_record := json.NewMapValue()

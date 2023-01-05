@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithFloat32Column())
 
 	test_value := float32(123456789.987654321)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithFloat32(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat32(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32Column(), helper.GetTestSchemaWithFloat32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithFloat32Column())
 
 	map_record := json.NewMapValue()
 	map_record.SetFloat32Value(helper.GetTestTableFloat32ColumnName(), float32(123456789.987654321))
@@ -57,7 +57,7 @@ func TestRecordCanUpdateRecordWithFloat32(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithFloat32NotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(987654321.987654321)
 	map_record := json.NewMapValue()
@@ -81,7 +81,7 @@ func TestRecordCanCreateRecordWithFloat32NotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithFloat32NotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithFloat32ColumnNotMandatory(), helper.GetTestSchemaWithFloat32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithFloat32ColumnNotMandatory())
 
 	test_value := float32(123456789.123456789)
 	map_record := json.NewMapValue()

@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerUnsigned08Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnName(), helper.GetTestSchemaWithIntegerUnsigned08Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned08Column())
 
 	test_value := uint8(100)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned08Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnName(), helper.GetTestSchemaWithIntegerUnsigned08Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned08Column())
 
     test_value := uint8(101)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned08Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerUnsigned08ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	
 	test_value := uint8(101)
 	map_record := json.NewMapValue()
@@ -83,7 +83,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned08ColumnNotMandatory(t *testing
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned08ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned08ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned08NotMandatoryColumn())
 	
 	test_value := uint8(101)
 	map_record := json.NewMapValue()

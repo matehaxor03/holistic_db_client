@@ -485,9 +485,9 @@ func testColumnName(client *db_client.Client) []error {
 		schema_column.SetBoolValue("auto_increment", true)
 		schema.SetMapValue(string_value, schema_column)		
 		
-		table_name := common.GenerateRandomLetters(10, nil)
+		table_name := common.GenerateRandomLetters(10, false, true)
 
-		table, table_errors := database.CreateTable(*table_name, schema)
+		table, table_errors := database.CreateTable(table_name, schema)
 		if table_errors != nil {
 			fmt.Println(fmt.Sprintf("invalid rune for table_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
 			fmt.Println(table_errors)

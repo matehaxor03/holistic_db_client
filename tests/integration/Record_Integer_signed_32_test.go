@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned32Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnName(), helper.GetTestSchemaWithIntegerSigned32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned32Column())
 	
 	test_value := int32(188)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned32Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnName(), helper.GetTestSchemaWithIntegerSigned32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned32Column())
 	
 	test_value := int32(199)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned32Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	
 	test_value := int32(188)
 	map_record := json.NewMapValue()
@@ -83,7 +83,7 @@ func TestRecordCanCreateRecordWithIntegerSigned32ColumnNotMandatory(t *testing.T
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned32ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned32ColumnNotMandatory())
 	
 	test_value := int32(199)
 	map_record := json.NewMapValue()

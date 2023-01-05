@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithString(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithStringColumn())
 
 	map_record := json.NewMapValue()
 	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
@@ -32,7 +32,7 @@ func TestRecordCanCreateRecordWithString(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithString(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumn(), helper.GetTestSchemaWithStringColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithStringColumn())
 
 	map_record := json.NewMapValue()
 	map_record.SetStringValue(helper.GetTestTableStringColumnName(), "hello world")
@@ -56,7 +56,7 @@ func TestRecordCanUpdateRecordWithString(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
 	map_record := json.NewMapValue()
@@ -80,7 +80,7 @@ func TestRecordCanCreateRecordWithStringNotMandatory(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithStringNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithStringColumnNotMandatory(), helper.GetTestSchemaWithStringColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithStringColumnNotMandatory())
 
 	test_value := "hello world"
 	map_record := json.NewMapValue()

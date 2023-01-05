@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned16Column())
 	
 	test_value := uint16(130)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnName(), helper.GetTestSchemaWithIntegerUnsigned16Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned16Column())
 	
 	test_value := uint16(150)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned16Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	
 	test_value := uint16(188)
 	map_record := json.NewMapValue()
@@ -83,7 +83,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned16ColumnNotMandatory(t *testing
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned16ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned16ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned16ColumnNotMandatory())
 	
 	test_value := uint16(255)
 	map_record := json.NewMapValue()

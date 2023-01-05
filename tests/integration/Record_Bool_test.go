@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumn())
 
 	test_value := true
 	map_record := json.NewMapValue()
@@ -32,7 +32,7 @@ func TestRecordCanCreateRecordWithBoolTrue(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumn())
 
 	test_value := false
 	map_record := json.NewMapValue()
@@ -55,7 +55,7 @@ func TestRecordCanCreateRecordWithBoolFalse(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumn())
 
 	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), false)
@@ -78,7 +78,7 @@ func TestRecordCanUpdateRecordWithBoolTrue(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolFalse(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumn(), helper.GetTestSchemaWithBoolColumn())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumn())
 
 	map_record := json.NewMapValue()
 	map_record.SetBoolValue(helper.GetTestTableBoolColumnName(), true)
@@ -101,7 +101,7 @@ func TestRecordCanUpdateRecordWithBoolFalse(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
 	map_record := json.NewMapValue()
@@ -125,7 +125,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t,  helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := false
 	map_record := json.NewMapValue()
@@ -148,7 +148,7 @@ func TestRecordCanCreateRecordWithBoolNotMandatoryFalse(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
 	map_record := json.NewMapValue()
@@ -174,7 +174,7 @@ func TestRecordCanUpdateRecordWithBoolNotMandatoryTrue(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithBoolNotMandatoryFalse(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithBoolColumnNotMandatory(), helper.GetTestSchemaWithBoolColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithBoolColumnNotMandatory())
 
 	test_value := true
 	map_record := json.NewMapValue()

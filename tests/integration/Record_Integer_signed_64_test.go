@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned64Column())
 	
 	test_value := int64(555)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned64Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnName(), helper.GetTestSchemaWithIntegerSigned64Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned64Column())
 	
 	test_value := int64(234234)
 	map_record := json.NewMapValue()
@@ -59,7 +59,7 @@ func TestRecordCanUpdateRecordWithIntegerSigned64Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	
 	test_value := int64(555)
 	map_record := json.NewMapValue()
@@ -83,7 +83,7 @@ func TestRecordCanCreateRecordWithIntegerSigned64ColumnNotMandatory(t *testing.T
 }
 
 func TestRecordCanUpdateRecordWithIntegerSigned64ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerSigned64ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerSigned64ColumnNotMandatory())
 	
 	test_value := int64(435345)
 	map_record := json.NewMapValue()

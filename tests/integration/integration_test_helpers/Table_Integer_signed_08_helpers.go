@@ -4,14 +4,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTestTableNameWithIntegerSigned08ColumnName() string {
-	return "holistic_test_table_with_integer_signed_08"
-}
-
-func GetTestTableNameWithIntegerSigned08ColumnNameNotMandatory() string {
-	return "holistic_test_table_with_integer_signed_08_not_mandatory"
-}
-
 func GetTestTableIntegerSigned08ColumnName() string {
 	return "integer_signed_08_column"
 }

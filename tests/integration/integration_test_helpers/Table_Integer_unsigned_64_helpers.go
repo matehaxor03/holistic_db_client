@@ -4,14 +4,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTestTableNameWithIntegerUnsigned64ColumnName() string {
-	return "holistic_test_table_with_integer_unsigned_64"
-}
-
-func GetTestTableNameWithIntegerUnsigned64ColumnNameNotMandatory() string {
-	return "holistic_test_table_with_integer_unsigned_64_not_mandatory"
-}
-
 func GetTestTableIntegerUnsigned64ColumnName() string {
 	return "integer_unsigned_64_column"
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func TestRecordCanCreateRecordWithIntegerUnsigned32Column(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned32ColumnName(), helper.GetTestSchemaWithIntegerUnsigned32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned32Column())
 	
 	test_value := uint32(188)
 	map_record := json.NewMapValue()
@@ -33,7 +33,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned32Column(t *testing.T) {
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned32Colum(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned32ColumnName(), helper.GetTestSchemaWithIntegerUnsigned32Column())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned32Column())
 	
 	test_value := uint32(5546)
 	map_record := json.NewMapValue()
@@ -60,7 +60,7 @@ func TestRecordCanUpdateRecordWithIntegerUnsigned32Colum(t *testing.T) {
 }
 
 func TestRecordCanCreateRecordWithIntegerUnsigned32ColumnNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned32ColumnNotMandatory())
 	
 	test_value := uint32(188)
 	map_record := json.NewMapValue()
@@ -84,7 +84,7 @@ func TestRecordCanCreateRecordWithIntegerUnsigned32ColumnNotMandatory(t *testing
 }
 
 func TestRecordCanUpdateRecordWithIntegerUnsigned32ColumNotMandatory(t *testing.T) {
-	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestTableNameWithIntegerUnsigned32ColumnNameNotMandatory(), helper.GetTestSchemaWithIntegerUnsigned32ColumnNotMandatory())
+	table := helper.GetTestTableWithTableNameAndSchemaWithCreatedDatabaseAndTable(t, helper.GetTestSchemaWithIntegerUnsigned32ColumnNotMandatory())
 	
 	test_value := uint32(4345)
 	map_record := json.NewMapValue()
