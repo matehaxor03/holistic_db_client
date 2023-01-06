@@ -125,7 +125,9 @@ func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error)
 							additional_schema.SetMap("Comment", comment_as_map)
 						}
 					} else {
-						additional_schema.SetStringValue(column_attribute, *comment_value)
+						comment_as_map_raw := json.NewMap()
+						comment_as_map_raw.SetStringValue("raw", *comment_value)
+						additional_schema.SetMap("Comment", comment_as_map_raw)
 					}
 				}
 			default:
