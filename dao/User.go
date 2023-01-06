@@ -203,6 +203,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 		Create: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", true)
+			options.SetBoolValue("use_mysql_database", true)
 			sql_command, new_options, sql_command_errors := getCreateSQL(options)
 
 			if sql_command_errors != nil {
