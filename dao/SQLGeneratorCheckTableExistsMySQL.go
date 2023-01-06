@@ -4,6 +4,8 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+
 )
 
 func getCheckTableExistsSQLMySQL(struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
@@ -12,6 +14,11 @@ func getCheckTableExistsSQLMySQL(struct_type string, table_name string, options 
 	if common.IsNil(options) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
+	}
+
+	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	if validation_errors != nil {
+		return nil, nil, validation_errors
 	}
 
 	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")

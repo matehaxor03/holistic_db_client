@@ -19,6 +19,11 @@ func getTableSchemaSQLMySQL(struct_type string, table_name string, options *json
 		options.SetBoolValue("json_output", true)
 	}
 
+	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	if validation_errors != nil {
+		return nil, nil, validation_errors
+	}
+
 	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)

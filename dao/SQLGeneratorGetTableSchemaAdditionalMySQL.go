@@ -5,38 +5,23 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
 
-func getTableSchemaAdditionalSQLMySQL(struct_type string, table *Table, options *json.Map) (*string, *json.Map, []error) {
+func getTableSchemaAdditionalSQLMySQL(struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-		return nil, nil, errors
-	} else {
-		validation_errors := table.Validate()
-		if validation_errors != nil {
-			return nil, nil, validation_errors
-		}
+	
+	database_name_validation_errors := validation_functions.ValidateDatabaseName(database_name)
+	if database_name_validation_errors != nil {
+		return nil, nil, database_name_validation_errors
 	}
 
-	temp_database, temp_database_errors := table.GetDatabase()
-	if temp_database_errors != nil {
-		return nil, nil, temp_database_errors
-	} else if common.IsNil(temp_database) {
-		errors = append(errors, fmt.Errorf("database is nil"))
-		return nil, nil, errors
+	table_name_validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	if table_name_validation_errors != nil {
+		return nil, nil, table_name_validation_errors
 	}
 
-	temp_database_name, temp_database_name_errors := temp_database.GetDatabaseName()
-	if temp_database_name_errors != nil {
-		return nil, nil, temp_database_name_errors
-	} else if common.IsNil(temp_database_name) {
-		errors = append(errors, fmt.Errorf("database_name is nil"))
-		return nil, nil, errors
-	}
-
-
-	database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
+	database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
 	if database_name_escaped_errors != nil {
 		errors = append(errors, database_name_escaped_errors)
 		return nil, nil, errors
@@ -44,16 +29,8 @@ func getTableSchemaAdditionalSQLMySQL(struct_type string, table *Table, options 
 		errors = append(errors, fmt.Errorf("database_name_escaped is nil"))
 		return nil, nil, errors
 	}
-	
-	temp_table_name, temp_table_name_errors := table.GetTableName()
-	if temp_table_name_errors != nil {
-		return nil, nil, temp_table_name_errors
-	} else if common.IsNil(temp_table_name) {
-		errors = append(errors, fmt.Errorf("table_name is nil"))
-		return nil, nil, errors
-	}
 
-	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
+	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
 		return nil, nil, errors

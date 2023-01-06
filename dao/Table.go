@@ -737,8 +737,13 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		} else if !common.IsNil(cached_additonal_schema) {
 			return cached_additonal_schema, nil
 		}
+
+		temp_database_name, temp_database_name_errors := temp_database.GetDatabaseName()
+		if temp_database_name_errors != nil {
+			return nil, temp_database_name_errors
+		}
 		
-		sql_command, new_options,  sql_command_errors := getTableSchemaAdditionalSQLMySQL(struct_type, getTable(), options)
+		sql_command, new_options,  sql_command_errors := getTableSchemaAdditionalSQLMySQL(struct_type, temp_database_name, temp_table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}

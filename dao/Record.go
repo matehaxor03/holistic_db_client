@@ -412,7 +412,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	schema_column_names := table_schema.GetKeys()
 	for _, schema_column_name := range schema_column_names {
-		validate_database_column_name_errors := validation_functions.ValidateDatabaseColumnName(schema_column_name)
+		validate_database_column_name_errors := validation_functions.ValidateDatabaseTableColumnName(schema_column_name)
 		if validate_database_column_name_errors != nil {
 			errors = append(errors, validate_database_column_name_errors...)
 		}
