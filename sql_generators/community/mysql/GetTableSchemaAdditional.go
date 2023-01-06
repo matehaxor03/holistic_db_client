@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
 
-func getTableSchemaAdditionalSQLMySQL(struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaAdditionalSQL(struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	
 	database_name_validation_errors := validation_functions.ValidateDatabaseName(database_name)
@@ -58,7 +58,7 @@ func getTableSchemaAdditionalSQLMySQL(struct_type string, database_name string, 
 }
 
 
-func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error) {
+func MapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error) {
 	var errors []error
 	
 	if json_array == nil {

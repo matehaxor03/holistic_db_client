@@ -8,9 +8,8 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
-
 	helper "github.com/matehaxor03/holistic_db_client/helper"
-
+	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 type Database struct {
@@ -509,7 +508,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}
 		
-		sql_command, new_options, sql_command_errors := getCheckTableExistsSQLMySQL(struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(struct_type, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -558,7 +557,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(struct_type, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -570,7 +569,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return  json.NewMapValue(), errors
 		}
 
-		temp_schema, schem_errors := mapTableSchemaFromDBMySQL(struct_type, table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return json.NewMapValue(), errors
@@ -849,7 +848,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			options.SetBoolValue("use_file", false)
 
 			getDatabase().GetOrSetSchema(table_name, json.NewMapValue(), "delete")
-			sql_command, new_options, generate_sql_errors := getDropTableSQLMySQL(struct_type, table_name, if_exists, options)
+			sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(struct_type, table_name, if_exists, options)
 
 			if generate_sql_errors != nil {
 				return generate_sql_errors

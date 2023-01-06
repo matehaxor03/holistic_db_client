@@ -10,6 +10,7 @@ import (
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 type Table struct {
@@ -389,7 +390,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command, new_options, sql_command_errors := getCheckTableExistsSQLMySQL(struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(struct_type, temp_table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -438,7 +439,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 
 		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
-		sql_command, new_options, sql_command_errors := getDropTableSQLMySQL(struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -478,7 +479,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		options.SetBoolValue("use_file", false)
 
 		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
-		sql_command, new_options, sql_command_errors := getDropTableSQLMySQL(struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -743,7 +744,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_database_name_errors
 		}
 		
-		sql_command, new_options,  sql_command_errors := getTableSchemaAdditionalSQLMySQL(struct_type, temp_database_name, temp_table_name, options)
+		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(struct_type, temp_database_name, temp_table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -755,7 +756,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, errors
 		}
 
-		additional_schema, additional_schema_errors := mapAdditionalSchemaFromDBToMap(json_array)
+		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
 		if additional_schema_errors != nil {
 			errors = append(errors, additional_schema_errors...)
 		} else if common.IsNil(additional_schema) {
@@ -800,7 +801,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(struct_type, temp_table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -812,7 +813,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return  json.NewMapValue(), errors
 		}
 
-		temp_schema, schem_errors := mapTableSchemaFromDBMySQL(struct_type, temp_table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, temp_table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return json.NewMapValue(), errors

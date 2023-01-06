@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 import (
 	"fmt"
@@ -10,13 +10,12 @@ import (
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 )
 
-func getTableSchemaSQLMySQL(struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("json_output", true)
 	}
 
 	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
@@ -41,7 +40,7 @@ func getTableSchemaSQLMySQL(struct_type string, table_name string, options *json
 }
 
 
-func mapTableSchemaFromDBMySQL(struct_type string, table_name string, json_array *json.Array) (json.Map, []error) {
+func MapTableSchemaFromDB(struct_type string, table_name string, json_array *json.Array) (json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(json_array) {
