@@ -37,6 +37,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if len(field_errors) == 0 {
 		for _, parameter := range (*schemas).GetKeys() {
+			//fmt.Println("validating schema " + parameter)
 			value_errors := ValidateParameterData(struct_type, schemas, "[schema]", field_parameters, "[fields]", parameter, nil, primary_key_count, auto_increment_count)
 
 			if value_errors != nil {
@@ -62,6 +63,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	
 	if len(system_field_errors) == 0 {
 		for _, parameter := range (*system_schemas).GetKeys() {
+			//fmt.Println("validating system schema " + parameter)
 			value_errors := ValidateParameterData(struct_type, system_schemas, "[system_schema]", system_field_parameters, "[system_fields]", parameter, nil, primary_key_count, auto_increment_count)
 			if value_errors != nil {
 				system_field_errors = append(system_field_errors, value_errors...)
@@ -75,7 +77,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if ((struct_type == "*dao.Table" || struct_type == "dao.Table")) {
 		if *primary_key_count <= 0 {
-			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys %s", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys %s", struct_type, schemas.GetKeys()))
 		}
 
 		if *auto_increment_count > 1 {
@@ -117,7 +119,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	if !common.IsNil(parameters) {
 		if parameters.HasKey(parameter) {
 			value_is_set = true
-			if parameters.IsNil(parameter) {
+			if parameters.IsNull(parameter) {
 				value_is_null = true
 			} else {
 				value_to_validate = parameters.GetObjectForMap(parameter)
@@ -140,7 +142,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	if schema_of_parameter.HasKey("default") {
 		default_set = true
-		if schema_of_parameter.IsNil("default") {
+		if schema_of_parameter.IsNull("default") {
 			default_is_null = true
 		} else {
 			default_is_null = false
@@ -166,7 +168,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	if struct_type == "*dao.Table" || struct_type == "dao.Table" || struct_type == "*dao.Record" || struct_type == "dao.Record" {
 		if schema_of_parameter.IsBoolTrue("primary_key") {
 			value_is_mandatory = true
-			*primary_key_count++ 
+			*primary_key_count++
 
 			if schema_of_parameter.IsBoolTrue("auto_increment") {
 				value_is_mandatory = false
@@ -361,7 +363,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		} 
 
 
-		if schema_of_parameter.IsNil("filters") {
+		if schema_of_parameter.IsNull("filters") {
 			return nil
 		}
 		
@@ -402,6 +404,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			}
 
 			function, function_errors := filter_map.GetFunc("function")
+			//fmt.Println(fmt.Sprintf("%s", function))
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
 				return errors

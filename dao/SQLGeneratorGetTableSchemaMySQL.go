@@ -10,17 +10,8 @@ import (
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 )
 
-func getTableSchemaSQLMySQL(struct_type string, table *Table, options *json.Map) (*string, *json.Map, []error) {
+func getTableSchemaSQLMySQL(struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-		return nil, nil, errors
-	} else {
-		validation_errors := table.Validate()
-		if validation_errors != nil {
-			return nil, nil, validation_errors
-		}
-	}
 
 	if common.IsNil(options) {
 		options = json.NewMap()
@@ -28,12 +19,7 @@ func getTableSchemaSQLMySQL(struct_type string, table *Table, options *json.Map)
 		options.SetBoolValue("json_output", true)
 	}
 
-	temp_table_name, temp_table_name_errors := table.GetTableName()
-	if temp_table_name_errors != nil {
-		return nil, nil, temp_table_name_errors
-	}
-
-	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
+	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
 		return nil, nil, errors
@@ -50,44 +36,30 @@ func getTableSchemaSQLMySQL(struct_type string, table *Table, options *json.Map)
 }
 
 
-func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *json.Array) (*json.Map, []error) {
+func mapTableSchemaFromDBMySQL(struct_type string, table_name string, json_array *json.Array) (json.Map, []error) {
 	var errors []error
-
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-	} else {
-		table_validation_errors := table.Validate() 
-		if table_validation_errors != nil {
-			errors = append(errors, table_validation_errors...)
-		}
-	}
 
 	if common.IsNil(json_array) {
 		errors = append(errors, fmt.Errorf("error: show columns returned nil records"))
 	}
 
 	if len(errors) > 0 {
-		return nil, errors 
+		return json.NewMapValue(), errors 
 	}
 
 	if len(*(json_array.GetValues())) == 0 {
 		errors = append(errors, fmt.Errorf("error: show columns did not return any records"))
-		return nil, errors
-	}
-
-	table_name, table_name_errors := table.GetTableName()
-	if table_name_errors != nil {
-		return nil, table_name_errors
+		return json.NewMapValue(), errors
 	}
 
 	schema := json.NewMapValue()
 	for _, column_details := range *(json_array.GetValues()) {
 		column_map, column_map_errors := column_details.GetMap()
 		if column_map_errors != nil {
-			return nil, column_map_errors
+			return json.NewMapValue(), column_map_errors
 		} else if common.IsNil(column_map) {
 			errors = append(errors, fmt.Errorf("column_map is nil"))
-			return nil, errors
+			return json.NewMapValue(), errors
 		}
 		column_attributes := column_map.GetKeys()
 
@@ -96,7 +68,6 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 		field_name := ""
 		is_nullable := false
 		is_primary_key := false
-		is_unique := false
 		extra_value := ""
 		comment_value := ""
 		for _, column_attribute := range column_attributes {
@@ -107,11 +78,10 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 				case "PRI":
 					is_primary_key = true
 					is_nullable = false
-					column_schema.SetBool("primary_key", &is_primary_key)
+					column_schema.SetBoolValue("primary_key", true)
 				case "", "MUL":
 				case "UNI":
-					is_unique = true
-					column_schema.SetBool("unique", &is_unique)
+					column_schema.SetBoolValue("unique", true)
 				default:
 					errors = append(errors, fmt.Errorf("error: Table: GetSchema: Key not implemented please implement: %s", *key_value))
 				}
@@ -122,92 +92,64 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 				type_of_value, _ := column_map.GetString("Type")
 				switch *type_of_value {
 				case "bigint unsigned":
-					data_type := "uint64"
-					unsigned := true
-					column_schema.SetString("type", &data_type)
-					column_schema.SetBool("unsigned", &unsigned)
+					column_schema.SetStringValue("type", "uint64")
+					column_schema.SetBoolValue("unsigned", true)
 				case "int unsigned":
-					data_type := "uint32"
-					unsigned := true
-					column_schema.SetString("type", &data_type)
-					column_schema.SetBool("unsigned", &unsigned)
+					column_schema.SetStringValue("type", "uint32")
+					column_schema.SetBoolValue("unsigned", true)
 				case "mediumint unsigned":
-					data_type := "uint32"
-					unsigned := true
-					column_schema.SetString("type", &data_type)
-					column_schema.SetBool("unsigned", &unsigned)
+					column_schema.SetStringValue("type", "uint32")
+					column_schema.SetBoolValue("unsigned", true)
 				case "smallint unsigned":
-					data_type := "uint16"
-					unsigned := true
-					column_schema.SetString("type", &data_type)
-					column_schema.SetBool("unsigned", &unsigned)
+					column_schema.SetStringValue("type", "uint16")
+					column_schema.SetBoolValue("unsigned", true)
 				case "tinyint unsigned":
-					data_type := "uint8"
-					unsigned := true
-					column_schema.SetString("type", &data_type)
-					column_schema.SetBool("unsigned", &unsigned)
+					column_schema.SetStringValue("type",  "uint8")
+					column_schema.SetBoolValue("unsigned", true)
 				case "bigint":
-					data_type := "int64"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "int64")
 				case "int":
-					data_type := "int32"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type","int32")
 				case "mediumint":
-					data_type := "int32"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "int32")
 				case "smallint":
-					data_type := "int16"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "int16")
 				case "tinyint":
-					data_type := "int8"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "int8")
 				case "timestamp":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type",  "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(0))
 				case "timestamp(1)":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type","time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(1))
 				case "timestamp(2)":						
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(2))
 				case "timestamp(3)":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(3))
 				case "timestamp(4)":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(4))
 				case "timestamp(5)":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(5))
 				case "timestamp(6)":
-					data_type := "time.Time"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "time.Time")
 					column_schema.SetUInt8Value("decimal_places", uint8(6))
 				case "tinyint(1)":
-					data_type := "bool"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "bool")
 				case "text", "blob", "json":
-					data_type := "string"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "string")
 				case "float":
-					data_type := "float32"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "float32")
 				case "double":
-					data_type := "float64"
-					column_schema.SetString("type", &data_type)
+					column_schema.SetStringValue("type", "float64")
 				default:
 					if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
-						data_type := "string"
-						column_schema.SetString("type", &data_type)
+						column_schema.SetStringValue("type","string")
 					} else if strings.HasPrefix(*type_of_value, "varchar(") && strings.HasSuffix(*type_of_value, ")") {
-						data_type := "string"
-						column_schema.SetString("type", &data_type)
+						column_schema.SetStringValue("type", "string")
 					} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
 						type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
 						parts := strings.Split(type_of_value_values, ",")
@@ -216,8 +158,7 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 						} else {
 							part := parts[0]
 							if strings.HasPrefix(part, "'")  && strings.HasSuffix(part, "'") {
-								data_type := "string"
-								column_schema.SetString("type", &data_type)
+								column_schema.SetStringValue("type", "string")
 							} else {
 								errors = append(errors, fmt.Errorf("error: Table: GetSchema: could not determine parts of enum for data type: %s", *type_of_value))
 							}
@@ -227,8 +168,8 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 					}
 				}
 			case "Null":
-				null_value, _ := column_map.GetString("Null")
-				switch *null_value {
+				null_value, _ := column_map.GetStringValue("Null")
+				switch null_value {
 				case "YES":
 					if !is_primary_key {
 						is_nullable = true
@@ -236,18 +177,17 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 				case "NO":
 					is_nullable = false
 				default:
-					errors = append(errors, fmt.Errorf("error: Table: GetSchema: Null value not supported please implement: %s", *null_value))
+					errors = append(errors, fmt.Errorf("error: Table: GetSchema: Null value not supported please implement: %s", null_value))
 				}
 			case "Default":
-				default_val, _ := column_map.GetString("Default")
-				default_value = *default_val
+				default_val, _ := column_map.GetStringValue("Default")
+				default_value = default_val
 			case "Extra":
-				extra_val, _ := column_map.GetString("Extra")
-				extra_value = *extra_val
+				extra_val, _ := column_map.GetStringValue("Extra")
+				extra_value = extra_val
 				switch extra_value {
 				case "auto_increment":
-					auto_increment := true
-					column_schema.SetBool("auto_increment", &auto_increment)
+					column_schema.SetBoolValue("auto_increment",true)
 				case "DEFAULT_GENERATED":
 				case "":
 				default:
@@ -276,10 +216,10 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 								for _, rule := range *(rules_array.GetValues()) {
 									rule_value, rule_value_errors := rule.GetString()
 									if rule_value_errors != nil {
-										return nil, rule_value_errors
+										return json.NewMapValue(), rule_value_errors
 									} else if common.IsNil(rule_value) {
 										errors = append(errors, fmt.Errorf("rule value is nil"))
-										return nil, errors
+										return json.NewMapValue(), errors
 									}
 
 									switch *rule_value {
@@ -314,34 +254,33 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 							if foreign_key_map_errors != nil {
 								errors = append(errors, foreign_key_map_errors...)
 							} else if !common.IsNil(foreign_key_map) {
-								foreign_key_true := true
-								column_schema.SetBool("foreign_key", &foreign_key_true)
+								column_schema.SetBoolValue("foreign_key", true)
 
-								foreign_key_table_name, foreign_key_table_name_errors := foreign_key_map.GetString("table_name")
+								foreign_key_table_name, foreign_key_table_name_errors := foreign_key_map.GetStringValue("table_name")
 								if foreign_key_table_name_errors != nil {
 									errors = append(errors, foreign_key_table_name_errors...)
 								} else if common.IsNil(foreign_key_table_name) {
 									errors = append(errors, fmt.Errorf("foreign_key table_name is nil"))
 								} else {
-									column_schema.SetString("foreign_key_table_name", foreign_key_table_name)
+									column_schema.SetStringValue("foreign_key_table_name", foreign_key_table_name)
 								}
 
-								foreign_key_column_name, foreign_key_column_name_errors := foreign_key_map.GetString("column_name")
+								foreign_key_column_name, foreign_key_column_name_errors := foreign_key_map.GetStringValue("column_name")
 								if foreign_key_column_name_errors != nil {
 									errors = append(errors, foreign_key_column_name_errors...)
 								} else if common.IsNil(foreign_key_column_name) {
 									errors = append(errors, fmt.Errorf("foreign_key column_name is nil"))
 								} else {
-									column_schema.SetString("foreign_key_column_name", foreign_key_column_name)
+									column_schema.SetStringValue("foreign_key_column_name", foreign_key_column_name)
 								}
 
-								foreign_key_type, foreign_key_type_errors := foreign_key_map.GetString("type")
+								foreign_key_type, foreign_key_type_errors := foreign_key_map.GetStringValue("type")
 								if foreign_key_type_errors != nil {
 									errors = append(errors, foreign_key_type_errors...)
 								} else if common.IsNil(foreign_key_type) {
 									errors = append(errors, fmt.Errorf("foreign_key type is nil"))
 								} else {
-									column_schema.SetString("foreign_key_type", foreign_key_type)
+									column_schema.SetStringValue("foreign_key_type", foreign_key_type)
 								}
 							}
 						}
@@ -352,7 +291,7 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 			}
 		}
 
-		if column_schema.IsNil("type") {
+		if column_schema.IsNull("type") {
 			errors = append(errors, fmt.Errorf("error: Table: %s GetSchema: column: %s attribute: type is nill", table_name, field_name))
 		}
 
@@ -360,108 +299,106 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 			continue
 		}
 
-		dt, _ := column_schema.GetString("type")
+		dt, _ := column_schema.GetStringValue("type")
 
 	
 		if default_value == "NULL" {
 			column_schema.SetNil("default")
 		} else {
-			if *dt == "string" {
-				column_schema.SetString("default", &default_value)
-			} else if *dt == "uint64" && default_value != "" {
+			if dt == "string" {
+				column_schema.SetStringValue("default", default_value)
+			} else if dt == "uint64" && default_value != "" {
 				number, err := strconv.ParseUint(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
-					column_schema.SetUInt64("default", &number)
+					column_schema.SetUInt64Value("default", number)
 				}
-			} else if *dt == "int64" && default_value != "" {
+			} else if dt == "int64" && default_value != "" {
 				number, err := strconv.ParseInt(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
-					column_schema.SetInt64("default", &number)
+					column_schema.SetInt64Value("default", number)
 				}
-			} else if *dt == "uint32" && default_value != "" {
+			} else if dt == "uint32" && default_value != "" {
 				number, err := strconv.ParseUint(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := uint32(number)
-					column_schema.SetUInt32("default", &converted)
+					column_schema.SetUInt32Value("default", converted)
 				}
-			} else if *dt == "int32" && default_value != "" {
+			} else if dt == "int32" && default_value != "" {
 				number, err := strconv.ParseInt(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := int32(number)
-					column_schema.SetInt32("default", &converted)
+					column_schema.SetInt32Value("default", converted)
 				}
-			} else if *dt == "uint16" && default_value != "" {
+			} else if dt == "uint16" && default_value != "" {
 				number, err := strconv.ParseUint(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := uint16(number)
-					column_schema.SetUInt16("default", &converted)
+					column_schema.SetUInt16Value("default", converted)
 				}
-			} else if *dt == "int16" && default_value != "" {
+			} else if dt == "int16" && default_value != "" {
 				number, err := strconv.ParseInt(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := int16(number)
-					column_schema.SetInt16("default", &converted)
+					column_schema.SetInt16Value("default", converted)
 				}
-			} else if *dt == "uint8" && default_value != "" {
+			} else if dt == "uint8" && default_value != "" {
 				number, err := strconv.ParseUint(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := uint8(number)
-					column_schema.SetUInt8("default", &converted)
+					column_schema.SetUInt8Value("default", converted)
 				}
-			} else if *dt == "int8" && default_value != "" {
+			} else if dt == "int8" && default_value != "" {
 				number, err := strconv.ParseInt(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := int8(number)
-					column_schema.SetInt8("default", &converted)
+					column_schema.SetInt8Value("default", converted)
 				}
-			} else if *dt == "float32" && default_value != "" {
+			} else if dt == "float32" && default_value != "" {
 				number, err := strconv.ParseFloat(default_value, 32)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := float32(number)
-					column_schema.SetFloat32("default", &converted)
+					column_schema.SetFloat32Value("default", converted)
 				}
-			} else if *dt == "float64" && default_value != "" {
+			} else if dt == "float64" && default_value != "" {
 				number, err := strconv.ParseFloat(default_value, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					converted := float64(number)
-					column_schema.SetFloat64("default", &converted)
+					column_schema.SetFloat64Value("default", converted)
 				}
-			}  else if *dt == "bool" && default_value != "" {
+			}  else if dt == "bool" && default_value != "" {
 				number, err := strconv.ParseInt(default_value, 10, 64)
 				if err != nil {
 					errors = append(errors, err)
 				} else {
 					if number == 0 {
-						boolean_value := false
-						column_schema.SetBool("default", &boolean_value)
+						column_schema.SetBoolValue("default", false)
 					} else if number == 1 {
-						boolean_value := true
-						column_schema.SetBool("default", &boolean_value)
+						column_schema.SetBoolValue("default", true)
 					} else {
-						errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 1 or 0", default_value, *dt))
+						errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 1 or 0", default_value, dt))
 					}
 				}
-			} else if *dt == "time.Time" && default_value != "" {
+			} else if dt == "time.Time" && default_value != "" {
 				if extra_value == "DEFAULT_GENERATED" && strings.HasPrefix(default_value, "CURRENT_TIMESTAMP") {
 					if default_value == "CURRENT_TIMESTAMP" {
 					} else if default_value == "CURRENT_TIMESTAMP(1)" {
@@ -471,53 +408,43 @@ func mapTableSchemaFromDBMySQL(struct_type string, table *Table, json_array *jso
 					} else if default_value == "CURRENT_TIMESTAMP(5)" {
 					} else if default_value == "CURRENT_TIMESTAMP(6)" {
 					} else {
-						errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 0-6 decimal places", default_value, *dt))
+						errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be 0-6 decimal places", default_value, dt))
 					}
-					
-					default_value = "now"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default",  "now")
 				} else if default_value == "0000-00-00 00:00:00" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.0" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.00" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.000" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.0000" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.00000" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				} else if default_value == "0000-00-00 00:00:00.000000" {
-					default_value = "zero"
-					column_schema.SetString("default", &default_value)
+					column_schema.SetStringValue("default", "zero")
 				}  else {
-					errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, *dt))
+					errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported %s for type: %s can only be DEFAULT_GENERATED or 0000-00-00 00:00:00", default_value, dt))
 				}
-			} else if !(*dt == "time.Time" || *dt == "bool" || *dt == "int64" || *dt == "uint64" ||  *dt == "int32" || *dt == "uint32" ||  *dt == "int16" || *dt == "uint16" ||  *dt == "int8" || *dt == "uint8" || *dt == "string" || *dt == "float32" || *dt == "float64") && default_value != "" {
-				errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported please implement: %s for type: %s", default_value, *dt))
+			} else if !(dt == "time.Time" || dt == "bool" || dt == "int64" || dt == "uint64" ||  dt == "int32" || dt == "uint32" ||  dt == "int16" || dt == "uint16" ||  dt == "int8" || dt == "uint8" || dt == "string" || dt == "float32" || dt == "float64") && default_value != "" {
+				errors = append(errors, fmt.Errorf("error: Table.GetSchema default value not supported please implement: %s for type: %s", default_value, dt))
 			}
 		}
 		
 
 		if is_nullable {
-			adjusted_type := "*" + *dt
-			column_schema.SetString("type", &adjusted_type)
+			column_schema.SetStringValue("type",  "*" + dt)
 		}
 
 		schema.SetMapValue(field_name, column_schema)
 	}
 
 	if len(errors) > 0 {
-		return nil, errors
+		return json.NewMapValue(), errors
 	}
 
-	return &schema, nil
+	return schema, nil
 }
 

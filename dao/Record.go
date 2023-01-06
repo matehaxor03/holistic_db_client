@@ -391,7 +391,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", record_data)
-	data.SetMap("[schema]", table_schema)
+	data.SetMapValue("[schema]", table_schema)
 
 	map_system_fields := json.NewMapValue()
 	map_system_fields.SetObjectForMap("[table]", table)
@@ -680,7 +680,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 					return errors
 				}
 
-				if !options.IsNil("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
+				if !options.IsNull("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
 					auto_increment_column_name, auto_increment_column_name_errors := options.GetString("auto_increment_column_name")
 					if auto_increment_column_name_errors != nil {
 						errors = append(errors, auto_increment_column_name_errors...)

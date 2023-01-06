@@ -94,8 +94,8 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	}
 
 	var result interface{}
-	if fields_map.IsNil(field) {
-		if schema_map.HasKey("default") && !schema_map.IsNil("default") {
+	if fields_map.IsNull(field) {
+		if schema_map.HasKey("default") && !schema_map.IsNull("default") {
 			result = schema_map.GetObjectForMap("default")
 		} else {
 			result = nil

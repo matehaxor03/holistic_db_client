@@ -19,7 +19,7 @@ type Table struct {
 	Read                func() []error
 	Delete                func() []error
 	DeleteIfExists        func() []error
-	GetSchema             func() (*json.Map, []error)
+	GetSchema             func() (json.Map, []error)
 	GetAdditionalSchema   func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
@@ -44,6 +44,8 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	var lock_get_schema = &sync.Mutex{}
 	struct_type := "*dao.Table"
 	var errors []error
+	var data *json.Map
+	data = json.NewMap()
 	
 	var this_table *Table
 
@@ -55,7 +57,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return this_table
 	}
 
-	data := json.NewMap()
 	getData := func() (*json.Map) {
 		return data
 	}
@@ -69,22 +70,12 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b *Database, n *string, schema_from_db *json.Map) (*json.Map, []error) {
+	setupData := func(b *Database, n *string, schema_from_db json.Map) (*json.Map, []error) {
 		var setup_errors []error
 		d := json.NewMapValue()
 
-		schema_passed_in_is_nil := false
-		fmt.Println(fmt.Sprintf("%s", schema_from_db))
-		fmt.Println(fmt.Sprintf("%T", schema_from_db))
-		fmt.Println(fmt.Sprintf("%s", schema_from_db.GetObject()))
-
-		if (common.IsNil(schema_from_db)) || (fmt.Sprintf("%s", json.Map{}) == fmt.Sprintf("%s", schema_from_db)) || len(schema_from_db.GetKeys()) == 0 {
-			d.SetBoolValue("[schema_is_nil]", true)
-			schema_passed_in_is_nil = true
-		} else {
-			d.SetBoolValue("[schema_is_nil]", false)
-			schema_passed_in_is_nil = false
-		}
+		//fmt.Println(fmt.Sprintf("%s", schema_from_db))
+		//fmt.Println(fmt.Sprintf("%T", schema_from_db))
 
 		d.SetMapValue("[fields]", json.NewMapValue())
 
@@ -164,48 +155,48 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		// End archieved_date
 	
 		// ovreride above values with values passed in from database
-		if !schema_passed_in_is_nil  {
-			for _, schema_key_from_db := range schema_from_db.GetKeys() {
-				current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMapValue(schema_key_from_db)
-				var saved_copy json.Map
-				saved_copy = current_schema_from_db
-				if current_schema_error_from_db != nil {
-					setup_errors = append(setup_errors, current_schema_error_from_db...)
-				} else if common.IsNil(current_schema_from_db) {
-					setup_errors = append(setup_errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
-				} else {
-					if !merged_schema.HasKey(schema_key_from_db) {
-						merged_schema.SetMapValue(schema_key_from_db, saved_copy)
-					} else if current_schema_from_db.IsArray("filters") {
-						filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
-						if filters_from_db_errors != nil {
-							setup_errors = append(setup_errors, filters_from_db_errors...)
-						} else if common.IsNil(filters_from_db) {
-							setup_errors = append(setup_errors, fmt.Errorf("filters from db is nil"))
-						} else if merged_schema.IsMap(schema_key_from_db) {
-							merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
-							if merged_schema_map_errors != nil {
-								setup_errors = append(setup_errors, merged_schema_map_errors...)
+		for _, schema_key_from_db := range schema_from_db.GetKeys() {
+			current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMapValue(schema_key_from_db)
+			var saved_copy json.Map
+			saved_copy = current_schema_from_db
+			if current_schema_error_from_db != nil {
+				setup_errors = append(setup_errors, current_schema_error_from_db...)
+			} else if common.IsNil(current_schema_from_db) {
+				setup_errors = append(setup_errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
+			} else {
+				if !merged_schema.HasKey(schema_key_from_db) {
+					//fmt.Println(schema_key_from_db)
+					merged_schema.SetMapValue(schema_key_from_db, saved_copy)
+				} else if current_schema_from_db.IsArray("filters") {
+					filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
+					if filters_from_db_errors != nil {
+						setup_errors = append(setup_errors, filters_from_db_errors...)
+					} else if common.IsNil(filters_from_db) {
+						setup_errors = append(setup_errors, fmt.Errorf("filters from db is nil"))
+					} else if merged_schema.IsMap(schema_key_from_db) {
+						merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
+						if merged_schema_map_errors != nil {
+							setup_errors = append(setup_errors, merged_schema_map_errors...)
+						} else {
+							filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
+							if filters_array_errors != nil {
+								setup_errors = append(setup_errors, filters_array_errors...)
 							} else {
-								filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
-								if filters_array_errors != nil {
-									setup_errors = append(setup_errors, filters_array_errors...)
-								} else {
-									if common.IsNil(filters_array) {
-										new_filters_array := json.NewArrayValue()
-										merged_schema_map.SetArray("filters", &new_filters_array)
-										filters_array = &new_filters_array
-									}
-									for _, filter_from_db := range *(filters_from_db.GetValues()) {
-										filters_array.AppendValue(filter_from_db)
-									}
+								if common.IsNil(filters_array) {
+									new_filters_array := json.NewArrayValue()
+									merged_schema_map.SetArray("filters", &new_filters_array)
+									filters_array = &new_filters_array
+								}
+								for _, filter_from_db := range *(filters_from_db.GetValues()) {
+									filters_array.AppendValue(filter_from_db)
 								}
 							}
-						} 
-					}
+						}
+					} 
 				}
 			}
 		}
+
 		d.SetMap("[schema]", merged_schema)
 
 		if setup_errors != nil {
@@ -214,7 +205,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return &d, nil
 	}
 
-	new_data, new_data_errors := setupData(&database, &table_name, &schema)
+	new_data, new_data_errors := setupData(&database, &table_name, schema)
 	if new_data_errors != nil {
 		errors = append(errors, new_data_errors...)
 	} else {
@@ -467,7 +458,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_table_name_errors
 		}
 
-		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
+		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
 		sql_command, new_options, sql_command_errors := getDropTableSQLMySQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -507,7 +498,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
+		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
 		sql_command, new_options, sql_command_errors := getDropTableSQLMySQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -797,39 +788,35 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 
-	getSchema := func() (*json.Map, []error) {
+	getSchema := func() (json.Map, []error) {
 		lock_get_schema.Lock()
 		defer lock_get_schema.Unlock()
 		var errors []error
-		validate_errors := validate()
-		
-		if validate_errors != nil {
-			errors = append(errors, validate_errors...)
-			return nil, errors
-		}
+	
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
-			return nil, temp_table_name_errors
+			return json.NewMapValue(), temp_table_name_errors
 		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
-			return nil, temp_database_errors
+			return json.NewMapValue(), temp_database_errors
 		}
 
-		
-		cached_schema, cached_schema_errors := temp_database.GetOrSetSchema(temp_table_name, nil, "get")
+		cached_schema, cached_schema_errors := temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "get")
 		if cached_schema_errors != nil {
-			return nil, cached_schema_errors
+			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
+				return json.NewMapValue(), cached_schema_errors
+			}
 		} else if !common.IsNil(cached_schema) {
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, getTable(), options)
+		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, temp_table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -838,19 +825,20 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
-			return nil, errors
+			return  json.NewMapValue(), errors
 		}
 
-		temp_schema, schem_errors := mapTableSchemaFromDBMySQL(struct_type, getTable(), json_array)
+		temp_schema, schem_errors := mapTableSchemaFromDBMySQL(struct_type, temp_table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
-			return nil, errors
+			return json.NewMapValue(), errors
 		}
 		temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
 
 		new_data, setup_data_errors := setupData(&temp_database, &temp_table_name, temp_schema)
 		if setup_data_errors != nil {
-			return nil, setup_data_errors
+			errors = append(errors, setup_data_errors...)
+			return json.NewMapValue(), errors
 		}
 		setData(new_data)
 		return temp_schema, nil
@@ -865,6 +853,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	createTable := func() []error {
+		var errors []error
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
@@ -885,6 +874,28 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return execute_errors
 		}
 
+		temp_schema, temp_schema_errors := getSchema()
+		if temp_schema_errors != nil {
+			errors = append(errors, temp_schema_errors...)
+		} else if common.IsNil(temp_schema) {
+			errors = append(errors, fmt.Errorf("schema is nil"))
+		}
+
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			errors = append(errors, temp_table_name_errors...)
+		} else if common.IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("temp_table_name is nil"))
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		//var output_schema strings.Builder
+		//temp_schema.ToJSONString(&output_schema)
+		//fmt.Println(output_schema.String())
+		temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
 		return nil
 	}
 
@@ -944,16 +955,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		schema_column_names := schemas_map.GetKeys()
 		return &schema_column_names, nil
-	}
-
-	validate_errors := validate()
-
-	if validate_errors != nil {
-		errors = append(errors, validate_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
 	}
 
 	x := Table{
@@ -1159,7 +1160,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		Exists: func() (*bool, []error) {
 			return exists()
 		},
-		GetSchema: func() (*json.Map, []error) {
+		GetSchema: func() (json.Map, []error) {
 			return getSchema()
 		},
 		GetAdditionalSchema: func() (*json.Map, []error) {
@@ -1176,6 +1177,16 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		},
 	}
 	setTable(&x)
+
+	validate_errors := x.Validate()
+
+	if validate_errors != nil {
+		errors = append(errors, validate_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
 	
 	return &x, nil

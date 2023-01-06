@@ -6,17 +6,6 @@ import (
 	"strings"
 )
 
-
-func GetBlacklistStringFunc() *func(m json.Map) []error {
-	function := BlackListString
-	return &function
-}
-
-func GetBlacklistStringToUpperFunc() *func(m json.Map) []error {
-	function := BlackListStringToUpper
-	return &function
-}
-
 func BlackListString(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
@@ -87,6 +76,17 @@ func BlackListStringToUpper(m json.Map) []error {
 	}
 
 	return nil
+}
+
+
+func GetBlacklistStringFunc() *func(m json.Map) []error {
+	function := BlackListString
+	return &function
+}
+
+func GetBlacklistStringToUpperFunc() *func(m json.Map) []error {
+	function := BlackListStringToUpper
+	return &function
 }
 
 

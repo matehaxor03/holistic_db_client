@@ -34,7 +34,7 @@ type Database struct {
 	GetTableNames   func() (*[]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
 	ExecuteUnsafeCommand func(sql_command *string, options *json.Map) (*json.Array, []error)
-	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
+	GetOrSetSchema func(table_name string, schema json.Map, mode string) (json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
 
@@ -365,12 +365,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
 		}
 
-		/*
-		temp_client, temp_client_errors := getClient()
-		if temp_client_errors != nil {
-			return nil, temp_client_errors
-		}*/
-
 		records, execute_errors := executeUnsafeCommand(&sql_command, options)
 
 		if execute_errors != nil {
@@ -546,7 +540,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(*getDatabase(), table_name, table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -741,7 +735,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)
 		},
-		GetOrSetSchema: func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
+		GetOrSetSchema: func(table_name string, schema json.Map, mode string) (json.Map, []error) {
 			// todo clone schema
 			lock_table_schema_cache.Lock()
 			defer lock_table_schema_cache.Unlock()
@@ -807,7 +801,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 
-			getDatabase().GetOrSetSchema(table_name, nil, "delete")
+			getDatabase().GetOrSetSchema(table_name, json.NewMapValue(), "delete")
 			sql_command, new_options, generate_sql_errors := getDropTableSQLMySQL(struct_type, table_name, if_exists, options)
 
 			if generate_sql_errors != nil {

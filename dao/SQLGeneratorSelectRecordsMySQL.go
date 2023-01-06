@@ -74,11 +74,11 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 		for _, filter_column := range filter_columns {
 			filter_column_type := filters.GetType(filter_column)
 
-			if !filters.IsNil(filter_column) && !strings.HasPrefix(filter_column_type, "*") {
+			if !filters.IsNull(filter_column) && !strings.HasPrefix(filter_column_type, "*") {
 				filter_column_type = "*" + filter_column_type
 			}
 				
-			if table_schema.IsNil(filter_column) {
+			if table_schema.IsNull(filter_column) {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.GetKeys()))
 				continue
 			}
@@ -89,7 +89,7 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 				continue
 			}
 
-			if table_schema_column.IsNil("type") {
+			if table_schema_column.IsNull("type") {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
 				continue
 			}
@@ -358,7 +358,7 @@ func getSelectRecordsSQLMySQL(table *Table, select_fields *json.Array, filters *
 				}
 			}
 
-			if filters.IsNil(column_filter) {
+			if filters.IsNull(column_filter) {
 				sql_command += "NULL "
 			} else {
 				//todo check data type with schema

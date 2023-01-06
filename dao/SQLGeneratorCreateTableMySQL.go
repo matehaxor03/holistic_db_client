@@ -137,7 +137,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("auto_increment") {
-				if columnSchema.IsBool("auto_increment") && !columnSchema.IsNil("auto_increment") {
+				if columnSchema.IsBool("auto_increment") && !columnSchema.IsNull("auto_increment") {
 					if columnSchema.IsBoolTrue("auto_increment") {
 						sql_command += " AUTO_INCREMENT"
 					}
@@ -147,7 +147,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("primary_key") {
-				if columnSchema.IsBool("primary_key") && !columnSchema.IsNil("primary_key") {
+				if columnSchema.IsBool("primary_key") && !columnSchema.IsNull("primary_key") {
 					if columnSchema.IsBoolTrue("primary_key") {
 						sql_command += " PRIMARY KEY"
 						primary_key_count += 1
@@ -158,13 +158,32 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			} 
 
 			if columnSchema.HasKey("default") {
-				if columnSchema.IsInteger("default") {
+				if columnSchema.IsBoolTrue("primary_key") || columnSchema.IsBoolTrue("foreign_key") {
+					sql_command += " "
+				} else if columnSchema.IsInteger("default") {
 					default_value, default_value_errors := columnSchema.GetInt64("default")
 					if default_value_errors != nil {
 						errors = append(errors, default_value_errors...)
 					} else {
 						sql_command += " DEFAULT " + strconv.FormatInt(*default_value, 10)
 					}
+				} else if columnSchema.IsString("default") {
+					default_value, default_value_errors := columnSchema.GetString("default")
+					if default_value_errors != nil {
+						errors = append(errors, default_value_errors...)
+					} else if common.IsNil(default_value) {
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: default contained string value but was nil type: %s", column, columnSchema.GetType("default")))
+					} else if *default_value == "nil" && strings.HasPrefix(*typeOf, "*") {
+						sql_command += " DEFAULT NULL " 
+					} else if columnSchema.IsNull("default") {
+						sql_command += " " 
+					} else {
+						errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: default contained string value which is not supported: %s", column, columnSchema.GetType("default")))
+					}
+				} else if columnSchema.IsNull("default") && strings.HasPrefix(*typeOf, "*") {
+					sql_command += " DEFAULT NULL " 
+				} else if columnSchema.IsNull("default") {
+					sql_command += " " 
 				} else {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s for attribute: default contained a value which is not supported: %s", column, columnSchema.GetType("default")))
 				}
@@ -245,7 +264,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("default") {
-				if columnSchema.IsNil("default") {
+				if columnSchema.IsNull("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had nil default value", column))
 				} else if !columnSchema.IsBool("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
@@ -265,7 +284,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("default") {
-				if columnSchema.IsNil("default") {
+				if columnSchema.IsNull("default") {
 					sql_command += " DEFAULT NULL"
 				} else if !columnSchema.IsFloat("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
@@ -290,7 +309,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("default") {
-				if columnSchema.IsNil("default") {
+				if columnSchema.IsNull("default") {
 					sql_command += " DEFAULT NULL"
 				} else if !columnSchema.IsFloat("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
@@ -331,7 +350,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 			}
 
 			if columnSchema.HasKey("default") {
-				if columnSchema.IsNil("default") {
+				if columnSchema.IsNull("default") {
 					sql_command += " DEFAULT NULL"
 				} else if !columnSchema.IsString("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-string default value", column))

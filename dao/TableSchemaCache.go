@@ -7,39 +7,44 @@ import (
 )
 
 type TableSchemaCache struct {
-	GetOrSet func(database Database, table_name string, schema *json.Map, mode string) (*json.Map, []error)
+	GetOrSet func(database Database, table_name string, schema json.Map, mode string) (json.Map, []error)
 }
 
 func newTableSchemaCache() (*TableSchemaCache) {
 	cache := json.NewMapValue()
 	
-	getOrSet := func(database Database, table_name string, schema *json.Map, mode string) (*json.Map, []error) {		
+	getOrSet := func(database Database, table_name string, schema json.Map, mode string) (json.Map, []error) {		
+		var errors []error
 		host, host_errors := database.GetHost()
 		if host_errors != nil {
-			return nil, host_errors
+			return json.NewMapValue(), host_errors
 		} else if common.IsNil(host) {
-			return nil, nil
+			errors = append(errors, fmt.Errorf("host is nil"))
+			return json.NewMapValue(), errors
 		}
 
 		host_name, host_name_errors := host.GetHostName()
 		if host_name_errors != nil {
-			return nil, host_name_errors
+			return json.NewMapValue(), host_name_errors
 		} else if common.IsNil(host_name) {
-			return nil, nil
+			errors = append(errors, fmt.Errorf("host name is nil"))
+			return json.NewMapValue(), errors
 		}
 
 		port_number, port_number_errors := host.GetPortNumber()
 		if port_number_errors != nil {
-			return nil, port_number_errors
+			return json.NewMapValue(), port_number_errors
 		} else if common.IsNil(port_number) {
-			return nil, nil
+			errors = append(errors, fmt.Errorf("database name is nil"))
+			return json.NewMapValue(), errors
 		}
 
 		database_name, database_name_errors := database.GetDatabaseName()
 		if database_name_errors != nil {
-			return nil, database_name_errors
+			return json.NewMapValue(), database_name_errors
 		} else if common.IsNil(database_name) {
-			return nil, nil
+			errors = append(errors, fmt.Errorf("database name is nil"))
+			return json.NewMapValue(), errors
 		}
 
 		key := host_name + "#" + port_number + "#" + database_name + "#" + table_name
@@ -48,41 +53,42 @@ func newTableSchemaCache() (*TableSchemaCache) {
 		if mode == "get" {
 			 result_from_cache, result_from_cache_errors := cache.GetMap(key)
 			 if result_from_cache_errors != nil {
-				return nil, result_from_cache_errors
+				return json.NewMapValue(), result_from_cache_errors
 			 } else if common.IsNil(result_from_cache) {
-				return nil, nil
+				errors = append(errors, fmt.Errorf("cache is not there"))
+				return json.NewMapValue(), errors
 			 } else {
-				return result_from_cache, nil
+				return *result_from_cache, nil
 			 }
 		} else if mode == "set" {
 			clone_schema, clone_schema_errors := schema.Clone()
 			if clone_schema_errors != nil {
-				return nil, clone_schema_errors
+				return json.NewMapValue(), clone_schema_errors
 			} else if common.IsNil(clone_schema) {
 				var errors []error
 				errors = append(errors, fmt.Errorf("cloned schema is nil"))
-				return nil, clone_schema_errors
+				return json.NewMapValue(), clone_schema_errors
 			} else {
-				cache.SetMap(key, clone_schema)
-				return nil, nil
+				cache.SetMapValue(key, *clone_schema)
+				return json.NewMapValue(), nil
 			}
 		} else if mode == "delete" {
 			if cache.HasKey(key) {
 				_, remove_errors := cache.RemoveKey(key)
 				if remove_errors != nil {
-					return nil, remove_errors
+					return json.NewMapValue(), remove_errors
 				} 
 			}
-			return nil, nil
+			return json.NewMapValue(), nil
 		} else {
 			var errors []error
 			errors = append(errors, fmt.Errorf("mode not supported please implement: %s", mode))
-			return nil, errors
+			return json.NewMapValue(), errors
 		}
 	}
 
 	return &TableSchemaCache{
-		GetOrSet: func(database Database, table_name string, schema *json.Map, mode string) (*json.Map, []error) {
+		GetOrSet: func(database Database, table_name string, schema json.Map, mode string) (json.Map, []error) {
 			return getOrSet(database, table_name, schema, mode)
 		},
 	}

@@ -72,7 +72,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, schema 
 	}
 
 	if len(errors) > 0 {
-		t.Error(errors)
+		t.Errorf(fmt.Sprintf("%s", errors))
 		t.FailNow()
 		return dao.Table{}
 	}

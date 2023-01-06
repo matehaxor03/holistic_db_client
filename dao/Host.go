@@ -6,6 +6,7 @@ import (
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	//"fmt"
 )
 
 type Host struct {
@@ -34,6 +35,11 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	// Start host_name
 	map_host_name_schema := json.NewMapValue()
 	map_host_name_schema.SetStringValue("type", "string")
+
+
+	//fmt.Println(fmt.Sprintf("hello"))
+	//fmt.Println(fmt.Sprintf("%s", validation_functions.GetWhitelistCharactersFunc()))
+	//fmt.Println(fmt.Sprintf("%T", validation_functions.GetWhitelistCharactersFunc()))
 
 	map_host_name_schema_filters := json.NewArrayValue()
 	map_host_name_schema_filter := json.NewMapValue()

@@ -117,7 +117,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 	if !common.IsNil(parameters) {
 		if parameters.HasKey(parameter) {
 			value_is_set = true
-			if parameters.IsNil(parameter) {
+			if parameters.IsNull(parameter) {
 				value_is_null = true
 			} else {
 				value_to_validate = parameters.GetObjectForMap(parameter)
@@ -140,7 +140,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	if schema_of_parameter.HasKey("default") {
 		default_set = true
-		if schema_of_parameter.IsNil("default") {
+		if schema_of_parameter.IsNull("default") {
 			default_is_null = true
 		} else {
 			default_is_null = false
@@ -361,7 +361,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		} 
 
 
-		if schema_of_parameter.IsNil("filters") {
+		if schema_of_parameter.IsNull("filters") {
 			return nil
 		}
 		
@@ -402,6 +402,9 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			}
 
 			function, function_errors := filter_map.GetFunc("function")
+			//fmt.Sprintf("%s", function))
+			//fmt.Println(fmt.Sprintf("%T", function))
+
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
 				return errors
