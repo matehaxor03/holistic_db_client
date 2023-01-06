@@ -125,7 +125,14 @@ func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error)
 							additional_schema.SetMap("Comment", comment_as_map)
 						}
 					} else {
-						additional_schema.SetStringValue(column_attribute, *comment_value)
+						column_attribute_value, column_attribute_value_errors := column_map.GetString(column_attribute)
+						if column_attribute_value_errors != nil {
+							errors = append(errors, column_attribute_value_errors...)
+						} else if common.IsNil(column_attribute_value) {
+							errors = append(errors, fmt.Errorf("%s is nil", column_attribute))
+						} else {
+							additional_schema.SetStringValue(column_attribute, *comment_value)
+						}
 					}
 				}
 			default:
