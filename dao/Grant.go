@@ -51,7 +51,8 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 
 	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
 	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
-	
+	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
+
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
 	data.SetMapValue("[schema]", json.NewMapValue())
@@ -126,14 +127,14 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 		map_table_filter_schema.SetStringValue("type", "string")
 
 		map_table_filter_schema_filters := json.NewArrayValue()
-		if *database_filter == "*" {
+		if *table_filter == "*" {
 			map_table_filter_schema_filter := json.NewMapValue()
 			map_table_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
 			map_table_filter_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter)
 		} else {
 			map_table_filter_schema_filter1 := json.NewMapValue()
-			map_table_filter_schema_filter1.SetObjectForMap("values", table_name_whitelist_characters_obj)
+			map_table_filter_schema_filter1.SetObjectForMap("values", table_name_whitelist_characters)
 			map_table_filter_schema_filter1.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter1)
 
