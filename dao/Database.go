@@ -25,7 +25,6 @@ type Database struct {
 	SetDatabaseUsername func(database_username string) []error
 	SetDatabaseName func(database_name string) []error
 	DeleteTableByTableNameIfExists func(table_name string, if_exists bool) []error
-	//SetHost       func(client *Host) []error
 	GetHost       func() (Host, []error)
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
 	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
@@ -42,9 +41,6 @@ type Database struct {
 	GlobalGeneralLogEnable	func() []error
 	GlobalSetTimeZoneUTC    func() []error
 	GlobalSetSQLMode func() []error
-
-	//UseDatabase     func() []error
-	//ExecuteUnsafeCommand func(sql_command *string, options *json.Map) (*json.Array, []error)
 }
 
 func NewDatabase(host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *validation_constants.DatabaseReservedWords, database_name_whitelist_characters_obj *validation_constants.DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *validation_constants.TableNameCharacterWhitelist, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Database, []error) {
@@ -167,11 +163,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 
 		return temp_value.(Host), nil
 	}
-
-	/*
-	setClient := func(new_client *Client) []error {
-		return SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client]", new_client)
-	}*/
 
 	getDatabaseName := func() (string, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
@@ -686,7 +677,13 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 			if new_table_errors != nil {
-				return nil, new_table_errors
+				errors = append(errors, new_table_errors...)
+			} else if common.IsNil(table) {
+				errors = append(errors, fmt.Errorf("table interface is nil"))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
 			}
 
 			return table, nil
@@ -772,26 +769,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		ExecuteUnsafeCommand: func(sql_command *string, options *json.Map) (*json.Array, []error) {			
 			return executeUnsafeCommand(sql_command, options)
 		},
-
-		/*SetHost: func(host *Host) []error {
-			var errors []error
-			if host == nil {
-				errors = append(errors, fmt.Errorf("error: host is nil"))
-				return errors
-			}
-
-			validate_errors := host.Validate()
-			if validate_errors != nil {
-				errors = append(errors, validate_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			SetHost(host)
-			return nil
-		},*/
 		GetHost: func() (Host, []error) {
 			return getHost()
 		},
@@ -807,16 +784,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		GetDatabaseUsername: func() (string, []error) {
 			return getDatabaseUsername()
 		},
-		/*UseDatabase: func() []error {
-			temp_database := getDatabase()
-
-			temp_client, temp_client_errors := getClient()
-			if temp_client_errors != nil {
-				return temp_client_errors
-			}
-
-			return temp_client.UseDatabase(*temp_database)
-		},*/
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)
 		},
