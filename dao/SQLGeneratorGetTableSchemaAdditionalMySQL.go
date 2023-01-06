@@ -65,7 +65,7 @@ func getTableSchemaAdditionalSQLMySQL(struct_type string, table *Table, options 
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("json_output", true)
+		options.SetBoolValue("json_output", false)
 	}
 
 	sql_command := "SHOW TABLE STATUS FROM "
