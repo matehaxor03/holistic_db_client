@@ -37,7 +37,6 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if len(field_errors) == 0 {
 		for _, parameter := range (*schemas).GetKeys() {
-			//fmt.Println("validating schema " + parameter)
 			value_errors := ValidateParameterData(struct_type, schemas, "[schema]", field_parameters, "[fields]", parameter, nil, primary_key_count, auto_increment_count)
 
 			if value_errors != nil {
@@ -63,7 +62,6 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	
 	if len(system_field_errors) == 0 {
 		for _, parameter := range (*system_schemas).GetKeys() {
-			//fmt.Println("validating system schema " + parameter)
 			value_errors := ValidateParameterData(struct_type, system_schemas, "[system_schema]", system_field_parameters, "[system_fields]", parameter, nil, primary_key_count, auto_increment_count)
 			if value_errors != nil {
 				system_field_errors = append(system_field_errors, value_errors...)
@@ -404,7 +402,6 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			}
 
 			function, function_errors := filter_map.GetFunc("function")
-			//fmt.Println(fmt.Sprintf("%s", function))
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
 				return errors

@@ -129,14 +129,23 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	}
 
 	type_of := common.GetType(result)
+	var complex_value json.Value
 	if type_of == "*json.Value" {
+		complex_value = *(result.(*json.Value))
 		value_to_validate_unboxed := result.(*json.Value).GetObject()
 		result = value_to_validate_unboxed
 	} else if type_of == "json.Value" {
+		complex_value = result.(json.Value)
 		value_to_validate_unboxed := result.(json.Value).GetObject()
 		result = value_to_validate_unboxed
-	} 
+	} else {
+		errors = append(errors, fmt.Errorf("all fields should be of type json.Value was %s", type_of))
+	}
 	type_of = common.GetType(result)
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
 
 	if strings.ReplaceAll(type_of, "*", "") != strings.ReplaceAll(*schema_type_value, "*", "") {
 		object_type_simple := strings.ReplaceAll(type_of, "*", "")
@@ -172,15 +181,80 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		return result, nil
 	}
 
-	if desired_type != type_of {
-		errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s is not the desired type: %s", field, *schema_type_value, type_of, desired_type))
+	if desired_type == type_of {
+		return result, nil
 	}
 
-	if len(errors) > 0 {
-		return nil, errors
+	if desired_type == "uint" {
+		return complex_value.GetUIntValue()
+	} else if desired_type == "*uint" {
+		return complex_value.GetUInt()
+	} else if desired_type == "uint64" {
+		return complex_value.GetUInt64Value()
+	} else if desired_type == "*uint64" {
+		return complex_value.GetUInt64()
+	} else if desired_type == "uint32" {
+		return complex_value.GetUInt32Value()
+	} else if desired_type == "*uint32" {
+		return complex_value.GetUInt32()
+	} else if desired_type == "uint16" {
+		return complex_value.GetUInt16Value()
+	} else if desired_type == "*uint16" {
+		return complex_value.GetUInt16()
+	} else if desired_type == "uint8" {
+		return complex_value.GetUInt8Value()
+	} else if desired_type == "*uint8" {
+		return complex_value.GetUInt8()
 	}
 
-	return result, nil
+	if desired_type == "int" {
+		return complex_value.GetIntValue()
+	} else if desired_type == "*int" {
+		return complex_value.GetInt()
+	} else if desired_type == "int64" {
+		return complex_value.GetInt64Value()
+	} else if desired_type == "*int64" {
+		return complex_value.GetInt64()
+	} else if desired_type == "int32" {
+		return complex_value.GetInt32Value()
+	} else if desired_type == "*int32" {
+		return complex_value.GetInt32()
+	} else if desired_type == "int16" {
+		return complex_value.GetInt16Value()
+	} else if desired_type == "*int16" {
+		return complex_value.GetInt16()
+	} else if desired_type == "int8" {
+		return complex_value.GetInt8Value()
+	} else if desired_type == "*int8" {
+		return complex_value.GetInt8()
+	}
+
+	if desired_type == "float32" {
+		return complex_value.GetFloat32Value()
+	} else if desired_type == "*float32" {
+		return complex_value.GetFloat32()
+	} else if desired_type == "float64" {
+		return complex_value.GetFloat64Value()
+	} else if desired_type == "*float64" {
+		return complex_value.GetFloat64()
+	} 
+
+
+	if desired_type == "string" {
+		return complex_value.GetStringValue()
+	} else if desired_type == "*string" {
+		return complex_value.GetString()
+	}
+
+
+	if desired_type == "time.Time" {
+		return complex_value.GetTime()
+	} else if desired_type == "*time.Time" {
+		return complex_value.GetTimeValue()
+	}
+
+	errors = append(errors, fmt.Errorf("error: field: %s schema type: %s actual: %s is not the desired type: %s", field, *schema_type_value, type_of, desired_type))
+	return nil, errors
 }
 
 func SetField(struct_type string, m *json.Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {

@@ -332,27 +332,29 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 
 	if table_names == nil {
 		t.Errorf("error: table_names should not be nil")
-	} else if !(len(*table_names) >= 0) {
+	} else if len(*table_names) == 0 {
 		t.Errorf("error: database.GetTables should return at least one table name")
-
+	} else {
 		if !common.Contains(*table_names, table_name) {
-			t.Errorf("error: some_table not found in table_names")
+			t.Errorf("error: table: %s not found in table_names: %s", table_name, *table_names)
 		}
 	}
 }
 
 func TestDatabaseCanGetTables(t *testing.T) {
 	database := helper.GetTestDatabaseCreated(t)
-	database.CreateTable("some_table",  (helper.GetTestSchema()))
-
-	tables, tables_errors := database.GetTables()
-	if tables_errors != nil {
-		t.Error(tables_errors)
-	}
-
-	if tables == nil {
-		t.Errorf("error: tables should not be nil")
-	} else if !(len(*tables) >= 0) {
-		t.Errorf("error: database.GetTables should return at least one table")
+	table_name := helper.GetTestTableName()
+	_, created_table_errors := database.CreateTable(table_name,  (helper.GetTestSchema()))
+	if created_table_errors != nil {
+		t.Errorf("error: created tables should succeed: %s", fmt.Sprintf("%s", created_table_errors))
+	} else {
+		tables, tables_errors := database.GetTables()
+		if tables_errors != nil {
+			t.Errorf("error: created tables should succeed: %s",  fmt.Sprintf("%s", tables_errors))
+		} else if common.IsNil(tables) {
+			t.Errorf("error: tables should not be nil")
+		} else if !(len(*tables) >= 0) {
+			t.Errorf("error: database.GetTables should return at least one table")
+		}
 	}
 }

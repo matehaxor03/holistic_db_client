@@ -670,9 +670,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 				} else if common.IsNil(last_insert_id) {
 					errors = append(errors, fmt.Errorf("LAST_INSERT_ID() was nil available columns are: %s", record_from_db.GetKeys()))
 					return errors
-				} else {
-					fmt.Println(*last_insert_id)
-				}
+				} 
 
 				last_insert_id_value, count_err := strconv.ParseUint(strings.TrimSpace(*last_insert_id), 10, 64)
 				if count_err != nil {

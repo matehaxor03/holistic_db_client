@@ -402,8 +402,6 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			}
 
 			function, function_errors := filter_map.GetFunc("function")
-			//fmt.Sprintf("%s", function))
-			//fmt.Println(fmt.Sprintf("%T", function))
 
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))

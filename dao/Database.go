@@ -48,6 +48,8 @@ type Database struct {
 }
 
 func NewDatabase(host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *validation_constants.DatabaseReservedWords, database_name_whitelist_characters_obj *validation_constants.DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *validation_constants.TableNameCharacterWhitelist, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Database, []error) {
+	var lock_get_table_schema = &sync.Mutex{}
+
 	var errors []error
 	lock_table_schema_cache := &sync.Mutex{}
 	table_schema_cache := newTableSchemaCache()
@@ -508,6 +510,91 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return nil
 	}
 
+	tableExists :=  func(table_name string) (*bool, []error) {
+		options := json.NewMap()
+		options.SetBoolValue("use_file", true)
+		
+		var errors []error
+		validate_errors := validate()
+		if errors != nil {
+			errors = append(errors, validate_errors...)
+			return nil, errors
+		}
+		
+		sql_command, new_options, sql_command_errors := getCheckTableExistsSQLMySQL(struct_type, table_name, options)
+		
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+			return nil, errors
+		}
+		
+		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
+
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		boolean_value := false
+		if len(errors) > 0 {
+			//todo: check error message e.g database does not exist
+			boolean_value = false
+			return &boolean_value, nil
+		}
+
+		boolean_value = true
+		return &boolean_value, nil
+	}
+	
+	getOrSetTableSchema := func(table_name string, schema json.Map, mode string) (json.Map, []error) {
+		lock_table_schema_cache.Lock()
+		defer lock_table_schema_cache.Unlock()
+		return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
+	}
+
+	getTableSchema := func(table_name string) (json.Map, []error) {
+		lock_get_table_schema.Lock()
+		defer lock_get_table_schema.Unlock()
+		var errors []error
+	
+		options := json.NewMap()
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("json_output", true)
+
+
+		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, json.NewMapValue(), "get")
+		if cached_schema_errors != nil {
+			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
+				return json.NewMapValue(), cached_schema_errors
+			}
+		} else if !common.IsNil(cached_schema) {
+			return cached_schema, nil
+		} 
+		
+		sql_command, new_options, sql_command_errors := getTableSchemaSQLMySQL(struct_type, table_name, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		}
+
+		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+			return  json.NewMapValue(), errors
+		}
+
+		temp_schema, schem_errors := mapTableSchemaFromDBMySQL(struct_type, table_name, json_array)
+		if schem_errors != nil {
+			errors = append(errors, schem_errors...)
+			return json.NewMapValue(), errors
+		}
+
+		if !temp_schema.HasKey("[no_schema_cache_on_creation]") {
+			getOrSetTableSchema(table_name, temp_schema, "set")
+		}
+
+		return temp_schema, nil
+	}
+
 	getTable := func(table_name string) (*Table, []error) {
 		var errors []error
 		database := getDatabase()
@@ -521,16 +608,20 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}
 
-		table, table_errors := newTable(*getDatabase(), table_name, json.Map{}, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
-		if table_errors != nil {
-			errors = append(errors, table_errors...)
+		table_exists, table_exists_errors := tableExists(table_name)
+		if table_exists_errors != nil {
+			errors = append(errors, table_exists_errors...)
+		} else if common.IsNil(table_exists) {
+			errors = append(errors, fmt.Errorf("Database.getTable.tableExists returned nil bool"))
+		} else if !(*table_exists) {
+			return nil, nil
 		}
 
 		if len(errors) > 0 {
 			return nil, errors
 		}
 
-		table_schema, schema_errors := table.GetSchema()
+		table_schema, schema_errors := getTableSchema(table_name)
 
 		if schema_errors != nil {
 			errors = append(errors, schema_errors...)
@@ -583,13 +674,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 
-			table, table_errors := newTable(*getDatabase(), table_name, json.Map{}, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
-
-			if table_errors != nil {
-				return nil, table_errors
-			}
-
-			return table.Exists()
+			return tableExists(table_name)
 		},
 		GetTableInterface: func(table_name string, schema json.Map) (*Table, []error) {
 			errors := validate()
@@ -737,9 +822,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		},
 		GetOrSetSchema: func(table_name string, schema json.Map, mode string) (json.Map, []error) {
 			// todo clone schema
-			lock_table_schema_cache.Lock()
-			defer lock_table_schema_cache.Unlock()
-			return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
+			return getOrSetTableSchema(table_name, schema, mode)
 		},
 		GetOrSetAdditonalSchema: func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
 			// todo clone schema
