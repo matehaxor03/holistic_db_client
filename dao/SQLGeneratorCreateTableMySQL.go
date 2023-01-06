@@ -265,7 +265,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 
 			if columnSchema.HasKey("default") {
 				if columnSchema.IsNull("default") {
-					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had nil default value", column))
+					sql_command += " DEFAULT 0"
 				} else if !columnSchema.IsBool("default") {
 					errors = append(errors, fmt.Errorf("error: Table.getCreateSQL column: %s had non-boolean default value", column))
 				} else if columnSchema.IsBoolTrue("default") {

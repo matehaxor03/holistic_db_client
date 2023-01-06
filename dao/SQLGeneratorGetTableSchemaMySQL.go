@@ -148,8 +148,28 @@ func mapTableSchemaFromDBMySQL(struct_type string, table_name string, json_array
 				default:
 					if strings.HasPrefix(*type_of_value, "char(") && strings.HasSuffix(*type_of_value, ")") {
 						column_schema.SetStringValue("type","string")
+						*type_of_value = strings.TrimPrefix(*type_of_value, "char(")
+						*type_of_value = strings.TrimSuffix(*type_of_value, ")")
+						temp_max_length, temp_max_length_error := strconv.ParseInt(strings.TrimSpace(*type_of_value), 10, 64)
+						if temp_max_length_error != nil {
+							errors = append(errors, fmt.Errorf("failed to parse string max_length"))
+						} else if temp_max_length <= 0{
+							errors = append(errors, fmt.Errorf("failed to parse string max_length had value less than or equal to zero: %d", temp_max_length))
+						} else {
+							column_schema.SetInt64Value("max_length", temp_max_length)
+						}
 					} else if strings.HasPrefix(*type_of_value, "varchar(") && strings.HasSuffix(*type_of_value, ")") {
 						column_schema.SetStringValue("type", "string")
+						*type_of_value = strings.TrimPrefix(*type_of_value, "varchar(")
+						*type_of_value = strings.TrimSuffix(*type_of_value, ")")
+						temp_max_length, temp_max_length_error := strconv.ParseInt(strings.TrimSpace(*type_of_value), 10, 64)
+						if temp_max_length_error != nil {
+							errors = append(errors, fmt.Errorf("failed to parse string max_length"))
+						} else if temp_max_length <= 0{
+							errors = append(errors, fmt.Errorf("failed to parse string max_length had value less than or equal to zero: %d", temp_max_length))
+						} else {
+							column_schema.SetInt64Value("max_length", temp_max_length)
+						}
 					} else if strings.HasPrefix(*type_of_value, "enum(")  && strings.HasSuffix(*type_of_value, ")") {
 						type_of_value_values := (*type_of_value)[5:len(*type_of_value)-1]
 						parts := strings.Split(type_of_value_values, ",")

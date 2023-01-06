@@ -225,13 +225,29 @@ func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json
 			value := column_data.(int)
 			sql_command += strconv.FormatInt(int64(value), 10)
 		case "float32":
-			sql_command += fmt.Sprintf("%f", column_data.(float32))
+			float_32_string_value := fmt.Sprintf("%f", column_data.(float32))
+			if !strings.Contains(float_32_string_value, ".") {
+				float_32_string_value += ".0"
+			}
+			sql_command += float_32_string_value
 		case "*float32":
-			sql_command += fmt.Sprintf("%f", *(column_data.(*float32)))
+			float_32_string_value := fmt.Sprintf("%f", *(column_data.(*float32)))
+			if !strings.Contains(float_32_string_value, ".") {
+				float_32_string_value += ".0"
+			}
+			sql_command += float_32_string_value
 		case "float64":
-			sql_command += fmt.Sprintf("%f", column_data.(float64))
+			float_64_string_value := fmt.Sprintf("%f", column_data.(float64))
+			if !strings.Contains(float_64_string_value, ".") {
+				float_64_string_value += ".0"
+			}
+			sql_command += float_64_string_value
 		case "*float64":
-			sql_command += fmt.Sprintf("%f", *(column_data.(*float64)))
+			float_64_string_value := fmt.Sprintf("%f", *(column_data.(*float64)))
+			if !strings.Contains(float_64_string_value, ".") {
+				float_64_string_value += ".0"
+			}
+			sql_command += float_64_string_value
 		case "*time.Time":
 			value := column_data.(*time.Time)
 			decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")

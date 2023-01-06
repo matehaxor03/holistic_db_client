@@ -239,6 +239,11 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		return complex_value.GetFloat64()
 	} 
 
+	if desired_type == "bool" {
+		return complex_value.GetBoolValue()
+	} else if desired_type == "*bool" {
+		return complex_value.GetBool()
+	} 
 
 	if desired_type == "string" {
 		return complex_value.GetStringValue()

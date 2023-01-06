@@ -75,7 +75,7 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if ((struct_type == "*dao.Table" || struct_type == "dao.Table")) {
 		if *primary_key_count <= 0 {
-			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys %s", struct_type, schemas.GetKeys()))
+			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys", struct_type))
 		}
 
 		if *auto_increment_count > 1 {
