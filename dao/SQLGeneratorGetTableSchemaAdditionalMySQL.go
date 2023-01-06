@@ -114,7 +114,8 @@ func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error)
 				} else if common.IsNil(comment_value) {
 					errors = append(errors, fmt.Errorf("comment is nil"))
 				} else {
-					if strings.TrimSpace(*comment_value) != "" {
+					*comment_value = strings.TrimSpace(*comment_value)
+					if *comment_value != ""  && strings.HasPrefix(*comment_value, "{") && strings.HasSuffix(*comment_value, "}") {
 						comment_as_map, comment_as_map_value_errors := json.Parse(strings.TrimSpace(*comment_value))
 						if comment_as_map_value_errors != nil {
 							errors = append(errors, comment_as_map_value_errors...)
@@ -123,6 +124,8 @@ func mapAdditionalSchemaFromDBToMap(json_array *json.Array) (*json.Map, []error)
 						} else {
 							additional_schema.SetMap("Comment", comment_as_map)
 						}
+					} else {
+						additional_schema.SetStringValue(column_attribute, *comment_value)
 					}
 				}
 			default:
