@@ -195,20 +195,20 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 		return ValidateData(getData(), "Grant")
 	}
 
-	getDatabase := func() (*Database, []error) {
+	getDatabase := func() (Database, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "dao.Database")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
+			return Database{}, temp_value_errors
 		}
-		return temp_value.(*Database), temp_value_errors
+		return temp_value.(Database), temp_value_errors
 	}
 
-	getUser := func() (*User, []error) {
+	getUser := func() (User, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "dao.User")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
+			return User{}, temp_value_errors
 		}
-		return temp_value.(*User), temp_value_errors
+		return temp_value.(User), temp_value_errors
 	}
 
 	getGrantValue := func() (string, []error) {
@@ -253,12 +253,12 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 			return nil, user_errors
 		}
 
-		credentials, credentials_errors := (*user).GetCredentials()
+		credentials, credentials_errors := user.GetCredentials()
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
 		
-		domain_name, domain_name_errors := (*user).GetDomainName()
+		domain_name, domain_name_errors := user.GetDomainName()
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
@@ -268,12 +268,12 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 			return nil, grant_value_errors
 		}
 
-		username_value, username_value_errors := (*credentials).GetUsername()
+		username_value, username_value_errors := credentials.GetUsername()
 		if username_value_errors != nil {
 			return nil, username_value_errors
 		}
 
-		domain_name_value, domain_name_value_errors := (*domain_name).GetDomainName()
+		domain_name_value, domain_name_value_errors := domain_name.GetDomainName()
 		if domain_name_value_errors != nil {
 			return nil, domain_name_value_errors
 		}

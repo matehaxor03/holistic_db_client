@@ -11,9 +11,9 @@ import (
 type User struct {
 	Validate       func() []error
 	Create         func() []error
-	GetCredentials func() (*Credentials, []error)
-	GetDatabase func() (*Database, []error)
-	GetDomainName  func() (*DomainName, []error)
+	GetCredentials func() (Credentials, []error)
+	GetDatabase func() (Database, []error)
+	GetDomainName  func() (DomainName, []error)
 	UpdatePassword func(new_password string) []error
 }
 
@@ -71,35 +71,28 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 		return ValidateData(getData(), "User")
 	}
 
-	getDatabase := func() (*Database, []error) {
+	getDatabase := func() (Database, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
-			return nil, nil
-		}
-		
-		return temp_value.(*Database), temp_value_errors
+			return Database{}, temp_value_errors
+		} 
+		return temp_value.(Database), temp_value_errors
 	}
 
-	getCredentials := func() (*Credentials, []error) {
+	getCredentials := func() (Credentials, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "dao.Credentials")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
-			return nil, nil
+			return Credentials{}, temp_value_errors
 		}
-		return temp_value.(*Credentials), nil
+		return temp_value.(Credentials), nil
 	}
 
-	getDomainName := func() (*DomainName, []error) {
+	getDomainName := func() (DomainName, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "dao.DomainName")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
-			return nil, nil
+			return DomainName{}, temp_value_errors
 		}
-		return temp_value.(*DomainName), nil
+		return temp_value.(DomainName), nil
 	}
 
 	getCreateSQL := func(options *json.Map) (*string, *json.Map, []error) {
@@ -224,10 +217,10 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 
 			return nil
 		},
-		GetCredentials: func() (*Credentials, []error) {
+		GetCredentials: func() (Credentials, []error) {
 			return getCredentials()
 		},
-		GetDomainName: func() (*DomainName, []error) {
+		GetDomainName: func() (DomainName, []error) {
 			return getDomainName()
 		},
 		UpdatePassword: func(new_password string) []error {
