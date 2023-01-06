@@ -323,7 +323,11 @@ func mapTableSchemaFromDBMySQL(struct_type string, table_name string, json_array
 
 	
 		if default_value == "NULL" {
-			column_schema.SetNil("default")
+			if dt == "string" {
+				column_schema.SetStringValue("default", "")
+			} else {
+				column_schema.SetNil("default")
+			}
 		} else {
 			if dt == "string" {
 				column_schema.SetStringValue("default", default_value)
