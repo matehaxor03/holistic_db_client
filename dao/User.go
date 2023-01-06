@@ -96,6 +96,11 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getCreateSQL := func(options *json.Map) (*string, *json.Map, []error) {
+		if common.IsNil(options) {
+			options := json.NewMap()
+			options.SetBoolValue("use_file", true)
+		}
+		
 		errors := validate()
 		if len(errors) > 0 {
 			return nil, nil, errors
@@ -177,7 +182,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 		sql_command += fmt.Sprintf("%s", temp_password_escaped)
 
 		sql_command += ";"
-		return &sql_command, nil, nil
+		return &sql_command, options, nil
 	}
 
 
@@ -198,7 +203,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 		Create: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", true)
-			sql_command, options, sql_command_errors := getCreateSQL(options)
+			sql_command, new_options, sql_command_errors := getCreateSQL(options)
 
 			if sql_command_errors != nil {
 				return sql_command_errors
@@ -209,7 +214,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 				return temp_database_errors
 			}
 
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, options)
+			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
 
 			if execute_errors != nil {
 				return execute_errors
