@@ -196,7 +196,7 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*dao.Database")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		}
@@ -204,7 +204,7 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 	}
 
 	getUser := func() (*User, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "*dao.User")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "dao.User")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		}

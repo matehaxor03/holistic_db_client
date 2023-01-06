@@ -154,7 +154,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 	}
 
 	getClientManager := func() (*ClientManager, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "*db_client.ClientManager")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "db_client.ClientManager")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {

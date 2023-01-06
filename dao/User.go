@@ -72,7 +72,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*dao.Database")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -83,7 +83,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getCredentials := func() (*Credentials, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "*dao.Credentials")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "dao.Credentials")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -93,7 +93,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getDomainName := func() (*DomainName, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "*dao.DomainName")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "dao.DomainName")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
