@@ -61,17 +61,8 @@ func newTableSchemaCache() (*TableSchemaCache) {
 				return *result_from_cache, nil
 			 }
 		} else if mode == "set" {
-			clone_schema, clone_schema_errors := schema.Clone()
-			if clone_schema_errors != nil {
-				return json.NewMapValue(), clone_schema_errors
-			} else if common.IsNil(clone_schema) {
-				var errors []error
-				errors = append(errors, fmt.Errorf("cloned schema is nil"))
-				return json.NewMapValue(), clone_schema_errors
-			} else {
-				cache.SetMapValue(key, *clone_schema)
-				return json.NewMapValue(), nil
-			}
+			cache.SetMapValue(key, schema)
+			return json.NewMapValue(), nil
 		} else if mode == "delete" {
 			if cache.HasKey(key) {
 				_, remove_errors := cache.RemoveKey(key)
