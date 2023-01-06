@@ -384,15 +384,12 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				continue
 			}
 
-			table_name, table_name_errors := record_map.GetString(column_name)
+			table_name, table_name_errors := record_map.GetStringValue(column_name)
 			if table_name_errors != nil {
 				errors = append(errors, table_name_errors...)
 				continue
-			} else if common.IsNil(table_name) {
-				errors = append(errors, fmt.Errorf("error: Database: getTableNames(%s) was nil available fields are: %s", column_name, record_map.GetKeys()))
-				continue
 			}
-			table_names = append(table_names, *table_name)
+			table_names = append(table_names, table_name)
 		}
 
 		if len(errors) > 0 {

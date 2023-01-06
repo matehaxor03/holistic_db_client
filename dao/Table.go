@@ -133,45 +133,54 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		merged_schema.SetMap("archieved_date", map_archieved_date_date_schema)
 	
 		for _, schema_key_from_db := range schema_from_db.GetKeys() {
-			current_schema_from_db, current_schema_error_from_db := schema_from_db.GetMapValue(schema_key_from_db)
-			var saved_copy json.Map
-			saved_copy = current_schema_from_db
-			if current_schema_error_from_db != nil {
-				setup_errors = append(setup_errors, current_schema_error_from_db...)
-			} else if common.IsNil(current_schema_from_db) {
-				setup_errors = append(setup_errors, fmt.Errorf("schema is nil for key from db %s", schema_key_from_db))
-			} else {
-				if !merged_schema.HasKey(schema_key_from_db) {
-					merged_schema.SetMapValue(schema_key_from_db, saved_copy)
-				} else if current_schema_from_db.IsArray("filters") {
-					filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
-					if filters_from_db_errors != nil {
-						setup_errors = append(setup_errors, filters_from_db_errors...)
-					} else if common.IsNil(filters_from_db) {
-						setup_errors = append(setup_errors, fmt.Errorf("filters from db is nil"))
-					} else if merged_schema.IsMap(schema_key_from_db) {
-						merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
-						if merged_schema_map_errors != nil {
-							setup_errors = append(setup_errors, merged_schema_map_errors...)
-						} else {
-							filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
-							if filters_array_errors != nil {
-								setup_errors = append(setup_errors, filters_array_errors...)
-							} else {
-								if common.IsNil(filters_array) {
-									new_filters_array := json.NewArrayValue()
-									merged_schema_map.SetArray("filters", &new_filters_array)
-									filters_array = &new_filters_array
-								}
-								for _, filter_from_db := range *(filters_from_db.GetValues()) {
-									filters_array.AppendValue(filter_from_db)
-								}
-							}
-						}
-					} 
-				}
+			current_schema_from_db, current_schema_from_db_errors := schema_from_db.GetMapValue(schema_key_from_db)
+			if current_schema_from_db_errors != nil {
+				return nil, current_schema_from_db_errors
+			} 
+
+			if len(setup_errors) > 0 {
+				return nil, setup_errors
 			}
 		
+			if !merged_schema.HasKey(schema_key_from_db) {
+				merged_schema.SetMapValue(schema_key_from_db, current_schema_from_db)
+				continue
+			} 
+			
+			if !current_schema_from_db.IsArray("filters") {
+				continue
+			}
+
+
+			filters_from_db, filters_from_db_errors := current_schema_from_db.GetArrayValue("filters")
+			if filters_from_db_errors != nil {
+				return nil, filters_from_db_errors
+			} 
+
+			if !merged_schema.IsMap(schema_key_from_db) {
+				setup_errors = append(errors, fmt.Errorf("schema to be merged into is not a map"))
+				return nil, setup_errors
+			}
+		
+			merged_schema_map, merged_schema_map_errors := merged_schema.GetMapValue(schema_key_from_db)
+			if merged_schema_map_errors != nil {
+				return nil, merged_schema_map_errors
+			} 
+
+			filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
+			if filters_array_errors != nil {
+				return nil, filters_array_errors
+			} 
+
+			if common.IsNil(filters_array) {
+				new_filters_array := json.NewArrayValue()
+				merged_schema_map.SetArray("filters", &new_filters_array)
+				filters_array = &new_filters_array
+			}
+			
+			for _, filter_from_db := range *(filters_from_db.GetValues()) {
+				filters_array.AppendValue(filter_from_db)
+			}
 		}
 
 		d.SetMap("[schema]", merged_schema)
