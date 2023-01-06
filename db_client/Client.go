@@ -25,7 +25,7 @@ type Client struct {
 	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() (*dao.Host, []error)
 	GetDatabase         func() (*dao.Database, []error)
-	GetClientManager    func() (*ClientManager, []error)
+	GetClientManager    func() (ClientManager, []error)
 	Validate            func() []error
 	ToJSONString        func(json *strings.Builder) []error
 	Grant            func(user dao.User, grant string, database_filter *string, table_filter *string) (*dao.Grant, []error)
@@ -153,14 +153,12 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 		return temp_value.(*dao.Database), nil
 	}
 
-	getClientManager := func() (*ClientManager, []error) {
+	getClientManager := func() (ClientManager, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "db_client.ClientManager")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if common.IsNil(temp_value) {
-			return nil, nil
-		}
-		return temp_value.(*ClientManager), nil
+			return ClientManager{}, temp_value_errors
+		} 
+		return temp_value.(ClientManager), nil
 	}
 
 	setDatabase := func(database *dao.Database) []error {
@@ -260,7 +258,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			return nil, host_errors
 		}
 
-		client, client_errors := newClient(*temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -418,7 +416,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 		GetDatabase: func() (*dao.Database, []error) {
 			return getDatabase()
 		},
-		GetClientManager: func() (*ClientManager, []error) {
+		GetClientManager: func() (ClientManager, []error) {
 			return getClientManager()
 		},
 		UseDatabase: func(database dao.Database) []error {
