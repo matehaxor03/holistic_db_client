@@ -163,7 +163,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 		return temp_value.(*ClientManager), nil
 	}
 
-	setDatabase := func(database dao.Database) []error {
+	setDatabase := func(database *dao.Database) []error {
 		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", database)
 	}
 
@@ -202,7 +202,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			return database_errors
 		}
 
-		setDatabase(*database)
+		setDatabase(database)
 		return nil
 	}
 
@@ -427,7 +427,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 				return database_errors
 			}
 
-			setDatabase(database)
+			setDatabase(&database)
 			return nil
 		},
 		UseDatabaseByName: func(database_name string) ([]error) {
