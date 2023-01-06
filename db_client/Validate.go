@@ -403,6 +403,11 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 			function, function_errors := filter_map.GetFunc("function")
 
+			if filter_map.IsString("function") {
+				string_value, _ := filter_map.GetStringValue("function")
+				fmt.Println(string_value)
+			}
+
 			if function_errors != nil {
 				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
 				return errors
@@ -481,7 +486,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
-	case "dao..Host":
+	case "dao.Host":
 		host := value_to_validate.(dao.Host)
 
 		errors_for_host := host.Validate()
