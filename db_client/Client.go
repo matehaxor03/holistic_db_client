@@ -512,7 +512,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 				return nil, errors
 			}
 
-			table, table_errors := database.GetTable("user")
+			table, table_errors := temp_database.GetTable("user")
 			if table_errors != nil {
 				errors = append(errors, table_errors...)
 				return nil, errors
