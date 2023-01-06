@@ -1,0 +1,163 @@
+package helper
+
+import (
+	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
+	//common "github.com/matehaxor03/holistic_common/common"
+)
+
+func GetTableName(struct_type string, m *json.Map) (string, []error) {
+	temp_value, temp_value_errors := GetField(struct_type, m, "[system_schema]", "[system_fields]", "[table_name]", "string")
+	if temp_value_errors != nil {
+		return "", temp_value_errors
+	} else if temp_value == nil {
+		return "", nil
+	}
+	
+	return temp_value.(string), temp_value_errors
+}
+
+func GetTableColumns(caller string, data *json.Map) (*[]string, []error) {
+	temp_schemas, temp_schemas_error := GetSchemas(caller, data, "[schema]")
+	if temp_schemas_error != nil {
+		return nil, temp_schemas_error
+	}
+	columns := temp_schemas.GetKeys()
+	return &columns, nil
+}
+
+func GetPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+	var errors []error
+	var columns []string
+
+	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			continue
+		}
+
+		if column_schema.IsBoolTrue("primary_key") {
+			columns = append(columns, column)
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &columns, nil
+}
+
+func GetForeignKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+	var errors []error
+	var columns []string
+
+	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			continue
+		}
+
+		if column_schema.IsBoolTrue("foreign_key") {
+			columns = append(columns, column)
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &columns, nil
+}
+
+func GetIdentityColumns(caller string, data *json.Map) (*[]string, []error) {
+	var errors []error
+	var columns []string
+
+	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			continue
+		}
+
+		if column_schema.IsBoolTrue("primary_key") || column_schema.IsBoolTrue("foreign_key") {
+			columns = append(columns, column)
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &columns, nil
+}
+
+func GetNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+	var errors []error
+	var columns []string
+
+	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			continue
+		}
+
+		if !(column_schema.IsBoolTrue("primary_key")) {
+			columns = append(columns, column)
+		}
+	}
+	return &columns, nil
+}
+

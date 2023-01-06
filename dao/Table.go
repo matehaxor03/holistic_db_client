@@ -152,7 +152,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-
 			filters_from_db, filters_from_db_errors := current_schema_from_db.GetArrayValue("filters")
 			if filters_from_db_errors != nil {
 				return nil, filters_from_db_errors
@@ -200,158 +199,27 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	getTableName := func() (string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", "string")
-		if temp_value_errors != nil {
-			return "", temp_value_errors
-		} else if temp_value == nil {
-			return "", nil
-		}
-		
-		return temp_value.(string), temp_value_errors
+		return helper.GetTableName(struct_type, getData())
 	}
 
 	getTableColumns := func() (*[]string, []error) {
-		temp_schemas, temp_schemas_error := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if temp_schemas_error != nil {
-			return nil, temp_schemas_error
-		}
-		columns := temp_schemas.GetKeys()
-		return &columns, nil
+		return helper.GetTableColumns(struct_type, getData())
 	}
 
 	getPrimaryKeyColumns := func() (*[]string, []error) {
-		var errors []error
-		var columns []string
-
-		schema_map, schema_map_errors := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if schema_map_errors != nil {
-			errors = append(errors, schema_map_errors...)
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		for _, column := range schema_map.GetKeys() {
-			column_schema, column_schema_errors := schema_map.GetMap(column)
-			if column_schema_errors != nil {
-				errors = append(errors, column_schema_errors...)
-				continue
-			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
-				continue
-			}
-
-			if column_schema.IsBoolTrue("primary_key") {
-				columns = append(columns, column)
-			}
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		return &columns, nil
+		return helper.GetPrimaryKeyColumns(struct_type, getData())
 	}
 
 	getForeignKeyColumns := func() (*[]string, []error) {
-		var errors []error
-		var columns []string
-
-		schema_map, schema_map_errors := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if schema_map_errors != nil {
-			errors = append(errors, schema_map_errors...)
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		for _, column := range schema_map.GetKeys() {
-			column_schema, column_schema_errors := schema_map.GetMap(column)
-			if column_schema_errors != nil {
-				errors = append(errors, column_schema_errors...)
-				continue
-			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
-				continue
-			}
-
-			if column_schema.IsBoolTrue("foreign_key") {
-				columns = append(columns, column)
-			}
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		return &columns, nil
+		return helper.GetForeignKeyColumns(struct_type, getData())
 	}
 
 	getIdentityColumns := func() (*[]string, []error) {
-		var errors []error
-		var columns []string
-
-		schema_map, schema_map_errors := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if schema_map_errors != nil {
-			errors = append(errors, schema_map_errors...)
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		for _, column := range schema_map.GetKeys() {
-			column_schema, column_schema_errors := schema_map.GetMap(column)
-			if column_schema_errors != nil {
-				errors = append(errors, column_schema_errors...)
-				continue
-			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
-				continue
-			}
-
-			if column_schema.IsBoolTrue("primary_key") || column_schema.IsBoolTrue("foreign_key") {
-				columns = append(columns, column)
-			}
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		return &columns, nil
+		return helper.GetIdentityColumns(struct_type, getData())
 	}
 
 	getNonPrimaryKeyColumns := func() (*[]string, []error) {
-		var errors []error
-		var columns []string
-
-		schema_map, schema_map_errors := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if schema_map_errors != nil {
-			errors = append(errors, schema_map_errors...)
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		for _, column := range schema_map.GetKeys() {
-			column_schema, column_schema_errors := schema_map.GetMap(column)
-			if column_schema_errors != nil {
-				errors = append(errors, column_schema_errors...)
-				continue
-			} else if column_schema == nil {
-				errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", struct_type, column))
-				continue
-			}
-
-			if !(column_schema.IsBoolTrue("primary_key")) {
-				columns = append(columns, column)
-			}
-		}
-		return &columns, nil
+		return helper.GetNonPrimaryKeyColumns(struct_type, getData())
 	}
 
 	validate := func() []error {

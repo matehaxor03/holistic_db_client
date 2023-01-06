@@ -27,17 +27,6 @@ func GetValidSchemaFields() json.Map {
 	return schema_fields
 }
 
-func getTableName(struct_type string, m *json.Map) (string, []error) {
-	temp_value, temp_value_errors := GetField(struct_type, m, "[system_schema]", "[system_fields]", "[table_name]", "string")
-	if temp_value_errors != nil {
-		return "", temp_value_errors
-	} else if temp_value == nil {
-		return "", nil
-	}
-	
-	return temp_value.(string), temp_value_errors
-}
-
 func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map, []error) {
 	var errors []error
 	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
@@ -81,14 +70,5 @@ func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map,
 	}
 	
 	return schemas_map, nil
-}
-
-func getTableColumns(caller string, data *json.Map) (*[]string, []error) {
-	temp_schemas, temp_schemas_error := GetSchemas(caller, data, "[schema]")
-	if temp_schemas_error != nil {
-		return nil, temp_schemas_error
-	}
-	columns := temp_schemas.GetKeys()
-	return &columns, nil
 }
 
