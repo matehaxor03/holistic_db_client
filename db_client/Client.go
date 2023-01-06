@@ -247,7 +247,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			temp_database_name = temp_database_name_value
 		} 
 
-		connection_string := "holistic_db_config:" + temp_host_name + ":" + temp_port_number + ":" + temp_database_name + ":" + username
+		connection_string := "holistic_db_config#" + temp_host_name + "#" + temp_port_number + "#" + temp_database_name + "#" + username
 		tuple_credentials, tuple_credentials_errors := temp_client_manager.GetTupleCredentials(connection_string)
 		if tuple_credentials_errors != nil {
 			return nil, tuple_credentials_errors
