@@ -26,6 +26,8 @@ func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_no
 	record_columns, record_columns_errors := GetRecordColumns(caller, data)
 	if record_columns_errors != nil {
 		errors = append(errors, record_columns_errors...)
+	} else if common.IsNil(record_columns) {
+		errors = append(errors, fmt.Errorf("record_columns is nil. GetRecordPrimaryKeyColumns()"))
 	}
 
 	if len(errors) > 0 {
@@ -50,7 +52,7 @@ func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_no
 	return &columns, nil
 }
 
-func GetRecordPrimaryKeyColumns(caller string, data *json.Map,  table_primary_key_columns *[]string) (*[]string, []error) {
+func GetRecordPrimaryKeyColumns(caller string, data *json.Map, table_primary_key_columns *[]string) (*[]string, []error) {
 	var errors []error
 	if common.IsNil(table_primary_key_columns) {
 		errors = append(errors, fmt.Errorf("table_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
@@ -59,6 +61,8 @@ func GetRecordPrimaryKeyColumns(caller string, data *json.Map,  table_primary_ke
 	record_columns, record_columns_errors := GetRecordColumns(caller, data)
 	if record_columns_errors != nil {
 		errors = append(errors, record_columns_errors...)
+	} else if common.IsNil(record_columns) {
+		errors = append(errors, fmt.Errorf("record_columns is nil. GetRecordPrimaryKeyColumns()"))
 	}
 
 	if len(errors) > 0 {
@@ -68,6 +72,32 @@ func GetRecordPrimaryKeyColumns(caller string, data *json.Map,  table_primary_ke
 	var columns []string
 	for _, record_column := range *record_columns {
 		if common.Contains(*table_primary_key_columns, record_column) {
+			columns = append(columns, record_column)
+		} 
+	}
+	return &columns, nil
+}
+
+func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key_columns *[]string) (*[]string, []error) {
+	var errors []error
+	if common.IsNil(table_foreign_key_columns) {
+		errors = append(errors, fmt.Errorf("table_foreign_key_columns is nil. GetRecordForeignKeyColumns()"))
+	}
+
+	record_columns, record_columns_errors := GetRecordColumns(caller, data)
+	if record_columns_errors != nil {
+		errors = append(errors, record_columns_errors...)
+	} else if common.IsNil(record_columns) {
+		errors = append(errors, fmt.Errorf("record_columns is nil. GetRecordForeignKeyColumns()"))
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	var columns []string
+	for _, record_column := range *record_columns {
+		if common.Contains(*table_foreign_key_columns, record_column) {
 			columns = append(columns, record_column)
 		} 
 	}

@@ -424,13 +424,6 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	getRecordColumns := func() (*[]string, []error) {
 		return helper.GetRecordColumns(struct_type, getData())
-
-		/*fields_map, fields_map_errors := helper.GetFields(struct_type, getData(), "[fields]")
-		if fields_map_errors != nil {
-			return nil, fields_map_errors
-		}
-		columns := fields_map.GetKeys()
-		return &columns, nil*/
 	}
 
 	getTable := func() (Table, []error) {
@@ -505,57 +498,22 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 		}
 
 		return helper.GetRecordPrimaryKeyColumns(struct_type, getData(), table_primary_key_columns)
-		
-		/*record_columns, record_columns_errors := getRecordColumns()
-		if record_columns_errors != nil {
-			return nil, record_columns_errors
-		}
-
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, temp_table_errors
-		}
-
-		
-
-		var record_primary_key_columns []string
-		for _, record_column := range *record_columns {
-			for _, table_primary_key_column := range *table_primary_key_columns {
-				if table_primary_key_column == record_column {
-					record_primary_key_columns = append(record_primary_key_columns, record_column)
-					break
-				}
-			}
-		}
-		return &record_primary_key_columns, nil*/
 	}
 
 	getForeignKeyColumns := func() (*[]string, []error) {
-		record_columns, record_columns_errors := getRecordColumns()
-		if record_columns_errors != nil {
-			return nil, record_columns_errors
-		}
-
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, temp_table_errors
-		}
-
-		table_foreign_key_columns, table_foreign_key_columns_errors := temp_table.GetForeignKeyColumns()
+		var errors []error
+		table_foreign_key_columns, table_foreign_key_columns_errors := table.GetForeignKeyColumns()
 		if table_foreign_key_columns_errors != nil {
-			return nil, table_foreign_key_columns_errors
+			errors = append(errors, table_foreign_key_columns_errors...)
+		} else if common.IsNil(table_foreign_key_columns) {
+			errors = append(errors, fmt.Errorf(struct_type + " table returned nil columns table.GetForeignKeyColumns()."))
 		}
 
-		var record_foreign_key_columns []string
-		for _, record_column := range *record_columns {
-			for _, table_foreign_key_column := range *table_foreign_key_columns {
-				if table_foreign_key_column == record_column {
-					record_foreign_key_columns = append(record_foreign_key_columns, record_column)
-					break
-				}
-			}
+		if len(errors) > 0 {
+			return nil, errors
 		}
-		return &record_foreign_key_columns, nil
+
+		return helper.GetRecordForeignKeyColumns(struct_type, getData(), table_foreign_key_columns)
 	}
 
 	validate := func() []error {
