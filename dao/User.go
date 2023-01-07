@@ -17,7 +17,7 @@ type User struct {
 	UpdatePassword func(new_password string) []error
 }
 
-func NewUser(database Database, credentials Credentials, domain_name DomainName) (*User, []error) {
+func newUser(database Database, credentials Credentials, domain_name DomainName) (*User, []error) {
 	var errors []error
 	struct_type := "*dao.User"
 	

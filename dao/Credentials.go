@@ -3,10 +3,11 @@ package dao
 import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	common "github.com/matehaxor03/holistic_common/common"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
+
 	"fmt"
 )
 
@@ -18,7 +19,7 @@ type Credentials struct {
 	Clone        func() *Credentials
 }
 
-func NewCredentials(username string, password string) (*Credentials, []error) {
+func newCredentials(verify validate.Validator, username string, password string) (*Credentials, []error) {
 	struct_type := "*dao.Credentials"
 
 
@@ -40,7 +41,7 @@ func NewCredentials(username string, password string) (*Credentials, []error) {
 	map_username_schema.SetIntValue("min_length", 1)
 	array_username_filters := json.NewArrayValue()
 	map_username_filter := json.NewMapValue()
-	map_username_filter.SetObjectForMap("values", validation_constants.GetValidUsernameCharacters())
+	map_username_filter.SetObjectForMap("values", verify.GetUsernameCharacterWhitelist())
 	map_username_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 	array_username_filters.AppendMapValue(map_username_filter)
 	map_username_schema.SetArrayValue("filters", array_username_filters)

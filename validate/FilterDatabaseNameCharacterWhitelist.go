@@ -1,8 +1,8 @@
-package validation_constants
+package validate
 
 import (
 	json "github.com/matehaxor03/holistic_json/json"
-
+	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 )
 
 type DatabaseNameCharacterWhitelist struct {
@@ -10,7 +10,7 @@ type DatabaseNameCharacterWhitelist struct {
 }
 
 func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {
-	database_name_character_whitelist := GetMySQLDatabaseNameWhitelistCharacters()
+	database_name_character_whitelist := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 
 	x := DatabaseNameCharacterWhitelist {
 		GetDatabaseNameCharacterWhitelist: func() (*json.Map) {

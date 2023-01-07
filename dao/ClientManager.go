@@ -1,11 +1,10 @@
-package db_client
+package dao
 
 import (
 	"fmt"
 	"strings"
 	"sync"
-	dao "github.com/matehaxor03/holistic_db_client/dao"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
 type TupleCredentials struct {
@@ -22,6 +21,7 @@ type ClientManager struct {
 }
 
 func NewClientManager() (*ClientManager, []error) {
+	verify := validate.NewValidator()
 	var this_client_manager *ClientManager
 
 	setClientManager := func(client_manager *ClientManager) {
@@ -36,10 +36,6 @@ func NewClientManager() (*ClientManager, []error) {
 	lock_tuple := &sync.Mutex{}
 	
 	tuple := make(map[string]TupleCredentials)
-	database_reserved_words_obj := validation_constants.NewDatabaseReservedWords()
-	database_name_whitelist_characters_obj := validation_constants.NewDatabaseNameCharacterWhitelist()
-	table_name_whitelist_characters_obj := validation_constants.NewTableNameCharacterWhitelist()
-	column_name_whitelist_characters_obj := validation_constants.NewColumnNameCharacterWhitelist()
 
 	getTupleCredentials := func(label string) (*TupleCredentials, []error) {
 		if value, found_value := tuple[label]; found_value {
@@ -75,7 +71,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		host, host_errors := dao.NewHost((temp_tuple_creds.host_name), (temp_tuple_creds.port_number))
+		host, host_errors := newHost(*verify, (temp_tuple_creds.host_name), (temp_tuple_creds.port_number))
 		
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
@@ -85,7 +81,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 		
-		client, client_errors := newClient(*getClientManager(), host, &(temp_tuple_creds.database_username), nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		client, client_errors := newClient(*verify, *getClientManager(), host, &(temp_tuple_creds.database_username), nil)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)
@@ -105,7 +101,6 @@ func NewClientManager() (*ClientManager, []error) {
 
 	validate := func() []error {
 		return nil
-		//return ValidateData(getData(), "ClientManager")
 	}
 
 	x := ClientManager{

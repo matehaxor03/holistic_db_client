@@ -6,8 +6,8 @@ import (
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
@@ -42,7 +42,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func NewDatabase(host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions, database_reserved_words_obj *validation_constants.DatabaseReservedWords, database_name_whitelist_characters_obj *validation_constants.DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *validation_constants.TableNameCharacterWhitelist, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Database, []error) {
+func newDatabase(verify validate.Validator, host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var lock_get_table_schema = &sync.Mutex{}
 
 	var errors []error
@@ -72,10 +72,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return this_database
 	}
 
-	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
-	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
-
-
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
 	data.SetMapValue("[schema]", json.NewMapValue())
@@ -103,7 +99,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
 	map_database_name_schema_filters := json.NewArrayValue()
 	map_database_name_schema_filter := json.NewMapValue()
-	map_database_name_schema_filter.SetObjectForMap("values", database_name_whitelist_characters)
+	map_database_name_schema_filter.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 	map_database_name_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
 	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
@@ -115,7 +111,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 	map_database_username.SetStringValue("type", "string")
 	array_database_username_filters := json.NewArrayValue()
 	map_database_username_filter := json.NewMapValue()
-	map_database_username_filter.SetObjectForMap("values", validation_constants.GetValidUsernameCharacters())
+	map_database_username_filter.SetObjectForMap("values", verify.GetUsernameCharacterWhitelist())
 	map_database_username_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 	array_database_username_filters.AppendMapValue(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
@@ -519,7 +515,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, struct_type, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -568,7 +564,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, struct_type, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -580,7 +576,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
@@ -629,7 +625,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, *table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -685,7 +681,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(verify, *getDatabase(), table_name, schema)
 
 			if new_table_errors != nil {
 				errors = append(errors, new_table_errors...)
@@ -706,7 +702,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 				return nil, errors
 			}
 			
-			table, new_table_errors := newTable(*getDatabase(), table_name, schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+			table, new_table_errors := newTable(verify, *getDatabase(), table_name, schema)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -881,7 +877,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			options.SetBoolValue("use_file", false)
 
 			getDatabase().GetOrSetSchema(table_name, nil, "delete")
-			sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(struct_type, table_name, if_exists, options)
+			sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, table_name, if_exists, options)
 
 			if generate_sql_errors != nil {
 				return generate_sql_errors
@@ -894,7 +890,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			}
 			return nil
 		},
-
 	}
 	setDatabase(&x)
 

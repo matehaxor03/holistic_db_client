@@ -7,7 +7,7 @@ import (
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
@@ -41,7 +41,7 @@ type Table struct {
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
-func newTable(database Database, table_name string, schema json.Map, database_reserved_words_obj *validation_constants.DatabaseReservedWords, table_name_whitelist_characters_obj *validation_constants.TableNameCharacterWhitelist, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Table, []error) {
+func newTable(verify validate.Validator, database Database, table_name string, schema json.Map) (*Table, []error) {
 	var lock_get_schema = &sync.Mutex{}
 	struct_type := "*dao.Table"
 	var errors []error
@@ -65,11 +65,6 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	setData := func(in_data *json.Map) {
 		data = in_data
 	}
-
-	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
-	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
-	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
-	
 	
 	setupData := func(b Database, n string, schema_from_db json.Map) (*json.Map, []error) {
 		var setup_errors []error
@@ -95,7 +90,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		map_table_name_schema.SetIntValue("min_length", 2)
 		map_table_name_schema_filters := json.NewArray()
 		map_table_name_schema_filter := json.NewMap()
-		map_table_name_schema_filter.SetObjectForMap("values", table_name_whitelist_characters)
+		map_table_name_schema_filter.SetObjectForMap("values", verify.GetTableNameCharacterWhitelist())
 		map_table_name_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 		map_table_name_schema_filters.AppendMap(map_table_name_schema_filter)
 		map_table_name_schema.SetArray("filters", map_table_name_schema_filters)
@@ -108,7 +103,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		map_active_schema := json.NewMap()
 		map_active_schema.SetStringValue("type", "bool")
 		map_active_schema.SetBoolValue("default", true)
-		merged_schema.SetMap("active", map_active_schema)
+		merged_schema.SetMap("enabled", map_active_schema)
 
 		map_archieved_schema := json.NewMap()
 		map_archieved_schema.SetStringValue("type", "bool")
@@ -258,7 +253,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, struct_type, temp_table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -314,7 +309,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 
 		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -352,7 +347,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		options.SetBoolValue("use_file", false)
 
 		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -408,7 +403,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			record_obj, record_errors := newRecord(*getTable(), *current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -465,7 +460,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		record_obj, record_errors := newRecord(*getTable(), *record, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+		record_obj, record_errors := newRecord(verify, *getTable(), *record)
 		if record_errors != nil {
 			return record_errors
 		} else if common.IsNil(record_obj) {
@@ -536,7 +531,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			record_obj, record_errors := newRecord(*getTable(), *current_map, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -617,7 +612,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_database_name_errors
 		}
 		
-		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(struct_type, temp_database_name, temp_table_name, options)
+		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, struct_type, temp_database_name, temp_table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -672,7 +667,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, struct_type, temp_table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -684,7 +679,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, temp_table_name, &json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, temp_table_name, &json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
@@ -853,7 +848,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			options.SetBoolValue("use_file", false)
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
-			sql_command, new_options, sql_command_errors := getSelectRecordsSQLMySQL(*getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
+			sql_command, new_options, sql_command_errors := getSelectRecordsSQLMySQL(verify, *getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -922,7 +917,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(*getTable(), new_record_data, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+			record, record_errors := newRecord(verify, *getTable(), new_record_data)
 			if record_errors != nil {
 				return nil, record_errors
 			}
@@ -937,7 +932,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
-			sql_command, options, sql_command_errors := getSelectRecordsSQLMySQL(*getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
+			sql_command, options, sql_command_errors := getSelectRecordsSQLMySQL(verify, *getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -986,7 +981,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			var mapped_records []Record
 			for _, current_json := range *(json_array.GetValues()) {
-				mapped_record_obj, mapped_record_obj_errors := mapValueFromDBToRecord(*getTable(), current_json, database_reserved_words_obj, column_name_whitelist_characters_obj)
+				mapped_record_obj, mapped_record_obj_errors := mapValueFromDBToRecord(verify, *getTable(), current_json)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
 				} else if common.IsNil(mapped_record_obj){

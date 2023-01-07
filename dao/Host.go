@@ -3,8 +3,8 @@ package dao
 import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
 
@@ -15,7 +15,7 @@ type Host struct {
 	GetPortNumber func() (string, []error)
 }
 
-func NewHost(host_name string, port_number string) (*Host, []error) {
+func newHost(verify validate.Validator, host_name string, port_number string) (*Host, []error) {
 	struct_type := "*dao.Host"
 
 	data := json.NewMap()
@@ -33,7 +33,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	map_host_name_schema.SetStringValue("type", "string")
 	map_host_name_schema_filters := json.NewArrayValue()
 	map_host_name_schema_filter := json.NewMapValue()
-	map_host_name_schema_filter.SetObjectForMap("values", validation_constants.GetValidDomainNameCharacters())
+	map_host_name_schema_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
 	map_host_name_schema_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 	map_host_name_schema_filters.AppendMapValue(map_host_name_schema_filter)
 	map_host_name_schema.SetArrayValue("filters", map_host_name_schema_filters)
@@ -43,7 +43,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	map_port_number_schema.SetStringValue("type", "string")
 	map_port_number_schema_filters := json.NewArrayValue()
 	map_port_number_schema_filter := json.NewMapValue()
-	map_port_number_schema_filter.SetObjectForMap("values", validation_constants.GetValidPortNumberCharacters())
+	map_port_number_schema_filter.SetObjectForMap("values", verify.GetPortNumberCharacterWhitelist())
 	map_port_number_schema_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 	map_port_number_schema_filters.AppendMapValue(map_port_number_schema_filter)
 	map_port_number_schema.SetArrayValue("filters", map_port_number_schema_filters)

@@ -7,12 +7,11 @@ import (
 	"time"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func mapValueFromDBToRecord(table Table, current_json *json.Value, database_reserved_words_obj *validation_constants.DatabaseReservedWords, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Record, []error) {
+func mapValueFromDBToRecord(verify validate.Validator, table Table, current_json *json.Value) (*Record, []error) {
 	var errors []error
 
 	if common.IsNil(table) {
@@ -274,7 +273,7 @@ func mapValueFromDBToRecord(table Table, current_json *json.Value, database_rese
 		return nil, errors
 	}
 
-	mapped_record_obj, mapped_record_obj_errors := newRecord(table, *mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
+	mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record)
 	if mapped_record_obj_errors != nil {
 		errors = append(errors, mapped_record_obj_errors...)
 	} else if common.IsNil(mapped_record_obj){
@@ -357,7 +356,7 @@ type Record struct {
 	GetTable func() (Table, []error)
 }
 
-func newRecord(table Table, record_data json.Map, database_reserved_words_obj *validation_constants.DatabaseReservedWords, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Record, []error) {
+func newRecord(verify validate.Validator, table Table, record_data json.Map) (*Record, []error) {
 	var errors []error
 	var this *Record
 
@@ -384,11 +383,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	if len(errors) > 0 {
 		return nil, errors
-	}
-
-	//database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
-	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
-	
+	}	
 
 	data := json.NewMap()
 	data.SetMap("[fields]", &record_data)
@@ -414,9 +409,17 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 
 	schema_column_names := table_schema.GetKeys()
 	for _, schema_column_name := range schema_column_names {
-		validate_database_column_name_errors := validation_functions.ValidateDatabaseTableColumnName(&schema_column_name)
+		validate_database_column_name_errors := verify.ValidateColumnName(schema_column_name)
 		if validate_database_column_name_errors != nil {
 			errors = append(errors, validate_database_column_name_errors...)
+		}
+	}
+
+	record_column_names := record_data.GetKeys()
+	for _, record_column_name := range record_column_names {
+		validate_record_column_name_errors := verify.ValidateColumnName(record_column_name)
+		if validate_record_column_name_errors != nil {
+			errors = append(errors, validate_record_column_name_errors...)
 		}
 	}
 

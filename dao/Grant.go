@@ -4,9 +4,9 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
 func GRANT_ALL() string {
@@ -45,13 +45,9 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func NewGrant(database Database, user User, grant string, database_filter *string, table_filter *string, database_reserved_words_obj *validation_constants.DatabaseReservedWords, database_name_whitelist_characters_obj *validation_constants.DatabaseNameCharacterWhitelist, table_name_whitelist_characters_obj *validation_constants.TableNameCharacterWhitelist) (*Grant, []error) {
+func newGrant(verify validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 	struct_type := "*dao.Grant"
 	var errors []error
-
-	database_reserved_words := database_reserved_words_obj.GetDatabaseReservedWords()
-	database_name_whitelist_characters := database_name_whitelist_characters_obj.GetDatabaseNameCharacterWhitelist()
-	table_name_whitelist_characters := table_name_whitelist_characters_obj.GetTableNameCharacterWhitelist()
 
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
@@ -105,12 +101,12 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter)
 		} else {
 			map_database_filter_schema_filter1 := json.NewMapValue()
-			map_database_filter_schema_filter1.SetObjectForMap("values", database_name_whitelist_characters)
+			map_database_filter_schema_filter1.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 			map_database_filter_schema_filter1.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter1)
 
 			map_database_filter_schema_filter2 := json.NewMapValue()
-			map_database_filter_schema_filter2.SetObjectForMap("values", database_reserved_words)
+			map_database_filter_schema_filter2.SetObjectForMap("values", verify.GetDatabaseReservedWordsBlackList())
 			map_database_filter_schema_filter2.SetObjectForMap("function",  validation_functions.GetBlacklistStringToUpperFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter2)
 		}
@@ -134,12 +130,12 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter)
 		} else {
 			map_table_filter_schema_filter1 := json.NewMapValue()
-			map_table_filter_schema_filter1.SetObjectForMap("values", table_name_whitelist_characters)
+			map_table_filter_schema_filter1.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 			map_table_filter_schema_filter1.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter1)
 
 			map_table_filter_schema_filter2 := json.NewMapValue()
-			map_table_filter_schema_filter2.SetObjectForMap("values", database_reserved_words)
+			map_table_filter_schema_filter2.SetObjectForMap("values", verify.GetDatabaseReservedWordsBlackList())
 			map_table_filter_schema_filter2.SetObjectForMap("function",  validation_functions.GetBlacklistStringToUpperFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter2)
 		}

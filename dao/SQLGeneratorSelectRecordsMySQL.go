@@ -7,9 +7,10 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getSelectRecordsSQLMySQL(table Table, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map, column_name_whitelist_characters *json.Map) (*string, *json.Map, []error) {
+func getSelectRecordsSQLMySQL(verify validate.Validator, table Table, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
@@ -306,7 +307,7 @@ func getSelectRecordsSQLMySQL(table Table, select_fields *json.Array, filters *j
 		}
 
 		column_name_params := json.NewMapValue()
-		column_name_params.SetObjectForMap("values", column_name_whitelist_characters)
+		column_name_params.SetObjectForMap("values", verify.GetColumnNameCharacterWhitelist())
 		column_name_params.SetNil("value")
 		column_name_params.SetStringValue("label","column_name")
 		column_name_params.SetStringValue("data_type", "Table")

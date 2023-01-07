@@ -45,7 +45,7 @@ type DatabaseCreateOptions struct {
 	Validate     func() []error
 }
 
-func NewDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
+func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 	struct_type := "*dao.DatabaseCreateOptions"
 
 	data := json.NewMapValue()

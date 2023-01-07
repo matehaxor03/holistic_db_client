@@ -4,10 +4,10 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetDropTableSQL(struct_type string, table_name string, drop_table_if_exists bool, options *json.Map) (*string, *json.Map, []error) {
+func GetDropTableSQL(verify validate.Validator, struct_type string, table_name string, drop_table_if_exists bool, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
@@ -20,7 +20,7 @@ func GetDropTableSQL(struct_type string, table_name string, drop_table_if_exists
 		return nil, nil, errors
 	}
 
-	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	validation_errors := verify.ValidateTableName(table_name)
 	if validation_errors != nil {
 		return nil, nil, validation_errors
 	}

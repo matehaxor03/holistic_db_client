@@ -5,18 +5,18 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetTableSchemaAdditionalSQL(struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaAdditionalSQL(verify validate.Validator, struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	
-	database_name_validation_errors := validation_functions.ValidateDatabaseName(database_name)
+	database_name_validation_errors := verify.ValidateDatabaseName(database_name)
 	if database_name_validation_errors != nil {
 		errors = append(errors, database_name_validation_errors...)
 	}
 
-	table_name_validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	table_name_validation_errors := verify.ValidateTableName(table_name)
 	if table_name_validation_errors != nil {
 		errors = append(errors, table_name_validation_errors...)
 	}

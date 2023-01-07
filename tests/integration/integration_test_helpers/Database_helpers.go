@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"sync"
 	common "github.com/matehaxor03/holistic_common/common"
-	db_client "github.com/matehaxor03/holistic_db_client/db_client"
 	dao "github.com/matehaxor03/holistic_db_client/dao"
 )
 
@@ -13,7 +12,7 @@ var database_count uint64 = 0
 var lock_get_client_manager = &sync.Mutex{}
 var lock_get_database = &sync.Mutex{}
 var lock_get_database_name = &sync.Mutex{}
-var client_manager *db_client.ClientManager
+var client_manager *dao.ClientManager
 
 func getTestDatabaseName() string {
 	lock_get_database_name.Lock()
@@ -32,12 +31,12 @@ func EnsureDatabaseIsDeleted(t *testing.T, database dao.Database) {
 	}
 }
 
-func GetTestClient(t *testing.T) (db_client.Client) {
+func GetTestClient(t *testing.T) (dao.Client) {
 	lock_get_client_manager.Lock()
 	defer lock_get_client_manager.Unlock()
 	var errors []error
 	if common.IsNil(client_manager) {
-		temp_client_manager, temp_client_manager_errors := db_client.NewClientManager()
+		temp_client_manager, temp_client_manager_errors := dao.NewClientManager()
 		if temp_client_manager_errors != nil {
 			errors = append(errors, temp_client_manager_errors...)
 		} else if temp_client_manager == nil {
@@ -47,7 +46,7 @@ func GetTestClient(t *testing.T) (db_client.Client) {
 		if len(errors) > 0 {
 			t.Error(errors)
 			t.FailNow()
-			return db_client.Client{}
+			return dao.Client{}
 		}
 		client_manager = temp_client_manager
 	}
@@ -62,7 +61,7 @@ func GetTestClient(t *testing.T) (db_client.Client) {
 	if len(errors) > 0 {
 		t.Error(errors)
 		t.FailNow()
-		return db_client.Client{}
+		return dao.Client{}
 	}
 
 	return *client

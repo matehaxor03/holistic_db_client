@@ -7,10 +7,10 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaSQL(verify validate.Validator, struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
@@ -23,7 +23,7 @@ func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map)
 		return nil, nil, errors
 	}
 
-	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
+	validation_errors := verify.ValidateTableName(table_name)
 	if validation_errors != nil {
 		return nil, nil, validation_errors
 	}
@@ -45,7 +45,7 @@ func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map)
 }
 
 
-func MapTableSchemaFromDB(struct_type string, table_name string, json_array *json.Array) (*json.Map, []error) {
+func MapTableSchemaFromDB(verify validate.Validator, struct_type string, table_name string, json_array *json.Array) (*json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(table_name) {
@@ -258,22 +258,22 @@ func MapTableSchemaFromDB(struct_type string, table_name string, json_array *jso
 									switch *rule_value {
 									case "domain_name":
 										domain_name_filter := json.NewMap()
-										domain_name_filter.SetObjectForMap("values", validation_constants.GetValidDomainNameCharacters())
+										domain_name_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
 										domain_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 										filters.AppendMap(domain_name_filter)
 									case "repository_name":
 										repostiory_name_filter := json.NewMap()
-										repostiory_name_filter.SetObjectForMap("values", validation_constants.GetValidRepositoryNameCharacters())
+										repostiory_name_filter.SetObjectForMap("values", verify.GetRepositoryNameCharacterWhitelist())
 										repostiory_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 										filters.AppendMap(repostiory_name_filter)
 									case "repository_account_name":
 										repository_account_name_filter := json.NewMap()
-										repository_account_name_filter.SetObjectForMap("values", validation_constants.GetValidRepositoryAccountNameCharacters())
+										repository_account_name_filter.SetObjectForMap("values", verify.GetRepositoryAccountNameCharacterWhitelist())
 										repository_account_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 										filters.AppendMap(repository_account_name_filter)
 									case "branch_name":
 										branch_name_filter := json.NewMap()
-										branch_name_filter.SetObjectForMap("values", validation_constants.GetValidBranchNameCharacters())
+										branch_name_filter.SetObjectForMap("values", verify.GetBranchNameCharacterWhitelist())
 										branch_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
 										filters.AppendMap(branch_name_filter)
 									default:

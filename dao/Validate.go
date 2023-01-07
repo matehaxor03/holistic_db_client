@@ -579,6 +579,42 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		}
 
 		break
+	case "*dao.Client":
+		client := value_to_validate.(*Client)
+
+		errors_for_client := client.Validate()
+		if errors_for_client != nil {
+			errors = append(errors, errors_for_client...)
+		}
+
+		break
+	case "dao.Client":
+		client := value_to_validate.(Client)
+
+		errors_for_client := client.Validate()
+		if errors_for_client != nil {
+			errors = append(errors, errors_for_client...)
+		}
+
+		break
+	case "*dao.ClientManager":
+		client_manager := value_to_validate.(*ClientManager)
+
+		errors_for_client_manager := client_manager.Validate()
+		if errors_for_client_manager != nil {
+			errors = append(errors, errors_for_client_manager...)
+		}
+
+		break
+	case "dao.ClientManager":
+		client_manager := value_to_validate.(ClientManager)
+
+		errors_for_client_manager := client_manager.Validate()
+		if errors_for_client_manager != nil {
+			errors = append(errors, errors_for_client_manager...)
+		}
+
+		break
 	default:
 		errors = append(errors, fmt.Errorf("error: class: %s column: %s type: %s did not meet validation requirements please adjust either your data or table schema (value_nil=%t, value_mandatory=%t, default_nil=%t)", struct_type, parameter, type_of_parameter_value, value_is_null, value_is_mandatory, default_is_null))
 	}
