@@ -2,7 +2,6 @@ package integration
  
 import (
     "testing"
-	"time"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
  
