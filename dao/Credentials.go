@@ -6,17 +6,19 @@ import (
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	common "github.com/matehaxor03/holistic_common/common"
+	"fmt"
 )
 
 type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() (string, []error)
-	GetPassword  func() (*string, []error)
+	GetPassword  func() (string, []error)
 	ToJSONString func(json *strings.Builder) ([]error)
 	Clone        func() *Credentials
 }
 
-func NewCredentials(username string, password *string) (*Credentials, []error) {
+func NewCredentials(username string, password string) (*Credentials, []error) {
 	struct_type := "*dao.Credentials"
 
 
@@ -34,7 +36,7 @@ func NewCredentials(username string, password *string) (*Credentials, []error) {
 	map_system_schema := json.NewMapValue()
 	
 	map_username_schema := json.NewMapValue()
-	map_username_schema.SetStringValue("type", "string")
+	map_username_schema.SetStringValue("type", "*string")
 	map_username_schema.SetIntValue("min_length", 1)
 	array_username_filters := json.NewArrayValue()
 	map_username_filter := json.NewMapValue()
@@ -60,23 +62,33 @@ func NewCredentials(username string, password *string) (*Credentials, []error) {
 	}
 
 	getUsername := func() (string, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[username]", "string")
 		if temp_value_errors != nil {
-			return "", temp_value_errors
-		} else if temp_value == nil {
-			return "", temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("username is nil"))
+		}
+
+		if len(errors) > 0 {
+			return "", errors
 		}
 		return temp_value.(string), nil
 	}
 
-	getPassword := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]", "*string")
+	getPassword := func() (string, []error) {
+		var errors []error
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[password]", "string")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
-			return nil, nil
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			return "", nil
 		}
-		return temp_value.(*string), nil
+
+		if len(errors) > 0 {
+			return "", errors
+		}
+		return temp_value.(string), nil
 	}
 
 	errors := validate()
@@ -92,7 +104,7 @@ func NewCredentials(username string, password *string) (*Credentials, []error) {
 		GetUsername: func() (string, []error) {
 			return getUsername() 
 		},
-		GetPassword: func() (*string, []error) {
+		GetPassword: func() (string, []error) {
 			return getPassword()
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {

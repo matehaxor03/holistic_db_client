@@ -12,7 +12,7 @@ import (
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
 
-func mapValueFromDBToRecord(table *Table, current_json *json.Value, database_reserved_words_obj *validation_constants.DatabaseReservedWords, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Record, []error) {
+func mapValueFromDBToRecord(table Table, current_json *json.Value, database_reserved_words_obj *validation_constants.DatabaseReservedWords, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Record, []error) {
 	var errors []error
 
 	if common.IsNil(table) {
@@ -53,7 +53,7 @@ func mapValueFromDBToRecord(table *Table, current_json *json.Value, database_res
 	}
 
 	columns := current_record.GetKeys()
-	mapped_record := json.NewMapValue()
+	mapped_record := json.NewMap()
 	for _, column := range columns {
 		table_schema_column_map, table_schema_column_map_errors := table_schema.GetMap(column)
 		if table_schema_column_map_errors != nil {
@@ -274,7 +274,7 @@ func mapValueFromDBToRecord(table *Table, current_json *json.Value, database_res
 		return nil, errors
 	}
 
-	mapped_record_obj, mapped_record_obj_errors := newRecord(*table, mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
+	mapped_record_obj, mapped_record_obj_errors := newRecord(table, *mapped_record, database_reserved_words_obj, column_name_whitelist_characters_obj)
 	if mapped_record_obj_errors != nil {
 		errors = append(errors, mapped_record_obj_errors...)
 	} else if common.IsNil(mapped_record_obj){
@@ -389,55 +389,57 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 	//column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 
-	data := json.NewMapValue()
-	data.SetMapValue("[fields]", record_data)
-	data.SetMapValue("[schema]", table_schema)
+	data := json.NewMap()
+	data.SetMap("[fields]", &record_data)
+	data.SetMap("[schema]", table_schema)
 
-	map_system_fields := json.NewMapValue()
+	map_system_fields := json.NewMap()
 	map_system_fields.SetObjectForMap("[table]", table)
-	data.SetMapValue("[system_fields]", map_system_fields)
+	data.SetMap("[system_fields]", map_system_fields)
 
 	///
 
-	map_system_schema := json.NewMapValue()
+	map_system_schema := json.NewMap()
 
 	// Start table
 	
-	map_table_schema := json.NewMapValue()
-	map_table_schema.SetStringValue("type", "dao.Table")
-	map_system_schema.SetMapValue("[table]", map_table_schema)
+	map_table_schema := json.NewMap()
+	type_table := "dao.Table"
+	map_table_schema.SetString("type", &type_table)
+	map_system_schema.SetMap("[table]", map_table_schema)
 	// End table
 
-	data.SetMapValue("[system_schema]", map_system_schema)
+	data.SetMap("[system_schema]", map_system_schema)
 
 	schema_column_names := table_schema.GetKeys()
 	for _, schema_column_name := range schema_column_names {
-		validate_database_column_name_errors := validation_functions.ValidateDatabaseTableColumnName(schema_column_name)
+		validate_database_column_name_errors := validation_functions.ValidateDatabaseTableColumnName(&schema_column_name)
 		if validate_database_column_name_errors != nil {
 			errors = append(errors, validate_database_column_name_errors...)
 		}
 	}
 
 	getData := func() (*json.Map) {
-		return &data
+		return data
 	}
 
 	getRecordColumns := func() (*[]string, []error) {
 		return helper.GetRecordColumns(struct_type, getData())
 	}
 
-	getTable := func() (Table, []error) {
+	getTable := func() (*Table, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "dao.Table")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*dao.Table")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
 			errors = append(errors, fmt.Errorf("table is nil"))
 		}
+		
 		if len(errors) > 0 {
-			return Table{}, nil
+			return nil, errors
 		}
-		return temp_value.(Table), nil
+		return temp_value.(*Table), nil
 	}
 
 	getArchieved := func() (*bool, []error) {
@@ -545,12 +547,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 			return nil, nil, errors
 		}
 	
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, nil, temp_table_errors
-		}
-	
-		return getUpdateRecordSQLMySQL("*dao.Record", &temp_table, getThis(), options)
+		return getUpdateRecordSQLMySQL("*dao.Record", table, *getThis(), options)
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
@@ -564,12 +561,8 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 		options.SetBoolValue("no_column_headers", true)
 		options.SetBoolValue("transactional", false)
 		
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, nil, temp_table_errors
-		}
 
-		return getCreateRecordSQLMySQL("*dao.Record", &temp_table, getData(), options)
+		return getCreateRecordSQLMySQL("*dao.Record", table, *getData(), options)
 	}
 
 	created_record := Record{
@@ -597,7 +590,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 				return temp_database_errors
 			}
 
-			json_array, errors := temp_database.ExecuteUnsafeCommand(sql, options)
+			json_array, errors := temp_database.ExecuteUnsafeCommand(*sql, options)
 
 			if len(errors) > 0 {
 				return errors
@@ -681,7 +674,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 				return temp_database_errors
 			}
 
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql, options)
+			_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql, options)
 
 			if execute_errors != nil {
 				return execute_errors

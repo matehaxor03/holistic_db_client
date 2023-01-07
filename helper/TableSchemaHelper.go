@@ -3,18 +3,20 @@ package helper
 import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	//common "github.com/matehaxor03/holistic_common/common"
 )
 
 func GetTableName(struct_type string, m *json.Map) (string, []error) {
+	var errors []error
 	temp_value, temp_value_errors := GetField(struct_type, m, "[system_schema]", "[system_fields]", "[table_name]", "string")
 	if temp_value_errors != nil {
-		return "", temp_value_errors
-	} else if temp_value == nil {
-		return "", nil
+		errors = append(errors, temp_value_errors...)
+	} 
+	
+	if len(errors) > 0 {
+		return "", errors
 	}
 	
-	return temp_value.(string), temp_value_errors
+	return temp_value.(string), nil
 }
 
 func GetTableColumns(caller string, data *json.Map) (*[]string, []error) {

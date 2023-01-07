@@ -9,7 +9,7 @@ import (
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
 
-func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.Map, options *json.Map) (*string, *json.Map, []error) {
+func getCreateTableSQLMySQL(struct_type string, table Table, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
@@ -58,7 +58,7 @@ func getCreateTableSQLMySQL(struct_type string, table *Table, table_data *json.M
 		return nil, nil, valid_columns_errors
 	}
 
-	schemas_map, schemas_map_errors := helper.GetSchemas(struct_type, table_data, "[schema]")
+	schemas_map, schemas_map_errors := helper.GetSchemas(struct_type, &table_data, "[schema]")
 	if schemas_map_errors != nil {
 		return nil, nil, schemas_map_errors
 	}

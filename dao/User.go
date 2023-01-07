@@ -51,18 +51,6 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]": json.Map{"[client]":client, "[credentials]":credentials, "[domain_name]":domain_name},
-		"[system_schema]": json.Map{"[client]":json.Map{"type":"db_client.Client"},
-		                "[credentials]":json.Map{"type":"db_client.Credentials"},
-						"[domain_name]":json.Map{"type":"db_client.DomainName"},
-		},
-	}*/
-
 	getData := func() *json.Map {
 		return &data
 	}
@@ -72,25 +60,45 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getDatabase := func() (Database, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
-			return Database{}, temp_value_errors
-		} 
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("database is nil"))
+		}
+		if len(errors) > 0 {
+			return Database{}, errors
+		}
 		return temp_value.(Database), temp_value_errors
 	}
 
 	getCredentials := func() (Credentials, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "dao.Credentials")
 		if temp_value_errors != nil {
-			return Credentials{}, temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("credentials is nil"))
+		}
+
+		if len(errors) > 0 {
+			return Credentials{}, errors
 		}
 		return temp_value.(Credentials), nil
 	}
 
 	getDomainName := func() (DomainName, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "dao.DomainName")
 		if temp_value_errors != nil {
-			return DomainName{}, temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("domain name is nil"))
+		}
+
+		if len(errors) > 0 {
+			return DomainName{}, errors
 		}
 		return temp_value.(DomainName), nil
 	}
@@ -147,7 +155,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 			errors = append(errors, temp_domain_name_value_escaped_errors)
 		}
 
-		temp_password_escaped, temp_password_escaped_errors := common.EscapeString(*temp_password, "'")
+		temp_password_escaped, temp_password_escaped_errors := common.EscapeString(temp_password, "'")
 		if temp_password_escaped_errors != nil {
 			errors = append(errors, temp_password_escaped_errors)
 		}
@@ -215,7 +223,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 				return temp_database_errors
 			}
 
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+			_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -312,7 +320,7 @@ func NewUser(database Database, credentials Credentials, domain_name DomainName)
 
 			options_update := json.NewMap()
 			options_update.SetBoolValue("use_file", true)
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(&sql_command, options_update)
+			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, options_update)
 
 			if execute_errors != nil {
 				return execute_errors

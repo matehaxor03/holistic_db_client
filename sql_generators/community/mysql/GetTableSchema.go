@@ -18,6 +18,11 @@ func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map)
 		options.SetBoolValue("use_file", false)
 	}
 
+	if common.IsNil(table_name) {
+		errors = append(errors, fmt.Errorf("table_name is nil"))
+		return nil, nil, errors
+	}
+
 	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
 	if validation_errors != nil {
 		return nil, nil, validation_errors
@@ -40,34 +45,38 @@ func GetTableSchemaSQL(struct_type string, table_name string, options *json.Map)
 }
 
 
-func MapTableSchemaFromDB(struct_type string, table_name string, json_array *json.Array) (json.Map, []error) {
+func MapTableSchemaFromDB(struct_type string, table_name string, json_array *json.Array) (*json.Map, []error) {
 	var errors []error
+
+	if common.IsNil(table_name) {
+		errors = append(errors, fmt.Errorf("error: table_name is nil"))
+	}
 
 	if common.IsNil(json_array) {
 		errors = append(errors, fmt.Errorf("error: show columns returned nil records"))
 	}
 
 	if len(errors) > 0 {
-		return json.NewMapValue(), errors 
+		return nil, errors 
 	}
 
 	if len(*(json_array.GetValues())) == 0 {
 		errors = append(errors, fmt.Errorf("error: show columns did not return any records"))
-		return json.NewMapValue(), errors
+		return nil, errors
 	}
 
-	schema := json.NewMapValue()
+	schema := json.NewMap()
 	for _, column_details := range *(json_array.GetValues()) {
 		column_map, column_map_errors := column_details.GetMap()
 		if column_map_errors != nil {
-			return json.NewMapValue(), column_map_errors
+			return nil, column_map_errors
 		} else if common.IsNil(column_map) {
 			errors = append(errors, fmt.Errorf("column_map is nil"))
-			return json.NewMapValue(), errors
+			return nil, errors
 		}
 		column_attributes := column_map.GetKeys()
 
-		column_schema := json.NewMapValue()
+		column_schema := json.NewMap()
 		default_value := ""
 		field_name := ""
 		is_nullable := false
@@ -240,33 +249,33 @@ func MapTableSchemaFromDB(struct_type string, table_name string, json_array *jso
 								for _, rule := range *(rules_array.GetValues()) {
 									rule_value, rule_value_errors := rule.GetString()
 									if rule_value_errors != nil {
-										return json.NewMapValue(), rule_value_errors
+										return nil, rule_value_errors
 									} else if common.IsNil(rule_value) {
 										errors = append(errors, fmt.Errorf("rule value is nil"))
-										return json.NewMapValue(), errors
+										return nil, errors
 									}
 
 									switch *rule_value {
 									case "domain_name":
-										domain_name_filter := json.NewMapValue()
+										domain_name_filter := json.NewMap()
 										domain_name_filter.SetObjectForMap("values", validation_constants.GetValidDomainNameCharacters())
 										domain_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-										filters.AppendMapValue(domain_name_filter)
+										filters.AppendMap(domain_name_filter)
 									case "repository_name":
-										repostiory_name_filter := json.NewMapValue()
+										repostiory_name_filter := json.NewMap()
 										repostiory_name_filter.SetObjectForMap("values", validation_constants.GetValidRepositoryNameCharacters())
 										repostiory_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-										filters.AppendMapValue(repostiory_name_filter)
+										filters.AppendMap(repostiory_name_filter)
 									case "repository_account_name":
-										repository_account_name_filter := json.NewMapValue()
+										repository_account_name_filter := json.NewMap()
 										repository_account_name_filter.SetObjectForMap("values", validation_constants.GetValidRepositoryAccountNameCharacters())
 										repository_account_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-										filters.AppendMapValue(repository_account_name_filter)
+										filters.AppendMap(repository_account_name_filter)
 									case "branch_name":
-										branch_name_filter := json.NewMapValue()
+										branch_name_filter := json.NewMap()
 										branch_name_filter.SetObjectForMap("values", validation_constants.GetValidBranchNameCharacters())
 										branch_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-										filters.AppendMapValue(branch_name_filter)
+										filters.AppendMap(branch_name_filter)
 									default:
 										errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))
 									}
@@ -466,11 +475,11 @@ func MapTableSchemaFromDB(struct_type string, table_name string, json_array *jso
 			column_schema.SetStringValue("type",  "*" + dt)
 		}
 
-		schema.SetMapValue(field_name, column_schema)
+		schema.SetMap(field_name, column_schema)
 	}
 
 	if len(errors) > 0 {
-		return json.NewMapValue(), errors
+		return nil, errors
 	}
 
 	return schema, nil

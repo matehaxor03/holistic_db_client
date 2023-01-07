@@ -3,19 +3,30 @@ package validation_functions
 import (
     json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	common "github.com/matehaxor03/holistic_common/common"
+
 	"fmt"
 )
 
-func ValidateDatabaseTableColumnName(column_name string) []error {
+func ValidateDatabaseTableColumnName(column_name *string) []error {
 	var errors []error
-	column_name_params := json.NewMapValue()
-	column_name_params.SetStringValue("value", column_name)
-	column_name_params.SetStringValue("label", "column_name")
-	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableColumnName(column_name)")
+	if common.IsNil(column_name) {
+		errors = append(errors, fmt.Errorf("column_name is nil"))
+		return errors
+	}
 
-	if len(column_name) < 2 {
+	if len(*column_name) < 2 {
 		errors = append(errors, fmt.Errorf("column_name length is less than 2 characters. validation_functions.ValidateDatabaseTableColumnName(column_name)"))
 	}
+
+	if len(errors) > 0 {
+		return errors
+	}
+
+	column_name_params := json.NewMap()
+	column_name_params.SetString("value", column_name)
+	column_name_params.SetStringValue("label", "column_name")
+	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableColumnName(column_name)")
 
 	column_name_params.SetObjectForMap("values", validation_constants.GetMySQLColumnNameWhitelistCharacters())
 	column_name_errors := WhitelistCharacters(column_name_params)
@@ -34,15 +45,14 @@ func ValidateDatabaseTableColumnName(column_name string) []error {
 func ValidateDatabaseTableName(table_name string) []error {
 	var errors []error
 
-	column_name_params := json.NewMapValue()
-	column_name_params.SetStringValue("value", table_name)
-	column_name_params.SetStringValue("label", "table_name")
-	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableName(table_name)")
-
-
 	if len(table_name) < 2 {
 		errors = append(errors, fmt.Errorf("table_name length is less than 2 characters. validation_functions.ValidateDatabaseTableName(table_name)"))
 	}
+
+	column_name_params := json.NewMap()
+	column_name_params.SetStringValue("value", table_name)
+	column_name_params.SetStringValue("label", "table_name")
+	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableName(table_name)")
 
 	column_name_params.SetObjectForMap("values", validation_constants.NewTableNameCharacterWhitelist().GetTableNameCharacterWhitelist())
 	column_name_errors := WhitelistCharacters(column_name_params)

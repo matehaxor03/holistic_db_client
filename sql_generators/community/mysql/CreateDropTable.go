@@ -15,6 +15,11 @@ func GetDropTableSQL(struct_type string, table_name string, drop_table_if_exists
 		options.SetBoolValue("use_file", false)
 	}
 
+	if common.IsNil(table_name) {
+		errors = append(errors, fmt.Errorf("table_name is nil"))
+		return nil, nil, errors
+	}
+
 	validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
 	if validation_errors != nil {
 		return nil, nil, validation_errors

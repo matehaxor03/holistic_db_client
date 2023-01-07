@@ -2,6 +2,7 @@ package dao
 
 import (
 	common "github.com/matehaxor03/holistic_common/common"
+	"fmt"
 )
 
 type TableReadRecordsCache struct {
@@ -12,32 +13,50 @@ func newTableReadRecordsCache() (*TableReadRecordsCache) {
 	cache := map[string](*[]Record){}
 	
 	getOrSetReadRecords := func(database Database, sql string, records *[]Record) (*[]Record, []error) {		
-		host, host_errors := database.GetHost()
-		if host_errors != nil {
-			return nil, host_errors
-		} else if common.IsNil(host) {
-			return nil, nil
+		var errors []error
+	
+		if common.IsNil(records) {
+			errors = append(errors, fmt.Errorf("records is nil"))
 		}
 
-		host_name, host_name_errors := host.GetHostName()
-		if host_name_errors != nil {
-			return nil, host_name_errors
-		} else if common.IsNil(host_name) {
-			return nil, nil
-		}
-
-		port_number, port_number_errors := host.GetPortNumber()
-		if port_number_errors != nil {
-			return nil, port_number_errors
-		} else if common.IsNil(port_number) {
-			return nil, nil
+		if len(errors) > 0 {
+			return nil, errors
 		}
 
 		database_name, database_name_errors := database.GetDatabaseName()
 		if database_name_errors != nil {
-			return nil, database_name_errors
+			errors = append(errors, database_name_errors...)
 		} else if common.IsNil(database_name) {
-			return nil, nil
+			errors = append(errors, fmt.Errorf("database_name is nil"))
+		}
+
+		host, host_errors := database.GetHost()
+		if host_errors != nil {
+			errors = append(errors, host_errors...)
+		} else if common.IsNil(host) {
+			errors = append(errors, fmt.Errorf("host is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		host_name, host_name_errors := host.GetHostName()
+		if host_name_errors != nil {
+			errors = append(errors, host_name_errors...)
+		} else if common.IsNil(host_name) {
+			errors = append(errors, fmt.Errorf("host_name is nil"))
+		}
+
+		port_number, port_number_errors := host.GetPortNumber()
+		if port_number_errors != nil {
+			errors = append(errors, port_number_errors...)
+		} else if common.IsNil(port_number) {
+			errors = append(errors, fmt.Errorf("port_number is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
 		}
 
 		key := host_name + "#" + port_number + "#" + database_name + "#" + sql

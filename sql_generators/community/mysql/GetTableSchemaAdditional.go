@@ -13,30 +13,30 @@ func GetTableSchemaAdditionalSQL(struct_type string, database_name string, table
 	
 	database_name_validation_errors := validation_functions.ValidateDatabaseName(database_name)
 	if database_name_validation_errors != nil {
-		return nil, nil, database_name_validation_errors
+		errors = append(errors, database_name_validation_errors...)
 	}
 
 	table_name_validation_errors := validation_functions.ValidateDatabaseTableName(table_name)
 	if table_name_validation_errors != nil {
-		return nil, nil, table_name_validation_errors
+		errors = append(errors, table_name_validation_errors...)
 	}
 
 	database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
 	if database_name_escaped_errors != nil {
 		errors = append(errors, database_name_escaped_errors)
-		return nil, nil, errors
 	} else if common.IsNil(database_name_escaped) {
 		errors = append(errors, fmt.Errorf("database_name_escaped is nil"))
-		return nil, nil, errors
 	}
 
 	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
-		return nil, nil, errors
 	} else if common.IsNil(table_name_escaped) {
 		errors = append(errors, fmt.Errorf("table_name_escaped is nil"))
-		return nil, nil, errors
+	}
+
+	if len(errors) > 0 {
+		return nil, nil ,errors
 	}
 
 	if common.IsNil(options) {

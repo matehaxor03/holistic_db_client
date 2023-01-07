@@ -153,37 +153,6 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 	data.SetMapValue("[system_fields]", map_system_fields)
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]": json.Map{"[client]":client, "[user]":user, "[grant]":grant},
-		"[system_schema]": json.Map{"[client]": json.Map{"type":"db_client.Client"},
-						"[user]": json.Map{"type":"db_client.User"},
-						"[grant]": json.Map{"type":"string","filters": json.Array{json.Map{"values": GET_ALLOWED_GRANTS(), "function": getWhitelistStringFunc()}}},
-		},
-	}
-
-	if database_filter != nil {
-		data["[system_fields]"].(json.Map)["[database_filter]"] = database_filter
-		if *database_filter == "*" {
-			data["[system_schema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
-		} else {
-			data["[system_schema]"].(json.Map)["[database_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": database_name_whitelist_characters, "function": getWhitelistCharactersFunc()}, json.Map{"values":database_reserved_words,"function":getBlacklistStringToUpperFunc()}}}
-		}
-	}
-
-	if table_filter != nil {
-		data["[system_fields]"].(json.Map)["[table_filter]"] = table_filter
-		if *table_filter == "*" {
-			data["[system_schema]"].(json.Map)["[table_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": GET_ALLOWED_FILTERS(), "function": getWhitelistCharactersFunc()}}}
-		} else {
-			data["[system_schema]"].(json.Map)["[table_filter]"] = json.Map{"type":"string", "filters": json.Array{json.Map{"values": table_name_whitelist_characters_obj, "function": getWhitelistCharactersFunc()}}}
-		}
-	}*/
-
-
 	if table_filter == nil && database_filter == nil {
 		errors = append(errors, fmt.Errorf("error: Grant: database_filter and table_filter are both nil"))
 	}
@@ -197,47 +166,74 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 	}
 
 	getDatabase := func() (Database, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "dao.Database")
 		if temp_value_errors != nil {
-			return Database{}, temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("database is nil"))
 		}
-		return temp_value.(Database), temp_value_errors
+		if len(errors) > 0 {
+			return Database{}, errors
+		}
+		return temp_value.(Database), nil
 	}
 
 	getUser := func() (User, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "dao.User")
 		if temp_value_errors != nil {
-			return User{}, temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("user is nil"))
 		}
-		return temp_value.(User), temp_value_errors
+		if len(errors) > 0 {
+			return User{}, errors
+		}
+		return temp_value.(User), nil
 	}
 
-	getGrantValue := func() (string, []error) {
+	getGrantValue := func() (*string, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
 		if temp_value_errors != nil {
-			return "", temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("grant value is nil"))
 		}
-		return temp_value.(string), temp_value_errors
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		return temp_value.(*string), nil
 	}
 
 	getDatabaseFilter := func() (*string, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_filter]", "*string")
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
 			return nil, nil
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
 		}
 		
 		return temp_value.(*string), nil
 	}
 
 	getTableFilter := func() (*string, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_filter]", "*string")
-		
 		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if temp_value == nil {
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
 			return nil, nil
+		}
+		
+		if len(errors) > 0 {
+			return nil, errors
 		}
 		
 		return temp_value.(*string), nil
@@ -335,7 +331,7 @@ func NewGrant(database Database, user User, grant string, database_filter *strin
 			return temp_database_errors
 		}
 
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, options)
+		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors

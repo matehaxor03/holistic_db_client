@@ -10,7 +10,7 @@ import (
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
 
-func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json.Map, options *json.Map) (*string, *json.Map, []error) {
+func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	table_validation_errors := table.Validate() 
@@ -41,7 +41,7 @@ func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json
 		return nil, options, table_name_errors
 	}
 
-	record_columns, record_columns_errors := helper.GetRecordColumns(struct_type, record_data)
+	record_columns, record_columns_errors := helper.GetRecordColumns(struct_type, &record_data)
 	if record_columns_errors != nil {
 		return nil, nil, record_columns_errors
 	}
@@ -156,7 +156,7 @@ func getCreateRecordSQLMySQL(struct_type string, table *Table, record_data *json
 
 	sql_command += ") VALUES ("
 	for index, record_column := range *record_columns {
-		column_data, paramter_errors := helper.GetField(struct_type, record_data, "[schema]", "[fields]", record_column, "self")
+		column_data, paramter_errors := helper.GetField(struct_type, &record_data, "[schema]", "[fields]", record_column, "self")
 		if paramter_errors != nil {
 			errors = append(errors, paramter_errors...)
 			continue

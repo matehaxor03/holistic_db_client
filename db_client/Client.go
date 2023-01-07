@@ -15,13 +15,13 @@ type Client struct {
 	CreateDatabase      func(database_name string, character_set *string, collate *string) (*dao.Database, []error)
 	GetDatabaseInterface func(database_name string, character_set *string, collate *string) (*dao.Database, []error)
 	DeleteDatabase      func(database_name string) []error
-	DatabaseExists      func(database_name string) (*bool, []error)
+	DatabaseExists      func(database_name string) (bool, []error)
 	UseDatabase         func(database dao.Database) []error
 	UseDatabaseByName   func(database_name string) ([]error)
 	UseDatabaseUsername func(database_username string) []error
 	GetUser             func(username string) (*dao.User, []error)
 	CreateUser          func(username string, password string, domain_name string) (*dao.User, []error)
-	UserExists          func(username string) (*bool, []error)
+	UserExists          func(username string) (bool, []error)
 	GetDatabaseUsername func() (*string, []error)
 	GetHost             func() (*dao.Host, []error)
 	GetDatabase         func() (*dao.Database, []error)
@@ -75,10 +75,10 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 	map_database_username := json.NewMapValue()
 	map_database_username.SetStringValue("type", "*string")
 	array_database_username_filters := json.NewArrayValue()
-	map_database_username_filter := json.NewMapValue()
+	map_database_username_filter := json.NewMap()
 	map_database_username_filter.SetObjectForMap("values", validation_constants.GetValidUsernameCharacters())
 	map_database_username_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-	array_database_username_filters.AppendMapValue(map_database_username_filter)
+	array_database_username_filters.AppendMap(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
 	map_system_schema.SetMapValue("[database_username]", map_database_username)
 	
@@ -263,7 +263,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := dao.NewCredentials(*(tuple_credentials.database_username), nil)
+		credentials, credentials_errors := dao.NewCredentials(*(tuple_credentials.database_username), "")
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
@@ -294,17 +294,17 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			return getDatabaseInterface(database_name, character_set, collate)
 		},
 		CreateDatabase: func(database_name string, character_set *string, collate *string) (*dao.Database, []error) {
-			database, errs := getDatabaseInterface(database_name, character_set, collate)
-			if errs != nil {
-				return nil, errs
+			database_interface, database_interface_errors := getDatabaseInterface(database_name, character_set, collate)
+			if database_interface_errors != nil {
+				return nil, database_interface_errors
 			}
 
-			errors := database.Create()
-			if errors != nil {
-				return nil, errors
+			create_errors := database_interface.Create()
+			if create_errors != nil {
+				return nil, create_errors
 			}
 
-			return database, nil
+			return database_interface, nil
 		},
 		DeleteDatabase: func(database_name string) []error {
 			var errors [] error
@@ -340,7 +340,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 
 			return nil
 		},
-		DatabaseExists: func(database_name string) (*bool, []error) {
+		DatabaseExists: func(database_name string) (bool, []error) {
 			var errors [] error
 			temp_host, temp_host_errors := getHost()
 			if temp_host_errors != nil {
@@ -359,12 +359,12 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return false, errors
 			}
 
 			database, database_errors := dao.NewDatabase(*temp_host, *temp_database_username, database_name, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 			if database_errors != nil {
-				return nil, database_errors
+				return false, database_errors
 			}
 
 			return database.Exists()
@@ -374,7 +374,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 		},
 		CreateUser: func(username string, password string, domain_name string) (*dao.User, []error) {
 			var errors []error
-			credentials, credentail_errors := dao.NewCredentials(username, &password)
+			credentials, credentail_errors := dao.NewCredentials(username, password)
 			if credentail_errors != nil {
 				return nil, credentail_errors
 			}
@@ -481,16 +481,16 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return data.ToJSONString(json)
 		},
-		UserExists: func(username string) (*bool, []error) {
+		UserExists: func(username string) (bool, []error) {
 			errors := validate()
 			if len(errors) > 0 {
-				return nil, errors
+				return false, errors
 			}
 
 			_, user_errors := getUser("root") 
 			if user_errors != nil {
 				errors = append(errors, user_errors...)
-				return nil, errors
+				return false, errors
 			}
 
 			client := getClient()
@@ -498,7 +498,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			use_database_errors := client.UseDatabaseByName("mysql")
 			if use_database_errors != nil {
 				errors = append(errors, use_database_errors...)
-				return nil, errors
+				return false, errors
 			}
 
 			temp_database, temp_database_errors := getDatabase()
@@ -509,19 +509,19 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return false, errors
 			}
 
 			table, table_errors := temp_database.GetTable("user")
 			if table_errors != nil {
 				errors = append(errors, table_errors...)
-				return nil, errors
+				return false, errors
 			}
 
 			username_escaped, username_escaped_error := common.EscapeString(username, "'")
 			if username_escaped_error != nil {
 				errors = append(errors, username_escaped_error)
-				return nil, errors
+				return false, errors
 			}
 
 			select_fields := json.NewArray()
@@ -533,7 +533,7 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil)
 
 			if records_errors != nil {
-				return nil, records_errors
+				return false, records_errors
 			}
 
 			var exists bool
@@ -546,10 +546,10 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return false, errors
 			}
 
-			return &exists, nil
+			return exists, nil
 		},
 	}
 	setClient(&x)

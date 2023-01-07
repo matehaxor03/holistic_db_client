@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func WhiteListString(m json.Map) []error {
+func WhiteListString(m *json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -42,7 +42,7 @@ func WhiteListString(m json.Map) []error {
 }
 
 
-func GetWhitelistStringFunc() *func(m json.Map) []error {
+func GetWhitelistStringFunc() *func(m *json.Map) []error {
 	function := WhiteListString
 	return &function
 }

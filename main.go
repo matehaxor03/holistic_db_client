@@ -114,7 +114,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			if *database_exists == false {
+			if database_exists == false {
 				_, database_errors := client.CreateDatabase(*database_name, character_set, collate)
 
 				if database_errors != nil {
@@ -297,7 +297,7 @@ func testDatabaseName(client *db_client.Client) []error {
 			continue
 		}
 
-		if *database_exists {
+		if database_exists {
 			database_deleted_errors := client.DeleteDatabase(string_value)
 			if database_deleted_errors != nil {
 				fmt.Println(fmt.Sprintf("client.DeleteDatabase: invalid rune for database_name string_value: %s rune_count: %d precent_completed: %s", string_value, current_value, percent_completed_string_value))
@@ -356,7 +356,7 @@ func testTableName(client *db_client.Client) []error {
 		return database_exists_errors
 	}
 
-	if *database_exists {
+	if database_exists {
 		database_deleted_errors := client.DeleteDatabase(database_name)
 		if database_deleted_errors != nil {
 			return database_deleted_errors
@@ -388,11 +388,11 @@ func testTableName(client *db_client.Client) []error {
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 		schema := json.NewMapValue()
-		schema_column := json.NewMapValue()
+		schema_column := json.NewMap()
 		schema_column.SetStringValue("type", "uint64")
 		schema_column.SetBoolValue("primary_key", true)
 		schema_column.SetBoolValue("auto_increment", true)
-		schema.SetMapValue("id", schema_column)
+		schema.SetMap("id", schema_column)
 
 		table, table_errors := database.CreateTable(string_value, schema)
 		if table_errors != nil {
@@ -447,7 +447,7 @@ func testColumnName(client *db_client.Client) []error {
 		return database_exists_errors
 	}
 
-	if *database_exists {
+	if database_exists {
 		database_deleted_errors := client.DeleteDatabase(database_name)
 		if database_deleted_errors != nil {
 			return database_deleted_errors
@@ -479,11 +479,11 @@ func testColumnName(client *db_client.Client) []error {
 		// double it due to defect in mysql with database names i or I
 		string_value = "aaaaaa" + string_value + "aaaaaaaaa" 
 		schema := json.NewMapValue()
-		schema_column := json.NewMapValue()
+		schema_column := json.NewMap()
 		schema_column.SetStringValue("type", "uint64")
 		schema_column.SetBoolValue("primary_key", true)
 		schema_column.SetBoolValue("auto_increment", true)
-		schema.SetMapValue(string_value, schema_column)		
+		schema.SetMap(string_value, schema_column)		
 		
 		table_name := common.GenerateRandomLetters(10, false, true)
 

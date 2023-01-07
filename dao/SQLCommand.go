@@ -11,7 +11,7 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(database *Database, sql_command *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(database Database, sql_command *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -28,7 +28,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(database *Database, sql_command *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(database Database, sql_command *string, options *json.Map) (*json.Array, []error) {
 			var errors []error
 
 			if common.IsNil(database) {
@@ -71,8 +71,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			database_username, database_username_errors := database.GetDatabaseUsername()
 			if database_username_errors != nil {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database username: %s", fmt.Sprintf("%s", database_username_errors)))
-			} else if common.IsNil(database_username) {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is nil"))
 			} else if database_username == "" {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is empty string"))
 			}
@@ -100,11 +98,9 @@ func newSQLCommand() (*SQLCommand, []error) {
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", host_name, port_number)
 			credentials_command := ""
 
-			database_name, database_name_errors := (*database).GetDatabaseName()
+			database_name, database_name_errors := database.GetDatabaseName()
 			if database_name_errors != nil {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database_name: %s", fmt.Sprintf("%s", database_name_errors)))
-			} else if common.IsNil(database_name) {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors database_name is nil"))
 			} else if database_name == "" {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors database_name is empty string"))
 			} 
@@ -140,29 +136,22 @@ func newSQLCommand() (*SQLCommand, []error) {
 				sql += "START TRANSACTION;\n"
 			}
 
-			if database != nil {
-				database_name, database_name_errors := (*database).GetDatabaseName()
-				if database_name_errors != nil {
-					errors = append(errors, database_name_errors...)
+			if options.IsBoolTrue("use_mysql_database") {
+				if options.IsBoolTrue("use_file") {
+					sql += fmt.Sprintf("USE `%s`;\n", "mysql")
 				} else {
-					if options.IsBoolTrue("use_mysql_database") {
-						if options.IsBoolTrue("use_file") {
-							sql += fmt.Sprintf("USE `%s`;\n", "mysql")
-						} else {
-							sql += fmt.Sprintf("USE \\`%s\\`;\n", "mysql")
-						}
+					sql += fmt.Sprintf("USE \\`%s\\`;\n", "mysql")
+				}
+			} else {
+				if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
+					if options.IsBoolTrue("use_file") {
+						sql += fmt.Sprintf("USE `%s`;\n", database_name)
 					} else {
-						if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
-							if options.IsBoolTrue("use_file") {
-								sql += fmt.Sprintf("USE `%s`;\n", database_name)
-							} else {
-								sql += fmt.Sprintf("USE \\`%s\\`;\n", database_name)
-							}
-						}
+						sql += fmt.Sprintf("USE \\`%s\\`;\n", database_name)
 					}
 				}
 			}
-
+			
 			sql += " " + *sql_command
 
 			if options.IsBoolTrue("get_last_insert_id") {

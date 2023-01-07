@@ -8,15 +8,16 @@ import (
 
 func ValidateDatabaseName(database_name string) []error {
 	var errors []error
-	column_name_params := json.NewMapValue()
-	column_name_params.SetStringValue("value", database_name)
-	column_name_params.SetStringValue("label", "database_name")
-	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseName(database_name)")
 
 	if len(database_name) < 2 {
 		errors = append(errors, fmt.Errorf("database_name length is less than 2 characters. validation_functions.ValidateDatabaseName(database_name)"))
 	}
 
+
+	column_name_params := json.NewMap()
+	column_name_params.SetStringValue("value", database_name)
+	column_name_params.SetStringValue("label", "database_name")
+	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseName(database_name)")
 
 	column_name_params.SetObjectForMap("values", validation_constants.GetMySQLColumnNameWhitelistCharacters())
 	column_name_errors := WhitelistCharacters(column_name_params)

@@ -42,15 +42,9 @@ func TestDatabaseExistsTrue(t *testing.T) {
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("error: exists is 'false' when it should be 'true'")
-	} 
+	}
 }
 
 func TestDatabaseExistsFalse(t *testing.T) {
@@ -61,13 +55,7 @@ func TestDatabaseExistsFalse(t *testing.T) {
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("error: exists is 'true' when it should be 'false'")
 	} 
 }
@@ -80,13 +68,7 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("error: exists is 'true' when it should be 'false'")
 	} 
 
@@ -98,13 +80,7 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 	exists, exists_errors = database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("error: exists is 'false' when it should be 'true'")
 	} 
 }
@@ -119,13 +95,7 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("error: exists is 'false' when it should be 'true'")
 	} 
 
@@ -134,13 +104,7 @@ func TestDatabaseDeleteWithExists(t *testing.T) {
 	exists, exists_errors = database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("error: exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("error:exists is 'true' when it should be 'false'")
 	} 
 }
@@ -328,16 +292,10 @@ func TestDatabaseCanGetTableNames(t *testing.T) {
 	table_names, tables_name_errors := database.GetTableNames()
 	if tables_name_errors != nil {
 		t.Error(tables_name_errors)
-	}
-
-	if table_names == nil {
-		t.Errorf("error: table_names should not be nil")
-	} else if len(*table_names) == 0 {
+	} else if len(table_names) == 0 {
 		t.Errorf("error: database.GetTables should return at least one table name")
-	} else {
-		if !common.Contains(*table_names, table_name) {
-			t.Errorf("error: table: %s not found in table_names: %s", table_name, *table_names)
-		}
+	} else if !common.Contains(table_names, table_name) {
+		t.Errorf("error: table: %s not found in table_names: %s", table_name, table_names)
 	}
 }
 
@@ -353,7 +311,7 @@ func TestDatabaseCanGetTables(t *testing.T) {
 			t.Errorf("error: created tables should succeed: %s",  fmt.Sprintf("%s", tables_errors))
 		} else if common.IsNil(tables) {
 			t.Errorf("error: tables should not be nil")
-		} else if !(len(*tables) >= 0) {
+		} else if !(len(tables) >= 0) {
 			t.Errorf("error: database.GetTables should return at least one table")
 		}
 	}

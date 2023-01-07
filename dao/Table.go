@@ -20,7 +20,7 @@ type Table struct {
 	Read                func() []error
 	Delete                func() []error
 	DeleteIfExists        func() []error
-	GetSchema             func() (json.Map, []error)
+	GetSchema             func() (*json.Map, []error)
 	GetAdditionalSchema   func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
@@ -35,9 +35,9 @@ type Table struct {
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
-	UpdateRecord          func(record json.Map) ([]error)
+	UpdateRecord          func(record *json.Map) ([]error)
 	ReadRecords         func(select_fields *json.Array, filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
-	GetDatabase           func() (Database, []error)
+	GetDatabase           func() (*Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
@@ -71,37 +71,37 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	column_name_whitelist_characters := column_name_whitelist_characters_obj.GetColumnNameCharacterWhitelist()
 	
 	
-	setupData := func(b *Database, n *string, schema_from_db json.Map) (*json.Map, []error) {
+	setupData := func(b Database, n string, schema_from_db json.Map) (*json.Map, []error) {
 		var setup_errors []error
 		d := json.NewMapValue()
 
-		d.SetMapValue("[fields]", json.NewMapValue())
+		d.SetMap("[fields]", json.NewMap())
 
-		map_system_fields := json.NewMapValue()
-		map_system_fields.SetObjectForMap("[database]", *b)
-		map_system_fields.SetObjectForMap("[table_name]", *n)
-		d.SetMapValue("[system_fields]", map_system_fields)
+		map_system_fields := json.NewMap()
+		map_system_fields.SetObjectForMap("[database]", b)
+		map_system_fields.SetObjectForMap("[table_name]", n)
+		d.SetMap("[system_fields]", map_system_fields)
 
 
-		map_system_schema := json.NewMapValue()
+		map_system_schema := json.NewMap()
 
-		map_database_schema := json.NewMapValue()
+		map_database_schema := json.NewMap()
 		map_database_schema.SetStringValue("type", "dao.Database")
-		map_system_schema.SetMapValue("[database]", map_database_schema)
+		map_system_schema.SetMap("[database]", map_database_schema)
 
-		map_table_name_schema := json.NewMapValue()
+		map_table_name_schema := json.NewMap()
 		map_table_name_schema.SetStringValue("type", "string")
 		map_table_name_schema.SetBoolValue("not_empty_string_value", true)
 		map_table_name_schema.SetIntValue("min_length", 2)
-		map_table_name_schema_filters := json.NewArrayValue()
-		map_table_name_schema_filter := json.NewMapValue()
+		map_table_name_schema_filters := json.NewArray()
+		map_table_name_schema_filter := json.NewMap()
 		map_table_name_schema_filter.SetObjectForMap("values", table_name_whitelist_characters)
 		map_table_name_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistCharactersFunc())
-		map_table_name_schema_filters.AppendMapValue(map_table_name_schema_filter)
-		map_table_name_schema.SetArrayValue("filters", map_table_name_schema_filters)
-		map_system_schema.SetMapValue("[table_name]", map_table_name_schema)
+		map_table_name_schema_filters.AppendMap(map_table_name_schema_filter)
+		map_table_name_schema.SetArray("filters", map_table_name_schema_filters)
+		map_system_schema.SetMap("[table_name]", map_table_name_schema)
 
-		d.SetMapValue("[system_schema]", map_system_schema)
+		d.SetMap("[system_schema]", map_system_schema)
 
 		merged_schema := json.NewMap()
 		
@@ -152,7 +152,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				continue
 			}
 
-			filters_from_db, filters_from_db_errors := current_schema_from_db.GetArrayValue("filters")
+			filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
 			if filters_from_db_errors != nil {
 				return nil, filters_from_db_errors
 			} 
@@ -162,7 +162,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, setup_errors
 			}
 		
-			merged_schema_map, merged_schema_map_errors := merged_schema.GetMapValue(schema_key_from_db)
+			merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
 			if merged_schema_map_errors != nil {
 				return nil, merged_schema_map_errors
 			} 
@@ -173,9 +173,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			} 
 
 			if common.IsNil(filters_array) {
-				new_filters_array := json.NewArrayValue()
-				merged_schema_map.SetArray("filters", &new_filters_array)
-				filters_array = &new_filters_array
+				new_filters_array := json.NewArray()
+				merged_schema_map.SetArray("filters", new_filters_array)
+				filters_array = new_filters_array
 			}
 			
 			for _, filter_from_db := range *(filters_from_db.GetValues()) {
@@ -191,7 +191,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return &d, nil
 	}
 
-	new_data, new_data_errors := setupData(&database, &table_name, schema)
+	new_data, new_data_errors := setupData(database, table_name, schema)
 	if new_data_errors != nil {
 		errors = append(errors, new_data_errors...)
 	} else {
@@ -226,9 +226,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return ValidateData(getData(), "*dao.Table")
 	}
 
-	getDatabase := func() (Database, []error) {
+	getDatabase := func() (*Database, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*dao.Database")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -236,10 +236,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 		
 		if len(errors) > 0 {
-			return Database{}, errors
+			return nil, errors
 		}
 		
-		return temp_value.(Database), temp_value_errors
+		return temp_value.(*Database), temp_value_errors
 	}
 
 	exists := func() (*bool, []error) {
@@ -270,7 +270,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, temp_database_errors
 		}
 		
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -298,21 +298,28 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
-			return temp_database_errors
+			errors = append(errors, temp_database_errors...)
 		}
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
-			return temp_table_name_errors
+			errors = append(errors, temp_table_name_errors...)
+		} else if common.IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("table_name is nil"))
 		}
 
-		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
+		if len(errors) > 0 {
+			return errors
+		}
+
+
+		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
 		
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -331,29 +338,27 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			return temp_table_name_errors
-		}
-
-
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
-			return temp_database_errors
+			errors = append(errors, temp_database_errors...)
 		}
 
+		temp_table_name, temp_table_name_errors := getTableName()
+		if temp_table_name_errors != nil {
+			errors = append(errors, temp_table_name_errors...)
+		} 
 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "delete")
+		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
 
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -437,7 +442,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_database_errors
 		}
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(&sql, options)
+		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -450,7 +455,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return nil
 	}
 
-	updateRecord := func(record json.Map) []error {
+	updateRecord := func(record *json.Map) []error {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
@@ -460,7 +465,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return errors
 		}
 
-		record_obj, record_errors := newRecord(*getTable(), record, database_reserved_words_obj,  column_name_whitelist_characters_obj)
+		record_obj, record_errors := newRecord(*getTable(), *record, database_reserved_words_obj,  column_name_whitelist_characters_obj)
 		if record_errors != nil {
 			return record_errors
 		} else if common.IsNil(record_obj) {
@@ -481,7 +486,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_database_errors
 		}
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql, options)
+		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -565,7 +570,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_database_errors
 		}
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(&sql, options)
+		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -617,14 +622,14 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return nil, sql_command_errors
 		}
 
-		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
 			return nil, errors
 		}
 
-		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
+		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(&json_array)
 		if additional_schema_errors != nil {
 			errors = append(errors, additional_schema_errors...)
 		} else if common.IsNil(additional_schema) {
@@ -641,7 +646,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 
-	getSchema := func() (json.Map, []error) {
+	getSchema := func() (*json.Map, []error) {
 		lock_get_schema.Lock()
 		defer lock_get_schema.Unlock()
 		var errors []error
@@ -652,19 +657,17 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
-			return json.NewMapValue(), temp_table_name_errors
+			return nil, temp_table_name_errors
 		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
-			return json.NewMapValue(), temp_database_errors
+			return nil, temp_database_errors
 		}
 
-		cached_schema, cached_schema_errors := temp_database.GetOrSetSchema(temp_table_name, json.NewMapValue(), "get")
+		cached_schema, cached_schema_errors := temp_database.GetOrSetSchema(temp_table_name, nil, "get")
 		if cached_schema_errors != nil {
-			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
-				return json.NewMapValue(), cached_schema_errors
-			}
+			return nil, cached_schema_errors
 		} else if !common.IsNil(cached_schema) {
 			return cached_schema, nil
 		} 
@@ -674,27 +677,27 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			errors = append(errors, sql_command_errors...)
 		}
 
-		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
-			return  json.NewMapValue(), errors
+			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, temp_table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, temp_table_name, &json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
-			return json.NewMapValue(), errors
+			return nil, errors
 		}
 
 		if !temp_schema.HasKey("[no_schema_cache_on_creation]") {
 			temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
 		}
 
-		new_data, setup_data_errors := setupData(&temp_database, &temp_table_name, temp_schema)
+		new_data, setup_data_errors := setupData(*temp_database, temp_table_name, *temp_schema)
 		if setup_data_errors != nil {
 			errors = append(errors, setup_data_errors...)
-			return json.NewMapValue(), errors
+			return nil, errors
 		}
 		setData(new_data)
 		return temp_schema, nil
@@ -705,7 +708,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return getCreateTableSQLMySQL(struct_type, getTable(), getData(), options)
+		return getCreateTableSQLMySQL(struct_type, *getTable(), *getData(), options)
 	}
 
 	createTable := func() []error {
@@ -724,7 +727,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			return temp_database_errors
 		}
 
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			return execute_errors
@@ -816,7 +819,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		Validate: func() []error {
 			return validate()
 		},
-		GetDatabase: func() (Database, []error) {
+		GetDatabase: func() (*Database, []error) {
 			return getDatabase()
 		},
 		GetTableColumns: func() (*[]string, []error) {
@@ -850,7 +853,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			options.SetBoolValue("use_file", false)
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
-			sql_command, new_options, sql_command_errors := getSelectRecordsSQLMySQL(getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
+			sql_command, new_options, sql_command_errors := getSelectRecordsSQLMySQL(*getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -860,7 +863,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				return nil, temp_database_errors
 			}
 
-			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, new_options)
+			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -934,7 +937,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
-			sql_command, options, sql_command_errors := getSelectRecordsSQLMySQL(getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
+			sql_command, options, sql_command_errors := getSelectRecordsSQLMySQL(*getTable(), select_fields, filters, filters_logic, order_by, limit, offset, options, column_name_whitelist_characters)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -971,7 +974,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 				}
 			}
 
-			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(sql_command, options)
+			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -983,7 +986,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 
 			var mapped_records []Record
 			for _, current_json := range *(json_array.GetValues()) {
-				mapped_record_obj, mapped_record_obj_errors := mapValueFromDBToRecord(getTable(), current_json, database_reserved_words_obj, column_name_whitelist_characters_obj)
+				mapped_record_obj, mapped_record_obj_errors := mapValueFromDBToRecord(*getTable(), current_json, database_reserved_words_obj, column_name_whitelist_characters_obj)
 				if mapped_record_obj_errors != nil {
 					errors = append(errors, mapped_record_obj_errors...)
 				} else if common.IsNil(mapped_record_obj){
@@ -1006,7 +1009,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		UpdateRecords: func(records json.Array) ([]error) {
 			return updateRecords(records)
 		},
-		UpdateRecord: func(record json.Map) ([]error) {
+		UpdateRecord: func(record *json.Map) ([]error) {
 			return updateRecord(record)
 		},
 		CreateRecords: func(records json.Array) ([]error) {
@@ -1015,7 +1018,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		Exists: func() (*bool, []error) {
 			return exists()
 		},
-		GetSchema: func() (json.Map, []error) {
+		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
 		},
 		GetAdditionalSchema: func() (*json.Map, []error) {

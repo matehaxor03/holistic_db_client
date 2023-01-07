@@ -17,7 +17,7 @@ type Database struct {
 	Create          func() []error
 	Delete          func() []error
 	DeleteIfExists  func() []error
-	Exists          func() (*bool, []error)
+	Exists          func() (bool, []error)
 	TableExists     func(table_name string) (*bool, []error)
 	GetDatabaseName func() (string, []error)
 	GetDatabaseUsername func() (string, []error)
@@ -28,11 +28,11 @@ type Database struct {
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
 	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
-	GetTables       func() (*[]Table, []error)
-	GetTableNames   func() (*[]string, []error)
+	GetTables       func() ([]Table, []error)
+	GetTableNames   func() ([]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
-	ExecuteUnsafeCommand func(sql_command *string, options *json.Map) (*json.Array, []error)
-	GetOrSetSchema func(table_name string, schema json.Map, mode string) (json.Map, []error)
+	ExecuteUnsafeCommand func(sql_command string, options *json.Map) (json.Array, []error)
+	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
 
@@ -166,9 +166,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 	getDatabaseName := func() (string, []error) {
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
 		if temp_value_errors != nil {
-			return "", temp_value_errors
-		} else if common.IsNil(temp_value) {
-			return "", nil
+			errors = append(errors, temp_value_errors...)
+		} 
+		if len(errors) > 0 { 
+			return "", errors
 		}
 		return temp_value.(string), nil
 	}
@@ -177,14 +178,17 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", new_database_name)
 	}
 
-	getDatabaseUsername := func() (string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "string")
+	getDatabaseUsername := func() (*string, []error) {
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
 		if temp_value_errors != nil {
-			return "", temp_value_errors
-		} else if common.IsNil(temp_value) {
-			return "", nil
+			errors = append(errors, temp_value_errors...)
+		} 
+
+		if len(errors) > 0 { 
+			return nil, errors
 		}
-		return temp_value.(string), nil
+
+		return temp_value.(*string), nil
 	}
 	
 	setDatabaseUsername := func(new_database_username string) []error {
@@ -196,7 +200,15 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		if errors != nil {
 			return nil, errors
 		}
-		return SQLCommand.ExecuteUnsafeCommand(getDatabase(), sql_command, options)
+		
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*getDatabase(), sql_command, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		} else if common.IsNil(sql_command_results) {
+			errors = append(errors, fmt.Errorf("records from db was nil"))	
+		}
+
+		return sql_command_results, nil
 	}
 
 	getCreateSQL := func(options *json.Map) (*string, []error) {
@@ -277,7 +289,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return nil
 	}
 
-	exists := func() (*bool, []error) {
+	exists := func() (bool, []error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)
@@ -285,18 +297,18 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		errors := validate()
 
 		if len(errors) > 0 {
-			return nil, errors
+			return false, errors
 		}
 
 		temp_database_name, temp_database_name_errors := getDatabaseName()
 		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
+			return false, temp_database_name_errors
 		}
 
 		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
 		if database_name_escaped_errors != nil {
 			errors = append(errors, database_name_escaped_errors)
-			return nil, errors
+			return false, errors
 		}
 
 		sql_command := "USE "
@@ -318,36 +330,34 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			errors = append(errors, execute_errors...)
 		}
 
-		boolean_value := false
 		if len(errors) > 0 {
 			//todo: check error message e.g database does not exist
-			boolean_value = false
-			return &boolean_value, nil
+			return false, nil
 		}
 
-		boolean_value = true
-		return &boolean_value, nil
+		return true, nil
 	}
 
-	getTableNames := func() (*[]string, []error) {
+	getTableNames := func() ([]string, []error) {
+		var empty_strings []string
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
 		errors := validate()
 
 		if len(errors) > 0 {
-			return nil, errors
+			return empty_strings, errors
 		}
 
 		temp_database_name, temp_database_name_errors := getDatabaseName()
 		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
+			return empty_strings, temp_database_name_errors
 		}
 
 		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
 		if database_name_escaped_errors != nil {
 			errors = append(errors, database_name_escaped_errors)
-			return nil, errors
+			return empty_strings, errors
 		}
 
 		sql_command := "SHOW TABLES IN "
@@ -361,14 +371,12 @@ func NewDatabase(host Host, database_username string, database_name string, data
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
-		}
-
-		if records == nil {
+		} else if common.IsNil(records) {
 			errors = append(errors, fmt.Errorf("error: Database: getTableNames returned nil records"))
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return empty_strings, errors
 		}
 
 		var table_names []string
@@ -392,10 +400,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return empty_strings, errors
 		}
 
-		return &table_names, nil
+		return table_names, nil
 	}
 
 	delete := func() ([]error) {
@@ -478,12 +486,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
 		}
 
-		/*
-		temp_client, temp_client_errors := getClient()
-		if temp_client_errors != nil {
-			return temp_client_errors
-		}*/
-
 		_, execute_errors :=  executeUnsafeCommand(&sql_command, options)
 
 		if execute_errors != nil {
@@ -532,13 +534,13 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return &boolean_value, nil
 	}
 	
-	getOrSetTableSchema := func(table_name string, schema json.Map, mode string) (json.Map, []error) {
+	getOrSetTableSchema := func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
 		lock_table_schema_cache.Lock()
 		defer lock_table_schema_cache.Unlock()
 		return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
 	}
 
-	getTableSchema := func(table_name string) (json.Map, []error) {
+	getTableSchema := func(table_name string) (*json.Map, []error) {
 		lock_get_table_schema.Lock()
 		defer lock_get_table_schema.Unlock()
 		var errors []error
@@ -548,10 +550,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		options.SetBoolValue("json_output", true)
 
 
-		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, json.NewMapValue(), "get")
+		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
 		if cached_schema_errors != nil {
 			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
-				return json.NewMapValue(), cached_schema_errors
+				return nil, cached_schema_errors
 			}
 		} else if !common.IsNil(cached_schema) {
 			return cached_schema, nil
@@ -566,13 +568,13 @@ func NewDatabase(host Host, database_username string, database_name string, data
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
-			return  json.NewMapValue(), errors
+			return  nil, errors
 		}
 
 		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(struct_type, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
-			return json.NewMapValue(), errors
+			return nil, errors
 		}
 
 		if !temp_schema.HasKey("[no_schema_cache_on_creation]") {
@@ -618,7 +620,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(*getDatabase(), table_name, table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		get_table, get_table_errors := newTable(*getDatabase(), table_name, *table_schema, database_reserved_words_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -642,7 +644,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		Delete: func() []error {
 			return delete()
 		},
-		Exists: func() (*bool, []error) {
+		Exists: func() (bool, []error) {
 			return exists()
 		},
 		DeleteIfExists: func() []error {
@@ -713,17 +715,19 @@ func NewDatabase(host Host, database_username string, database_name string, data
 
 			return getTable(table_name)
 		},
-		GetTableNames: func()  (*[]string, []error) {
+		GetTableNames: func()  ([]string, []error) {
 			errors := validate()
+			var empty_strings []string
 
 			if len(errors) > 0 {
-				return nil, errors
+				return empty_strings, errors
 			}
 
 			return getTableNames()
 		},
-		GetTables: func() (*[]Table, []error) {
+		GetTables: func() ([]Table, []error) {
 			var errors []error
+			var empty_tables []Table
 			database := getDatabase()
 			
 			database_errors := database.Validate()
@@ -733,7 +737,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			
 
 			if len(errors) > 0 {
-				return nil, errors
+				return empty_tables, errors
 			}
 
 			var tables []Table
@@ -743,10 +747,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return empty_tables, errors
 			}
 
-			for _, table_name := range *table_names {
+			for _, table_name := range table_names {
 				table, table_errors := getTable(table_name)
 				if table_errors != nil {
 					errors = append(errors, table_errors...)
@@ -757,13 +761,17 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return empty_tables, errors
 			}
 
-			return &tables, nil
+			return tables, nil
 		},
-		ExecuteUnsafeCommand: func(sql_command *string, options *json.Map) (*json.Array, []error) {			
-			return executeUnsafeCommand(sql_command, options)
+		ExecuteUnsafeCommand: func(sql_command string, options *json.Map) (json.Array, []error) {			
+			results, results_errors := executeUnsafeCommand(&sql_command, options)
+			if results_errors != nil {
+				return json.Array{}, results_errors
+			}
+			return *results, nil
 		},
 		GetHost: func() (Host, []error) {
 			return getHost()
@@ -778,12 +786,16 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return setDatabaseUsername(database_username)
 		},
 		GetDatabaseUsername: func() (string, []error) {
-			return getDatabaseUsername()
+			database_username_temp, database_username_temp_errors := getDatabaseUsername()
+			if database_username_temp_errors != nil {
+				return "", database_username_temp_errors
+			}
+			return *database_username_temp, nil
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {
 			return getData().ToJSONString(json)
 		},
-		GetOrSetSchema: func(table_name string, schema json.Map, mode string) (json.Map, []error) {
+		GetOrSetSchema: func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
 			// todo clone schema
 			return getOrSetTableSchema(table_name, schema, mode)
 		},
@@ -847,7 +859,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 
-			getDatabase().GetOrSetSchema(table_name, json.NewMapValue(), "delete")
+			getDatabase().GetOrSetSchema(table_name, nil, "delete")
 			sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(struct_type, table_name, if_exists, options)
 
 			if generate_sql_errors != nil {

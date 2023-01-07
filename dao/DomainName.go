@@ -4,6 +4,8 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	common "github.com/matehaxor03/holistic_common/common"
+	"fmt"
 )
 
 func LOCALHOST_IP() string {
@@ -39,7 +41,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 
 
 	map_domain_name_schema := json.NewMapValue()
-	map_domain_name_schema.SetStringValue("type", "string")
+	map_domain_name_schema.SetStringValue("type", "*string")
 
 	map_domain_name_schema_filters := json.NewArrayValue()
 	map_domain_name_schema_filter := json.NewMapValue()
@@ -61,9 +63,15 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 	}
 
 	getDomainName := func() (string, []error) {
+		var errors []error
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "string")
 		if temp_value_errors != nil {
-			return "", temp_value_errors
+			errors = append(errors, temp_value_errors...)
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("domain name is nil"))
+		}
+		if len(errors) > 0 {
+			return "", errors
 		}
 		return temp_value.(string), nil
 	}

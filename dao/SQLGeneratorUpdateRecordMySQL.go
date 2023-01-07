@@ -10,7 +10,7 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func getUpdateRecordSQLMySQL(struct_type string, table *Table, record *Record, options *json.Map) (*string, *json.Map, []error) {
+func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	table_validation_errors := table.Validate() 
