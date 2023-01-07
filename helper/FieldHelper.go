@@ -7,15 +7,6 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func GetRecordColumns(struct_type string, m *json.Map) (*[]string, []error) {
-	fields_map, fields_map_errors := GetFields(struct_type, m, "[fields]")
-	if fields_map_errors != nil {
-		return nil, fields_map_errors
-	}
-	columns := fields_map.GetKeys()
-	return &columns, nil
-}
-
 func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, []error) {
 	var errors []error
 	if !(field_type == "[fields]" || field_type == "[system_fields]") {

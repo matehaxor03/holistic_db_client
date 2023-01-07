@@ -423,12 +423,14 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 	}
 
 	getRecordColumns := func() (*[]string, []error) {
-		fields_map, fields_map_errors := helper.GetFields(struct_type, getData(), "[fields]")
+		return helper.GetRecordColumns(struct_type, getData())
+
+		/*fields_map, fields_map_errors := helper.GetFields(struct_type, getData(), "[fields]")
 		if fields_map_errors != nil {
 			return nil, fields_map_errors
 		}
 		columns := fields_map.GetKeys()
-		return &columns, nil
+		return &columns, nil*/
 	}
 
 	getTable := func() (Table, []error) {
