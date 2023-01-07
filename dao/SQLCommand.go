@@ -176,7 +176,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			//fmt.Println(command)
+			fmt.Println(command)
 			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
 
 			if sql_command_use_file {
@@ -187,7 +187,12 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, bash_errors...)
 			}
 
+			if shell_output != nil {
+				fmt.Println(fmt.Sprintf("%s", *shell_output))
+			}
+
 			if len(errors) > 0 {
+				fmt.Println(fmt.Sprintf("errors: %s", errors))
 				return nil, errors
 			}
 

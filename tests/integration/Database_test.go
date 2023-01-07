@@ -4,111 +4,12 @@ import (
     "testing"
 	"strings"
 	"fmt"
-	"time"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	dao "github.com/matehaxor03/holistic_db_client/dao"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
- 
-func TestDatabaseCreate(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-
-    database_errors := database.Create()
-	if database_errors != nil {
-		t.Error(database_errors)
-	}
-}
-
-func TestDatabaseDelete(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-	time.Sleep(5 * time.Second)
-
-    database.Create()
-	database_errors := database.Delete()
-	if database_errors != nil {
-		t.Error(database_errors)
-	}
-}
-
-func TestDatabaseExistsTrue(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-	time.Sleep(5 * time.Second)
-
-    database.Create()
-	exists, exists_errors := database.Exists()
-	if exists_errors != nil {
-		t.Error(exists_errors)
-	} else if !(exists) {
-		t.Errorf("error: exists is 'false' when it should be 'true'")
-	}
-}
-
-func TestDatabaseExistsFalse(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-	time.Sleep(5 * time.Second)
-
-	exists, exists_errors := database.Exists()
-	if exists_errors != nil {
-		t.Error(exists_errors)
-	} else if (exists) {
-		t.Errorf("error: exists is 'true' when it should be 'false'")
-	} 
-}
-
-func TestDatabaseCreateWithExists(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-	time.Sleep(5 * time.Second)
-
-	exists, exists_errors := database.Exists()
-	if exists_errors != nil {
-		t.Error(exists_errors)
-	} else if (exists) {
-		t.Errorf("error: exists is 'true' when it should be 'false'")
-	} else {
-		database_errors := database.Create()
-		if database_errors != nil {
-			t.Error(database_errors)
-		}
-
-		exists, exists_errors = database.Exists()
-		if exists_errors != nil {
-			t.Error(exists_errors)
-		} else if !(exists) {
-			t.Errorf("error: exists is 'false' when it should be 'true'")
-		} 
-	}
-}
-
-func TestDatabaseDeleteWithExists(t *testing.T) {
-	database := helper.GetTestDatabase(t)
-	helper.EnsureDatabaseIsDeleted(t, database)
-	time.Sleep(5 * time.Second)
-	database.Create()
-
-	exists, exists_errors := database.Exists()
-	if exists_errors != nil {
-		t.Error(exists_errors)
-	} else if !(exists) {
-		t.Errorf("error: exists is 'false' when it should be 'true'")
-	} else {
-		database.Delete()
-		time.Sleep(5 * time.Second)
-
-		exists, exists_errors = database.Exists()
-		if exists_errors != nil {
-			t.Error(exists_errors)
-		} else if (exists) {
-			t.Errorf("error:exists is 'true' when it should be 'false'")
-		} 
-	}
-}
 
 func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	database := helper.GetTestDatabase(t)

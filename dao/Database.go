@@ -211,6 +211,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			errors = append(errors, fmt.Errorf("records from db was nil"))	
 		}
 
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
 		return sql_command_results, nil
 	}
 
@@ -294,7 +298,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		return nil
 	}
 
-	exists := func() (bool, []error) {
+	exists := func() (*bool, []error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)
@@ -304,18 +308,18 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		errors := validate()
 
 		if len(errors) > 0 {
-			return false, errors
+			return nil, errors
 		}
 
 		temp_database_name, temp_database_name_errors := getDatabaseName()
 		if temp_database_name_errors != nil {
-			return false, temp_database_name_errors
+			return nil, temp_database_name_errors
 		}
 
 		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
 		if database_name_escaped_errors != nil {
 			errors = append(errors, database_name_escaped_errors)
-			return false, errors
+			return nil, errors
 		}
 
 		sql_command := "USE "
@@ -331,12 +335,18 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			errors = append(errors, execute_errors...)
 		}
 
-		if len(errors) > 0 {
-			//todo: check error message e.g database does not exist
-			return false, nil
+		exists := true
+		if errors == nil {
+			exists = true
+			return &exists, nil
+		}
+	
+		if strings.Contains(fmt.Sprintf("%s", errors), "Unknown database") {
+			exists = false
+			return &exists, nil
 		}
 
-		return true, nil
+		return nil, errors
 	}
 
 	getTableNames := func() ([]string, []error) {
@@ -439,12 +449,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		} else {
 			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
 		}
-
-		/*
-		temp_client, temp_client_errors := getClient()
-		if temp_client_errors != nil {
-			return temp_client_errors
-		}*/
 
 		_, execute_errors :=  executeUnsafeCommand(&sql_command, options)
 
@@ -650,7 +654,11 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return delete()
 		},
 		Exists: func() (bool, []error) {
-			return exists()
+			temp_exists, temp_exists_errors := exists()
+			if temp_exists_errors != nil {
+				return false, temp_exists_errors
+			}
+			return *temp_exists, nil
 		},
 		DeleteIfExists: func() []error {
 			errors := validate()
