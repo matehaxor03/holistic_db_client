@@ -207,19 +207,19 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 	}
 
 	getPrimaryKeyColumns := func() (*[]string, []error) {
-		return helper.GetPrimaryKeyColumns(struct_type, getData())
+		return helper.GetTablePrimaryKeyColumns(struct_type, getData())
 	}
 
 	getForeignKeyColumns := func() (*[]string, []error) {
-		return helper.GetForeignKeyColumns(struct_type, getData())
+		return helper.GetTableForeignKeyColumns(struct_type, getData())
 	}
 
 	getIdentityColumns := func() (*[]string, []error) {
-		return helper.GetIdentityColumns(struct_type, getData())
+		return helper.GetTableIdentityColumns(struct_type, getData())
 	}
 
 	getNonPrimaryKeyColumns := func() (*[]string, []error) {
-		return helper.GetNonPrimaryKeyColumns(struct_type, getData())
+		return helper.GetTableNonPrimaryKeyColumns(struct_type, getData())
 	}
 
 	validate := func() []error {

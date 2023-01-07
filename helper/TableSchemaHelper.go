@@ -26,7 +26,7 @@ func GetTableColumns(caller string, data *json.Map) (*[]string, []error) {
 	return &columns, nil
 }
 
-func GetPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTablePrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
 	var errors []error
 	var columns []string
 
@@ -61,7 +61,7 @@ func GetPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
 	return &columns, nil
 }
 
-func GetForeignKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTableForeignKeyColumns(caller string, data *json.Map) (*[]string, []error) {
 	var errors []error
 	var columns []string
 
@@ -96,7 +96,7 @@ func GetForeignKeyColumns(caller string, data *json.Map) (*[]string, []error) {
 	return &columns, nil
 }
 
-func GetIdentityColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTableIdentityColumns(caller string, data *json.Map) (*[]string, []error) {
 	var errors []error
 	var columns []string
 
@@ -131,7 +131,7 @@ func GetIdentityColumns(caller string, data *json.Map) (*[]string, []error) {
 	return &columns, nil
 }
 
-func GetNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
 	var errors []error
 	var columns []string
 
