@@ -23,7 +23,7 @@ func ValidateDatabaseTableColumnName(column_name *string) []error {
 		return errors
 	}
 
-	column_name_params := json.NewMap()
+	column_name_params := json.NewMapValue()
 	column_name_params.SetString("value", column_name)
 	column_name_params.SetStringValue("label", "column_name")
 	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableColumnName(column_name)")
@@ -49,7 +49,7 @@ func ValidateDatabaseTableName(table_name string) []error {
 		errors = append(errors, fmt.Errorf("table_name length is less than 2 characters. validation_functions.ValidateDatabaseTableName(table_name)"))
 	}
 
-	column_name_params := json.NewMap()
+	column_name_params := json.NewMapValue()
 	column_name_params.SetStringValue("value", table_name)
 	column_name_params.SetStringValue("label", "table_name")
 	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseTableName(table_name)")

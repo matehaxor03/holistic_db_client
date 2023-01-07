@@ -14,7 +14,7 @@ func ValidateDatabaseName(database_name string) []error {
 	}
 
 
-	column_name_params := json.NewMap()
+	column_name_params := json.NewMapValue()
 	column_name_params.SetStringValue("value", database_name)
 	column_name_params.SetStringValue("label", "database_name")
 	column_name_params.SetStringValue("data_type", "validation_functions.ValidateDatabaseName(database_name)")

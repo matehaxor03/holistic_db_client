@@ -19,37 +19,37 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 	struct_type := "*dao.Host"
 
 	data := json.NewMap()
-	data.SetMap("[fields]", json.NewMap())
-	data.SetMap("[schema]", json.NewMap())
+	data.SetMapValue("[fields]", json.NewMapValue())
+	data.SetMapValue("[schema]", json.NewMapValue())
 
-	map_system_fields := json.NewMap()
-	map_system_fields.SetStringValue("[host_name]", host_name)
-	map_system_fields.SetStringValue("[port_number]", port_number)
-	data.SetMap("[system_fields]", map_system_fields)
+	map_system_fields := json.NewMapValue()
+	map_system_fields.SetString("[host_name]", &host_name)
+	map_system_fields.SetString("[port_number]", &port_number)
+	data.SetMapValue("[system_fields]", map_system_fields)
 
-	map_system_schema := json.NewMap()
+	map_system_schema := json.NewMapValue()
 
-	map_host_name_schema := json.NewMap()
+	map_host_name_schema := json.NewMapValue()
 	map_host_name_schema.SetStringValue("type", "string")
-	map_host_name_schema_filters := json.NewArray()
-	map_host_name_schema_filter := json.NewMap()
+	map_host_name_schema_filters := json.NewArrayValue()
+	map_host_name_schema_filter := json.NewMapValue()
 	map_host_name_schema_filter.SetObjectForMap("values", validation_constants.GetValidDomainNameCharacters())
 	map_host_name_schema_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-	map_host_name_schema_filters.AppendMap(map_host_name_schema_filter)
-	map_host_name_schema.SetArray("filters", map_host_name_schema_filters)
-	map_system_schema.SetMap("[host_name]", map_host_name_schema)
+	map_host_name_schema_filters.AppendMapValue(map_host_name_schema_filter)
+	map_host_name_schema.SetArrayValue("filters", map_host_name_schema_filters)
+	map_system_schema.SetMapValue("[host_name]", map_host_name_schema)
 
-	map_port_number_schema := json.NewMap()
+	map_port_number_schema := json.NewMapValue()
 	map_port_number_schema.SetStringValue("type", "string")
-	map_port_number_schema_filters := json.NewArray()
-	map_port_number_schema_filter := json.NewMap()
+	map_port_number_schema_filters := json.NewArrayValue()
+	map_port_number_schema_filter := json.NewMapValue()
 	map_port_number_schema_filter.SetObjectForMap("values", validation_constants.GetValidPortNumberCharacters())
 	map_port_number_schema_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
-	map_port_number_schema_filters.AppendMap(map_port_number_schema_filter)
-	map_port_number_schema.SetArray("filters", map_port_number_schema_filters)
-	map_system_schema.SetMap("[port_number]", map_port_number_schema)
+	map_port_number_schema_filters.AppendMapValue(map_port_number_schema_filter)
+	map_port_number_schema.SetArrayValue("filters", map_port_number_schema_filters)
+	map_system_schema.SetMapValue("[port_number]", map_port_number_schema)
 
-	data.SetMap("[system_schema]", map_system_schema)
+	data.SetMapValue("[system_schema]", map_system_schema)
 
 	getData := func() *json.Map {
 		return data
@@ -85,10 +85,10 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 		return ValidateData(getData(), "Host")
 	}
 
-	errors := validate()
+	validate_errors := validate()
 
-	if errors != nil {
-		return nil, errors
+	if validate_errors != nil {
+		return nil, validate_errors
 	}
 
 	return &Host{
@@ -96,7 +96,7 @@ func NewHost(host_name string, port_number string) (*Host, []error) {
 			return validate()
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {
-			return getData().ToJSONString(json)
+			return data.ToJSONString(json)
 		},
 		GetHostName: func() (string, []error) {
 			return getHostName()

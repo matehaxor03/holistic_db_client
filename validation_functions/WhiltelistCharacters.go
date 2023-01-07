@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func WhitelistCharacters(m *json.Map) []error {
+func WhitelistCharacters(m json.Map) []error {
 	var errors []error
 	map_values, map_values_errors := m.GetMap("values")
 	str, _ := m.GetString("value")
@@ -50,7 +50,7 @@ func WhitelistCharacters(m *json.Map) []error {
 	return nil
 }
 
-func GetWhitelistCharactersFunc() *func(m *json.Map) []error {
+func GetWhitelistCharactersFunc() (*func(m json.Map) []error) {
 	funcValue := WhitelistCharacters
 	return &funcValue
 }

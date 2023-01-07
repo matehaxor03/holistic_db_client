@@ -9,10 +9,10 @@ import (
 )
 
 type TupleCredentials struct {
-	host_name *string
-	port_number *string
-	database_name *string
-	database_username *string
+	host_name string
+	port_number string
+	database_name string
+	database_username string
  }
 
 type ClientManager struct {
@@ -58,7 +58,7 @@ func NewClientManager() (*ClientManager, []error) {
 		database_name_value := parts[3]
 		database_username_value := parts[4]
 
-		temp_tuple_creds := TupleCredentials{host_name: &host_name_value, port_number: &port_number_value, database_name: &database_name_value, database_username: &database_username_value}
+		temp_tuple_creds := TupleCredentials{host_name: host_name_value, port_number: port_number_value, database_name: database_name_value, database_username: database_username_value}
 		tuple[label] = temp_tuple_creds
 		return &temp_tuple_creds, nil
 	}
@@ -75,7 +75,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		host, host_errors := dao.NewHost(*(temp_tuple_creds.host_name), *(temp_tuple_creds.port_number))
+		host, host_errors := dao.NewHost((temp_tuple_creds.host_name), (temp_tuple_creds.port_number))
 		
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
@@ -85,7 +85,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 		
-		client, client_errors := newClient(*getClientManager(), host, temp_tuple_creds.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		client, client_errors := newClient(*getClientManager(), host, &(temp_tuple_creds.database_username), nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)
@@ -95,7 +95,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		use_database_errors := client.UseDatabaseByName(*(temp_tuple_creds.database_name))
+		use_database_errors := client.UseDatabaseByName((temp_tuple_creds.database_name))
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}

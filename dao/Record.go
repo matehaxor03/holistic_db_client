@@ -354,6 +354,7 @@ type Record struct {
 	GetForeignKeyColumns func() (*[]string, []error)
 	SetLastModifiedDate func(value *time.Time) []error
 	SetArchievedDate func(value *time.Time) []error
+	GetTable func() (Table, []error)
 }
 
 func newRecord(table Table, record_data json.Map, database_reserved_words_obj *validation_constants.DatabaseReservedWords, column_name_whitelist_characters_obj *validation_constants.ColumnNameCharacterWhitelist) (*Record, []error) {
@@ -427,9 +428,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 		return helper.GetRecordColumns(struct_type, getData())
 	}
 
-	getTable := func() (*Table, []error) {
+	getTable := func() (Table, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "*dao.Table")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "dao.Table")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -437,9 +438,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 		}
 		
 		if len(errors) > 0 {
-			return nil, errors
+			return Table{}, errors
 		}
-		return temp_value.(*Table), nil
+		return temp_value.(Table), nil
 	}
 
 	getArchieved := func() (*bool, []error) {
@@ -981,6 +982,9 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 		},
 		SetArchievedDate: func(value *time.Time) []error {
 			return setArchievedDate(value)
+		},
+		GetTable: func() (Table, []error) {
+			return getTable()
 		},
 	}
 

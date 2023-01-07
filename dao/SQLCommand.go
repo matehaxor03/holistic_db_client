@@ -197,6 +197,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return &records, nil
 			}
 
+			if options.IsBoolTrue("read_no_records") {
+				return &records, nil
+			}
+
 
 			//rune_array := []rune(strings.Join(*shell_output, "\n"))
 			reading_columns := true

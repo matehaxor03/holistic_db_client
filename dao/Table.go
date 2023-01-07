@@ -37,7 +37,7 @@ type Table struct {
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record *json.Map) ([]error)
 	ReadRecords         func(select_fields *json.Array, filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
-	GetDatabase           func() (*Database, []error)
+	GetDatabase           func() (Database, []error)
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
@@ -226,9 +226,9 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		return ValidateData(getData(), "*dao.Table")
 	}
 
-	getDatabase := func() (*Database, []error) {
+	getDatabase := func() (Database, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "*dao.Database")
+		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -236,10 +236,10 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		}
 		
 		if len(errors) > 0 {
-			return nil, errors
+			return Database{}, errors
 		}
 		
-		return temp_value.(*Database), temp_value_errors
+		return temp_value.(Database), temp_value_errors
 	}
 
 	exists := func() (*bool, []error) {
@@ -694,7 +694,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 			temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
 		}
 
-		new_data, setup_data_errors := setupData(*temp_database, temp_table_name, *temp_schema)
+		new_data, setup_data_errors := setupData(temp_database, temp_table_name, *temp_schema)
 		if setup_data_errors != nil {
 			errors = append(errors, setup_data_errors...)
 			return nil, errors
@@ -819,7 +819,7 @@ func newTable(database Database, table_name string, schema json.Map, database_re
 		Validate: func() []error {
 			return validate()
 		},
-		GetDatabase: func() (*Database, []error) {
+		GetDatabase: func() (Database, []error) {
 			return getDatabase()
 		},
 		GetTableColumns: func() (*[]string, []error) {

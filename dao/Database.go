@@ -167,7 +167,10 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
-		} 
+		} else if common.IsNil(temp_value) {
+			errors = append(errors, fmt.Errorf("database name is nil"))
+		}
+
 		if len(errors) > 0 { 
 			return "", errors
 		}
@@ -273,6 +276,8 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
+		options.SetBoolValue("read_no_records", true)
+
 
 		sql_command, generate_sql_errors := getCreateSQL(options)
 
@@ -293,6 +298,8 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)
+		options.SetBoolValue("read_no_records", true)
+
 
 		errors := validate()
 
@@ -317,12 +324,6 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		} else {
 			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
 		}
-
-		/*
-		temp_client, temp_client_errors := getClient()
-		if temp_client_errors != nil {
-			return nil, temp_client_errors
-		}*/
 
 		_, execute_errors := executeUnsafeCommand(&sql_command, options)
 
@@ -410,6 +411,8 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
+		options.SetBoolValue("read_no_records", true)
+
 		
 		errors := validate()
 
@@ -460,6 +463,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
+		options.SetBoolValue("read_no_records", true)
 		
 		errors := validate()
 
@@ -502,6 +506,7 @@ func NewDatabase(host Host, database_username string, database_name string, data
 	tableExists :=  func(table_name string) (*bool, []error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
+		options.SetBoolValue("read_no_records", true)
 		
 		var errors []error
 		validate_errors := validate()
@@ -767,10 +772,18 @@ func NewDatabase(host Host, database_username string, database_name string, data
 			return tables, nil
 		},
 		ExecuteUnsafeCommand: func(sql_command string, options *json.Map) (json.Array, []error) {			
+			var errors []error
 			results, results_errors := executeUnsafeCommand(&sql_command, options)
 			if results_errors != nil {
-				return json.Array{}, results_errors
+				errors = append(errors, results_errors...)
+			} else if common.IsNil(results) {
+				errors = append(errors, fmt.Errorf("no results returned"))
 			}
+
+			if len(errors) > 0 {
+				return json.Array{}, errors
+			}
+
 			return *results, nil
 		},
 		GetHost: func() (Host, []error) {

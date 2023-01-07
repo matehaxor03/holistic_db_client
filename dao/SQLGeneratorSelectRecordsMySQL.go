@@ -305,7 +305,7 @@ func getSelectRecordsSQLMySQL(table Table, select_fields *json.Array, filters *j
 			sql_command += "WHERE "
 		}
 
-		column_name_params := json.NewMap()
+		column_name_params := json.NewMapValue()
 		column_name_params.SetObjectForMap("values", column_name_whitelist_characters)
 		column_name_params.SetNil("value")
 		column_name_params.SetStringValue("label","column_name")

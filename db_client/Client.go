@@ -253,27 +253,27 @@ func newClient(client_manager ClientManager, host *dao.Host, database_username *
 			return nil, tuple_credentials_errors
 		}
 
-		host, host_errors := dao.NewHost(*(tuple_credentials.host_name), *(tuple_credentials.port_number))
-		if host_errors != nil {
-			return nil, host_errors
+		new_temp_host, new_temp_host_errors := dao.NewHost((tuple_credentials.host_name), (tuple_credentials.port_number))
+		if new_temp_host_errors != nil {
+			return nil, new_temp_host_errors
 		}
 
-		client, client_errors := newClient(temp_client_manager, host, tuple_credentials.database_username, nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
+		client, client_errors := newClient(temp_client_manager, new_temp_host, &(tuple_credentials.database_username), nil, database_reserved_words_obj, database_name_whitelist_characters_obj, table_name_whitelist_characters_obj, column_name_whitelist_characters_obj)
 		if client_errors != nil {
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := dao.NewCredentials(*(tuple_credentials.database_username), "")
+		credentials, credentials_errors := dao.NewCredentials((tuple_credentials.database_username), "")
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
 
-		use_database_errors := client.UseDatabaseByName(*(tuple_credentials.database_name))
+		use_database_errors := client.UseDatabaseByName((tuple_credentials.database_name))
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := dao.NewDomainName(*(tuple_credentials.host_name))
+		domain_name, domain_name_errors := dao.NewDomainName((tuple_credentials.host_name))
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}

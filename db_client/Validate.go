@@ -420,7 +420,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			filter_map.SetString("data_type", &struct_type)
 			filter_map.SetString("label", &parameter)
 
-			function_execution_errors := function(*filter_map)
+			function_execution_errors := (*function)(*filter_map)
 			if function_execution_errors != nil {
 				errors = append(errors, function_execution_errors...)
 			}
