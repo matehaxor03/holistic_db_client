@@ -1,7 +1,7 @@
 package helper
 
 import (
-	//"fmt"
+	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	//"strings"
 	common "github.com/matehaxor03/holistic_common/common"
@@ -17,20 +17,28 @@ func GetRecordColumns(caller string, data *json.Map) (*[]string, []error) {
 }
 
 
-func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_non_primary_key_columns []string) (*[]string, []error) {
+func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_non_primary_key_columns *[]string) (*[]string, []error) {
+	var errors []error
+	if common.IsNil(table_non_primary_key_columns) {
+		errors = append(errors, fmt.Errorf("table_non_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
+	}
+	
 	record_columns, record_columns_errors := GetRecordColumns(caller, data)
 	if record_columns_errors != nil {
-		return nil, record_columns_errors
+		errors = append(errors, record_columns_errors...)
 	}
 
-	var errors []error
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
 	var columns []string
 	for _, record_column := range *record_columns {
 		if record_column == "created_date" {
 			continue
 		}
 
-		if common.Contains(table_non_primary_key_columns, record_column) {
+		if common.Contains(*table_non_primary_key_columns, record_column) {
 			columns = append(columns, record_column)
 		} 
 	}
@@ -39,5 +47,29 @@ func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_no
 		return nil, errors
 	}
 
+	return &columns, nil
+}
+
+func GetRecordPrimaryKeyColumns(caller string, data *json.Map,  table_primary_key_columns *[]string) (*[]string, []error) {
+	var errors []error
+	if common.IsNil(table_primary_key_columns) {
+		errors = append(errors, fmt.Errorf("table_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
+	}
+	
+	record_columns, record_columns_errors := GetRecordColumns(caller, data)
+	if record_columns_errors != nil {
+		errors = append(errors, record_columns_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	var columns []string
+	for _, record_column := range *record_columns {
+		if common.Contains(*table_primary_key_columns, record_column) {
+			columns = append(columns, record_column)
+		} 
+	}
 	return &columns, nil
 }

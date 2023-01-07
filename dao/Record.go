@@ -476,39 +476,37 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 	}
 
 	getNonPrimaryKeyColumnsUpdate := func() (*[]string, []error) {
-		record_columns, record_columns_errors := getRecordColumns()
-		if record_columns_errors != nil {
-			return nil, record_columns_errors
+		var errors []error
+		table_non_primary_key_columns, table_non_primary_key_columns_errors := table.GetNonPrimaryKeyColumns()
+		if table_non_primary_key_columns_errors != nil {
+			errors = append(errors, table_non_primary_key_columns_errors...)
+		} else if common.IsNil(table_non_primary_key_columns) {
+			errors = append(errors, fmt.Errorf(struct_type + " table returned nil columns table.GetNonPrimaryKeyColumns()."))
 		}
 
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, temp_table_errors
+		if len(errors) > 0 {
+			return nil, errors
 		}
 
-		non_primary_key_columns, non_primary_key_columns_errors := temp_table.GetNonPrimaryKeyColumns()
-		if non_primary_key_columns_errors != nil {
-			return nil, non_primary_key_columns_errors
-		}
-
-		var record_non_primary_key_columns []string
-		for _, record_column := range *record_columns {
-			if record_column == "created_date" {
-				continue
-			}
-
-			for _, non_primary_key_column := range *non_primary_key_columns {
-				if non_primary_key_column == record_column {
-					record_non_primary_key_columns = append(record_non_primary_key_columns, non_primary_key_column)
-					break
-				}
-			}
-		}
-		return &record_non_primary_key_columns, nil
+		return helper.GetRecordNonPrimaryKeyColumnsUpdate(struct_type, getData(), table_non_primary_key_columns)
 	}
 
 	getPrimaryKeyColumns := func() (*[]string, []error) {
-		record_columns, record_columns_errors := getRecordColumns()
+		var errors []error
+		table_primary_key_columns, table_primary_key_columns_errors := table.GetPrimaryKeyColumns()
+		if table_primary_key_columns_errors != nil {
+			errors = append(errors, table_primary_key_columns_errors...)
+		} else if common.IsNil(table_primary_key_columns) {
+			errors = append(errors, fmt.Errorf(struct_type + " table returned nil columns table.GetPrimaryKeyColumns()."))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return helper.GetRecordPrimaryKeyColumns(struct_type, getData(), table_primary_key_columns)
+		
+		/*record_columns, record_columns_errors := getRecordColumns()
 		if record_columns_errors != nil {
 			return nil, record_columns_errors
 		}
@@ -518,10 +516,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 			return nil, temp_table_errors
 		}
 
-		table_primary_key_columns, table_primary_key_columns_errors := temp_table.GetPrimaryKeyColumns()
-		if table_primary_key_columns_errors != nil {
-			return nil, table_primary_key_columns_errors
-		}
+		
 
 		var record_primary_key_columns []string
 		for _, record_column := range *record_columns {
@@ -532,7 +527,7 @@ func newRecord(table Table, record_data json.Map, database_reserved_words_obj *v
 				}
 			}
 		}
-		return &record_primary_key_columns, nil
+		return &record_primary_key_columns, nil*/
 	}
 
 	getForeignKeyColumns := func() (*[]string, []error) {
