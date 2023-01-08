@@ -10,6 +10,8 @@ type Validator struct {
 	ValidateTableName func(table_name string) ([]error)
 	ValidateDatabaseName func(database_name string) ([]error)
 	ValidateColumnName  func(column_name string) ([]error)
+	ValidateCollate  func(collate string) ([]error)
+	ValidateCharacterSet  func(character_set string) ([]error)
 
 	GetDatabaseReservedWordsBlackList func() *json.Map 
 	GetDatabaseNameWhitelistCharacters func() *json.Map
@@ -113,6 +115,31 @@ func NewValidator() (*Validator) {
 				return errors
 			}
 
+			return nil
+		},
+		ValidateCollate: func(collate string) ([]error) {
+			parameters := json.NewMapValue()
+			parameters.SetStringValue("value", collate)
+			parameters.SetMap("values", valid_collate_words.GetCollateWordWhitelist())
+			parameters.SetStringValue("label", "Validator.ValidateCollate")
+			parameters.SetStringValue("data_type", "dao.Database.collate")
+			validation_errors := validation_functions.WhiteListString(parameters)
+			if validation_errors != nil {
+				return validation_errors
+			}
+
+			return nil
+		},
+		ValidateCharacterSet: func(character_set string) ([]error) {
+			parameters := json.NewMapValue()
+			parameters.SetStringValue("value", character_set)
+			parameters.SetMap("values", valid_character_set_words.GetCharacterSetWordWhitelist())
+			parameters.SetStringValue("label", "Validator.ValidateCharacterSet")
+			parameters.SetStringValue("data_type", "dao.Database.character_set")
+			validation_errors := validation_functions.WhiteListString(parameters)
+			if validation_errors != nil {
+				return validation_errors
+			}
 			return nil
 		},
 		ValidateColumnName: func(column_name string) ([]error) {

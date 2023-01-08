@@ -214,78 +214,42 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		return sql_command_results, nil
 	}
 
-	getCreateSQL := func(options *json.Map) (*string, []error) {
-		errors := validate()
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
-
-		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
-		if database_name_escaped_errors != nil {
-			errors = append(errors, database_name_escaped_errors)
-			return nil, errors
-		}
-
-		sql_command := "CREATE DATABASE "
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
-		} else {
-			sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
-		}
-
-		databaseCreateOptions, databaseCreateOptions_errors := getDatabaseCreateOptions()
-		if databaseCreateOptions_errors != nil {
-			return nil, databaseCreateOptions_errors
-		}
-
-		if databaseCreateOptions != nil {
-			character_set, character_set_errors := databaseCreateOptions.GetCharacterSet()
-			if character_set_errors != nil {
-				return nil, character_set_errors
-			}
-
-			collate, collate_errors := databaseCreateOptions.GetCollate()
-			if collate_errors != nil {
-				return nil, collate_errors
-			}
-
-			if character_set != nil && *character_set != "" {
-				sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
-			}
-
-			if collate != nil && *collate != "" {
-				sql_command += fmt.Sprintf("COLLATE %s ", *collate)
-			}
-		}
-		sql_command += ";"
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		return &sql_command, nil
-	}
-
 	create := func() []error {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 
+		databaseCreateOptions, databaseCreateOptions_errors := getDatabaseCreateOptions()
+		if databaseCreateOptions_errors != nil {
+			return databaseCreateOptions_errors
+		}
 
-		sql_command, generate_sql_errors := getCreateSQL(options)
+		var collate_value *string = nil
+		var character_set_value *string = nil
+		if databaseCreateOptions != nil {
+			character_set, character_set_errors := databaseCreateOptions.GetCharacterSet()
+			if character_set_errors != nil {
+				return character_set_errors
+			} else if !common.IsNil(character_set) {
+				character_set_value = character_set
+			}
+
+			collate, collate_errors := databaseCreateOptions.GetCollate()
+			if collate_errors != nil {
+				return collate_errors
+			} else if !common.IsNil(collate) {
+				collate_value = collate
+			}
+		}
+
+		sql_command, new_options, generate_sql_errors :=  sql_generator_mysql.GetCreateDatabaseSQL(verify, database_name, character_set_value, collate_value, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors
 		}
 
-		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, options)
+		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
