@@ -18,7 +18,7 @@ func getTestDatabaseName() string {
 	lock_get_database_name.Lock()
 	defer lock_get_database_name.Unlock()
 	database_count++
-	return "holistic_test_db_" + (common.GenerateRandomLetters(10, false, true)) + fmt.Sprintf("_%d", database_count)
+	return "holistic" + fmt.Sprintf("%d", database_count)
 }
 
 func EnsureDatabaseIsDeleted(t *testing.T, database dao.Database) {

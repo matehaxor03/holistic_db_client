@@ -26,7 +26,7 @@ func GetTestTableName() string {
 	lock_get_table_name.Lock()
 	defer lock_get_table_name.Unlock()
 	table_count++
-	return "holistic_test_table" + (common.GenerateRandomLetters(10, false, true)) + fmt.Sprintf("_%d", table_count)
+	return "holistic" + fmt.Sprintf("%d", table_count)
 }
 
 func GetTestTablePrimaryKeyName() string {
