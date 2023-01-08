@@ -174,6 +174,10 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
+		database_name_errors := verify.ValidateDatabaseName(new_database_name) 
+		if database_name_errors != nil {
+			return database_name_errors
+		}
 		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", new_database_name)
 	}
 
@@ -697,6 +701,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			database_username_temp, database_username_temp_errors := getDatabaseUsername()
 			if database_username_temp_errors != nil {
 				return "", database_username_temp_errors
+			} else if common.IsNil(database_username_temp) {
+				return "", nil
 			}
 			return *database_username_temp, nil
 		},
