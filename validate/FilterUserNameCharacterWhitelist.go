@@ -10,11 +10,12 @@ type UsernameCharacterWhitelist struct {
 }
 
 func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidUsernameCharacters()
+	//valid_characters := validation_constants.GetValidUsernameCharacters()
 
 	x := UsernameCharacterWhitelist {
 		GetUsernameCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidUsernameCharacters()
+			return &v
 		},
 	}
 

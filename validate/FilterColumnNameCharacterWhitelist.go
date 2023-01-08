@@ -11,11 +11,12 @@ type ColumnNameCharacterWhitelist struct {
 }
 
 func NewColumnNameCharacterWhitelist() (*ColumnNameCharacterWhitelist) {
-	column_name_character_whitelist := validation_constants.GetMySQLColumnNameWhitelistCharacters()
+	//column_name_character_whitelist := validation_constants.GetMySQLColumnNameWhitelistCharacters()
 
 	x := ColumnNameCharacterWhitelist {
 		GetColumnNameCharacterWhitelist: func() (*json.Map) {
-			return &column_name_character_whitelist
+			v := validation_constants.GetMySQLColumnNameWhitelistCharacters()
+			return &v
 		},
 	}
 

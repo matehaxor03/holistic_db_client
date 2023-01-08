@@ -10,11 +10,12 @@ type DatabaseNameCharacterWhitelist struct {
 }
 
 func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {
-	database_name_character_whitelist := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
+	//database_name_character_whitelist := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 
 	x := DatabaseNameCharacterWhitelist {
 		GetDatabaseNameCharacterWhitelist: func() (*json.Map) {
-			return &database_name_character_whitelist
+			v := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
+			return &v
 		},
 	}
 

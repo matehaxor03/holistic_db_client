@@ -10,11 +10,12 @@ type RepositoryNameCharacterWhitelist struct {
 }
 
 func NewRepositoryNameCharacterWhitelist() (*RepositoryNameCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidRepositoryNameCharacters()
+	//valid_characters := validation_constants.GetValidRepositoryNameCharacters()
 
 	x := RepositoryNameCharacterWhitelist {
 		GetRepositoryNameCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidRepositoryNameCharacters()
+			return &v
 		},
 	}
 

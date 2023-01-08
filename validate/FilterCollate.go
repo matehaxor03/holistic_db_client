@@ -10,11 +10,12 @@ type CollateWordWhitelist struct {
 }
 
 func NewCollateWordWhitelist() (*CollateWordWhitelist) {
-	valid_words := validation_constants.GET_COLLATES()
+	//valid_words := validation_constants.GET_COLLATES()
 
 	x := CollateWordWhitelist {
 		GetCollateWordWhitelist: func() (*json.Map) {
-			return &valid_words
+			v := validation_constants.GET_COLLATES()
+			return &v
 		},
 	}
 	return &x

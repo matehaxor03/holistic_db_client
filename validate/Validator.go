@@ -105,16 +105,6 @@ func NewValidator() (*Validator) {
 				errors = append(errors, table_name_character_whitelist_errors...)
 			}
 
-			parameters.SetMap("values", database_reserved_words_blacklist.GetDatabaseReservedWordsBlackList())
-			reserved_words_errors := validation_functions.BlackListStringToUpper(parameters)
-			if reserved_words_errors != nil {
-				errors = append(errors, reserved_words_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
 			return nil
 		},
 		ValidateCollate: func(collate string) ([]error) {
@@ -163,16 +153,6 @@ func NewValidator() (*Validator) {
 				errors = append(errors, table_name_character_whitelist_errors...)
 			}
 
-			parameters.SetMap("values", database_reserved_words_blacklist.GetDatabaseReservedWordsBlackList())
-			reserved_words_errors := validation_functions.BlackListStringToUpper(parameters)
-			if reserved_words_errors != nil {
-				errors = append(errors, reserved_words_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
 			return nil
 		},
 		ValidateDatabaseName: func(database_name string) ([]error) {
@@ -194,16 +174,6 @@ func NewValidator() (*Validator) {
 			table_name_character_whitelist_errors := validation_functions.WhitelistCharacters(parameters)
 			if table_name_character_whitelist_errors != nil {
 				errors = append(errors, table_name_character_whitelist_errors...)
-			}
-
-			parameters.SetMap("values", database_reserved_words_blacklist.GetDatabaseReservedWordsBlackList())
-			reserved_words_errors := validation_functions.BlackListStringToUpper(parameters)
-			if reserved_words_errors != nil {
-				errors = append(errors, reserved_words_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
 			}
 
 			return nil

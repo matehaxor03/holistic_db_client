@@ -10,11 +10,12 @@ type BranchNameCharacterWhitelist struct {
 }
 
 func NewBranchNameCharacterWhitelist() (*BranchNameCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidBranchNameCharacters()
+	//valid_characters := validation_constants.GetValidBranchNameCharacters()
 
 	x := BranchNameCharacterWhitelist {
 		GetBranchNameCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidBranchNameCharacters()
+			return &v
 		},
 	}
 

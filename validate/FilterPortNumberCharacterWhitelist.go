@@ -10,11 +10,12 @@ type PortNumberCharacterWhitelist struct {
 }
 
 func NewPortNumberCharacterWhitelist() (*PortNumberCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidPortNumberCharacters()
+	//valid_characters := validation_constants.GetValidPortNumberCharacters()
 
 	x := PortNumberCharacterWhitelist {
 		GetPortNumberCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidPortNumberCharacters()
+			return &v
 		},
 	}
 

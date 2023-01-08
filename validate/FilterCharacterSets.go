@@ -10,11 +10,12 @@ type CharacterSetWordWhitelist struct {
 }
 
 func NewCharacterSetWordWhitelist() (*CharacterSetWordWhitelist) {
-	valid_characters := validation_constants.GET_CHARACTER_SETS()
+	//valid_characters := validation_constants.GET_CHARACTER_SETS()
 
 	x := CharacterSetWordWhitelist {
 		GetCharacterSetWordWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GET_CHARACTER_SETS()
+			return &v
 		},
 	}
 

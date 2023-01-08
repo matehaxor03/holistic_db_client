@@ -10,11 +10,12 @@ type RepositoryAccountNameCharacterWhitelist struct {
 }
 
 func NewRepositoryAccountNameCharacterWhitelist() (*RepositoryAccountNameCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidRepositoryAccountNameCharacters()
+	//valid_characters := validation_constants.GetValidRepositoryAccountNameCharacters()
 
 	x := RepositoryAccountNameCharacterWhitelist {
 		GetRepositoryAccountNameCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidRepositoryAccountNameCharacters()
+			return &v
 		},
 	}
 

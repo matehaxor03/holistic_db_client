@@ -10,11 +10,12 @@ type DatabaseReservedWordsBlackList struct {
 }
 
 func NewDatabaseReservedWordsBlackList() (*DatabaseReservedWordsBlackList) {
-	database_reserved_words := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
+	//database_reserved_words := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
 	x := DatabaseReservedWordsBlackList{
 		GetDatabaseReservedWordsBlackList: func() (*json.Map) {
-			return &database_reserved_words
+			v := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
+			return &v
 		},
 	}
 

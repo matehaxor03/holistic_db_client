@@ -10,11 +10,12 @@ type DomainNameCharacterWhitelist struct {
 }
 
 func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
-	valid_characters := validation_constants.GetValidDomainNameCharacters()
+	//valid_characters := validation_constants.GetValidDomainNameCharacters()
 
 	x := DomainNameCharacterWhitelist {
 		GetDomainNameCharacterWhitelist: func() (*json.Map) {
-			return &valid_characters
+			v := validation_constants.GetValidDomainNameCharacters()
+			return &v
 		},
 	}
 
