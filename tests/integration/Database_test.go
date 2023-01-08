@@ -6,7 +6,6 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	dao "github.com/matehaxor03/holistic_db_client/dao"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
@@ -46,8 +45,8 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 	
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -71,8 +70,8 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -97,8 +96,8 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
@@ -122,8 +121,8 @@ func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 
 func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	whitelist_map := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 
@@ -150,8 +149,8 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	non_whitelist_map := json.NewMap()
 	non_whitelist_map.SetNil("(")
@@ -170,8 +169,8 @@ func TestDatabaseCannotCreateWithNonWhiteListCharacters(t *testing.T) {
 
 func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *testing.T) {
 	client := helper.GetTestClient(t)
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 
 	whitelist_map := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 

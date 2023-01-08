@@ -5,38 +5,8 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
-
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
-
-func GET_CHARACTER_SET_UTF8() string {
-	return "utf8"
-}
-
-func GET_CHARACTER_SET_UTF8MB4() string {
-	return "utf8mb4"
-}
-
-func GET_CHARACTER_SETS() json.Map {
-	valid_chars := json.NewMapValue()
-	valid_chars.SetNil(GET_CHARACTER_SET_UTF8())
-	valid_chars.SetNil(GET_CHARACTER_SET_UTF8MB4())
-	return valid_chars
-}
-
-func GET_COLLATE_UTF8_GENERAL_CI() string {
-	return "utf8_general_ci"
-}
-
-func GET_COLLATE_UTF8MB4_0900_AI_CI() string {
-	return "utf8mb4_0900_ai_ci"
-}
-
-func GET_COLLATES() json.Map {
-	valid_chars := json.NewMapValue()
-	valid_chars.SetNil(GET_COLLATE_UTF8_GENERAL_CI())
-	valid_chars.SetNil(GET_COLLATE_UTF8MB4_0900_AI_CI())
-	return valid_chars
-}
 
 type DatabaseCreateOptions struct {
 	ToJSONString func(json *strings.Builder) ([]error)
@@ -45,7 +15,7 @@ type DatabaseCreateOptions struct {
 	Validate     func() []error
 }
 
-func newDatabaseCreateOptions(character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
+func newDatabaseCreateOptions(verify *validate.Validator, character_set *string, collate *string) (*DatabaseCreateOptions, []error) {
 	struct_type := "*dao.DatabaseCreateOptions"
 
 	data := json.NewMapValue()
@@ -67,7 +37,7 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 	map_character_set_schema_filters := json.NewArrayValue()
 	map_character_set_schema_filter := json.NewMapValue()
-	map_character_set_schema_filter.SetObjectForMap("values", GET_CHARACTER_SETS())
+	map_character_set_schema_filter.SetObjectForMap("values", verify.GetCharacterSetWordWhitelist())
 	map_character_set_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistStringFunc())
 	map_character_set_schema_filters.AppendMapValue(map_character_set_schema_filter)
 	map_character_set_schema.SetArrayValue("filters", map_character_set_schema_filters)
@@ -79,7 +49,7 @@ func newDatabaseCreateOptions(character_set *string, collate *string) (*Database
 
 	map_collate_schema_filters := json.NewArrayValue()
 	map_collate_schema_filter := json.NewMapValue()
-	map_collate_schema_filter.SetObjectForMap("values", GET_COLLATES())
+	map_collate_schema_filter.SetObjectForMap("values", verify.GetCollateWordWhitelist())
 	map_collate_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistStringFunc())
 	map_collate_schema_filters.AppendMapValue(map_collate_schema_filter)
 	map_collate_schema.SetArrayValue("filters", map_collate_schema_filters)

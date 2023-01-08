@@ -6,6 +6,7 @@ import (
 	"sync"
 	common "github.com/matehaxor03/holistic_common/common"
 	dao "github.com/matehaxor03/holistic_db_client/dao"
+	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 )
 
 var database_count uint64 = 0
@@ -73,8 +74,8 @@ func GetTestDatabase(t *testing.T) (dao.Database) {
 	var errors []error
 	client := GetTestClient(t)
 
-	character_set := dao.GET_CHARACTER_SET_UTF8MB4()
-	collate := dao.GET_COLLATE_UTF8MB4_0900_AI_CI()
+	character_set := validation_constants.GET_CHARACTER_SET_UTF8MB4()
+	collate := validation_constants.GET_COLLATE_UTF8MB4_0900_AI_CI()
 	test_database_name := getTestDatabaseName()
 	database, database_errors := client.GetDatabaseInterface(test_database_name, &character_set, &collate)
 	if database_errors != nil {

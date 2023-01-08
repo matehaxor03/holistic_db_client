@@ -111,7 +111,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 	getDatabaseInterface := func(database_name string, character_set *string, collate *string) (*Database, []error) {
 		var errors []error
-		temp_database_create_options, temp_database_create_options_errors := newDatabaseCreateOptions(character_set, collate)
+		temp_database_create_options, temp_database_create_options_errors := newDatabaseCreateOptions(verify, character_set, collate)
 		if temp_database_create_options_errors != nil {
 			return nil, temp_database_create_options_errors
 		}

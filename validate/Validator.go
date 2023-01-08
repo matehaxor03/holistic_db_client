@@ -24,7 +24,8 @@ type Validator struct {
 	GetDomainNameCharacterWhitelist func() *json.Map 
 	GetPortNumberCharacterWhitelist func() *json.Map 
 
-
+	GetCharacterSetWordWhitelist func() *json.Map
+	GetCollateWordWhitelist func() *json.Map
 }
 
 func NewValidator() (*Validator) {
@@ -40,6 +41,10 @@ func NewValidator() (*Validator) {
 	valid_domain_name_characters := NewDomainNameCharacterWhitelist()
 	valid_port_number_characters := NewPortNumberCharacterWhitelist()
 
+	valid_character_set_words := NewCharacterSetWordWhitelist()
+	valid_collate_words := NewCollateWordWhitelist()
+
+	
 
 	x := Validator {
 		GetDatabaseNameWhitelistCharacters: func() *json.Map {
@@ -71,6 +76,12 @@ func NewValidator() (*Validator) {
 		},
 		GetPortNumberCharacterWhitelist: func() *json.Map {
 			return valid_port_number_characters.GetPortNumberCharacterWhitelist()
+		},
+		GetCharacterSetWordWhitelist: func() *json.Map {
+			return valid_character_set_words.GetCharacterSetWordWhitelist()
+		},
+		GetCollateWordWhitelist: func() *json.Map {
+			return valid_collate_words.GetCollateWordWhitelist()
 		},
 		ValidateTableName: func(table_name string) ([]error) {
 			var errors []error
