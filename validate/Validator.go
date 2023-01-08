@@ -100,9 +100,13 @@ func NewValidator() (*Validator) {
 			parameters.SetMap("values", valid_table_name_characters.GetTableNameCharacterWhitelist())
 			parameters.SetStringValue("label", "Validator.ValidateTableName")
 			parameters.SetStringValue("data_type", "dao.Table.table_name")
-			table_name_character_whitelist_errors := validation_functions.WhitelistCharacters(parameters)
-			if table_name_character_whitelist_errors != nil {
-				errors = append(errors, table_name_character_whitelist_errors...)
+			whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+			if whitelist_errors != nil {
+				errors = append(errors, whitelist_errors...)
+			}
+
+			if len(errors) > 0 {
+				return errors
 			}
 
 			return nil
@@ -113,9 +117,9 @@ func NewValidator() (*Validator) {
 			parameters.SetMap("values", valid_collate_words.GetCollateWordWhitelist())
 			parameters.SetStringValue("label", "Validator.ValidateCollate")
 			parameters.SetStringValue("data_type", "dao.Database.collate")
-			validation_errors := validation_functions.WhiteListString(parameters)
-			if validation_errors != nil {
-				return validation_errors
+			whitelist_errors := validation_functions.WhiteListString(parameters)
+			if whitelist_errors != nil {
+				return whitelist_errors
 			}
 
 			return nil
@@ -126,10 +130,11 @@ func NewValidator() (*Validator) {
 			parameters.SetMap("values", valid_character_set_words.GetCharacterSetWordWhitelist())
 			parameters.SetStringValue("label", "Validator.ValidateCharacterSet")
 			parameters.SetStringValue("data_type", "dao.Database.character_set")
-			validation_errors := validation_functions.WhiteListString(parameters)
-			if validation_errors != nil {
-				return validation_errors
+			whitelist_errors := validation_functions.WhiteListString(parameters)
+			if whitelist_errors != nil {
+				return whitelist_errors
 			}
+
 			return nil
 		},
 		ValidateColumnName: func(column_name string) ([]error) {
@@ -148,35 +153,19 @@ func NewValidator() (*Validator) {
 			parameters.SetMap("values", valid_column_name_characters.GetColumnNameCharacterWhitelist())
 			parameters.SetStringValue("label", "Validator.ValidateTableName")
 			parameters.SetStringValue("data_type", "dao.Table.table_name")
-			table_name_character_whitelist_errors := validation_functions.WhitelistCharacters(parameters)
-			if table_name_character_whitelist_errors != nil {
-				errors = append(errors, table_name_character_whitelist_errors...)
+			whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+			if whitelist_errors != nil {
+				errors = append(errors, whitelist_errors...)
+			}
+
+			if len(errors) > 0 {
+				return errors
 			}
 
 			return nil
 		},
 		ValidateDatabaseName: func(database_name string) ([]error) {
-			var errors []error
-			
-			if database_name == "" {
-				errors = append(errors, fmt.Errorf("database_name is empty"))
-			}
-
-			if len(database_name) < 2 {
-				errors = append(errors, fmt.Errorf("database_name is too short must be at least 2 characters"))
-			}
-
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", database_name)
-			parameters.SetMap("values", valid_database_name_characters.GetDatabaseNameCharacterWhitelist())
-			parameters.SetStringValue("label", "Validator.ValidateDatabaseName")
-			parameters.SetStringValue("data_type", "dao.Database.database_name")
-			table_name_character_whitelist_errors := validation_functions.WhitelistCharacters(parameters)
-			if table_name_character_whitelist_errors != nil {
-				errors = append(errors, table_name_character_whitelist_errors...)
-			}
-
-			return nil
+			return valid_database_name_characters.ValidateDatabaseName(database_name)
 		},
 	}
 
