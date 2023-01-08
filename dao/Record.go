@@ -350,7 +350,7 @@ type Record struct {
 	GetArchievedDate func() (*time.Time, []error)
 	GetNonPrimaryKeyColumnsUpdate func() (*[]string, []error)
 	GetPrimaryKeyColumns func() (*[]string, []error)
-	GetForeignKeyColumns func() (*[]string, []error)
+	GetForeignKeyColumns func() (*map[string]bool, []error)
 	SetLastModifiedDate func(value *time.Time) []error
 	SetArchievedDate func(value *time.Time) []error
 	GetTable func() (Table, []error)
@@ -506,7 +506,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return helper.GetRecordPrimaryKeyColumns(struct_type, getData(), table_primary_key_columns)
 	}
 
-	getForeignKeyColumns := func() (*[]string, []error) {
+	getForeignKeyColumns := func() (*map[string]bool, []error) {
 		var errors []error
 		table_foreign_key_columns, table_foreign_key_columns_errors := table.GetForeignKeyColumns()
 		if table_foreign_key_columns_errors != nil {
@@ -971,7 +971,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		GetPrimaryKeyColumns: func() (*[]string, []error) {
 			return getPrimaryKeyColumns()
 		},
-		GetForeignKeyColumns: func() (*[]string, []error) {
+		GetForeignKeyColumns: func() (*map[string]bool, []error) {
 			return getForeignKeyColumns()
 		},
 		GetField: func(field string, return_type string) (interface{}, []error) {

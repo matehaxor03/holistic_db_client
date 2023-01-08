@@ -81,7 +81,7 @@ func GetRecordPrimaryKeyColumns(caller string, data *json.Map, table_primary_key
 	return &columns, nil
 }
 
-func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key_columns *[]string) (*[]string, []error) {
+func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key_columns *map[string]bool) (*map[string]bool, []error) {
 	var errors []error
 	if common.IsNil(table_foreign_key_columns) {
 		errors = append(errors, fmt.Errorf("table_foreign_key_columns is nil. GetRecordForeignKeyColumns()"))
@@ -98,11 +98,15 @@ func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key
 		return nil, errors
 	}
 
-	var columns []string
+	columns := make(map[string]bool)
 	for _, record_column := range *record_columns {
-		if common.Contains(*table_foreign_key_columns, record_column) {
+		if _, found := (*table_foreign_key_columns)[record_column]; found {
+			columns[record_column] = true
+		}
+		
+		/*if common.Contains(*table_foreign_key_columns, record_column) {
 			columns = append(columns, record_column)
-		} 
+		} */
 	}
 	return &columns, nil
 }

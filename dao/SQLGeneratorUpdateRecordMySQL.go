@@ -108,15 +108,28 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		}*/
 	//}
 
-	for _, foreign_key_table_column := range *foreign_key_table_columns {
-		found_foreign_key_column := false
-		for _, record_foreign_key_column := range *record_foreign_key_columns {
-			if foreign_key_table_column == record_foreign_key_column {
-				found_foreign_key_column = true
+	for foreign_key_table_column, _ := range *foreign_key_table_columns {
+		//found_foreign_key_column := false
+		//for _, record_foreign_key_column := range *record_foreign_key_columns {
+		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
+			record_forign_key_column_data, record_forign_key_column_data_errors := record.GetField(foreign_key_table_column, "self")
+			if record_forign_key_column_data_errors != nil {
+				errors = append(errors, fmt.Errorf("error: record had error getting foreign key field: %s", foreign_key_table_column))
+			} else if common.IsNil(record_forign_key_column_data) {
+				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
+		//}
 		}
+	}
+		//} 
+		//}
+	
+			//foreign_key_table_column == record_foreign_key_column {
+			//	found_foreign_key_column = true
+			//}
+		//}
 
-		if found_foreign_key_column {
+		/*if found_foreign_key_column {
 			//record_forign_key_column_data, record_forign_key_column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", foreign_key_table_column, "self")
 			record_forign_key_column_data, record_forign_key_column_data_errors := record.GetField(foreign_key_table_column, "self")
 			if record_forign_key_column_data_errors != nil {
@@ -124,8 +137,8 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 			} else if common.Contains(*record_columns, foreign_key_table_column) && common.IsNil(record_forign_key_column_data) {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
-		}
-	}
+		}*/
+	//}
 
 	//SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", common.GetTimeNow())
 	set_last_modified_date_errors := record.SetLastModifiedDate(common.GetTimeNow())

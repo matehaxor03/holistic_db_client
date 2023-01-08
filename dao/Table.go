@@ -28,7 +28,7 @@ type Table struct {
 	GetTableColumns       func() (*[]string, []error)
 	GetIdentityColumns    func() (*[]string, []error)
 	GetPrimaryKeyColumns  func()  (*map[string]bool, []error)
-	GetForeignKeyColumns  func() (*[]string, []error)
+	GetForeignKeyColumns  func() (*map[string]bool, []error)
 
 	GetNonPrimaryKeyColumns func() (*[]string, []error)
 	Count                 func(filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
@@ -194,6 +194,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	var this_primary_key_columns *map[string]bool = nil
+	var this_foreigin_key_columns *map[string]bool = nil
+
 
 	getTableName := func() (string, []error) {
 		return helper.GetTableName(struct_type, getData())
@@ -221,8 +223,22 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return this_primary_key_columns, nil
 	}
 
-	getForeignKeyColumns := func() (*[]string, []error) {
-		return helper.GetTableForeignKeyColumns(struct_type, getData())
+	getForeignKeyColumns := func() (*map[string]bool, []error) {
+		if !common.IsNil(this_foreigin_key_columns) {
+			return this_foreigin_key_columns, nil
+		}
+		var errors []error
+		foreigin_key_columns, foreigin_key_columns_errors := helper.GetTableForeignKeyColumns(struct_type, getData())
+		if foreigin_key_columns_errors != nil {
+			errors = append(errors, foreigin_key_columns_errors...)
+		} else if common.IsNil(foreigin_key_columns) {
+			errors = append(errors, fmt.Errorf("foreigin_key_columns is nil"))
+		}
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		this_foreigin_key_columns = foreigin_key_columns
+		return this_foreigin_key_columns, nil
 	}
 
 	getIdentityColumns := func() (*[]string, []error) {
@@ -845,7 +861,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		GetPrimaryKeyColumns: func() (*map[string]bool, []error) {
 			return getPrimaryKeyColumns()
 		},
-		GetForeignKeyColumns: func() (*[]string, []error) {
+		GetForeignKeyColumns: func() (*map[string]bool, []error) {
 			return getForeignKeyColumns()
 		},
 		GetNonPrimaryKeyColumns: func() (*[]string, []error) {

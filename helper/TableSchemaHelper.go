@@ -63,9 +63,9 @@ func GetTablePrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool,
 	return &columns, nil
 }
 
-func GetTableForeignKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTableForeignKeyColumns(caller string, data *json.Map) (*map[string]bool, []error) {
 	var errors []error
-	var columns []string
+	columns := make(map[string]bool)
 
 	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
 	if schema_map_errors != nil {
@@ -87,7 +87,7 @@ func GetTableForeignKeyColumns(caller string, data *json.Map) (*[]string, []erro
 		}
 
 		if column_schema.IsBoolTrue("foreign_key") {
-			columns = append(columns, column)
+			columns[column] = true
 		}
 	}
 
