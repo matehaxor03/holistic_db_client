@@ -27,7 +27,7 @@ type Table struct {
 	GetSchemaColumns      func() (*[]string, []error)
 	GetTableColumns       func() (*[]string, []error)
 	GetIdentityColumns    func() (*[]string, []error)
-	GetPrimaryKeyColumns  func() (*[]string, []error)
+	GetPrimaryKeyColumns  func()  (*map[string]bool, []error)
 	GetForeignKeyColumns  func() (*[]string, []error)
 
 	GetNonPrimaryKeyColumns func() (*[]string, []error)
@@ -193,6 +193,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		setData(new_data)
 	}
 
+	var this_primary_key_columns *map[string]bool = nil
+
 	getTableName := func() (string, []error) {
 		return helper.GetTableName(struct_type, getData())
 	}
@@ -201,8 +203,22 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return helper.GetTableColumns(struct_type, getData())
 	}
 
-	getPrimaryKeyColumns := func() (*[]string, []error) {
-		return helper.GetTablePrimaryKeyColumns(struct_type, getData())
+	getPrimaryKeyColumns := func() (*map[string]bool, []error) {
+		if !common.IsNil(this_primary_key_columns) {
+			return this_primary_key_columns, nil
+		}
+		var errors []error
+		primary_key_columns, primary_key_columns_errors := helper.GetTablePrimaryKeyColumns(struct_type, getData())
+		if primary_key_columns_errors != nil {
+			errors = append(errors, primary_key_columns_errors...)
+		} else if common.IsNil(primary_key_columns) {
+			errors = append(errors, fmt.Errorf("primary_key_columns is nil"))
+		}
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		this_primary_key_columns = primary_key_columns
+		return this_primary_key_columns, nil
 	}
 
 	getForeignKeyColumns := func() (*[]string, []error) {
@@ -826,7 +842,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		GetIdentityColumns: func() (*[]string, []error) {
 			return getIdentityColumns()
 		},
-		GetPrimaryKeyColumns: func() (*[]string, []error) {
+		GetPrimaryKeyColumns: func() (*map[string]bool, []error) {
 			return getPrimaryKeyColumns()
 		},
 		GetForeignKeyColumns: func() (*[]string, []error) {

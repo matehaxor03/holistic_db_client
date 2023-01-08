@@ -91,18 +91,22 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		return nil, nil, record_foreign_key_columns_errors
 	}
 
-	for _, primary_key_table_column := range *primary_key_table_columns {
-		found_primary_key_column := false
-		for _, record_primary_key_column := range *record_primary_key_columns {
-			if primary_key_table_column == record_primary_key_column {
-				found_primary_key_column = true
-			}
-		}
 
+	//for primary_key_table_column, _ := range *primary_key_table_columns {
+	for _, record_primary_key_column := range *record_primary_key_columns {
+		if _, found := (*primary_key_table_columns)[record_primary_key_column]; !found {
+			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", record_primary_key_column))
+		}
+		//if primary_key_table_column == record_primary_key_column {
+		//	found_primary_key_column = true
+		//}
+	}
+
+		/*
 		if !found_primary_key_column {
 			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", primary_key_table_column))
-		}
-	}
+		}*/
+	//}
 
 	for _, foreign_key_table_column := range *foreign_key_table_columns {
 		found_foreign_key_column := false
@@ -397,7 +401,9 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 	}
 
 	sql_command += " WHERE "
-	for index, primary_key_table_column := range *primary_key_table_columns {
+	index := 0
+	number_of_primary_keys := len(*primary_key_table_columns)
+	for primary_key_table_column, _ := range *primary_key_table_columns {
 		primary_key_table_column_ecaped, primary_key_table_column_ecaped_errors := common.EscapeString(primary_key_table_column, "'")
 		
 		if primary_key_table_column_ecaped_errors != nil {
@@ -581,9 +587,10 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 			}
 		}
 
-		if index < (len(*primary_key_table_columns) - 1) {
+		if index < (number_of_primary_keys - 1) {
 			sql_command += " AND "
 		}
+		index++
 	}
 	sql_command += " ;"
 
