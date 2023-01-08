@@ -12,6 +12,7 @@ type Validator struct {
 	ValidateCharacterSet  func(character_set string) ([]error)
 	ValidateUsername func(username string) ([]error)
 	ValidateBranchName func(branch_name string) ([]error)
+	ValidateRepositoryName func(repository_name string) ([]error)
 
 
 	GetDatabaseReservedWordsBlackList func() *json.Map 
@@ -106,6 +107,9 @@ func NewValidator() (*Validator) {
 		},
 		ValidateBranchName: func(branch_name string) ([]error) {
 			return valid_branch_name_characters.ValidateBranchName(branch_name)
+		},
+		ValidateRepositoryName: func(repository_name string) ([]error) {
+			return valid_repository_name_characters.ValidateRepositoryName(repository_name)
 		},
 
 	}
