@@ -45,7 +45,7 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(verify validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
+func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 	struct_type := "*dao.Grant"
 	var errors []error
 

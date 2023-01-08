@@ -41,7 +41,7 @@ type Table struct {
 	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
-func newTable(verify validate.Validator, database Database, table_name string, schema json.Map) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, schema json.Map) (*Table, []error) {
 	var lock_get_schema = &sync.Mutex{}
 	struct_type := "*dao.Table"
 	var errors []error

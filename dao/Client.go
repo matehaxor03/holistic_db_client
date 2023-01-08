@@ -31,7 +31,7 @@ type Client struct {
 	ValidateTableName func(table_name string) []error
 }
 
-func newClient(verify validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
+func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
 	var errors []error
 
 	var this_client *Client

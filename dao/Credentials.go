@@ -19,7 +19,7 @@ type Credentials struct {
 	Clone        func() *Credentials
 }
 
-func newCredentials(verify validate.Validator, username string, password string) (*Credentials, []error) {
+func newCredentials(verify *validate.Validator, username string, password string) (*Credentials, []error) {
 	struct_type := "*dao.Credentials"
 
 

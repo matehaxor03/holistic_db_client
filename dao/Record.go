@@ -11,7 +11,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func mapValueFromDBToRecord(verify validate.Validator, table Table, current_json *json.Value) (*Record, []error) {
+func mapValueFromDBToRecord(verify *validate.Validator, table Table, current_json *json.Value) (*Record, []error) {
 	var errors []error
 
 	if common.IsNil(table) {
@@ -356,7 +356,7 @@ type Record struct {
 	GetTable func() (Table, []error)
 }
 
-func newRecord(verify validate.Validator, table Table, record_data json.Map) (*Record, []error) {
+func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
 	var errors []error
 	var this *Record
 

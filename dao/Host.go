@@ -15,7 +15,7 @@ type Host struct {
 	GetPortNumber func() (string, []error)
 }
 
-func newHost(verify validate.Validator, host_name string, port_number string) (*Host, []error) {
+func newHost(verify *validate.Validator, host_name string, port_number string) (*Host, []error) {
 	struct_type := "*dao.Host"
 
 	data := json.NewMap()

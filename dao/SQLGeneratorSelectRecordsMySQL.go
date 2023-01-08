@@ -10,7 +10,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getSelectRecordsSQLMySQL(verify validate.Validator, table Table, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
+func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	if common.IsNil(table) {
 		errors = append(errors, fmt.Errorf("table is nil"))
