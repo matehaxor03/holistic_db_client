@@ -24,9 +24,8 @@ type Table struct {
 	GetAdditionalSchema   func() (*json.Map, []error)
 	GetTableName          func() (string, []error)
 	SetTableName          func(table_name string) []error
-	GetSchemaColumns      func() (*[]string, []error)
-	GetTableColumns       func() (*[]string, []error)
-	GetIdentityColumns    func() (*[]string, []error)
+	GetTableColumns       func() (*map[string]bool, []error)
+	GetIdentityColumns    func()  (*map[string]bool, []error)
 	GetPrimaryKeyColumns  func()  (*map[string]bool, []error)
 	GetForeignKeyColumns  func() (*map[string]bool, []error)
 
@@ -195,14 +194,31 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	var this_primary_key_columns *map[string]bool = nil
 	var this_foreigin_key_columns *map[string]bool = nil
+	var this_identity_key_columns *map[string]bool = nil
+	var this_table_columns *map[string]bool = nil
+
 
 
 	getTableName := func() (string, []error) {
 		return helper.GetTableName(struct_type, getData())
 	}
 
-	getTableColumns := func() (*[]string, []error) {
-		return helper.GetTableColumns(struct_type, getData())
+	getTableColumns := func() (*map[string]bool, []error) {
+		if !common.IsNil(this_table_columns) {
+			return this_table_columns, nil
+		}
+		var errors []error
+		primary_key_columns, primary_key_columns_errors := helper.GetTableColumns(struct_type, getData())
+		if primary_key_columns_errors != nil {
+			errors = append(errors, primary_key_columns_errors...)
+		} else if common.IsNil(primary_key_columns) {
+			errors = append(errors, fmt.Errorf("primary_key_columns is nil"))
+		}
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		this_table_columns = primary_key_columns
+		return this_table_columns, nil
 	}
 
 	getPrimaryKeyColumns := func() (*map[string]bool, []error) {
@@ -241,8 +257,22 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return this_foreigin_key_columns, nil
 	}
 
-	getIdentityColumns := func() (*[]string, []error) {
-		return helper.GetTableIdentityColumns(struct_type, getData())
+	getIdentityColumns := func() (*map[string]bool, []error) {
+		if !common.IsNil(this_identity_key_columns) {
+			return this_identity_key_columns, nil
+		}
+		var errors []error
+		identity_key_columns, identity_key_columns_errors := helper.GetTableIdentityColumns(struct_type, getData())
+		if identity_key_columns_errors != nil {
+			errors = append(errors, identity_key_columns_errors...)
+		} else if common.IsNil(identity_key_columns) {
+			errors = append(errors, fmt.Errorf("identity_key_columns is nil"))
+		}
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		this_identity_key_columns = identity_key_columns
+		return this_identity_key_columns, nil
 	}
 
 	getNonPrimaryKeyColumns := func() (*[]string, []error) {
@@ -826,22 +856,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return nil
 	}
 
-	getSchemaColumns := func()  (*[]string, []error) {
-		errors := validate()
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
-		schemas_map, schemas_map_errors := helper.GetSchemas(struct_type, getData(), "[schema]")
-		if schemas_map_errors != nil {
-			return nil, schemas_map_errors
-		}
-
-		schema_column_names := schemas_map.GetKeys()
-		return &schema_column_names, nil
-	}
-
 	x := Table{
 		Validate: func() []error {
 			return validate()
@@ -849,13 +863,10 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		GetDatabase: func() (Database, []error) {
 			return getDatabase()
 		},
-		GetTableColumns: func() (*[]string, []error) {
+		GetTableColumns: func() (*map[string]bool, []error) {
 			return getTableColumns()
 		},
-		GetSchemaColumns: func() (*[]string, []error) {
-			return getSchemaColumns()
-		},
-		GetIdentityColumns: func() (*[]string, []error) {
+		GetIdentityColumns: func() (*map[string]bool, []error) {
 			return getIdentityColumns()
 		},
 		GetPrimaryKeyColumns: func() (*map[string]bool, []error) {

@@ -66,7 +66,9 @@ func getCreateTableSQLMySQL(struct_type string, table Table, table_data json.Map
 	primary_key_count := 0
 
 	sql_command += "("
-	for index, column := range *valid_columns {
+	number_of_valid_columns := len(*valid_columns)
+	index := 0
+	for column, _ := range *valid_columns {
 		columnSchema, columnSchema_errors := schemas_map.GetMap(column)
 		if columnSchema_errors != nil {
 			errors = append(errors, columnSchema_errors...)
@@ -382,9 +384,10 @@ func getCreateTableSQLMySQL(struct_type string, table Table, table_data json.Map
 			errors = append(errors, fmt.Errorf("error: Table.getCreateSQL type: %s is not supported please implement for column %s", *typeOf, column))
 		}
 
-		if index < (len(*valid_columns) - 1) {
+		if index < ( number_of_valid_columns - 1) {
 			sql_command += ", "
 		}
+		index++
 	}
 	sql_command += ");"
 

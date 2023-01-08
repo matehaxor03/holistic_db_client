@@ -207,6 +207,9 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
 			continue
+		} else if common.IsNil(column_definition) {
+			errors = append(errors, fmt.Errorf("column definition not found")) 
+			continue
 		}
 		
 		if options.IsBoolTrue("use_file") {

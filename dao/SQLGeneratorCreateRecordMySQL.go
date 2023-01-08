@@ -58,7 +58,7 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 	}
 
 	auto_increment_columns := 0
-	for _, valid_column := range *valid_columns {
+	for valid_column, _ := range *valid_columns {
 		column_definition, column_definition_errors := table_schema.GetMap(valid_column)
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
@@ -128,12 +128,16 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 
 	sql_command += " ("
 	for index, record_column := range *record_columns {
+		if _, found := (*valid_columns)[record_column]; !found {
+			errors = append(errors, fmt.Errorf("column does not exist"))
+			continue
+		}
+		
 		record_column_escaped,record_column_escaped_errors := common.EscapeString(record_column, "'")
 		if record_column_escaped_errors != nil {
 			errors = append(errors, record_column_escaped_errors)
 			continue
 		}
-
 		
 		if options.IsBoolTrue("use_file") {
 			sql_command += "`"
@@ -165,6 +169,9 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 		column_definition, column_definition_errors := table_schema.GetMap(record_column)
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
+			continue
+		} else if common.IsNil(column_definition) {
+			errors = append(errors, fmt.Errorf("column_definition not found"))
 			continue
 		}
 

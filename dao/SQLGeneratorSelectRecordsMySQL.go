@@ -62,8 +62,8 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			if filter_column == getCountColumnNameSQLMySQL() {
 				continue
 			} 
-			
-			if !common.Contains(*table_columns, filter_column) {
+
+			if _, found := (*table_columns)[filter_column]; !found {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
 			}
 		}
@@ -133,10 +133,9 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 				continue
 			}
 
-			if !common.Contains(*table_columns, *select_field_value) {
+			if _, found := (*table_columns)[*select_field_value]; !found {
 				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *select_field_value, temp_table_name, *table_columns))
-			}
-			
+			}			
 		}
 	}
 
@@ -150,9 +149,8 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 		for _, temp_filters_field := range temp_filters_fields {
 
 			if temp_filters_field != getCountColumnNameSQLMySQL() {
-				if !common.Contains(*table_columns, temp_filters_field) {
+				if _, found :=(*table_columns)[temp_filters_field]; !found {
 					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
-					continue
 				}
 			}
 
@@ -208,9 +206,8 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			order_by_column_name := order_by_map_column_names[0]
 			
 			if order_by_column_name != getCountColumnNameSQLMySQL() {
-				if !common.Contains(*table_columns, order_by_column_name) {
+				if _, found := (*table_columns)[order_by_column_name]; !found {
 					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, temp_table_name, *table_columns))
-					continue
 				}
 			}
 
