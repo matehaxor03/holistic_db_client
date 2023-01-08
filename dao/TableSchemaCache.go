@@ -89,9 +89,10 @@ func newTableSchemaCache() (*TableSchemaCache) {
 			return nil, nil
 		} else if mode == "delete" {
 			if cache.HasKey(key) {
-				_, remove_errors := cache.RemoveKey(key)
-				if remove_errors != nil {
-					return nil, remove_errors
+				_, remove_error := cache.RemoveKey(key)
+				if remove_error != nil {
+					errors = append(errors, remove_error)
+					return nil, errors
 				} 
 			}
 			return nil, nil
