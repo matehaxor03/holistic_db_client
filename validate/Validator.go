@@ -3,7 +3,6 @@ package validate
 import(
 	json "github.com/matehaxor03/holistic_json/json"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
-	"fmt"
 )
 
 type Validator struct {
@@ -86,30 +85,7 @@ func NewValidator() (*Validator) {
 			return valid_collate_words.GetCollateWordWhitelist()
 		},
 		ValidateTableName: func(table_name string) ([]error) {
-			var errors []error
-			if table_name == "" {
-				errors = append(errors, fmt.Errorf("table_name is empty"))
-			}
-
-			if len(table_name) < 2 {
-				errors = append(errors, fmt.Errorf("table_name is too short must be at least 2 characters"))
-			}
-
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", table_name)
-			parameters.SetMap("values", valid_table_name_characters.GetTableNameCharacterWhitelist())
-			parameters.SetStringValue("label", "Validator.ValidateTableName")
-			parameters.SetStringValue("data_type", "dao.Table.table_name")
-			whitelist_errors := validation_functions.WhitelistCharacters(parameters)
-			if whitelist_errors != nil {
-				errors = append(errors, whitelist_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			return nil
+			return valid_table_name_characters.ValidateTableName(table_name)
 		},
 		ValidateCollate: func(collate string) ([]error) {
 			parameters := json.NewMapValue()
