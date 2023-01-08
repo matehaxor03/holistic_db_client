@@ -21,7 +21,6 @@ func TestDatabaseExistsTrue(t *testing.T) {
 func TestDatabaseExistsFalse(t *testing.T) {
 	database := helper.GetTestDatabase(t)
 	helper.EnsureDatabaseIsDeleted(t, database)
-
 	exists, exists_errors := database.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
@@ -40,17 +39,17 @@ func TestDatabaseCreateWithExists(t *testing.T) {
 	} else if (exists) {
 		t.Errorf("error: exists is 'true' when it should be 'false'")
 	} else {
-		database_errors := database.Create()
-		if database_errors != nil {
-			t.Error(database_errors)
+		create_database_errors := database.Create()
+		if create_database_errors != nil {
+			t.Error(create_database_errors)
+		} else {
+			exists_after, exists_after_errors := database.Exists()
+			if exists_after_errors != nil {
+				t.Error(exists_after_errors)
+			} else if !exists_after {
+				t.Errorf("error: exists is 'false' when it should be 'true'")
+			} 
 		}
-
-		exists, exists_errors = database.Exists()
-		if exists_errors != nil {
-			t.Error(exists_errors)
-		} else if !(exists) {
-			t.Errorf("error: exists is 'false' when it should be 'true'")
-		} 
 	}
 }
 

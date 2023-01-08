@@ -10,7 +10,7 @@ import (
 func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, character_set *string, collate *string,  options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	if common.IsNil(options) {
-		options := json.NewMap()
+		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
@@ -29,9 +29,9 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 
 	sql_command := "CREATE DATABASE "
 	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
+		sql_command += fmt.Sprintf("`%s`", database_name_escaped)
 	} else {
-		sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
+		sql_command += fmt.Sprintf("\\`%s\\`", database_name_escaped)
 	}
 
 	if character_set != nil {
@@ -39,7 +39,7 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 		if character_set_errors != nil {
 			return nil, nil, character_set_errors
 		}
-		sql_command += fmt.Sprintf("CHARACTER SET %s ", *character_set)
+		sql_command += fmt.Sprintf(" CHARACTER SET %s", *character_set)
 	}
 
 	if collate != nil {
@@ -47,7 +47,7 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 		if collate_errors != nil {
 			return nil, nil, collate_errors
 		} 
-		sql_command += fmt.Sprintf("COLLATE %s ", *collate)
+		sql_command += fmt.Sprintf(" COLLATE %s", *collate)
 	}
 	sql_command += ";"
 

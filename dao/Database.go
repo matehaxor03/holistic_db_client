@@ -259,37 +259,18 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("checking_database_exists", true)
-		options.SetBoolValue("read_no_records", true)
-
-
-		errors := validate()
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
+		var errors []error
 		temp_database_name, temp_database_name_errors := getDatabaseName()
 		if temp_database_name_errors != nil {
 			return nil, temp_database_name_errors
 		}
 
-		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
-		if database_name_escaped_errors != nil {
-			errors = append(errors, database_name_escaped_errors)
-			return nil, errors
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, temp_database_name, nil)
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
 		}
 
-		sql_command := "USE "
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
-		} else {
-			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
-		}
-
-		_, execute_errors := executeUnsafeCommand(&sql_command, options)
+		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -301,7 +282,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return &exists, nil
 		}
 	
-		if strings.Contains(fmt.Sprintf("%s", errors), "Unknown database") {
+		error_string := fmt.Sprintf("%s", errors)
+		if strings.Contains(error_string, "Unknown database") {
 			exists = false
 			return &exists, nil
 		}

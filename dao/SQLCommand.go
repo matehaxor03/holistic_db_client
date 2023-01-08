@@ -68,6 +68,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 				}
 			}
 
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
 			database_username, database_username_errors := database.GetDatabaseUsername()
 			if database_username_errors != nil {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database username: %s", fmt.Sprintf("%s", database_username_errors)))
@@ -176,6 +180,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
+			//fmt.Println(command)
 			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
 
 			if sql_command_use_file {
@@ -185,6 +190,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)
 			}
+
+			/*
+			if shell_output != nil {
+				fmt.Println(*shell_output)
+			}
+
+			if len(errors) > 0 {
+				fmt.Println(errors)
+			}*/
 
 			if len(errors) > 0 {
 				return nil, errors
