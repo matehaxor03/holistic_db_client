@@ -348,7 +348,7 @@ type Record struct {
 	GetRecordColumns func() (*[]string, []error)
 	GetArchieved func() (*bool, []error)
 	GetArchievedDate func() (*time.Time, []error)
-	GetNonPrimaryKeyColumnsUpdate func() (*[]string, []error)
+	GetNonPrimaryKeyColumnsUpdate func() (*map[string]bool, []error)
 	GetPrimaryKeyColumns func() (*[]string, []error)
 	GetForeignKeyColumns func() (*map[string]bool, []error)
 	SetLastModifiedDate func(value *time.Time) []error
@@ -474,7 +474,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return helper.SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", value)
 	}
 
-	getNonPrimaryKeyColumnsUpdate := func() (*[]string, []error) {
+	getNonPrimaryKeyColumnsUpdate := func() (*map[string]bool, []error) {
 		var errors []error
 		table_non_primary_key_columns, table_non_primary_key_columns_errors := table.GetNonPrimaryKeyColumns()
 		if table_non_primary_key_columns_errors != nil {
@@ -965,7 +965,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		GetArchievedDate: func() (*time.Time, []error) {
 			return getArchievedDate()
 		},
-		GetNonPrimaryKeyColumnsUpdate: func() (*[]string, []error) {
+		GetNonPrimaryKeyColumnsUpdate: func() (*map[string]bool, []error) {
 			return getNonPrimaryKeyColumnsUpdate()
 		},
 		GetPrimaryKeyColumns: func() (*[]string, []error) {

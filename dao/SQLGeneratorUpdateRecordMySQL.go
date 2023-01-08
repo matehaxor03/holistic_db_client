@@ -178,7 +178,7 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		errors = append(errors, fmt.Errorf("error: table schema has no identity columns"))
 	}
 
-	if !common.Contains(*table_non_primary_key_columns, "last_modified_date") {
+	if _, found := (*table_non_primary_key_columns)["last_modified_date"]; !found {
 		errors = append(errors, fmt.Errorf("error: table schema does not have last_modified_date"))
 	}
 
@@ -195,8 +195,10 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 
 	sql_command += "SET "
 
-	for index, record_non_primary_key_column := range *record_non_primary_key_columns {
-		record_non_identity_column_escaped,record_non_identity_column_escaped_errors := common.EscapeString(record_non_primary_key_column, "'")
+	length_record_non_primary_key_columns := len(*record_non_primary_key_columns)
+	index := 0
+	for record_non_primary_key_column, _  := range *record_non_primary_key_columns {
+		record_non_identity_column_escaped, record_non_identity_column_escaped_errors := common.EscapeString(record_non_primary_key_column, "'")
 		
 		if record_non_identity_column_escaped_errors != nil {
 			errors = append(errors, record_non_identity_column_escaped_errors)
@@ -411,13 +413,14 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 			}
 		}
 
-		if index < len(*record_non_primary_key_columns)-1 {
+		if index < length_record_non_primary_key_columns-1 {
 			sql_command += ", \n"
 		}
+		index++
 	}
 
 	sql_command += " WHERE "
-	index := 0
+	index = 0
 	number_of_primary_keys := len(*primary_key_table_columns)
 	for primary_key_table_column, _ := range *primary_key_table_columns {
 		primary_key_table_column_ecaped, primary_key_table_column_ecaped_errors := common.EscapeString(primary_key_table_column, "'")

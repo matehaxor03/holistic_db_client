@@ -28,8 +28,7 @@ type Table struct {
 	GetIdentityColumns    func()  (*map[string]bool, []error)
 	GetPrimaryKeyColumns  func()  (*map[string]bool, []error)
 	GetForeignKeyColumns  func() (*map[string]bool, []error)
-
-	GetNonPrimaryKeyColumns func() (*[]string, []error)
+	GetNonPrimaryKeyColumns func() (*map[string]bool, []error)
 	Count                 func(filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecords          func(records json.Array) ([]error)
@@ -196,8 +195,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	var this_foreigin_key_columns *map[string]bool = nil
 	var this_identity_key_columns *map[string]bool = nil
 	var this_table_columns *map[string]bool = nil
-
-
+	var this_non_primary_key_columns *map[string]bool = nil
 
 	getTableName := func() (string, []error) {
 		return helper.GetTableName(struct_type, getData())
@@ -275,8 +273,22 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return this_identity_key_columns, nil
 	}
 
-	getNonPrimaryKeyColumns := func() (*[]string, []error) {
-		return helper.GetTableNonPrimaryKeyColumns(struct_type, getData())
+	getNonPrimaryKeyColumns := func() (*map[string]bool, []error) {
+		if !common.IsNil(this_non_primary_key_columns) {
+			return this_non_primary_key_columns, nil
+		}
+		var errors []error
+		non_primary_key_columns, non_primary_key_columns_errors := helper.GetTableNonPrimaryKeyColumns(struct_type, getData())
+		if non_primary_key_columns_errors != nil {
+			errors = append(errors, non_primary_key_columns_errors...)
+		} else if common.IsNil(non_primary_key_columns) {
+			errors = append(errors, fmt.Errorf("non_primary_key_columns is nil"))
+		}
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		this_non_primary_key_columns = non_primary_key_columns
+		return this_non_primary_key_columns, nil
 	}
 
 	validate := func() []error {
@@ -875,7 +887,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		GetForeignKeyColumns: func() (*map[string]bool, []error) {
 			return getForeignKeyColumns()
 		},
-		GetNonPrimaryKeyColumns: func() (*[]string, []error) {
+		GetNonPrimaryKeyColumns: func() (*map[string]bool, []error) {
 			return getNonPrimaryKeyColumns()
 		},
 		Create: func() []error {

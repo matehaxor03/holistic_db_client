@@ -137,9 +137,8 @@ func GetTableIdentityColumns(caller string, data *json.Map) (*map[string]bool, [
 	return &columns, nil
 }
 
-func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []error) {
+func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool, []error) {
 	var errors []error
-	var columns []string
 
 	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
 	if schema_map_errors != nil {
@@ -150,6 +149,7 @@ func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []e
 		return nil, errors
 	}
 
+	columns := make(map[string]bool)
 	for _, column := range schema_map.GetKeys() {
 		column_schema, column_schema_errors := schema_map.GetMap(column)
 		if column_schema_errors != nil {
@@ -161,7 +161,7 @@ func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*[]string, []e
 		}
 
 		if !(column_schema.IsBoolTrue("primary_key")) {
-			columns = append(columns, column)
+			columns[column] = true
 		}
 	}
 	return &columns, nil

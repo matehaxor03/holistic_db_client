@@ -17,7 +17,7 @@ func GetRecordColumns(caller string, data *json.Map) (*[]string, []error) {
 }
 
 
-func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_non_primary_key_columns *[]string) (*[]string, []error) {
+func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_non_primary_key_columns *map[string]bool) (*map[string]bool, []error) {
 	var errors []error
 	if common.IsNil(table_non_primary_key_columns) {
 		errors = append(errors, fmt.Errorf("table_non_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
@@ -34,14 +34,14 @@ func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_no
 		return nil, errors
 	}
 
-	var columns []string
+	columns := make(map[string]bool)
 	for _, record_column := range *record_columns {
 		if record_column == "created_date" {
 			continue
 		}
 
-		if common.Contains(*table_non_primary_key_columns, record_column) {
-			columns = append(columns, record_column)
+		if _, found := (*table_non_primary_key_columns)[record_column]; found {
+			columns[record_column] = true
 		} 
 	}
 
