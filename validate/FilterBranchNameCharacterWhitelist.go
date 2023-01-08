@@ -28,7 +28,7 @@ func NewBranchNameCharacterWhitelist() (*BranchNameCharacterWhitelist) {
 			
 			var errors []error
 			if branch_name == "" {
-				errors = append(errors, fmt.Errorf("username is empty"))
+				errors = append(errors, fmt.Errorf("branch_name is empty"))
 			}
 
 			parameters := json.NewMapValue()
