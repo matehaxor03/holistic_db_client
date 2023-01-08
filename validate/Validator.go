@@ -2,7 +2,6 @@ package validate
 
 import(
 	json "github.com/matehaxor03/holistic_json/json"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
 
 type Validator struct {
@@ -12,6 +11,7 @@ type Validator struct {
 	ValidateCollate  func(collate string) ([]error)
 	ValidateCharacterSet  func(character_set string) ([]error)
 	ValidateUsername func(username string) ([]error)
+	ValidateBranchName func(branch_name string) ([]error)
 
 
 	GetDatabaseReservedWordsBlackList func() *json.Map 
@@ -90,30 +90,10 @@ func NewValidator() (*Validator) {
 			return valid_table_name_characters.ValidateTableName(table_name)
 		},
 		ValidateCollate: func(collate string) ([]error) {
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", collate)
-			parameters.SetMap("values", valid_collate_words.GetCollateWordWhitelist())
-			parameters.SetStringValue("label", "Validator.ValidateCollate")
-			parameters.SetStringValue("data_type", "dao.Database.collate")
-			whitelist_errors := validation_functions.WhiteListString(parameters)
-			if whitelist_errors != nil {
-				return whitelist_errors
-			}
-
-			return nil
+			return valid_collate_words.ValidateCollate(collate)
 		},
 		ValidateCharacterSet: func(character_set string) ([]error) {
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", character_set)
-			parameters.SetMap("values", valid_character_set_words.GetCharacterSetWordWhitelist())
-			parameters.SetStringValue("label", "Validator.ValidateCharacterSet")
-			parameters.SetStringValue("data_type", "dao.Database.character_set")
-			whitelist_errors := validation_functions.WhiteListString(parameters)
-			if whitelist_errors != nil {
-				return whitelist_errors
-			}
-
-			return nil
+			return valid_character_set_words.ValidateCharacterSet(character_set)
 		},
 		ValidateColumnName: func(column_name string) ([]error) {
 			return valid_column_name_characters.ValidateColumnName(column_name)
@@ -123,6 +103,9 @@ func NewValidator() (*Validator) {
 		},
 		ValidateUsername: func(username string) ([]error) {
 			return valid_username_characters.ValidateUsername(username)
+		},
+		ValidateBranchName: func(branch_name string) ([]error) {
+			return valid_branch_name_characters.ValidateBranchName(branch_name)
 		},
 
 	}

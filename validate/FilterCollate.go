@@ -3,19 +3,40 @@ package validate
 import (
 	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
 
 type CollateWordWhitelist struct {
 	GetCollateWordWhitelist func() (*json.Map)
+	ValidateCollate func(collate string) ([]error)
 }
 
 func NewCollateWordWhitelist() (*CollateWordWhitelist) {
-	//valid_words := validation_constants.GET_COLLATES()
+	valid_words := validation_constants.GET_COLLATES()
+	cache := make(map[string]interface{})
 
 	x := CollateWordWhitelist {
 		GetCollateWordWhitelist: func() (*json.Map) {
 			v := validation_constants.GET_COLLATES()
 			return &v
+		},
+		ValidateCollate: func(collate string) ([]error) {
+			if _, found := cache[collate]; found {
+				return nil
+			}
+
+			parameters := json.NewMapValue()
+			parameters.SetStringValue("value", collate)
+			parameters.SetMap("values", &valid_words)
+			parameters.SetStringValue("label", "Validator.ValidateCollate")
+			parameters.SetStringValue("data_type", "database.collate")
+			whitelist_errors := validation_functions.WhiteListString(parameters)
+			if whitelist_errors != nil {
+				return whitelist_errors
+			}
+
+			cache[collate] = nil
+			return nil
 		},
 	}
 	return &x
