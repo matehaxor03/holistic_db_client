@@ -138,31 +138,7 @@ func NewValidator() (*Validator) {
 			return nil
 		},
 		ValidateColumnName: func(column_name string) ([]error) {
-			var errors []error
-			
-			if column_name == "" {
-				errors = append(errors, fmt.Errorf("column_name is empty"))
-			}
-
-			if len(column_name) < 2 {
-				errors = append(errors, fmt.Errorf("column_name is too short must be at least 2 characters"))
-			}
-
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", column_name)
-			parameters.SetMap("values", valid_column_name_characters.GetColumnNameCharacterWhitelist())
-			parameters.SetStringValue("label", "Validator.ValidateTableName")
-			parameters.SetStringValue("data_type", "dao.Table.table_name")
-			whitelist_errors := validation_functions.WhitelistCharacters(parameters)
-			if whitelist_errors != nil {
-				errors = append(errors, whitelist_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			return nil
+			return valid_column_name_characters.ValidateColumnName(column_name)
 		},
 		ValidateDatabaseName: func(database_name string) ([]error) {
 			return valid_database_name_characters.ValidateDatabaseName(database_name)
