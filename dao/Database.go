@@ -18,7 +18,7 @@ type Database struct {
 	Delete          func() []error
 	DeleteIfExists  func() []error
 	Exists          func() (bool, []error)
-	TableExists     func(table_name string) (*bool, []error)
+	TableExists     func(table_name string) (bool, []error)
 	GetDatabaseName func() (string, []error)
 	GetDatabaseUsername func() (string, []error)
 	SetDatabaseUsername func(database_username string) []error
@@ -410,12 +410,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("read_no_records", true)
 		
 		var errors []error
-		validate_errors := validate()
-		if errors != nil {
-			errors = append(errors, validate_errors...)
-			return nil, errors
-		}
-		
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, struct_type, table_name, options)
 		
 		if sql_command_errors != nil {
@@ -424,20 +418,23 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		}
 		
 		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
-
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
 		}
 
-		boolean_value := false
-		if len(errors) > 0 {
-			//todo: check error message e.g database does not exist
-			boolean_value = false
-			return &boolean_value, nil
+		exists := false
+		if errors == nil {
+			exists = true
+			return &exists, nil
 		}
 
-		boolean_value = true
-		return &boolean_value, nil
+		error_string := fmt.Sprintf("%s", errors)
+		if strings.Contains(error_string, "doesn't exist") {
+			exists = false
+			return &exists, nil
+		}
+
+		return nil, errors
 	}
 	
 	getOrSetTableSchema := func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
@@ -558,22 +555,18 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return *temp_exists, nil
 		},
 		DeleteIfExists: func() []error {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return errors
-			}
-
 			return deleteIfExists()
 		},
-		TableExists: func(table_name string) (*bool, []error) {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return nil, errors
+		TableExists: func(table_name string) (bool, []error) {
+			temp_table_exists, temp_table_exists_errors := tableExists(table_name)
+			if temp_table_exists_errors != nil {
+				return false, temp_table_exists_errors
+			} else if common.IsNil(temp_table_exists) {
+				var errors []error
+				errors = append(errors, fmt.Errorf("table_exists result is nil"))
+				return false, errors
 			}
-
-			return tableExists(table_name)
+			return *temp_table_exists, nil
 		},
 		GetTableInterface: func(table_name string, schema json.Map) (*Table, []error) {
 			errors := validate()
@@ -617,12 +610,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return table, nil
 		},
 		GetTable: func(table_name string) (*Table, []error) {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
 			return getTable(table_name)
 		},
 		GetTableNames: func()  ([]string, []error) {
