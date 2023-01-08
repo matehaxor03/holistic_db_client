@@ -291,36 +291,22 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		return nil, errors
 	}
 
-	getTableNames := func() ([]string, []error) {
-		var empty_strings []string
+	getTableNames := func() (*[]string, []error) {
+		var errors []error
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		errors := validate()
-
-		if len(errors) > 0 {
-			return empty_strings, errors
-		}
-
 		temp_database_name, temp_database_name_errors := getDatabaseName()
 		if temp_database_name_errors != nil {
-			return empty_strings, temp_database_name_errors
+			return nil, temp_database_name_errors
 		}
 
-		database_name_escaped, database_name_escaped_errors := common.EscapeString(temp_database_name, "'")
-		if database_name_escaped_errors != nil {
-			errors = append(errors, database_name_escaped_errors)
-			return empty_strings, errors
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableNamesSQL(verify, temp_database_name, options)
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
 		}
 
-		sql_command := "SHOW TABLES IN "
-		if options.IsBoolTrue("use_file") {
-			sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
-		} else {
-			sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
-		}
-
-		records, execute_errors := executeUnsafeCommand(&sql_command, options)
+		records, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -329,7 +315,13 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		}
 
 		if len(errors) > 0 {
-			return empty_strings, errors
+			return nil, errors
+		}
+
+		database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
+		if database_name_escaped_errors != nil {
+			errors = append(errors, database_name_escaped_errors)
+			return nil, errors
 		}
 
 		var table_names []string
@@ -351,12 +343,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			}
 			table_names = append(table_names, table_name)
 		}
-
-		if len(errors) > 0 {
-			return empty_strings, errors
-		}
-
-		return table_names, nil
+		return &table_names, nil
 	}
 
 	delete := func() ([]error) {
@@ -639,14 +626,17 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return getTable(table_name)
 		},
 		GetTableNames: func()  ([]string, []error) {
-			errors := validate()
-			var empty_strings []string
-
-			if len(errors) > 0 {
+			temp_table_names, temp_table_names_errors := getTableNames()
+			if temp_table_names_errors != nil {
+				var empty_strings []string
+				return empty_strings, temp_table_names_errors
+			} else if common.IsNil(temp_table_names) {
+				var errors []error
+				var empty_strings []string
+				errors = append(errors, fmt.Errorf("table_names is nil"))
 				return empty_strings, errors
 			}
-
-			return getTableNames()
+			return *temp_table_names, nil
 		},
 		GetTables: func() ([]Table, []error) {
 			var errors []error
@@ -673,7 +663,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 				return empty_tables, errors
 			}
 
-			for _, table_name := range table_names {
+			for _, table_name := range *table_names {
 				table, table_errors := getTable(table_name)
 				if table_errors != nil {
 					errors = append(errors, table_errors...)
