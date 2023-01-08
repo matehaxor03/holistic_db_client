@@ -11,6 +11,8 @@ type Validator struct {
 	ValidateColumnName  func(column_name string) ([]error)
 	ValidateCollate  func(collate string) ([]error)
 	ValidateCharacterSet  func(character_set string) ([]error)
+	ValidateUsername func(username string) ([]error)
+
 
 	GetDatabaseReservedWordsBlackList func() *json.Map 
 	GetDatabaseNameWhitelistCharacters func() *json.Map
@@ -119,6 +121,10 @@ func NewValidator() (*Validator) {
 		ValidateDatabaseName: func(database_name string) ([]error) {
 			return valid_database_name_characters.ValidateDatabaseName(database_name)
 		},
+		ValidateUsername: func(username string) ([]error) {
+			return valid_username_characters.ValidateUsername(username)
+		},
+
 	}
 
 	return &x
