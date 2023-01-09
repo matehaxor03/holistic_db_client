@@ -9,6 +9,7 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
+	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 func mapValueFromDBToRecord(verify *validate.Validator, table Table, current_json *json.Value) (*Record, []error) {
@@ -591,9 +592,50 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
+		var errors []error
 		validate_errors := validate()
 		if validate_errors != nil {
-			return nil, nil, validate_errors
+			errors = append(errors, validate_errors...)
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
+		}
+
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			errors = append(errors, temp_table_errors...)
+		} else if common.IsNil(temp_table) {
+			errors = append(errors, fmt.Errorf("table is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
+		}
+
+		temp_table_name, temp_table_name_errors := temp_table.GetTableName()
+		if temp_table_name_errors != nil {
+			errors = append(errors, temp_table_name_errors...)
+		} else if common.IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("table_name is nil"))
+		}
+
+		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
+		if temp_table_schema_errors != nil {
+			errors = append(errors, temp_table_schema_errors...)
+		} else if common.IsNil(temp_table_schema) {
+			errors = append(errors, fmt.Errorf("table schema is nil"))
+		}
+
+		temp_table_columns, temp_table_columns_errors := temp_table.GetTableColumns()
+		if temp_table_columns_errors != nil {
+			errors = append(errors, temp_table_columns_errors...)
+		} else if common.IsNil(temp_table_columns) {
+			errors = append(errors, fmt.Errorf("table columns is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
 		}
 		
 		options := json.NewMap()
@@ -602,7 +644,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("transactional", false)
 		
 
-		return getCreateRecordSQLMySQL("*dao.Record", table, *getData(), options)
+		return sql_generator_mysql.GetCreateRecordSQLMySQL(verify, "*dao.Record", temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	created_record := Record{

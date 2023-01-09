@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 import (
 	"fmt"
@@ -8,12 +8,13 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+func GetCreateRecordSQLMySQL(verify *validate.Validator, struct_type string, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	table_validation_errors := table.Validate() 
+	table_validation_errors := verify.ValidateTableName(table_name)
 	if table_validation_errors != nil {
 		return nil, nil, table_validation_errors
 	}
@@ -31,16 +32,6 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 		options.SetBoolValue("transactional", false)
 	}
 
-	valid_columns, valid_columns_errors := table.GetTableColumns()
-	if valid_columns_errors != nil {
-		return nil, options, valid_columns_errors
-	}
-
-	table_name, table_name_errors := table.GetTableName() 
-	if table_name_errors != nil {
-		return nil, options, table_name_errors
-	}
-
 	record_columns, record_columns_errors := helper.GetRecordColumns(struct_type, &record_data)
 	if record_columns_errors != nil {
 		return nil, nil, record_columns_errors
@@ -52,13 +43,8 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 		return nil, nil, errors
 	}
 
-	table_schema, table_schema_errors := table.GetSchema()
-	if table_schema_errors != nil {
-		return nil, nil, table_schema_errors
-	}
-
 	auto_increment_columns := 0
-	for valid_column, _ := range *valid_columns {
+	for valid_column, _ := range valid_columns {
 		column_definition, column_definition_errors := table_schema.GetMap(valid_column)
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
@@ -124,7 +110,7 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 
 	sql_command += " ("
 	for index, record_column := range *record_columns {
-		if _, found := (*valid_columns)[record_column]; !found {
+		if _, found := (valid_columns)[record_column]; !found {
 			errors = append(errors, fmt.Errorf("column does not exist"))
 			continue
 		}
