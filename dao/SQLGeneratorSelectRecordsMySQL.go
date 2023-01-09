@@ -6,7 +6,6 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
@@ -303,11 +302,6 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			sql_command += "WHERE "
 		}
 
-		column_name_params := json.NewMapValue()
-		column_name_params.SetObjectForMap("values", verify.GetColumnNameCharacterWhitelist())
-		column_name_params.SetNil("value")
-		column_name_params.SetStringValue("label","column_name")
-		column_name_params.SetStringValue("data_type", "Table")
 		for index, column_filter := range filters.GetKeys() {
 			
 			column_definition, column_definition_errors := table_schema.GetMap(column_filter)
@@ -316,8 +310,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 				continue
 			}
 			
-			column_name_params.SetString("value", &column_filter)
-			column_name_errors := validation_functions.WhitelistCharacters(column_name_params)
+			column_name_errors := verify.ValidateColumnName(column_filter)
 			if column_name_errors != nil {
 				errors = append(errors, column_name_errors...)
 			}	

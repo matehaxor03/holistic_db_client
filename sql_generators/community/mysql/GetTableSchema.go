@@ -6,7 +6,6 @@ import (
 	"strconv"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
@@ -258,23 +257,23 @@ func MapTableSchemaFromDB(verify *validate.Validator, struct_type string, table_
 									switch *rule_value {
 									case "domain_name":
 										domain_name_filter := json.NewMap()
-										domain_name_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
-										domain_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
+										//domain_name_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
+										domain_name_filter.SetObjectForMap("function", verify.GetValidateDatabaseNameFunc())
 										filters.AppendMap(domain_name_filter)
 									case "repository_name":
 										repostiory_name_filter := json.NewMap()
-										repostiory_name_filter.SetObjectForMap("values", verify.GetRepositoryNameCharacterWhitelist())
-										repostiory_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
+										//repostiory_name_filter.SetObjectForMap("values", verify.GetRepositoryNameCharacterWhitelist())
+										repostiory_name_filter.SetObjectForMap("function", verify.GetValidateRepositoryNameFunc())
 										filters.AppendMap(repostiory_name_filter)
 									case "repository_account_name":
 										repository_account_name_filter := json.NewMap()
-										repository_account_name_filter.SetObjectForMap("values", verify.GetRepositoryAccountNameCharacterWhitelist())
-										repository_account_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
+										//repository_account_name_filter.SetObjectForMap("values", verify.GetRepositoryAccountNameCharacterWhitelist())
+										repository_account_name_filter.SetObjectForMap("function", verify.GetValidateRepositoryAccountNameFunc())
 										filters.AppendMap(repository_account_name_filter)
 									case "branch_name":
 										branch_name_filter := json.NewMap()
-										branch_name_filter.SetObjectForMap("values", verify.GetBranchNameCharacterWhitelist())
-										branch_name_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
+										//branch_name_filter.SetObjectForMap("values", verify.GetBranchNameCharacterWhitelist())
+										branch_name_filter.SetObjectForMap("function", verify.GetValidateBranchNameFunc())
 										filters.AppendMap(branch_name_filter)
 									default:
 										errors = append(errors, fmt.Errorf("rule not supported %s", rule_value))

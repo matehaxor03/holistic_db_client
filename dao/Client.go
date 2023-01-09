@@ -5,7 +5,6 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 )
@@ -77,8 +76,8 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	map_database_username.SetStringValue("type", "*string")
 	array_database_username_filters := json.NewArrayValue()
 	map_database_username_filter := json.NewMap()
-	map_database_username_filter.SetObjectForMap("values", verify.GetUsernameCharacterWhitelist())
-	map_database_username_filter.SetObjectForMap("function", validation_functions.GetWhitelistCharactersFunc())
+	//map_database_username_filter.SetObjectForMap("values", verify.GetUsernameCharacterWhitelist())
+	map_database_username_filter.SetObjectForMap("function", verify.GetValidateUsernameFunc())
 	array_database_username_filters.AppendMap(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
 	map_system_schema.SetMapValue("[database_username]", map_database_username)

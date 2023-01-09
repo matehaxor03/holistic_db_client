@@ -1,9 +1,5 @@
 package validate
 
-import(
-	json "github.com/matehaxor03/holistic_json/json"
-)
-
 type Validator struct {
 	ValidateTableName func(table_name string) ([]error)
 	ValidateDatabaseName func(database_name string) ([]error)
@@ -17,6 +13,9 @@ type Validator struct {
 	ValidatePortNumber func(port_number string) ([]error)
 
 
+	GetValidateGrantFunc func() (*func(branch_name string) []error)
+	GetValidateTableNameFilterAllFunc func() (*func(table_name_filter string) []error)
+	GetValidateDatabaseNameFilterAllFunc func() (*func(database_name_filter string) []error)
 	GetValidateBranchNameFunc func() (*func(branch_name string) []error)
 	GetValidateCharacterSetFunc func() (*func(character_set string) []error)
 	GetValidateCollateFunc func() (*func(collate string) []error)
@@ -29,24 +28,6 @@ type Validator struct {
 	GetValidateUsernameFunc func() (*func(username string) []error)
 	GetValidateRepositoryNameFunc func() (*func(repository_name string) []error)
 	GetValidateRepositoryAccountNameFunc func() (*func(repository_account_name string) []error)
-
-
-
-	GetDatabaseReservedWordsBlackList func() *json.Map 
-	GetDatabaseNameWhitelistCharacters func() *json.Map
-	GetColumnNameCharacterWhitelist func() *json.Map
-	GetTableNameCharacterWhitelist func() *json.Map
-	
-	GetUsernameCharacterWhitelist func() *json.Map 
-	GetBranchNameCharacterWhitelist func() *json.Map 
-	GetRepositoryNameCharacterWhitelist func() *json.Map 
-	GetRepositoryAccountNameCharacterWhitelist func() *json.Map 
-
-	GetDomainNameCharacterWhitelist func() *json.Map 
-	GetPortNumberCharacterWhitelist func() *json.Map 
-
-	GetCharacterSetWordWhitelist func() *json.Map
-	GetCollateWordWhitelist func() *json.Map
 }
 
 func NewValidator() (*Validator) {
@@ -65,45 +46,9 @@ func NewValidator() (*Validator) {
 	valid_character_set_words := NewCharacterSetWordWhitelist()
 	valid_collate_words := NewCollateWordWhitelist()
 
-	
+	valid_grant_words := NewGrantNameWhitelist()
 
 	x := Validator {
-		GetDatabaseNameWhitelistCharacters: func() *json.Map {
-			return valid_database_name_characters.GetDatabaseNameCharacterWhitelist()
-		},
-		GetTableNameCharacterWhitelist: func() *json.Map {
-			return valid_table_name_characters.GetTableNameCharacterWhitelist()
-		},
-		GetColumnNameCharacterWhitelist: func() *json.Map {
-			return valid_column_name_characters.GetColumnNameCharacterWhitelist()
-		},
-		GetUsernameCharacterWhitelist: func() *json.Map {
-			return valid_username_characters.GetUsernameCharacterWhitelist()
-		},
-		GetDatabaseReservedWordsBlackList: func() *json.Map {
-			return database_reserved_words_blacklist.GetDatabaseReservedWordsBlackList()
-		},
-		GetBranchNameCharacterWhitelist: func() *json.Map {
-			return valid_branch_name_characters.GetBranchNameCharacterWhitelist()
-		},
-		GetRepositoryNameCharacterWhitelist: func() *json.Map {
-			return valid_repository_name_characters.GetRepositoryNameCharacterWhitelist()
-		},
-		GetRepositoryAccountNameCharacterWhitelist: func() *json.Map {
-			return valid_repository_account_name_characters.GetRepositoryAccountNameCharacterWhitelist()
-		},
-		GetDomainNameCharacterWhitelist: func() *json.Map {
-			return valid_domain_name_characters.GetDomainNameCharacterWhitelist()
-		},
-		GetPortNumberCharacterWhitelist: func() *json.Map {
-			return valid_port_number_characters.GetPortNumberCharacterWhitelist()
-		},
-		GetCharacterSetWordWhitelist: func() *json.Map {
-			return valid_character_set_words.GetCharacterSetWordWhitelist()
-		},
-		GetCollateWordWhitelist: func() *json.Map {
-			return valid_collate_words.GetCollateWordWhitelist()
-		},
 		ValidateTableName: func(table_name string) ([]error) {
 			return valid_table_name_characters.ValidateTableName(table_name)
 		},
@@ -135,6 +80,15 @@ func NewValidator() (*Validator) {
 			return valid_port_number_characters.ValidatePortNumber(port_number)
 		},
 
+		GetValidateDatabaseNameFilterAllFunc: func() (*func(database_name string) []error) {
+			return valid_grant_words.GetValidateDatabaseNameFilterAllFunc()
+		},
+		GetValidateTableNameFilterAllFunc: func() (*func(table_name string) []error) {
+			return valid_grant_words.GetValidateTableNameFilterAllFunc()
+		},
+		GetValidateGrantFunc: func() (*func(branch_name string) []error) {
+			return valid_grant_words.GetValidateGrantFunc()
+		},
 		GetValidateBranchNameFunc: func() (*func(branch_name string) []error) {
 			return valid_branch_name_characters.GetValidateBranchNameFunc()
 		},
