@@ -385,11 +385,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			errors = append(errors, temp_database_errors...)
-		}
-
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
 			errors = append(errors, temp_table_name_errors...)
@@ -401,8 +396,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-
-		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -427,11 +420,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			errors = append(errors, temp_database_errors...)
-		}
-
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
 			errors = append(errors, temp_table_name_errors...)
@@ -440,7 +428,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_database.GetOrSetSchema(temp_table_name, nil, "delete")
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
@@ -737,13 +724,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		if temp_database_errors != nil {
 			return nil, temp_database_errors
 		}
-
-		cached_schema, cached_schema_errors := temp_database.GetOrSetSchema(temp_table_name, nil, "get")
-		if cached_schema_errors != nil {
-			return nil, cached_schema_errors
-		} else if !common.IsNil(cached_schema) {
-			return cached_schema, nil
-		} 
 		
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, struct_type, temp_table_name, options)
 		if sql_command_errors != nil {
@@ -761,10 +741,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
-		}
-
-		if !temp_schema.HasKey("[no_schema_cache_on_creation]") {
-			temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
 		}
 
 		new_data, setup_data_errors := setupData(temp_database, temp_table_name, *temp_schema)
@@ -795,11 +771,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return sql_command_errors
 		}
 
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-
 		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_errors != nil {
@@ -824,9 +795,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		if !temp_schema.HasKey("[no_schema_cache_on_creation]") {
-			temp_database.GetOrSetSchema(temp_table_name, temp_schema, "set")
-		}
 		return nil
 	}
 

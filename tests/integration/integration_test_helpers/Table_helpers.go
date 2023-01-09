@@ -64,7 +64,7 @@ func GetTestTableWithTableNameAndSchemaWithCreatedDatabase(t *testing.T, schema 
 
 	table_name := GetTestTableName()
 	database := GetTestDatabaseCreated(t)
-	database.DeleteTableByTableNameIfExists(table_name, true)
+	database.DeleteTableByTableNameIfExists(table_name)
 
 	table, table_errors := database.CreateTable(table_name, schema)
 	if table_errors != nil {

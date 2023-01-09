@@ -22,14 +22,14 @@ type Database struct {
 	GetDatabaseUsername func() (string, []error)
 	SetDatabaseUsername func(database_username string) []error
 	SetDatabaseName func(database_name string) []error
-	DeleteTableByTableNameIfExists func(table_name string, if_exists bool) []error
+	DeleteTableByTableNameIfExists func(table_name string) []error
 	GetHost       func() (Host, []error)
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
 	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() ([]Table, []error)
 	GetTableNames   func() ([]string, []error)
-	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
+	GetTableSchema func(table_name string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
 
@@ -40,10 +40,7 @@ type Database struct {
 }
 
 func newDatabase(verify *validate.Validator, host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
-	var lock_get_table_schema = &sync.Mutex{}
-
 	var errors []error
-	lock_table_schema_cache := &sync.Mutex{}
 	table_schema_cache := newTableSchemaCache()
 
 	lock_table_additional_schema_cache := &sync.Mutex{}
@@ -429,14 +426,10 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 	
 	getOrSetTableSchema := func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
-		lock_table_schema_cache.Lock()
-		defer lock_table_schema_cache.Unlock()
 		return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
 	}
 
 	getTableSchema := func(table_name string) (*json.Map, []error) {
-		lock_get_table_schema.Lock()
-		defer lock_get_table_schema.Unlock()
 		var errors []error
 	
 		options := json.NewMap()
@@ -521,6 +514,25 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		}
 
 		return get_table, nil
+	}
+
+	deleteTableByTableNameIfExists := func(table_name string) []error {
+		options := json.NewMap()
+		options.SetBoolValue("use_file", false)
+
+		getOrSetTableSchema(table_name, nil, "delete")
+		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, table_name, true, options)
+
+		if generate_sql_errors != nil {
+			return generate_sql_errors
+		}
+
+		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+
+		if execute_sql_command_errors != nil {
+			return execute_sql_command_errors
+		}
+		return nil
 	}
 
 	x := Database{
@@ -678,9 +690,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			}
 			return *database_username_temp, nil
 		},
-		GetOrSetSchema: func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
-			// todo clone schema
-			return getOrSetTableSchema(table_name, schema, mode)
+		GetTableSchema: func(table_name string) (*json.Map, []error) {
+			return getTableSchema(table_name)
 		},
 		GetOrSetAdditonalSchema: func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
 			// todo clone schema
@@ -738,23 +749,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			}
 			return nil
 		},
-		DeleteTableByTableNameIfExists: func(table_name string, if_exists bool) []error {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
-
-			getDatabase().GetOrSetSchema(table_name, nil, "delete")
-			sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, table_name, if_exists, options)
-
-			if generate_sql_errors != nil {
-				return generate_sql_errors
-			}
-
-			_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
-
-			if execute_sql_command_errors != nil {
-				return execute_sql_command_errors
-			}
-			return nil
+		DeleteTableByTableNameIfExists: func(table_name string) []error {
+			return deleteTableByTableNameIfExists(table_name)
 		},
 	}
 	setDatabase(&x)

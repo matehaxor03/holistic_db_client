@@ -4,6 +4,7 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	"fmt"
+	"sync"
 )
 
 type TableSchemaCache struct {
@@ -12,8 +13,12 @@ type TableSchemaCache struct {
 
 func newTableSchemaCache() (*TableSchemaCache) {
 	cache := json.NewMap()
+	lock_table_schema_cache := &sync.Mutex{}
+
 	
 	getOrSet := func(database Database, table_name string, schema *json.Map, mode string) (*json.Map, []error) {		
+		lock_table_schema_cache.Lock()
+		defer lock_table_schema_cache.Unlock()
 		var errors []error
 
 		if table_name == "" {
