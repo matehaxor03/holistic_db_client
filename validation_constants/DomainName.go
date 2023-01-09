@@ -73,3 +73,13 @@ func GetValidDomainNameCharacters() json.Map {
 	valid_chars.SetNil(".")
 	return valid_chars
 }
+
+func LOCALHOST_IP() string {
+	return "127.0.0.1"
+}
+
+func GET_ALLOWED_DOMAIN_NAMES() json.Map {
+	valid := json.NewMapValue()
+	valid.SetNil(LOCALHOST_IP())
+	return valid
+}

@@ -3,20 +3,12 @@ package dao
 import (
 	json "github.com/matehaxor03/holistic_json/json"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
+	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	common "github.com/matehaxor03/holistic_common/common"
 	"fmt"
 )
-
-func LOCALHOST_IP() string {
-	return "127.0.0.1"
-}
-
-func GET_ALLOWED_DOMAIN_NAMES() json.Map {
-	valid := json.NewMapValue()
-	valid.SetNil(LOCALHOST_IP())
-	return valid
-}
 
 type DomainName struct {
 	Validate      func() []error
@@ -45,7 +37,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 
 	map_domain_name_schema_filters := json.NewArrayValue()
 	map_domain_name_schema_filter := json.NewMapValue()
-	map_domain_name_schema_filter.SetObjectForMap("values", GET_ALLOWED_DOMAIN_NAMES())
+	map_domain_name_schema_filter.SetObjectForMap("values", validation_constants.GET_ALLOWED_DOMAIN_NAMES())
 	map_domain_name_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistStringFunc())
 	map_domain_name_schema_filters.AppendMapValue(map_domain_name_schema_filter)
 	map_domain_name_schema.SetArrayValue("filters", map_domain_name_schema_filters)
