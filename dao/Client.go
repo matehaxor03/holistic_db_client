@@ -86,7 +86,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	getHost := func() (*Host, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host]", "*dao.Host")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[host]", "*dao.Host")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -96,7 +96,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -141,7 +141,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	getDatabase := func() (*Database, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "*dao.Database")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[database]", "*dao.Database")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -151,7 +151,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	getClientManager := func() (ClientManager, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[client_manager]", "dao.ClientManager")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[client_manager]", "dao.ClientManager")
 		if temp_value_errors != nil {
 			return ClientManager{}, temp_value_errors
 		} 
@@ -159,11 +159,11 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	setDatabase := func(database *Database) []error {
-		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", database)
+		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database]", database)
 	}
 
 	setDatabaseUsername := func(database_username string) []error {
-		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", database_username)
+		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", database_username)
 	}
 
 	validate := func() []error {

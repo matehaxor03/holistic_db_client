@@ -7,11 +7,11 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, []error) {
+func GetFields(m json.Map, field_type string) (*json.Map, []error) {
 	var errors []error
 	if !(field_type == "[fields]" || field_type == "[system_fields]") {
 		available_fields := m.GetKeys()
-		errors = append(errors, fmt.Errorf("error: %s %s is not a valid root field, available root fields: %s", struct_type, field_type, available_fields))
+		errors = append(errors, fmt.Errorf("error: %s is not a valid root field, available root fields: %s", field_type, available_fields))
 	}
 
 	if len(errors) > 0 {
@@ -22,7 +22,7 @@ func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, [
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	} else if common.IsNil(fields_map) {
-		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, field_type))
+		errors = append(errors, fmt.Errorf("error: %s is nil", field_type))
 	} 
 
 	if len(errors) > 0 {
@@ -32,23 +32,23 @@ func GetFields(struct_type string, m *json.Map, field_type string) (*json.Map, [
 	return fields_map, nil
 }
 
-func GetField(struct_type string, m *json.Map, schema_type string, field_type string, field string, desired_type string) (interface{}, []error) {
+func GetField(m json.Map, schema_type string, field_type string, field string, desired_type string) (interface{}, []error) {
 	var errors []error
-	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
+	schemas_map, schemas_map_errors := GetSchemas(m, schema_type)
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	} else if !schemas_map.HasKey(field) {
 		available_fields := schemas_map.GetKeys()
-		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s does not exist available fields are: %s", struct_type, schema_type, field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("error: Common.GetField schema_type: %s field: %s does not exist available fields are: %s", schema_type, field, fmt.Sprintf("%s", available_fields)))
 	} else if !schemas_map.IsMap(field) {
-		errors = append(errors, fmt.Errorf("error: Common.GetField %s schema_type: %s field: %s is not a map and has type: %s", struct_type, schema_type, field, schemas_map.GetType(field)))
+		errors = append(errors, fmt.Errorf("error: Common.GetField schema_type: %s field: %s is not a map and has type: %s", schema_type, field, schemas_map.GetType(field)))
 	} 
 
 	if len(errors) > 0 { 
 		return nil, errors
 	}
 
-	fields_map, fields_map_errors := GetFields(struct_type, m, field_type)
+	fields_map, fields_map_errors := GetFields(m, field_type)
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	} 
@@ -61,12 +61,12 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	} else if schema_map == nil {
-		errors = append(errors, fmt.Errorf("error: %s %s map is nil", struct_type, schema_type))
+		errors = append(errors, fmt.Errorf("error: %s map is nil", schema_type))
 	} else if !schema_map.HasKey("type") {
 		available_fields := schemas_map.GetKeys()
-		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute does not exist available fields are: %s", struct_type, field, fmt.Sprintf("%s", available_fields)))
+		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute does not exist available fields are: %s", field, fmt.Sprintf("%s", available_fields)))
 	} else if !schema_map.IsString("type") {
-		errors = append(errors, fmt.Errorf("error: %s field: %s schema \"type\" attribute value is not a string it's %s", struct_type, field, schema_map.GetType("type")))
+		errors = append(errors, fmt.Errorf("error: field: %s schema \"type\" attribute value is not a string it's %s", field, schema_map.GetType("type")))
 	}
 
 	if len(errors) > 0 {
@@ -253,15 +253,15 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	return nil, errors
 }
 
-func SetField(struct_type string, m *json.Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
+func SetField(m json.Map, schema_type string, parameter_type string, parameter string, object interface{}) ([]error) {
 	var errors []error
 
-	schemas_map, schemas_map_errors := GetSchemas(struct_type, m, schema_type)
+	schemas_map, schemas_map_errors := GetSchemas(m, schema_type)
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	}
 
-	fields_map, fields_map_errors := GetFields(struct_type, m, parameter_type) 
+	fields_map, fields_map_errors := GetFields(m, parameter_type) 
 	if fields_map_errors != nil {
 		errors = append(errors, fields_map_errors...)
 	}

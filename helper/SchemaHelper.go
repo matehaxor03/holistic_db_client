@@ -27,11 +27,11 @@ func GetValidSchemaFields() json.Map {
 	return schema_fields
 }
 
-func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map, []error) {
+func GetSchemas(m json.Map, schema_type string) (*json.Map, []error) {
 	var errors []error
 	if !(schema_type == "[schema]" || schema_type == "[system_schema]") {
 		available_fields := m.GetKeys()
-		errors = append(errors, fmt.Errorf("error: %s, %s is not a valid root system schema, available root fields: %s", struct_type, schema_type, available_fields))
+		errors = append(errors, fmt.Errorf("error: %s is not a valid root system schema, available root fields: %s", schema_type, available_fields))
 	}
 
 	if len(errors) > 0 {
@@ -42,22 +42,22 @@ func GetSchemas(struct_type string, m *json.Map, schema_type string) (*json.Map,
 	if schemas_map_errors != nil {
 		errors = append(errors, schemas_map_errors...)
 	} else if common.IsNil(schemas_map) {
-		errors = append(errors, fmt.Errorf("error: %s %s is nil", struct_type, schema_type))
+		errors = append(errors, fmt.Errorf("error: %s is nil", schema_type))
 	} else {
 		schema_paramters := schemas_map.GetKeys()
 		for _, schema_paramter := range schema_paramters {
 			if !schemas_map.IsMap(schema_paramter) {
-				errors = append(errors, fmt.Errorf("error: %s %s %s is not a map", struct_type, schema_type, schema_paramter))
+				errors = append(errors, fmt.Errorf("error: %s %s is not a map", schema_type, schema_paramter))
 			} else {
 				schema_paramter_map, schema_paramter_map_errors := schemas_map.GetMap(schema_paramter) 
 				if schema_paramter_map_errors != nil {
-					errors = append(errors, fmt.Errorf("error: %s %s %s had errors getting map: %s", struct_type, schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
+					errors = append(errors, fmt.Errorf("error: %s %s had errors getting map: %s", schema_type, schema_paramter, fmt.Sprintf("%s",schema_paramter_map_errors))) 
 				} else {
 					attributes := schema_paramter_map.GetKeys()
 					valid_attributes_map := GetValidSchemaFields()
 					for _, attribute := range attributes {
 						if !valid_attributes_map.HasKey(attribute) {
-							errors = append(errors, fmt.Errorf("error: %s %s %s has an invalid attribute: %s valid attributes are: %s", struct_type, schema_type, schema_paramter, attribute, valid_attributes_map.GetKeys()))
+							errors = append(errors, fmt.Errorf("error: %s %s has an invalid attribute: %s valid attributes are: %s", schema_type, schema_paramter, attribute, valid_attributes_map.GetKeys()))
 						}
 					}
 				}

@@ -6,8 +6,8 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func GetRecordColumns(caller string, data *json.Map) (*[]string, []error) {
-	fields_map, fields_map_errors := GetFields(caller, data, "[fields]")
+func GetRecordColumns(data json.Map) (*[]string, []error) {
+	fields_map, fields_map_errors := GetFields(data, "[fields]")
 	if fields_map_errors != nil {
 		return nil, fields_map_errors
 	}
@@ -16,13 +16,13 @@ func GetRecordColumns(caller string, data *json.Map) (*[]string, []error) {
 }
 
 
-func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_non_primary_key_columns *map[string]bool) (*map[string]bool, []error) {
+func GetRecordNonPrimaryKeyColumnsUpdate(data json.Map, table_non_primary_key_columns *map[string]bool) (*map[string]bool, []error) {
 	var errors []error
 	if common.IsNil(table_non_primary_key_columns) {
 		errors = append(errors, fmt.Errorf("table_non_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
 	}
 	
-	record_columns, record_columns_errors := GetRecordColumns(caller, data)
+	record_columns, record_columns_errors := GetRecordColumns(data)
 	if record_columns_errors != nil {
 		errors = append(errors, record_columns_errors...)
 	} else if common.IsNil(record_columns) {
@@ -51,13 +51,13 @@ func GetRecordNonPrimaryKeyColumnsUpdate(caller string, data *json.Map, table_no
 	return &columns, nil
 }
 
-func GetRecordPrimaryKeyColumns(caller string, data *json.Map, table_primary_key_columns *map[string]bool) (*[]string, []error) {
+func GetRecordPrimaryKeyColumns(data json.Map, table_primary_key_columns *map[string]bool) (*[]string, []error) {
 	var errors []error
 	if common.IsNil(table_primary_key_columns) {
 		errors = append(errors, fmt.Errorf("table_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
 	}
 	
-	record_columns, record_columns_errors := GetRecordColumns(caller, data)
+	record_columns, record_columns_errors := GetRecordColumns(data)
 	if record_columns_errors != nil {
 		errors = append(errors, record_columns_errors...)
 	} else if common.IsNil(record_columns) {
@@ -78,13 +78,13 @@ func GetRecordPrimaryKeyColumns(caller string, data *json.Map, table_primary_key
 	return &columns, nil
 }
 
-func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key_columns *map[string]bool) (*map[string]bool, []error) {
+func GetRecordForeignKeyColumns(data json.Map, table_foreign_key_columns *map[string]bool) (*map[string]bool, []error) {
 	var errors []error
 	if common.IsNil(table_foreign_key_columns) {
 		errors = append(errors, fmt.Errorf("table_foreign_key_columns is nil. GetRecordForeignKeyColumns()"))
 	}
 
-	record_columns, record_columns_errors := GetRecordColumns(caller, data)
+	record_columns, record_columns_errors := GetRecordColumns(data)
 	if record_columns_errors != nil {
 		errors = append(errors, record_columns_errors...)
 	} else if common.IsNil(record_columns) {

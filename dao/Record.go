@@ -359,20 +359,21 @@ type Record struct {
 
 func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
 	var errors []error
-	var this *Record
+	//var this *Record
 	
 	SQLCommand, SQLCommand_errors := newSQLCommand()
 	if SQLCommand_errors != nil {
 		errors = append(errors, SQLCommand_errors...)
 	}
 
+	/*
 	getThis := func() *Record {
 		return this
 	}
 
 	setThis := func(r *Record) {
 		this = r
-	}
+	}*/
 
 	struct_type := "*dao.Record"
 
@@ -435,12 +436,12 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	getRecordColumns := func() (*[]string, []error) {
-		return helper.GetRecordColumns(struct_type, getData())
+		return helper.GetRecordColumns(*getData())
 	}
 
 	getTable := func() (Table, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[table]", "dao.Table")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[table]", "dao.Table")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -454,7 +455,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	getArchieved := func() (*bool, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]",  "archieved", "*bool")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[schema]", "[fields]",  "archieved", "*bool")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -464,7 +465,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	getArchievedDate := func() (*time.Time, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]",  "archieved_date", "*time.Time")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[schema]", "[fields]",  "archieved_date", "*time.Time")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -474,11 +475,11 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	setLastModifiedDate := func(value *time.Time) []error {
-		return helper.SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", value)
+		return helper.SetField(*getData(), "[schema]", "[fields]", "last_modified_date", value)
 	}
 
 	setArchievedDate := func(value *time.Time) []error {
-		return helper.SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", value)
+		return helper.SetField(*getData(), "[schema]", "[fields]", "archieved_date", value)
 	}
 
 	getNonPrimaryKeyColumnsUpdate := func() (*map[string]bool, []error) {
@@ -494,7 +495,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, errors
 		}
 
-		return helper.GetRecordNonPrimaryKeyColumnsUpdate(struct_type, getData(), table_non_primary_key_columns)
+		return helper.GetRecordNonPrimaryKeyColumnsUpdate(*getData(), table_non_primary_key_columns)
 	}
 
 	getPrimaryKeyColumns := func() (*[]string, []error) {
@@ -510,7 +511,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, errors
 		}
 
-		return helper.GetRecordPrimaryKeyColumns(struct_type, getData(), table_primary_key_columns)
+		return helper.GetRecordPrimaryKeyColumns(*getData(), table_primary_key_columns)
 	}
 
 	getForeignKeyColumns := func() (*map[string]bool, []error) {
@@ -526,7 +527,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, errors
 		}
 
-		return helper.GetRecordForeignKeyColumns(struct_type, getData(), table_foreign_key_columns)
+		return helper.GetRecordForeignKeyColumns(*getData(), table_foreign_key_columns)
 	}
 
 	validate := func() []error {
@@ -574,6 +575,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	getUpdateSQL := func() (*string, *json.Map, []error) {
+		var errors []error
 		validate_errors := validate()
 		if validate_errors != nil {
 			return nil, nil, validate_errors
@@ -582,13 +584,48 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
-		errors := validate()
 	
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
+
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			errors = append(errors, temp_table_errors...)
+		} else if common.IsNil(temp_table) {
+			errors = append(errors, fmt.Errorf("table is nil"))
+		}
+		
+		if len(errors) > 0 {
+			return nil, nil, errors
+		}
+
+		temp_table_name, temp_table_name_errors := temp_table.GetTableName()
+		if temp_table_name_errors != nil {
+			errors = append(errors, temp_table_name_errors...)
+		} else if common.IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("table_name is nil"))
+		}
+
+		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
+		if temp_table_schema_errors != nil {
+			errors = append(errors, temp_table_schema_errors...)
+		} else if common.IsNil(temp_table_schema) {
+			errors = append(errors, fmt.Errorf("table schema is nil"))
+		}
+
+		temp_table_columns, temp_table_columns_errors := temp_table.GetTableColumns()
+		if temp_table_columns_errors != nil {
+			errors = append(errors, temp_table_columns_errors...)
+		} else if common.IsNil(temp_table_columns) {
+			errors = append(errors, fmt.Errorf("table columns is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
+		}
 	
-		return getUpdateRecordSQLMySQL("*dao.Record", table, *getThis(), options)
+		return sql_generator_mysql.GetUpdateRecordSQLMySQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
@@ -644,7 +681,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("transactional", false)
 		
 
-		return sql_generator_mysql.GetCreateRecordSQLMySQL(verify, "*dao.Record", temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
+		return sql_generator_mysql.GetCreateRecordSQLMySQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	created_record := Record{
@@ -706,7 +743,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 						errors = append(errors, fmt.Errorf("error: auto_increment_column_name is nil"))
 					}
 
-					set_auto_field_errors := helper.SetField(struct_type, getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)
+					set_auto_field_errors := helper.SetField(*getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)
 					if set_auto_field_errors != nil {
 						errors = append(errors, set_auto_field_errors...)
 					}
@@ -745,7 +782,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil
 		},
 		GetInt64: func(field string) (*int64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*int64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -754,14 +791,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*int64), nil
 		},
 		GetInt64Value: func(field string) (int64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "int64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "int64")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(int64), nil
 		},
 		GetInt32: func(field string) (*int32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*int32")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -770,14 +807,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*int32), nil
 		},
 		GetInt32Value: func(field string) (int32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "int32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "int32")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(int32), nil
 		},
 		GetInt16: func(field string) (*int16, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int16")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*int16")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -786,14 +823,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*int16), nil
 		},
 		GetInt16Value: func(field string) (int16, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "int16")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "int16")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(int16), nil
 		},
 		GetInt8: func(field string) (*int8, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*int8")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*int8")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -802,38 +839,38 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*int8), nil
 		},
 		GetInt8Value: func(field string) (int8, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "int8")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "int8")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(int8), nil
 		},
 		SetInt64: func(field string, value *int64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt64Value: func(field string, value int64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt32: func(field string, value *int32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt32Value: func(field string, value int32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt16: func(field string, value *int16) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt16Value: func(field string, value int16) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt8: func(field string, value *int8) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetInt8Value: func(field string, value int8) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		GetUInt64: func(field string) (*uint64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*uint64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -842,14 +879,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*uint64), nil
 		},
 		GetUInt64Value: func(field string) (uint64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "uint64")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(uint64), nil
 		},
 		GetUInt32: func(field string) (*uint32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*uint32")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -858,14 +895,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*uint32), nil
 		},
 		GetUInt32Value: func(field string) (uint32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "uint32")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(uint32), nil
 		},
 		GetUInt16: func(field string) (*uint16, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint16")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*uint16")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -874,14 +911,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*uint16), nil
 		},
 		GetUInt16Value: func(field string) (uint16, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint16")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "uint16")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(uint16), nil
 		},
 		GetUInt8: func(field string) (*uint8, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*uint8")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*uint8")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			} else if field_value == nil {
@@ -890,125 +927,125 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return field_value.(*uint8), nil
 		},
 		GetUInt8Value: func(field string) (uint8, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "uint8")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "uint8")
 			if field_value_errors != nil {
 				return 0, field_value_errors
 			}
 			return field_value.(uint8), nil
 		},
 		SetUInt64: func(field string, value *uint64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt64Value: func(field string, value uint64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt32: func(field string, value *uint32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt32Value: func(field string, value uint32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt16: func(field string, value *uint16) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt16Value: func(field string, value uint16) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt8: func(field string, value *uint8) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetUInt8Value: func(field string, value uint8) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		GetString: func(field string) (*string, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*string")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*string")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*string), nil
 		},
 		GetStringValue: func(field string) (string, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "string")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "string")
 			if field_value_errors != nil {
 				return "", field_value_errors
 			}
 			return field_value.(string), nil
 		},
 		SetString: func(field string, value *string) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetStringValue: func(field string, value string) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		GetBool: func(field string) (*bool, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*bool")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*bool")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*bool), nil
 		},
 		GetBoolValue: func(field string) (bool, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "bool")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "bool")
 			if field_value_errors != nil {
 				return false, field_value_errors
 			}
 			return field_value.(bool), nil
 		},
 		SetBool: func(field string, value *bool) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetBoolValue: func(field string, value bool) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		GetFloat32: func(field string) (*float32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*float32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*float32")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*float32), nil
 		},
 		GetFloat32Value: func(field string) (float32, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "float32")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "float32")
 			if field_value_errors != nil {
 				return 0.0, field_value_errors
 			}
 			return field_value.(float32), nil
 		},
 		SetFloat32: func(field string, value *float32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetFloat32Value: func(field string, value float32) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		GetFloat64: func(field string) (*float64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "*float64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "*float64")
 			if field_value_errors != nil {
 				return nil, field_value_errors
 			}
 			return field_value.(*float64), nil
 		},
 		GetFloat64Value: func(field string) (float64, []error) {
-			field_value, field_value_errors := helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, "float64")
+			field_value, field_value_errors := helper.GetField(*getData(), "[schema]", "[fields]", field, "float64")
 			if field_value_errors != nil {
 				return 0.0, field_value_errors
 			}
 			return field_value.(float64), nil
 		},
 		SetFloat64: func(field string, value *float64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		SetFloat64Value: func(field string, value float64) []error {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field, value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field, value)
 		},
 		ToJSONString: func(json *strings.Builder) ([]error) {
-			fields_map, fields_map_errors := helper.GetFields(struct_type, getData(), "[fields]")
+			fields_map, fields_map_errors := helper.GetFields(*getData(), "[fields]")
 			if fields_map_errors != nil {
 				return fields_map_errors
 			}
 			return fields_map.ToJSONString(json)
 		},
 		GetFields: func() (*json.Map, []error) {
-			fields_map, fields_map_errors := helper.GetFields(struct_type, getData(), "[fields]")
+			fields_map, fields_map_errors := helper.GetFields(*getData(), "[fields]")
 			if fields_map_errors != nil {
 				return nil, fields_map_errors
 			}
@@ -1033,10 +1070,10 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return getForeignKeyColumns()
 		},
 		GetField: func(field string, return_type string) (interface{}, []error) {
-			return helper.GetField(struct_type, getData(), "[schema]", "[fields]", field, return_type)
+			return helper.GetField(*getData(), "[schema]", "[fields]", field, return_type)
 		},
 		SetField: func(field string, value interface{}) ([]error) {
-			return helper.SetField(struct_type, getData(), "[schema]", "[fields]", field,  value)
+			return helper.SetField(*getData(), "[schema]", "[fields]", field,  value)
 		},
 		SetLastModifiedDate: func(value *time.Time) []error {
 			return setLastModifiedDate(value)
@@ -1053,6 +1090,6 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil, errors
 	}
 
-	setThis(&created_record)
+	//setThis(&created_record)
 	return &created_record, nil
 }

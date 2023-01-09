@@ -111,7 +111,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 
 	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*dao.DatabaseCreateOptions")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*dao.DatabaseCreateOptions")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if common.IsNil(temp_value) {
@@ -122,7 +122,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 	getHost := func() (Host, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[host]", "dao.Host")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[host]", "dao.Host")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -137,7 +137,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 
 	getDatabaseName := func() (string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -155,11 +155,11 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		if database_name_errors != nil {
 			return database_name_errors
 		}
-		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_name]", new_database_name)
+		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database_name]", new_database_name)
 	}
 
 	getDatabaseUsername := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} 
@@ -172,7 +172,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	}
 	
 	setDatabaseUsername := func(new_database_username string) []error {
-		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_username]", new_database_username)
+		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", new_database_username)
 	}
 
 	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
@@ -396,7 +396,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("read_no_records", true)
 		
 		var errors []error
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -444,7 +444,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, struct_type, table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -456,7 +456,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
@@ -521,7 +521,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("use_file", false)
 
 		getOrSetTableSchema(table_name, nil, "delete")
-		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, table_name, true, options)
+		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, table_name, true, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors
@@ -581,7 +581,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			return nil, temp_database_name_errors
 		}
 		
-		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, struct_type, temp_database_name, table_name, options)
+		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, temp_database_name, table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}

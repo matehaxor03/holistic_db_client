@@ -11,7 +11,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetCreateRecordSQLMySQL(verify *validate.Validator, struct_type string, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	table_validation_errors := verify.ValidateTableName(table_name)
@@ -32,7 +32,7 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, struct_type string, tab
 		options.SetBoolValue("transactional", false)
 	}
 
-	record_columns, record_columns_errors := helper.GetRecordColumns(struct_type, &record_data)
+	record_columns, record_columns_errors := helper.GetRecordColumns(record_data)
 	if record_columns_errors != nil {
 		return nil, nil, record_columns_errors
 	}
@@ -142,7 +142,7 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, struct_type string, tab
 
 	sql_command += ") VALUES ("
 	for index, record_column := range *record_columns {
-		column_data, paramter_errors := helper.GetField(struct_type, &record_data, "[schema]", "[fields]", record_column, "self")
+		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", record_column, "self")
 		if paramter_errors != nil {
 			errors = append(errors, paramter_errors...)
 			continue
@@ -326,7 +326,7 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, struct_type string, tab
 				sql_command += "0"
 			}
 		default:
-			errors = append(errors, fmt.Errorf("error: %s Record.getCreateSQL type: %s not supported for table please implement", struct_type, rep))
+			errors = append(errors, fmt.Errorf("error: Record.getCreateSQL type: %s not supported for table please implement", rep))
 		}
 
 		if index < (len(*record_columns) - 1) {

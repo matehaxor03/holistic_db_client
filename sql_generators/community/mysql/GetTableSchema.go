@@ -9,7 +9,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetTableSchemaSQL(verify *validate.Validator, struct_type string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaSQL(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
@@ -44,7 +44,7 @@ func GetTableSchemaSQL(verify *validate.Validator, struct_type string, table_nam
 }
 
 
-func MapTableSchemaFromDB(verify *validate.Validator, struct_type string, table_name string, json_array *json.Array) (*json.Map, []error) {
+func MapTableSchemaFromDB(verify *validate.Validator, table_name string, json_array *json.Array) (*json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(table_name) {

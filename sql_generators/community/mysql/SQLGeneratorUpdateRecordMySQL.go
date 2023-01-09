@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 
 import (
@@ -8,19 +8,16 @@ import (
 	"time"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/helper"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, options *json.Map) (*string, *json.Map, []error) {
+func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	table_validation_errors := table.Validate() 
-	if table_validation_errors != nil {
-		errors = append(errors, table_validation_errors...)
-	}
-	
-	record_validation_errors := record.Validate() 
-	if record_validation_errors != nil {
-		errors = append(errors, record_validation_errors...)
+	table_name_validation_errors := verify.ValidateTableName(table_name)
+	if table_name_validation_errors != nil {
+		errors = append(errors, table_name_validation_errors...)
 	}
 	
 	if common.IsNil(options) {
@@ -33,60 +30,44 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		return nil, nil, errors
 	}
 
-	table_name, table_name_errors := table.GetTableName()
-	if table_name_errors != nil {
-		return nil, nil, table_name_errors
-	}
-
 	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
 	if table_name_escaped_errors != nil {
 		errors = append(errors, table_name_escaped_errors)
 		return nil, nil, errors
 	}
 
-	table_schema, table_schema_errors := table.GetSchema()
-
-	if table_schema_errors != nil {
-		return nil, nil, table_schema_errors
-	}
-
-	_, valid_columns_errors := table.GetTableColumns()
-	if valid_columns_errors != nil {
-		return nil, nil, valid_columns_errors
-	}
-
-	record_columns, record_columns_errors := record.GetRecordColumns()
+	record_columns, record_columns_errors := helper.GetRecordColumns(record_data)
 	if record_columns_errors != nil {
 		return nil, nil, record_columns_errors
 	}
 
-	for _, record_column := range *record_columns {
+	for _, record_column  := range *record_columns {
 		if strings.HasPrefix(record_column, "credential") {
 			options.SetBoolValue("use_file", true)
 		}
 	}
 
-	primary_key_table_columns, primary_key_table_columns_errors := table.GetPrimaryKeyColumns()
+	primary_key_table_columns, primary_key_table_columns_errors := helper.GetTablePrimaryKeyColumnsForSchema(table_schema)
 	if primary_key_table_columns_errors != nil {
 		return nil, nil, primary_key_table_columns_errors
 	}
 
-	foreign_key_table_columns, foreign_key_table_columns_errors := table.GetForeignKeyColumns()
+	foreign_key_table_columns, foreign_key_table_columns_errors := helper.GetTableForeignKeyColumnsForSchema(table_schema)
 	if foreign_key_table_columns_errors != nil {
 		return nil, nil, foreign_key_table_columns_errors
 	}
 
-	table_non_primary_key_columns, table_non_primary_key_columns_errors := table.GetNonPrimaryKeyColumns()
+	table_non_primary_key_columns, table_non_primary_key_columns_errors := helper.GetTableNonPrimaryKeyColumnsForSchema(table_schema)
 	if table_non_primary_key_columns_errors != nil {
 		return nil, nil, table_non_primary_key_columns_errors
 	}
 
-	record_primary_key_columns, record_primary_key_columns_errors := record.GetPrimaryKeyColumns()
+	record_primary_key_columns, record_primary_key_columns_errors := helper.GetRecordPrimaryKeyColumns(record_data, primary_key_table_columns)
 	if record_primary_key_columns_errors != nil {
 		return nil, nil, record_primary_key_columns_errors
 	}
 
-	record_foreign_key_columns, record_foreign_key_columns_errors := record.GetForeignKeyColumns()
+	record_foreign_key_columns, record_foreign_key_columns_errors := helper.GetRecordForeignKeyColumns(record_data, foreign_key_table_columns)
 	if record_foreign_key_columns_errors != nil {
 		return nil, nil, record_foreign_key_columns_errors
 	}
@@ -99,38 +80,27 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 
 	for foreign_key_table_column, _ := range *foreign_key_table_columns {
 		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
-			record_forign_key_column_data, record_forign_key_column_data_errors := record.GetField(foreign_key_table_column, "self")
-			if record_forign_key_column_data_errors != nil {
-				errors = append(errors, fmt.Errorf("error: record had error getting foreign key field: %s", foreign_key_table_column))
-			} else if common.IsNil(record_forign_key_column_data) {
+			record_forign_key_column_data := record_data.GetObjectForMap(foreign_key_table_column)
+			if common.IsNil(record_forign_key_column_data) {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
 		}
 	}
 
-	set_last_modified_date_errors := record.SetLastModifiedDate(common.GetTimeNow())
-	if set_last_modified_date_errors != nil {
-		errors = append(errors, set_last_modified_date_errors...)
-	}
+	record_data.SetTime("last_modified_date", common.GetTimeNow())
 
-	archieved, archieved_errors := record.GetArchieved()
+	archieved, archieved_errors := record_data.GetBool("archieved")
 	if archieved_errors != nil {
 		errors = append(errors, archieved_errors...)
 	} else if !common.IsNil(archieved) {
 		if *archieved {
-			set_archieved_date_errors := record.SetArchievedDate(common.GetTimeNow())
-			if set_archieved_date_errors != nil {
-				errors = append(errors, set_archieved_date_errors...)
-			}
+			record_data.SetTime("archieved_date", common.GetTimeNow())
 		} else {
-			set_archieved_date_errors := record.SetField("archieved_date", "0000-00-00 00:00:00.000000")
-			if set_archieved_date_errors != nil {
-				errors = append(errors, set_archieved_date_errors...)
-			}
+			record_data.SetStringValue("archieved_date", "0000-00-00 00:00:00.000000")
 		}
 	}
 
-	record_non_primary_key_columns, record_non_primary_key_columns_errors := record.GetNonPrimaryKeyColumnsUpdate()
+	record_non_primary_key_columns, record_non_primary_key_columns_errors := helper.GetRecordNonPrimaryKeyColumnsUpdate(record_data, table_non_primary_key_columns)
 	if record_non_primary_key_columns_errors != nil {
 		return nil, options, record_non_primary_key_columns_errors
 	}
@@ -194,12 +164,7 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		}
 
 		sql_command += "="
-		column_data, column_data_errors := record.GetField(record_non_primary_key_column, "self")
-
-		if column_data_errors != nil {
-			errors = append(errors, column_data_errors...)
-			continue
-		}
+		column_data := record_data.GetObjectForMap(record_non_primary_key_column)
 
 		if common.IsNil(column_data) {
 			sql_command += "NULL"
@@ -374,7 +339,7 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 					sql_command += "0"
 				}
 			default:
-				errors = append(errors, fmt.Errorf("error: %s Record.getUpdateSQL type: %s not supported for table please implement", struct_type, rep))
+				errors = append(errors, fmt.Errorf("error: Record.getUpdateSQL type: %s not supported for table please implement", rep))
 			}
 		}
 
@@ -416,12 +381,7 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		}
 
 		sql_command += " = "
-		column_data, column_data_errors := record.GetField(primary_key_table_column, "self")
-
-		if column_data_errors != nil {
-			errors = append(errors, column_data_errors...)
-			continue
-		}
+		column_data := record_data.GetObjectForMap(primary_key_table_column)
 
 		if common.IsNil(column_data) {
 			sql_command += "NULL"

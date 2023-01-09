@@ -25,12 +25,12 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	}
 
 	var field_errors []error
-	field_parameters, field_parameters_errors := helper.GetFields(struct_type, data, "[fields]")
+	field_parameters, field_parameters_errors := helper.GetFields(*data, "[fields]")
 	if field_parameters_errors != nil {
 		field_errors = append(field_errors, field_parameters_errors...)
 	}
 
-	schemas, schemas_errors := helper.GetSchemas(struct_type, data, "[schema]")
+	schemas, schemas_errors := helper.GetSchemas(*data, "[schema]")
 	if schemas_errors != nil {
 		field_errors = append(field_errors, schemas_errors...)
 	}
@@ -50,12 +50,12 @@ func ValidateData(data *json.Map, struct_type string) []error {
 	}
 
 	var system_field_errors []error
-	system_field_parameters, system_field_parameters_errors := helper.GetFields(struct_type, data, "[system_fields]")
+	system_field_parameters, system_field_parameters_errors := helper.GetFields(*data, "[system_fields]")
 	if system_field_parameters_errors != nil {
 		system_field_errors = append(system_field_errors, system_field_parameters_errors...)
 	}
 
-	system_schemas, system_schemas_errors := helper.GetSchemas(struct_type, data, "[system_schema]")
+	system_schemas, system_schemas_errors := helper.GetSchemas(*data, "[system_schema]")
 	if system_schemas_errors != nil {
 		system_field_errors = append(system_field_errors, system_schemas_errors...)
 	}
@@ -75,11 +75,11 @@ func ValidateData(data *json.Map, struct_type string) []error {
 
 	if ((struct_type == "*dao.Table" || struct_type == "dao.Table")) {
 		if *primary_key_count <= 0 {
-			errors = append(errors, fmt.Errorf("error: table: %s did not have any primary keys and had keys", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: did not have any primary keys and had keys"))
 		}
 
 		if *auto_increment_count > 1 {
-			errors = append(errors, fmt.Errorf("error: table: %s had more than one auto_increment attribute on a column", struct_type))
+			errors = append(errors, fmt.Errorf("error: table: had more than one auto_increment attribute on a column"))
 		}
 	}
 
@@ -95,11 +95,11 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	schema_of_parameter, schema_of_parameter_errors := schemas.GetMap(parameter)
 	if schema_of_parameter_errors != nil {
-		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s error getting parameter schema %s", struct_type, parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: column: %s error getting parameter schema %s", parameter, fmt.Sprintf("%s", schema_of_parameter_errors)))
 	} else if common.IsNil(schema_of_parameter) {
-		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s had nil schema", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: column: %s had nil schema", parameter))
 	} else if !schemas.IsMap(parameter) {
-		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: %s column: %s is not a map", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: Common.ValidateParameterData: column: %s is not a map", parameter))
 	}
 
 	if len(errors) > 0 {
@@ -152,9 +152,9 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 
 	type_of_parameter_schema_value, type_of_parameter_schema_value_errors := schema_of_parameter.GetString("type")
 	if type_of_parameter_schema_value_errors != nil {
-		errors = append(errors, fmt.Errorf("error: struct: %s column: %s error getting \"type\" attribute for schema %s", struct_type, parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
+		errors = append(errors, fmt.Errorf("error: struct: column: %s error getting \"type\" attribute for schema %s", parameter, fmt.Sprintf("%s", type_of_parameter_schema_value_errors)))
 	} else if type_of_parameter_schema_value == nil {
-		errors = append(errors, fmt.Errorf("error: struct: %s column: %s \"type\" attribute of schema is nil", struct_type, parameter))
+		errors = append(errors, fmt.Errorf("error: struct: column: %s \"type\" attribute of schema is nil", parameter))
 	} else {
 		if strings.HasPrefix(*type_of_parameter_schema_value, "*") {
 			value_is_mandatory = false
@@ -181,7 +181,7 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			schema_of_parameter.SetBool("validated", &bool_true)
 		} else {
 				if !schema_of_parameter.IsBool("validated") {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s does not have attribute: validated is not a bool", struct_type, parameter))
+				errors = append(errors, fmt.Errorf("error: table: column: %s does not have attribute: validated is not a bool", parameter))
 				return errors
 			} else if schema_of_parameter.IsBoolTrue("validated") {
 				return nil

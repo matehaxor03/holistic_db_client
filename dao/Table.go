@@ -38,7 +38,6 @@ type Table struct {
 
 func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
 	var lock_get_schema = &sync.Mutex{}
-	struct_type := "*dao.Table"
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -166,7 +165,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	var this_non_primary_key_columns *map[string]bool = nil
 
 	getTableName := func() (string, []error) {
-		return helper.GetTableName(struct_type, getData())
+		return helper.GetTableName(*getData())
 	}
 
 	getTableColumns := func() (*map[string]bool, []error) {
@@ -174,7 +173,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return this_table_columns, nil
 		}
 		var errors []error
-		primary_key_columns, primary_key_columns_errors := helper.GetTableColumns(struct_type, getData())
+		primary_key_columns, primary_key_columns_errors := helper.GetTableColumns(*getData())
 		if primary_key_columns_errors != nil {
 			errors = append(errors, primary_key_columns_errors...)
 		} else if common.IsNil(primary_key_columns) {
@@ -192,7 +191,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return this_primary_key_columns, nil
 		}
 		var errors []error
-		primary_key_columns, primary_key_columns_errors := helper.GetTablePrimaryKeyColumns(struct_type, getData())
+		primary_key_columns, primary_key_columns_errors := helper.GetTablePrimaryKeyColumns(*getData())
 		if primary_key_columns_errors != nil {
 			errors = append(errors, primary_key_columns_errors...)
 		} else if common.IsNil(primary_key_columns) {
@@ -210,7 +209,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return this_foreigin_key_columns, nil
 		}
 		var errors []error
-		foreigin_key_columns, foreigin_key_columns_errors := helper.GetTableForeignKeyColumns(struct_type, getData())
+		foreigin_key_columns, foreigin_key_columns_errors := helper.GetTableForeignKeyColumns(*getData())
 		if foreigin_key_columns_errors != nil {
 			errors = append(errors, foreigin_key_columns_errors...)
 		} else if common.IsNil(foreigin_key_columns) {
@@ -228,7 +227,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return this_identity_key_columns, nil
 		}
 		var errors []error
-		identity_key_columns, identity_key_columns_errors := helper.GetTableIdentityColumns(struct_type, getData())
+		identity_key_columns, identity_key_columns_errors := helper.GetTableIdentityColumns(*getData())
 		if identity_key_columns_errors != nil {
 			errors = append(errors, identity_key_columns_errors...)
 		} else if common.IsNil(identity_key_columns) {
@@ -246,7 +245,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return this_non_primary_key_columns, nil
 		}
 		var errors []error
-		non_primary_key_columns, non_primary_key_columns_errors := helper.GetTableNonPrimaryKeyColumns(struct_type, getData())
+		non_primary_key_columns, non_primary_key_columns_errors := helper.GetTableNonPrimaryKeyColumns(*getData())
 		if non_primary_key_columns_errors != nil {
 			errors = append(errors, non_primary_key_columns_errors...)
 		} else if common.IsNil(non_primary_key_columns) {
@@ -265,7 +264,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	getDatabase := func() (Database, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -320,7 +319,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, temp_table_name_errors
 		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, temp_table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -364,7 +363,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -396,7 +395,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, struct_type, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, true, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -654,7 +653,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, temp_database_errors
 		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, struct_type, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, temp_table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -666,7 +665,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, temp_table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, temp_table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
@@ -682,11 +681,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	setTableName := func(new_table_name string) []error {
-		return helper.SetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_name]", new_table_name)
+		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[table_name]", new_table_name)
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return getCreateTableSQLMySQL(struct_type, *getTable(), *getData(), options)
+		return getCreateTableSQLMySQL(*getTable(), *getData(), options)
 	}
 
 	createTable := func() []error {

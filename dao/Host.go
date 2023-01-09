@@ -13,8 +13,6 @@ type Host struct {
 }
 
 func newHost(verify *validate.Validator, host_name string, port_number string) (*Host, []error) {
-	struct_type := "*dao.Host"
-
 	data := json.NewMap()
 	data.SetMapValue("[fields]", json.NewMapValue())
 	data.SetMapValue("[schema]", json.NewMapValue())
@@ -52,7 +50,7 @@ func newHost(verify *validate.Validator, host_name string, port_number string) (
 
 	getHostName := func() (string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[host_name]", "string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[host_name]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} 
@@ -65,7 +63,7 @@ func newHost(verify *validate.Validator, host_name string, port_number string) (
 
 	getPortNumber := func() (string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[port_number]", "string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[port_number]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} 

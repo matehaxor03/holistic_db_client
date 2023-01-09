@@ -14,7 +14,6 @@ type Grant struct {
 }
 
 func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
-	struct_type := "*dao.Grant"
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -119,7 +118,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 
 	getDatabase := func() (Database, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[database]", "dao.Database")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -133,7 +132,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 
 	getUser := func() (User, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[user]", "dao.User")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[user]", "dao.User")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -147,7 +146,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 
 	getGrantValue := func() (*string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -161,7 +160,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 
 	getDatabaseFilter := func() (*string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database_filter]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_filter]", "*string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -177,7 +176,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 
 	getTableFilter := func() (*string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[table_filter]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[table_filter]", "*string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {

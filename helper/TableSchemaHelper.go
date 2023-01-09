@@ -5,9 +5,9 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTableName(struct_type string, m *json.Map) (string, []error) {
+func GetTableName(m json.Map) (string, []error) {
 	var errors []error
-	temp_value, temp_value_errors := GetField(struct_type, m, "[system_schema]", "[system_fields]", "[table_name]", "string")
+	temp_value, temp_value_errors := GetField(m, "[system_schema]", "[system_fields]", "[table_name]", "string")
 	if temp_value_errors != nil {
 		errors = append(errors, temp_value_errors...)
 	} 
@@ -19,8 +19,8 @@ func GetTableName(struct_type string, m *json.Map) (string, []error) {
 	return temp_value.(string), nil
 }
 
-func GetTableColumns(caller string, data *json.Map) (*map[string]bool, []error) {
-	temp_schemas, temp_schemas_error := GetSchemas(caller, data, "[schema]")
+func GetTableColumns(data json.Map) (*map[string]bool, []error) {
+	temp_schemas, temp_schemas_error := GetSchemas(data, "[schema]")
 	if temp_schemas_error != nil {
 		return nil, temp_schemas_error
 	}
@@ -32,18 +32,8 @@ func GetTableColumns(caller string, data *json.Map) (*map[string]bool, []error) 
 	return &columns, nil
 }
 
-func GetTablePrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool, []error) {
+func GetTablePrimaryKeyColumnsForSchema(schema_map json.Map) (*map[string]bool, []error) {
 	var errors []error
-	
-	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
-	if schema_map_errors != nil {
-		errors = append(errors, schema_map_errors...)
-	}
-
-	if len(errors) > 0 {
-		return nil, errors
-	}
-
 	columns := make(map[string]bool)
 	for _, column := range schema_map.GetKeys() {
 		column_schema, column_schema_errors := schema_map.GetMap(column)
@@ -51,7 +41,7 @@ func GetTablePrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool,
 			errors = append(errors, column_schema_errors...)
 			continue
 		} else if column_schema == nil {
-			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
 			continue
 		}
 
@@ -67,10 +57,10 @@ func GetTablePrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool,
 	return &columns, nil
 }
 
-func GetTableForeignKeyColumns(caller string, data *json.Map) (*map[string]bool, []error) {
+func GetTablePrimaryKeyColumns(data json.Map) (*map[string]bool, []error) {
 	var errors []error
 	
-	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	schema_map, schema_map_errors := GetSchemas(data, "[schema]")
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	}
@@ -86,7 +76,33 @@ func GetTableForeignKeyColumns(caller string, data *json.Map) (*map[string]bool,
 			errors = append(errors, column_schema_errors...)
 			continue
 		} else if column_schema == nil {
-			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
+			continue
+		}
+
+		if column_schema.IsBoolTrue("primary_key") {
+			columns[column] = true
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &columns, nil
+}
+
+func GetTableForeignKeyColumnsForSchema(schema_map json.Map) (*map[string]bool, []error) {
+	var errors []error
+
+	columns := make(map[string]bool)
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
 			continue
 		}
 
@@ -102,10 +118,10 @@ func GetTableForeignKeyColumns(caller string, data *json.Map) (*map[string]bool,
 	return &columns, nil
 }
 
-func GetTableIdentityColumns(caller string, data *json.Map) (*map[string]bool, []error) {
+func GetTableForeignKeyColumns(data json.Map) (*map[string]bool, []error) {
 	var errors []error
-
-	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	
+	schema_map, schema_map_errors := GetSchemas(data, "[schema]")
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	}
@@ -121,7 +137,42 @@ func GetTableIdentityColumns(caller string, data *json.Map) (*map[string]bool, [
 			errors = append(errors, column_schema_errors...)
 			continue
 		} else if column_schema == nil {
-			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
+			continue
+		}
+
+		if column_schema.IsBoolTrue("foreign_key") {
+			columns[column] = true
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	return &columns, nil
+}
+
+func GetTableIdentityColumns(data json.Map) (*map[string]bool, []error) {
+	var errors []error
+
+	schema_map, schema_map_errors := GetSchemas(data, "[schema]")
+	if schema_map_errors != nil {
+		errors = append(errors, schema_map_errors...)
+	}
+
+	if len(errors) > 0 {
+		return nil, errors
+	}
+
+	columns := make(map[string]bool)
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
 			continue
 		}
 
@@ -137,10 +188,10 @@ func GetTableIdentityColumns(caller string, data *json.Map) (*map[string]bool, [
 	return &columns, nil
 }
 
-func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*map[string]bool, []error) {
+func GetTableNonPrimaryKeyColumns(data json.Map) (*map[string]bool, []error) {
 	var errors []error
 
-	schema_map, schema_map_errors := GetSchemas(caller, data, "[schema]")
+	schema_map, schema_map_errors := GetSchemas(data, "[schema]")
 	if schema_map_errors != nil {
 		errors = append(errors, schema_map_errors...)
 	}
@@ -156,7 +207,7 @@ func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*map[string]bo
 			errors = append(errors, column_schema_errors...)
 			continue
 		} else if column_schema == nil {
-			errors = append(errors, fmt.Errorf("error: %s schema: %s is nill", caller, column))
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
 			continue
 		}
 
@@ -166,4 +217,26 @@ func GetTableNonPrimaryKeyColumns(caller string, data *json.Map) (*map[string]bo
 	}
 	return &columns, nil
 }
+
+func GetTableNonPrimaryKeyColumnsForSchema(schema_map json.Map) (*map[string]bool, []error) {
+	var errors []error
+
+	columns := make(map[string]bool)
+	for _, column := range schema_map.GetKeys() {
+		column_schema, column_schema_errors := schema_map.GetMap(column)
+		if column_schema_errors != nil {
+			errors = append(errors, column_schema_errors...)
+			continue
+		} else if column_schema == nil {
+			errors = append(errors, fmt.Errorf("error: schema: %s is nill", column))
+			continue
+		}
+
+		if !(column_schema.IsBoolTrue("primary_key")) {
+			columns[column] = true
+		}
+	}
+	return &columns, nil
+}
+
 

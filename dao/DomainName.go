@@ -14,9 +14,6 @@ type DomainName struct {
 }
 
 func NewDomainName(verify *validate.Validator, domain_name string) (*DomainName, []error) {
-	struct_type := "*dao.DomainName"
-
-
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
 	data.SetMapValue("[schema]", json.NewMapValue())
@@ -51,7 +48,7 @@ func NewDomainName(verify *validate.Validator, domain_name string) (*DomainName,
 
 	getDomainName := func() (string, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[domain_name]", "string")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {

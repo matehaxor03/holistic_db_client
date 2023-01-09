@@ -19,7 +19,6 @@ type User struct {
 
 func newUser(database Database, credentials Credentials, domain_name DomainName) (*User, []error) {
 	var errors []error
-	struct_type := "*dao.User"
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
 	if SQLCommand_errors != nil {
@@ -63,7 +62,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 
 	getDatabase := func() (Database, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -77,7 +76,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 
 	getCredentials := func() (Credentials, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[credentials]", "dao.Credentials")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[credentials]", "dao.Credentials")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {
@@ -92,7 +91,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 
 	getDomainName := func() (DomainName, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]", "[domain_name]", "dao.DomainName")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[domain_name]", "dao.DomainName")
 		if temp_value_errors != nil {
 			errors = append(errors, temp_value_errors...)
 		} else if common.IsNil(temp_value) {

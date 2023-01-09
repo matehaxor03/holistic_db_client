@@ -8,7 +8,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetTableSchemaAdditionalSQL(verify *validate.Validator, struct_type string, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetTableSchemaAdditionalSQL(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 	
 	database_name_validation_errors := verify.ValidateDatabaseName(database_name)

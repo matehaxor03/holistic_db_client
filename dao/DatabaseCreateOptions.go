@@ -60,7 +60,7 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 	}
 
 	get_character_set := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[character_set]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[character_set]", "*string")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
@@ -70,7 +70,7 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 	}
 
 	get_collate := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(struct_type, getData(), "[system_schema]", "[system_fields]",  "[collate]", "*string")
+		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[collate]", "*string")
 		if temp_value_errors != nil {
 			return nil, temp_value_errors
 		} else if temp_value == nil {
