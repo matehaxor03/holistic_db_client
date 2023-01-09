@@ -17,6 +17,20 @@ type Validator struct {
 	ValidatePortNumber func(port_number string) ([]error)
 
 
+	GetValidateBranchNameFunc func() (*func(branch_name string) []error)
+	GetValidateCharacterSetFunc func() (*func(character_set string) []error)
+	GetValidateCollateFunc func() (*func(collate string) []error)
+	GetValidateColumnNameFunc func() (*func(column_name string) []error)
+	GetValidateDatabaseNameFunc func() (*func(database_name string) []error)
+	GetValidateDatabaseReservedWordFunc func() (*func(value string) []error)
+	GetValidateDomainNameFunc func() (*func(domain_name string) []error)
+	GetValidatePortNumberFunc func() (*func(port_number string) []error)
+	GetValidateTableNameFunc func() (*func(table_name string) []error)
+	GetValidateUsernameFunc func() (*func(username string) []error)
+	GetValidateRepositoryNameFunc func() (*func(repository_name string) []error)
+	GetValidateRepositoryAccountNameFunc func() (*func(repository_account_name string) []error)
+
+
 
 	GetDatabaseReservedWordsBlackList func() *json.Map 
 	GetDatabaseNameWhitelistCharacters func() *json.Map
@@ -120,6 +134,44 @@ func NewValidator() (*Validator) {
 		ValidatePortNumber: func(port_number string) ([]error) {
 			return valid_port_number_characters.ValidatePortNumber(port_number)
 		},
+
+		GetValidateBranchNameFunc: func() (*func(branch_name string) []error) {
+			return valid_branch_name_characters.GetValidateBranchNameFunc()
+		},
+		GetValidateCharacterSetFunc: func() (*func(character_set string) []error) {
+			return valid_character_set_words.GetValidateCharacterSetFunc()
+		},
+		GetValidateCollateFunc: func() (*func(collate string) []error) {
+			return valid_collate_words.GetValidateCollateFunc()
+		},
+		GetValidateColumnNameFunc: func() (*func(column_name string) []error) {
+			return valid_column_name_characters.GetValidateColumnNameFunc()
+		},
+		GetValidateDatabaseNameFunc: func() (*func(database_name string) []error) {
+			return valid_database_name_characters.GetValidateDatabaseNameFunc()
+		},
+		GetValidateDatabaseReservedWordFunc: func() (*func(value string) []error) {
+			return database_reserved_words_blacklist.GetValidateDatabaseReservedWordFunc()
+		},
+		GetValidateDomainNameFunc: func() (*func(domain_name string) []error) {
+			return valid_domain_name_characters.GetValidateDomainNameFunc()
+		},
+		GetValidatePortNumberFunc: func() (*func(port_number string) []error) {
+			return valid_port_number_characters.GetValidatePortNumberFunc()
+		},
+		GetValidateRepositoryAccountNameFunc: func() (*func(repository_account_name string) []error) {
+			return valid_repository_account_name_characters.GetValidateRepositoryAccountNameFunc()
+		},
+		GetValidateRepositoryNameFunc: func() (*func(repository_name string) []error) {
+			return valid_repository_name_characters.GetValidateRepositoryNameFunc()
+		},
+		GetValidateTableNameFunc: func() (*func(table_name string) []error) {
+			return valid_table_name_characters.GetValidateTableNameFunc()
+		},
+		GetValidateUsernameFunc: func() (*func(username string) []error) {
+			return valid_username_characters.GetValidateUsernameFunc()
+		},
+		
 
 	}
 

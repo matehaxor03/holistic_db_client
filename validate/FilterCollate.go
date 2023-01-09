@@ -9,11 +9,31 @@ import (
 type CollateWordWhitelist struct {
 	GetCollateWordWhitelist func() (*json.Map)
 	ValidateCollate func(collate string) ([]error)
+	GetValidateCollateFunc func() (*func(collate string) []error)
 }
 
 func NewCollateWordWhitelist() (*CollateWordWhitelist) {
 	valid_words := validation_constants.GET_COLLATES()
 	cache := make(map[string]interface{})
+
+	validateCollate := func(collate string) ([]error) {
+		if _, found := cache[collate]; found {
+			return nil
+		}
+
+		parameters := json.NewMapValue()
+		parameters.SetStringValue("value", collate)
+		parameters.SetMap("values", &valid_words)
+		parameters.SetStringValue("label", "Validator.ValidateCollate")
+		parameters.SetStringValue("data_type", "database.collate")
+		whitelist_errors := validation_functions.WhiteListString(parameters)
+		if whitelist_errors != nil {
+			return whitelist_errors
+		}
+
+		cache[collate] = nil
+		return nil
+	}
 
 	x := CollateWordWhitelist {
 		GetCollateWordWhitelist: func() (*json.Map) {
@@ -21,22 +41,11 @@ func NewCollateWordWhitelist() (*CollateWordWhitelist) {
 			return &v
 		},
 		ValidateCollate: func(collate string) ([]error) {
-			if _, found := cache[collate]; found {
-				return nil
-			}
-
-			parameters := json.NewMapValue()
-			parameters.SetStringValue("value", collate)
-			parameters.SetMap("values", &valid_words)
-			parameters.SetStringValue("label", "Validator.ValidateCollate")
-			parameters.SetStringValue("data_type", "database.collate")
-			whitelist_errors := validation_functions.WhiteListString(parameters)
-			if whitelist_errors != nil {
-				return whitelist_errors
-			}
-
-			cache[collate] = nil
-			return nil
+			return validateCollate(collate)
+		},
+		GetValidateCollateFunc: func() (*func(collate string) []error) {
+			function := validateCollate
+			return &function
 		},
 	}
 	return &x
