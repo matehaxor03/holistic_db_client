@@ -36,7 +36,7 @@ type Table struct {
 	GetDatabase           func() (Database, []error)
 }
 
-func newTable(verify *validate.Validator, database Database, table_name string, schema json.Map) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
 	var lock_get_schema = &sync.Mutex{}
 	struct_type := "*dao.Table"
 	var errors []error
@@ -67,17 +67,15 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		data = in_data
 	}
 	
-	setupData := func(b Database, n string, schema_from_db json.Map) (*json.Map, []error) {
+	setupData := func(b Database, n string, user_defined_schema *json.Map, schema_from_database *json.Map) (*json.Map, []error) {
 		var setup_errors []error
 		d := json.NewMapValue()
 
 		d.SetMap("[fields]", json.NewMap())
-
 		map_system_fields := json.NewMap()
 		map_system_fields.SetObjectForMap("[database]", b)
 		map_system_fields.SetObjectForMap("[table_name]", n)
 		d.SetMap("[system_fields]", map_system_fields)
-
 
 		map_system_schema := json.NewMap()
 
@@ -96,87 +94,56 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 		d.SetMap("[system_schema]", map_system_schema)
 
-		merged_schema := json.NewMap()
-		
-		map_active_schema := json.NewMap()
-		map_active_schema.SetStringValue("type", "bool")
-		map_active_schema.SetBoolValue("default", true)
-		merged_schema.SetMap("enabled", map_active_schema)
-
-		map_archieved_schema := json.NewMap()
-		map_archieved_schema.SetStringValue("type", "bool")
-		map_archieved_schema.SetBoolValue("default", false)
-		merged_schema.SetMap("archieved", map_archieved_schema)
-
-		map_created_date_schema := json.NewMap()
-		map_created_date_schema.SetStringValue("type", "time.Time")
-		map_created_date_schema.SetStringValue("default", "now")
-		map_created_date_schema.SetUInt8Value("decimal_places", uint8(6))
-		merged_schema.SetMap("created_date", map_created_date_schema)
-
-		map_last_modified_date_schema := json.NewMap()
-		map_last_modified_date_schema.SetStringValue("type", "time.Time")
-		map_last_modified_date_schema.SetStringValue("default", "now")
-		map_last_modified_date_schema.SetUInt8Value("decimal_places", uint8(6))
-		merged_schema.SetMap("last_modified_date", map_last_modified_date_schema)
-
-		map_archieved_date_date_schema := json.NewMap()
-		map_archieved_date_date_schema.SetStringValue("type", "time.Time")
-		map_archieved_date_date_schema.SetStringValue("default", "zero")
-		map_archieved_date_date_schema.SetUInt8Value("decimal_places", uint8(6))
-		merged_schema.SetMap("archieved_date", map_archieved_date_date_schema)
-	
-		for _, schema_key_from_db := range schema_from_db.GetKeys() {
-			current_schema_from_db, current_schema_from_db_errors := schema_from_db.GetMapValue(schema_key_from_db)
-			if current_schema_from_db_errors != nil {
-				return nil, current_schema_from_db_errors
-			} 
-
-			if len(setup_errors) > 0 {
-				return nil, setup_errors
-			}
-		
-			if !merged_schema.HasKey(schema_key_from_db) {
-				merged_schema.SetMapValue(schema_key_from_db, current_schema_from_db)
-				continue
-			} 
+		if user_defined_schema != nil && schema_from_database == nil {
+			default_schema := json.NewMap()
 			
-			if !current_schema_from_db.IsArray("filters") {
-				continue
-			}
+			map_active_schema := json.NewMap()
+			map_active_schema.SetStringValue("type", "bool")
+			map_active_schema.SetBoolValue("default", true)
+			default_schema.SetMap("enabled", map_active_schema)
 
-			filters_from_db, filters_from_db_errors := current_schema_from_db.GetArray("filters")
-			if filters_from_db_errors != nil {
-				return nil, filters_from_db_errors
-			} 
+			map_archieved_schema := json.NewMap()
+			map_archieved_schema.SetStringValue("type", "bool")
+			map_archieved_schema.SetBoolValue("default", false)
+			default_schema.SetMap("archieved", map_archieved_schema)
 
-			if !merged_schema.IsMap(schema_key_from_db) {
-				setup_errors = append(errors, fmt.Errorf("schema to be merged into is not a map"))
-				return nil, setup_errors
-			}
+			map_created_date_schema := json.NewMap()
+			map_created_date_schema.SetStringValue("type", "time.Time")
+			map_created_date_schema.SetStringValue("default", "now")
+			map_created_date_schema.SetUInt8Value("decimal_places", uint8(6))
+			default_schema.SetMap("created_date", map_created_date_schema)
+
+			map_last_modified_date_schema := json.NewMap()
+			map_last_modified_date_schema.SetStringValue("type", "time.Time")
+			map_last_modified_date_schema.SetStringValue("default", "now")
+			map_last_modified_date_schema.SetUInt8Value("decimal_places", uint8(6))
+			default_schema.SetMap("last_modified_date", map_last_modified_date_schema)
+
+			map_archieved_date_date_schema := json.NewMap()
+			map_archieved_date_date_schema.SetStringValue("type", "time.Time")
+			map_archieved_date_date_schema.SetStringValue("default", "zero")
+			map_archieved_date_date_schema.SetUInt8Value("decimal_places", uint8(6))
+			default_schema.SetMap("archieved_date", map_archieved_date_date_schema)
 		
-			merged_schema_map, merged_schema_map_errors := merged_schema.GetMap(schema_key_from_db)
-			if merged_schema_map_errors != nil {
-				return nil, merged_schema_map_errors
-			} 
-
-			filters_array, filters_array_errors := merged_schema_map.GetArray("filters")
-			if filters_array_errors != nil {
-				return nil, filters_array_errors
-			} 
-
-			if common.IsNil(filters_array) {
-				new_filters_array := json.NewArray()
-				merged_schema_map.SetArray("filters", new_filters_array)
-				filters_array = new_filters_array
-			}
+			for _, column_name := range user_defined_schema.GetKeys() {
+				current_schema, current_schema_errors := user_defined_schema.GetMapValue(column_name)
+				if current_schema_errors != nil {
+					return nil, current_schema_errors
+				} 
 			
-			for _, filter_from_db := range *(filters_from_db.GetValues()) {
-				filters_array.AppendValue(filter_from_db)
+				if !default_schema.HasKey(column_name) {
+					default_schema.SetMapValue(column_name, current_schema)
+					continue
+				} 
 			}
+			d.SetMap("[schema]", default_schema)
+		} else if user_defined_schema == nil &&  schema_from_database != nil {
+			d.SetMap("[schema]", schema_from_database)
+		} else if user_defined_schema != nil &&  schema_from_database != nil {
+			errors = append(errors, fmt.Errorf("can either specify user defined schema or db schema but not both"))
+		} else {
+			errors = append(errors, fmt.Errorf("cannot create table without a schema"))
 		}
-
-		d.SetMap("[schema]", merged_schema)
 
 		if setup_errors != nil {
 			return nil, setup_errors
@@ -184,7 +151,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return &d, nil
 	}
 
-	new_data, new_data_errors := setupData(database, table_name, schema)
+	new_data, new_data_errors := setupData(database, table_name, user_defined_schema, schema_from_database)
 	if new_data_errors != nil {
 		errors = append(errors, new_data_errors...)
 	} else {
@@ -743,7 +710,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 
-		new_data, setup_data_errors := setupData(temp_database, temp_table_name, *temp_schema)
+		new_data, setup_data_errors := setupData(temp_database, temp_table_name, nil, temp_schema)
 		if setup_data_errors != nil {
 			errors = append(errors, setup_data_errors...)
 			return nil, errors

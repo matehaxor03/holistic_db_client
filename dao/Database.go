@@ -32,6 +32,7 @@ type Database struct {
 	GetTableSchema func(table_name string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
+	GetEmptySchema func() json.Map
 
 	GlobalGeneralLogDisable	func() []error
 	GlobalGeneralLogEnable	func() []error
@@ -41,6 +42,8 @@ type Database struct {
 
 func newDatabase(verify *validate.Validator, host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var errors []error
+	empty_table_schema := json.Map{}
+
 	table_schema_cache := newTableSchemaCache()
 
 	lock_table_additional_schema_cache := &sync.Mutex{}
@@ -501,13 +504,15 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 		if schema_errors != nil {
 			errors = append(errors, schema_errors...)
+		} else if common.IsNil(table_schema) {
+			errors = append(errors, fmt.Errorf("table schema is nil"))
 		}
 
 		if len(errors) > 0 {
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, *table_schema)
+		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -534,6 +539,29 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		}
 		return nil
 	}
+
+	getTableInterface := func(table_name string, user_defined_schema json.Map) (*Table, []error) {
+		errors := validate()
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+		
+		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil)
+
+		if new_table_errors != nil {
+			errors = append(errors, new_table_errors...)
+		} else if common.IsNil(table) {
+			errors = append(errors, fmt.Errorf("table interface is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return table, nil
+	}
+	
 
 	x := Database{
 		Validate: func() []error {
@@ -571,35 +599,11 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			}
 			return *temp_table_exists, nil
 		},
-		GetTableInterface: func(table_name string, schema json.Map) (*Table, []error) {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-			
-			table, new_table_errors := newTable(verify, *getDatabase(), table_name, schema)
-
-			if new_table_errors != nil {
-				errors = append(errors, new_table_errors...)
-			} else if common.IsNil(table) {
-				errors = append(errors, fmt.Errorf("table interface is nil"))
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
-			return table, nil
+		GetTableInterface: func(table_name string, user_defined_schema json.Map) (*Table, []error) {
+			return getTableInterface(table_name, user_defined_schema)
 		},
-		CreateTable: func(table_name string, schema json.Map) (*Table, []error) {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-			
-			table, new_table_errors := newTable(verify, *getDatabase(), table_name, schema)
+		CreateTable: func(table_name string, user_defined_schema json.Map) (*Table, []error) {
+			table, new_table_errors := getTableInterface(table_name, user_defined_schema)
 
 			if new_table_errors != nil {
 				return nil, new_table_errors
@@ -751,6 +755,9 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		},
 		DeleteTableByTableNameIfExists: func(table_name string) []error {
 			return deleteTableByTableNameIfExists(table_name)
+		},
+		GetEmptySchema: func() json.Map {
+			return empty_table_schema
 		},
 	}
 	setDatabase(&x)
