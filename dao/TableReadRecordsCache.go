@@ -6,17 +6,28 @@ import (
 )
 
 type TableReadRecordsCache struct {
-	GetOrSetReadRecords func(database Database, sql string, records *[]Record) (*[]Record, []error)
+	GetOrSetReadRecords func(table Table, sql string, records *[]Record) (*[]Record, []error)
 }
 
 func newTableReadRecordsCache() (*TableReadRecordsCache) {
 	cache := map[string](*[]Record){}
 	
-	getOrSetReadRecords := func(database Database, sql string, records *[]Record) (*[]Record, []error) {		
+	getOrSetReadRecords := func(table Table, sql string, records *[]Record) (*[]Record, []error) {		
 		var errors []error
 	
 		if common.IsNil(records) {
 			errors = append(errors, fmt.Errorf("records is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		database, database_errors := table.GetDatabase()
+		if database_errors != nil {
+			errors = append(errors, database_errors...)
+		} else if common.IsNil(database) {
+			errors = append(errors, fmt.Errorf("database is nil"))
 		}
 
 		if len(errors) > 0 {
@@ -70,8 +81,8 @@ func newTableReadRecordsCache() (*TableReadRecordsCache) {
 	}
 
 	return &TableReadRecordsCache{
-		GetOrSetReadRecords: func(database Database, sql string, records *[]Record) (*[]Record, []error) {
-			return getOrSetReadRecords(database, sql, records)
+		GetOrSetReadRecords: func(table Table, sql string, records *[]Record) (*[]Record, []error) {
+			return getOrSetReadRecords(table, sql, records)
 		},
 	}
 }

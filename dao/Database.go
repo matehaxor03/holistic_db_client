@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strings"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -31,7 +30,6 @@ type Database struct {
 	GetTableNames   func() ([]string, []error)
 	GetTableSchema func(table_name string) (*json.Map, []error)
 	GetAdditionalTableSchema func(table_name string) (*json.Map, []error)
-	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
 
 	GlobalGeneralLogDisable	func() []error
 	GlobalGeneralLogEnable	func() []error
@@ -43,12 +41,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	var errors []error
 
 	table_schema_cache := newTableSchemaCache()
-	lock_table_additional_schema_cache := &sync.Mutex{}
 	table_additional_schema_cache := newTableAdditionalSchemaCache()
-
-	lock_table_records_cache := &sync.Mutex{}
-	table_read_records_cache := newTableReadRecordsCache()
-
 	
 	SQLCommand, SQLCommand_errors := newSQLCommand()
 	if SQLCommand_errors != nil {
@@ -204,8 +197,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 	getOrSetAdditionalTableSchema := func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
 		// todo clone schema
-		lock_table_additional_schema_cache.Lock()
-		defer lock_table_additional_schema_cache.Unlock()
 		return table_additional_schema_cache.GetOrSet(*getDatabase(), table_name, additional_schema)
 	}
 
@@ -755,12 +746,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		GetAdditionalTableSchema: func(table_name string) (*json.Map, []error) {
 			// todo clone schema
 			return getAdditionalTableSchema(table_name)
-		},
-		GetOrSetReadRecords: func(sql string, records *[]Record) (*[]Record, []error) {
-			// todo clone schema
-			lock_table_records_cache.Lock()
-			defer lock_table_records_cache.Unlock()
-			return table_read_records_cache.GetOrSetReadRecords(*getDatabase(), sql, records)
 		},
 		GlobalGeneralLogDisable: func() []error {
 			options := json.NewMap()

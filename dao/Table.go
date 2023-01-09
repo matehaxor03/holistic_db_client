@@ -46,6 +46,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		errors = append(errors, SQLCommand_errors...)
 	}
 
+	table_read_records_cache := newTableReadRecordsCache()
 	var data *json.Map
 	data = json.NewMap()
 	
@@ -892,11 +893,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, additional_schema_errors
 			}
 
-			temp_database, temp_database_errors := getDatabase()
-			if temp_database_errors != nil {
-				return nil, temp_database_errors
-			}
-
 			cacheable := false
 			additional_schema_comment, additional_schema_comment_errors := additional_schema.GetMap("Comment")
 			if additional_schema_comment_errors != nil {
@@ -911,7 +907,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			}
 
 			if cacheable {
-				cachable_records, cachable_records_errors := temp_database.GetOrSetReadRecords(*sql_command, nil)
+				cachable_records, cachable_records_errors := table_read_records_cache.GetOrSetReadRecords(*getTable(), *sql_command, nil)
 				if cachable_records_errors != nil {
 					return nil, cachable_records_errors
 				} else if !common.IsNil(cachable_records) {
@@ -946,7 +942,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			}
 
 			if cacheable {
-				temp_database.GetOrSetReadRecords(*sql_command, &mapped_records)
+				table_read_records_cache.GetOrSetReadRecords(*getTable(), *sql_command, &mapped_records)
 			}
 
 			return &mapped_records, nil
