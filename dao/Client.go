@@ -272,7 +272,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := NewDomainName((tuple_credentials.host_name))
+		domain_name, domain_name_errors := NewDomainName(verify, (tuple_credentials.host_name))
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
@@ -378,7 +378,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, credentail_errors
 			}
 
-			domain, domain_errors := NewDomainName(domain_name)
+			domain, domain_errors := NewDomainName(verify, domain_name)
 			if domain_errors != nil {
 				return nil, domain_errors
 			}

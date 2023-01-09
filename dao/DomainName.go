@@ -2,9 +2,7 @@ package dao
 
 import (
 	json "github.com/matehaxor03/holistic_json/json"
-	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
-
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	common "github.com/matehaxor03/holistic_common/common"
 	"fmt"
@@ -15,7 +13,7 @@ type DomainName struct {
 	GetDomainName func() (string, []error)
 }
 
-func NewDomainName(domain_name string) (*DomainName, []error) {
+func NewDomainName(verify *validate.Validator, domain_name string) (*DomainName, []error) {
 	struct_type := "*dao.DomainName"
 
 
@@ -35,8 +33,7 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 
 	map_domain_name_schema_filters := json.NewArrayValue()
 	map_domain_name_schema_filter := json.NewMapValue()
-	map_domain_name_schema_filter.SetObjectForMap("values", validation_constants.GET_ALLOWED_DOMAIN_NAMES())
-	map_domain_name_schema_filter.SetObjectForMap("function",  validation_functions.GetWhitelistStringFunc())
+	map_domain_name_schema_filter.SetObjectForMap("function",  verify.GetValidateDomainNameFunc())
 	map_domain_name_schema_filters.AppendMapValue(map_domain_name_schema_filter)
 	map_domain_name_schema.SetArrayValue("filters", map_domain_name_schema_filters)
 	map_system_schema.SetMapValue("[domain_name]", map_domain_name_schema)
