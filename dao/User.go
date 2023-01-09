@@ -20,7 +20,11 @@ type User struct {
 func newUser(database Database, credentials Credentials, domain_name DomainName) (*User, []error) {
 	var errors []error
 	struct_type := "*dao.User"
-	
+
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
 
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
@@ -99,6 +103,31 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			return DomainName{}, errors
 		}
 		return temp_value.(DomainName), nil
+	}
+
+	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+		errors := validate()
+		if errors != nil {
+			return nil, errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+		
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		} else if common.IsNil(sql_command_results) {
+			errors = append(errors, fmt.Errorf("records from db was nil"))	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return sql_command_results, nil
 	}
 
 	getCreateSQL := func(options *json.Map) (*string, *json.Map, []error) {
@@ -191,6 +220,8 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 		return &sql_command, options, nil
 	}
 
+	
+
 
 	validation_errors := validate()
 
@@ -216,12 +247,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 				return sql_command_errors
 			}
 
-			temp_database, temp_database_errors := getDatabase()
-			if temp_database_errors != nil {
-				return temp_database_errors
-			}
-
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+			_, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -253,10 +279,6 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 				return errors
 			}
 
-			temp_database, temp_database_errors := getDatabase() 
-			if temp_database_errors != nil {
-				return temp_database_errors
-			}
 
 			temp_host, temp_host_errors := database.GetHost()
 			if temp_host_errors != nil {
@@ -318,7 +340,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 
 			options_update := json.NewMap()
 			options_update.SetBoolValue("use_file", true)
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(sql_command, options_update)
+			_, execute_errors := executeUnsafeCommand(&sql_command, options_update)
 
 			if execute_errors != nil {
 				return execute_errors

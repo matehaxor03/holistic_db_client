@@ -42,6 +42,12 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	var lock_get_schema = &sync.Mutex{}
 	struct_type := "*dao.Table"
 	var errors []error
+
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	var data *json.Map
 	data = json.NewMap()
 	
@@ -307,6 +313,31 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return temp_value.(Database), temp_value_errors
 	}
 
+	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+		errors := validate()
+		if errors != nil {
+			return nil, errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+		
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		} else if common.IsNil(sql_command_results) {
+			errors = append(errors, fmt.Errorf("records from db was nil"))	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return sql_command_results, nil
+	}
+
 	exists := func() (*bool, []error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
@@ -329,13 +360,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			errors = append(errors, sql_command_errors...)
 			return nil, errors
 		}
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
 		
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -384,7 +410,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return sql_command_errors
 		}
 		
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		_, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -423,7 +449,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		_, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -501,13 +527,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql, options)
+		_, sql_errors := executeUnsafeCommand(&sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -546,12 +566,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 		
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
 
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(*sql, options)
+		_, sql_errors := executeUnsafeCommand(sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -629,13 +645,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-
-		_, sql_errors := temp_database.ExecuteUnsafeCommand(sql, options)
+		_, sql_errors := executeUnsafeCommand(&sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -687,14 +697,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, sql_command_errors
 		}
 
-		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
 			return nil, errors
 		}
 
-		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(&json_array)
+		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
 		if additional_schema_errors != nil {
 			errors = append(errors, additional_schema_errors...)
 		} else if common.IsNil(additional_schema) {
@@ -742,14 +752,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			errors = append(errors, sql_command_errors...)
 		}
 
-		json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, temp_table_name, &json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, struct_type, temp_table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
@@ -792,7 +802,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return temp_database_errors
 		}
 
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
 
 		if execute_errors != nil {
 			return execute_errors
@@ -904,12 +914,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, sql_command_errors
 			}
 
-			temp_database, temp_database_errors := getDatabase()
-			if temp_database_errors != nil {
-				return nil, temp_database_errors
-			}
-
-			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, new_options)
+			json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1020,7 +1025,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				}
 			}
 
-			json_array, sql_errors := temp_database.ExecuteUnsafeCommand(*sql_command, options)
+			json_array, sql_errors := executeUnsafeCommand(sql_command, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)

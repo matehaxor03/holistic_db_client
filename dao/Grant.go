@@ -17,6 +17,11 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 	struct_type := "*dao.Grant"
 	var errors []error
 
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
+
 	data := json.NewMapValue()
 	data.SetMapValue("[fields]", json.NewMapValue())
 	data.SetMapValue("[schema]", json.NewMapValue())
@@ -186,6 +191,31 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		return temp_value.(*string), nil
 	}
 
+	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+		errors := validate()
+		if errors != nil {
+			return nil, errors
+		}
+
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+		
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		} else if common.IsNil(sql_command_results) {
+			errors = append(errors, fmt.Errorf("records from db was nil"))	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return sql_command_results, nil
+	}
+
 	getSQL := func() (*string, []error) {
 		errors := validate()
 		if len(errors) > 0 {
@@ -273,12 +303,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return sql_command_errors
 		}
 
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return temp_database_errors
-		}
-
-		_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql_command, options)
+		_, execute_errors := executeUnsafeCommand(sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors

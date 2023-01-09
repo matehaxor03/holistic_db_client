@@ -30,7 +30,6 @@ type Database struct {
 	GetTables       func() ([]Table, []error)
 	GetTableNames   func() ([]string, []error)
 	ToJSONString    func(json *strings.Builder) ([]error)
-	ExecuteUnsafeCommand func(sql_command string, options *json.Map) (json.Array, []error)
 	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
@@ -658,21 +657,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 			}
 
 			return tables, nil
-		},
-		ExecuteUnsafeCommand: func(sql_command string, options *json.Map) (json.Array, []error) {			
-			var errors []error
-			results, results_errors := executeUnsafeCommand(&sql_command, options)
-			if results_errors != nil {
-				errors = append(errors, results_errors...)
-			} else if common.IsNil(results) {
-				errors = append(errors, fmt.Errorf("no results returned"))
-			}
-
-			if len(errors) > 0 {
-				return json.Array{}, errors
-			}
-
-			return *results, nil
 		},
 		GetHost: func() (Host, []error) {
 			return getHost()

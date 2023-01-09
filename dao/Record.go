@@ -359,6 +359,11 @@ type Record struct {
 func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
 	var errors []error
 	var this *Record
+	
+	SQLCommand, SQLCommand_errors := newSQLCommand()
+	if SQLCommand_errors != nil {
+		errors = append(errors, SQLCommand_errors...)
+	}
 
 	getThis := func() *Record {
 		return this
@@ -527,6 +532,36 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return ValidateData(getData(), struct_type)
 	}
 
+	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+		errors := validate()
+		if errors != nil {
+			return nil, errors
+		}
+
+		temp_table, temp_table_errors := getTable()
+		if temp_table_errors != nil {
+			return nil, temp_table_errors
+		}
+
+		temp_database, temp_database_errors := temp_table.GetDatabase()
+		if temp_database_errors != nil {
+			return nil, temp_database_errors
+		}
+		
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		if sql_command_errors != nil {
+			errors = append(errors, sql_command_errors...)
+		} else if common.IsNil(sql_command_results) {
+			errors = append(errors, fmt.Errorf("records from db was nil"))	
+		}
+
+		if len(errors) > 0 {
+			return nil, errors
+		}
+
+		return sql_command_results, nil
+	}
+
 	validate_errors := validate()
 
 	if validate_errors != nil {
@@ -585,17 +620,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 				return create_sql_errors
 			}
 
-			temp_table, temp_table_errors := getTable()
-			if temp_table_errors != nil {
-				return temp_table_errors
-			}
-
-			temp_database, temp_database_errors := temp_table.GetDatabase()
-			if temp_database_errors != nil {
-				return temp_database_errors
-			}
-
-			json_array, errors := temp_database.ExecuteUnsafeCommand(*sql, options)
+			json_array, errors := executeUnsafeCommand(sql, options)
 
 			if len(errors) > 0 {
 				return errors
@@ -669,17 +694,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 				return generate_sql_errors
 			}
 
-			temp_table, temp_table_errors := getTable()
-			if temp_table_errors != nil {
-				return temp_table_errors
-			}
-
-			temp_database, temp_database_errors := temp_table.GetDatabase()
-			if temp_database_errors != nil {
-				return temp_database_errors
-			}
-
-			_, execute_errors := temp_database.ExecuteUnsafeCommand(*sql, options)
+			_, execute_errors := executeUnsafeCommand(sql, options)
 
 			if execute_errors != nil {
 				return execute_errors
