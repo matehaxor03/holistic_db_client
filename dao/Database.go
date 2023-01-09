@@ -30,9 +30,8 @@ type Database struct {
 	GetTables       func() ([]Table, []error)
 	GetTableNames   func() ([]string, []error)
 	GetTableSchema func(table_name string) (*json.Map, []error)
-	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
+	GetAdditionalTableSchema func(table_name string) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
-	GetEmptySchema func() json.Map
 
 	GlobalGeneralLogDisable	func() []error
 	GlobalGeneralLogEnable	func() []error
@@ -42,10 +41,8 @@ type Database struct {
 
 func newDatabase(verify *validate.Validator, host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var errors []error
-	empty_table_schema := json.Map{}
 
 	table_schema_cache := newTableSchemaCache()
-
 	lock_table_additional_schema_cache := &sync.Mutex{}
 	table_additional_schema_cache := newTableAdditionalSchemaCache()
 
@@ -203,6 +200,13 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		}
 
 		return sql_command_results, nil
+	}
+
+	getOrSetAdditionalTableSchema := func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
+		// todo clone schema
+		lock_table_additional_schema_cache.Lock()
+		defer lock_table_additional_schema_cache.Unlock()
+		return table_additional_schema_cache.GetOrSet(*getDatabase(), table_name, additional_schema)
 	}
 
 	create := func() []error {
@@ -561,7 +565,58 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 		return table, nil
 	}
-	
+
+	getAdditionalTableSchema := func(table_name string) (*json.Map, []error) {
+		var errors []error
+		validate_errors := validate()
+		
+		if validate_errors != nil {
+			errors = append(errors, validate_errors...)
+			return nil, errors
+		}
+		options := json.NewMap()
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("json_output", true)
+
+		cached_additonal_schema, cached_additonal_schema_errors := getOrSetAdditionalTableSchema(table_name, nil)
+		if cached_additonal_schema_errors != nil {
+			return nil, cached_additonal_schema_errors
+		} else if !common.IsNil(cached_additonal_schema) {
+			return cached_additonal_schema, nil
+		}
+
+		temp_database_name, temp_database_name_errors := getDatabaseName()
+		if temp_database_name_errors != nil {
+			return nil, temp_database_name_errors
+		}
+		
+		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, struct_type, temp_database_name, table_name, options)
+		if sql_command_errors != nil {
+			return nil, sql_command_errors
+		}
+
+		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
+
+		if sql_errors != nil {
+			errors = append(errors, sql_errors...)
+			return nil, errors
+		}
+
+		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
+		if additional_schema_errors != nil {
+			errors = append(errors, additional_schema_errors...)
+		} else if common.IsNil(additional_schema) {
+			errors = append(errors, fmt.Errorf("additional schema is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil , errors
+		}
+
+
+		getOrSetAdditionalTableSchema(table_name, additional_schema)
+		return additional_schema, nil
+	}
 
 	x := Database{
 		Validate: func() []error {
@@ -697,11 +752,9 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		GetTableSchema: func(table_name string) (*json.Map, []error) {
 			return getTableSchema(table_name)
 		},
-		GetOrSetAdditonalSchema: func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
+		GetAdditionalTableSchema: func(table_name string) (*json.Map, []error) {
 			// todo clone schema
-			lock_table_additional_schema_cache.Lock()
-			defer lock_table_additional_schema_cache.Unlock()
-			return table_additional_schema_cache.GetOrSet(*getDatabase(), table_name, additional_schema)
+			return getAdditionalTableSchema(table_name)
 		},
 		GetOrSetReadRecords: func(sql string, records *[]Record) (*[]Record, []error) {
 			// todo clone schema
@@ -755,9 +808,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		},
 		DeleteTableByTableNameIfExists: func(table_name string) []error {
 			return deleteTableByTableNameIfExists(table_name)
-		},
-		GetEmptySchema: func() json.Map {
-			return empty_table_schema
 		},
 	}
 	setDatabase(&x)

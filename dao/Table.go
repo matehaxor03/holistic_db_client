@@ -612,64 +612,25 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	getAdditionalSchema := func() (*json.Map, []error) {
 		var errors []error
-		validate_errors := validate()
-		
-		if validate_errors != nil {
-			errors = append(errors, validate_errors...)
-			return nil, errors
+		temp_database, temp_database_errors := getDatabase()
+		if temp_database_errors != nil {
+			errors = append(errors, temp_database_errors...)
+		} else if common.IsNil(temp_database) {
+			errors = append(errors, fmt.Errorf("database is nil"))
 		}
-		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("json_output", true)
 
 		temp_table_name, temp_table_name_errors := getTableName()
 		if temp_table_name_errors != nil {
-			return nil, temp_table_name_errors
-		}
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
-
-		cached_additonal_schema, cached_additonal_schema_errors := temp_database.GetOrSetAdditonalSchema(temp_table_name, nil)
-		if cached_additonal_schema_errors != nil {
-			return nil, cached_additonal_schema_errors
-		} else if !common.IsNil(cached_additonal_schema) {
-			return cached_additonal_schema, nil
-		}
-
-		temp_database_name, temp_database_name_errors := temp_database.GetDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
-		
-		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, struct_type, temp_database_name, temp_table_name, options)
-		if sql_command_errors != nil {
-			return nil, sql_command_errors
-		}
-
-		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
-
-		if sql_errors != nil {
-			errors = append(errors, sql_errors...)
-			return nil, errors
-		}
-
-		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
-		if additional_schema_errors != nil {
-			errors = append(errors, additional_schema_errors...)
-		} else if common.IsNil(additional_schema) {
-			errors = append(errors, fmt.Errorf("additional schema is nil"))
+			errors = append(errors, temp_table_name_errors...)
+		} else if common.IsNil(temp_table_name) {
+			errors = append(errors, fmt.Errorf("table_name is nil"))
 		}
 
 		if len(errors) > 0 {
-			return nil , errors
+			return nil,  errors
 		}
 
-
-		temp_database.GetOrSetAdditonalSchema(temp_table_name, additional_schema)
-		return additional_schema, nil
+		return database.GetAdditionalTableSchema(temp_table_name)
 	}
 
 
