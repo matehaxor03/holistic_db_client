@@ -29,7 +29,6 @@ type Database struct {
 	GetTable        func(table_name string) (*Table, []error)
 	GetTables       func() ([]Table, []error)
 	GetTableNames   func() ([]string, []error)
-	ToJSONString    func(json *strings.Builder) ([]error)
 	GetOrSetSchema func(table_name string, schema *json.Map, mode string) (*json.Map, []error)
 	GetOrSetAdditonalSchema func(table_name string, additional_schema *json.Map) (*json.Map, []error)
 	GetOrSetReadRecords func(sql string, records *[]Record) (*[]Record, []error)
@@ -678,9 +677,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 				return "", nil
 			}
 			return *database_username_temp, nil
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return getData().ToJSONString(json)
 		},
 		GetOrSetSchema: func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
 			// todo clone schema

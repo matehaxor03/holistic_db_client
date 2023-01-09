@@ -1,12 +1,10 @@
 package dao
 
 import (
-	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
-
 	"fmt"
 )
 
@@ -14,7 +12,6 @@ type Credentials struct {
 	Validate     func() []error
 	GetUsername  func() (string, []error)
 	GetPassword  func() (string, []error)
-	ToJSONString func(json *strings.Builder) ([]error)
 	Clone        func() *Credentials
 }
 
@@ -103,9 +100,6 @@ func newCredentials(verify *validate.Validator, username string, password string
 		},
 		GetPassword: func() (string, []error) {
 			return getPassword()
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return getData().ToJSONString(json)
 		},
 	}, nil
 }

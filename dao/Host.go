@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -9,7 +8,6 @@ import (
 
 type Host struct {
 	Validate      func() []error
-	ToJSONString  func(json *strings.Builder) ([]error)
 	GetHostName   func() (string, []error)
 	GetPortNumber func() (string, []error)
 }
@@ -91,9 +89,6 @@ func newHost(verify *validate.Validator, host_name string, port_number string) (
 	return &Host{
 		Validate: func() []error {
 			return validate()
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return data.ToJSONString(json)
 		},
 		GetHostName: func() (string, []error) {
 			return getHostName()

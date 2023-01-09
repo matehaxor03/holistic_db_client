@@ -1,14 +1,12 @@
 package dao
 
 import (
-	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
 type DatabaseCreateOptions struct {
-	ToJSONString func(json *strings.Builder) ([]error)
 	GetCharacterSet func() (*string, []error)
 	GetCollate 		func() (*string, []error)
 	Validate     func() []error
@@ -93,9 +91,6 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 		},
 		GetCollate: func() (*string, []error) {
 			return get_collate()
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return getData().ToJSONString(json)
 		},
 		Validate: func() []error {
 			return validate()

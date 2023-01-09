@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strconv"
-	"strings"
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
@@ -35,7 +34,6 @@ type Table struct {
 	UpdateRecord          func(record *json.Map) ([]error)
 	ReadRecords         func(select_fields *json.Array, filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (Database, []error)
-	ToJSONString          func(json *strings.Builder) ([]error)
 }
 
 func newTable(verify *validate.Validator, database Database, table_name string, schema json.Map) (*Table, []error) {
@@ -1080,9 +1078,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		},
 		SetTableName: func(table_name string) []error {
 			return setTableName(table_name)
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return getData().ToJSONString(json)
 		},
 	}
 	setTable(&x)

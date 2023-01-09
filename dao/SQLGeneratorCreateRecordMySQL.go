@@ -64,11 +64,7 @@ func getCreateRecordSQLMySQL(struct_type string, table Table, record_data json.M
 			errors = append(errors, column_definition_errors...) 
 			continue
 		} else if common.IsNil(column_definition) {
-			var teeff strings.Builder
-			table_schema.ToJSONString(&teeff)
-
-
-			errors = append(errors, fmt.Errorf("schema column definition is nil %s schema has keys %s and schema: %s", valid_column, table_schema.GetKeys(), teeff.String())) 
+			errors = append(errors, fmt.Errorf("schema column definition is nil %s schema has keys %s and schema: %s", valid_column, table_schema.GetKeys())) 
 			continue
 		}
 

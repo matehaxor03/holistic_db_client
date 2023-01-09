@@ -2,7 +2,6 @@ package dao
 
 import (
 	"fmt"
-	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -25,7 +24,6 @@ type Client struct {
 	GetDatabase         func() (*Database, []error)
 	GetClientManager    func() (ClientManager, []error)
 	Validate            func() []error
-	ToJSONString        func(json *strings.Builder) []error
 	Grant            func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ValidateTableName func(table_name string) []error
 }
@@ -476,9 +474,6 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			}
 
 			return grant_obj, nil
-		},
-		ToJSONString: func(json *strings.Builder) ([]error) {
-			return data.ToJSONString(json)
 		},
 		UserExists: func(username string) (bool, []error) {
 			errors := validate()
