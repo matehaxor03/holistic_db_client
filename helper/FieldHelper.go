@@ -87,12 +87,12 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 	var result interface{}
 	if fields_map.IsNull(field) {
 		if schema_map.HasKey("default") && !schema_map.IsNull("default") {
-			result = schema_map.GetObjectForMap("default")
+			result = schema_map.GetValue("default")
 		} else {
 			result = nil
 		}
 	} else {
-		result = fields_map.GetObjectForMap(field)
+		result = fields_map.GetValue(field)
 	}
 
 	if common.IsNil(result) && strings.HasPrefix(*schema_type_value, "*") {
@@ -130,7 +130,7 @@ func GetField(struct_type string, m *json.Map, schema_type string, field_type st
 		value_to_validate_unboxed := result.(json.Value).GetObject()
 		result = value_to_validate_unboxed
 	} else {
-		errors = append(errors, fmt.Errorf("all fields should be of type json.Value was %s", type_of))
+		errors = append(errors, fmt.Errorf("expected field type: json.Value was actual: %s", type_of))
 	}
 	type_of = common.GetType(result)
 
@@ -286,7 +286,17 @@ func SetField(struct_type string, m *json.Map, schema_type string, parameter_typ
 		return errors
 	}
 
-	fields_map.SetObjectForMap(parameter, object)
+	if common.IsValue(object) {
+		if common.GetType(object) == "*json.Value" {
+			fields_map.SetValue(parameter, object.(*json.Value))
+		} else {
+			temp_value := (object.(json.Value))
+			fields_map.SetValue(parameter, &temp_value)
+		}
+	} else {
+		fields_map.SetValue(parameter, json.NewValue(object))
+	}
+
 	validated_true := false
 	schema_of_parameter_map.SetObjectForMap("validated", validated_true)
 	return nil

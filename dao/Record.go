@@ -386,6 +386,12 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}	
 
 	data := json.NewMap()
+	for _, key := range record_data.GetKeys() {
+		if !common.IsValue(record_data.GetObjectForMap(key)) {
+			record_data.SetValue(key, json.NewValue(record_data.GetObjectForMap(key)))
+		}
+	}
+
 	data.SetMap("[fields]", &record_data)
 	data.SetMap("[schema]", table_schema)
 

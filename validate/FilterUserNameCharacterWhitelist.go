@@ -10,7 +10,7 @@ import (
 type UsernameCharacterWhitelist struct {
 	GetUsernameCharacterWhitelist func() (*json.Map)
 	ValidateUsername func(username string) ([]error)
-	GetValidateUsernameFunc func() (*func(username string) []error)
+	GetValidateUsernameFunc func() (*func(string) []error)
 }
 
 func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
@@ -57,7 +57,7 @@ func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
 		ValidateUsername: func(username string) ([]error) {
 			return validateUsername(username)
 		},
-		GetValidateUsernameFunc: func() (*func(username string) []error) {
+		GetValidateUsernameFunc: func() (*func(string) []error) {
 			function := validateUsername
 			return &function
 		},

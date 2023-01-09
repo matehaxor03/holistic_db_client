@@ -10,7 +10,7 @@ import (
 type RepositoryAccountNameCharacterWhitelist struct {
 	GetRepositoryAccountNameCharacterWhitelist func() (*json.Map)
 	ValidateRepositoryAccountName func(respository_account_name string) ([]error)
-	GetValidateRepositoryAccountNameFunc func() (*func(respository_account_name string) []error)
+	GetValidateRepositoryAccountNameFunc func() (*func(string) []error)
 }
 
 func NewRepositoryAccountNameCharacterWhitelist() (*RepositoryAccountNameCharacterWhitelist) {

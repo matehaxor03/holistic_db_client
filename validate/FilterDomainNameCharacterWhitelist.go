@@ -10,7 +10,7 @@ import (
 type DomainNameCharacterWhitelist struct {
 	GetDomainNameCharacterWhitelist func() (*json.Map)
 	ValidateDomainName func(domain_name string) ([]error)
-	GetValidateDomainNameFunc func() (*func(domain_name string) []error)
+	GetValidateDomainNameFunc func() (*func(string) []error)
 }
 
 func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
@@ -62,7 +62,7 @@ func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
 		ValidateDomainName: func(domain_name string) ([]error) {
 			return validateDomainName(domain_name)
 		},
-		GetValidateDomainNameFunc: func() (*func(domain_name string) []error) {
+		GetValidateDomainNameFunc: func() (*func(string) []error) {
 			function := validateDomainName
 			return &function
 		},

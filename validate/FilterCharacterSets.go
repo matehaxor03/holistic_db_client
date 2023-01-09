@@ -9,7 +9,7 @@ import (
 type CharacterSetWordWhitelist struct {
 	GetCharacterSetWordWhitelist func() (*json.Map)
 	ValidateCharacterSet func(character_set string) ([]error)
-	GetValidateCharacterSetFunc func() (*func(character_set string) []error)
+	GetValidateCharacterSetFunc func() (*func(string) []error)
 }
 
 func NewCharacterSetWordWhitelist() (*CharacterSetWordWhitelist) {

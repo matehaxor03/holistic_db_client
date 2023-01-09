@@ -10,7 +10,7 @@ import (
 type TableNameCharacterWhitelist struct {
 	GetTableNameCharacterWhitelist func() (*json.Map)
 	ValidateTableName func(table_name string) ([]error)
-	GetValidateTableNameFunc func() (*func(table_name string) []error)
+	GetValidateTableNameFunc func() (*func(string) []error)
 }
 
 func NewTableNameCharacterWhitelist() (*TableNameCharacterWhitelist) {

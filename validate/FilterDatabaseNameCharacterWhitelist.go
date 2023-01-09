@@ -10,7 +10,7 @@ import (
 type DatabaseNameCharacterWhitelist struct {
 	GetDatabaseNameCharacterWhitelist func() (*json.Map)
 	ValidateDatabaseName func(database_name string) ([]error)
-	GetValidateDatabaseNameFunc func() (*func(database_name string) []error)
+	GetValidateDatabaseNameFunc func() (*func(string) []error)
 }
 
 func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {

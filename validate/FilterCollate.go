@@ -9,7 +9,7 @@ import (
 type CollateWordWhitelist struct {
 	GetCollateWordWhitelist func() (*json.Map)
 	ValidateCollate func(collate string) ([]error)
-	GetValidateCollateFunc func() (*func(collate string) []error)
+	GetValidateCollateFunc func() (*func(string) []error)
 }
 
 func NewCollateWordWhitelist() (*CollateWordWhitelist) {

@@ -10,8 +10,8 @@ import (
 type GrantNameWhitelist struct {
 	ValidateGrant func(frant string) ([]error)
 	GetValidateGrantFunc func() (*func(grant string) []error)
-	GetValidateDatabaseNameFilterAllFunc func() (*func(database_name_filter string) []error)
-	GetValidateTableNameFilterAllFunc func() (*func(table_name_filter string) []error)
+	GetValidateDatabaseNameFilterAllFunc func() (*func(string) []error)
+	GetValidateTableNameFilterAllFunc func() (*func(string) []error)
 }
 
 func NewGrantNameWhitelist() (*GrantNameWhitelist) {

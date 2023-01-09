@@ -11,7 +11,7 @@ import (
 type DatabaseReservedWordsBlackList struct {
 	GetDatabaseReservedWordsBlackList func() (*json.Map)
 	ValidateDatabaseReservedWord func(value string) ([]error)
-	GetValidateDatabaseReservedWordFunc func() (*func(value string) []error)
+	GetValidateDatabaseReservedWordFunc func() (*func(string) []error)
 }
 
 func NewDatabaseReservedWordsBlackList() (*DatabaseReservedWordsBlackList) {

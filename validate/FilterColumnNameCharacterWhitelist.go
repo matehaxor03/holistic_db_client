@@ -10,7 +10,7 @@ import(
 type ColumnNameCharacterWhitelist struct {
 	GetColumnNameCharacterWhitelist func() (*json.Map)
 	ValidateColumnName func(column_name string) ([]error)
-	GetValidateColumnNameFunc func() (*func(column_name string) []error)
+	GetValidateColumnNameFunc func() (*func(string) []error)
 }
 
 func NewColumnNameCharacterWhitelist() (*ColumnNameCharacterWhitelist) {

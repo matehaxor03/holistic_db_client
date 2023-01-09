@@ -10,7 +10,7 @@ import (
 type PortNumberCharacterWhitelist struct {
 	GetPortNumberCharacterWhitelist func() (*json.Map)
 	ValidatePortNumber func(port_number string) ([]error) 
-	GetValidatePortNumberFunc func() (*func(port_number string) []error)
+	GetValidatePortNumberFunc func() (*func(string) []error)
 }
 
 func NewPortNumberCharacterWhitelist() (*PortNumberCharacterWhitelist) {
