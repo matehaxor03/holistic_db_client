@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 import (
 	"fmt"
@@ -7,41 +7,36 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
+	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getCreateTableSQLMySQL(table Table, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+func GetCreateTableSQLMySQL(verify *validate.Validator, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-		return nil, nil, errors
-	} else {
-		validation_errors := table.Validate()
-		if len(validation_errors) > 0 {
-			return nil, nil, validation_errors 
-		}
-	}
-
-	if common.IsNil(table_data) {
-		errors = append(errors, fmt.Errorf("table data is nil"))
-	}
-
-	if len(errors) > 0 {
-		return nil, nil, errors
-	}
 
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 	}
 
-	temp_table_name, temp_table_name_errors := table.GetTableName()
+	temp_table_name, temp_table_name_errors := helper.GetTableName(table_data)
 	if temp_table_name_errors != nil {
-		return nil, nil, temp_table_name_errors
+		errors = append(errors, temp_table_name_errors...)
+	} else if common.IsNil(temp_table_name) {
+		errors = append(errors, fmt.Errorf("temp_table_name is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
 	}
 
 	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
+	} else if common.IsNil(temp_table_name) {
+		errors = append(errors, fmt.Errorf("table_name_escaped is nil"))
+	}
+
+	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
@@ -53,9 +48,26 @@ func getCreateTableSQLMySQL(table Table, table_data json.Map, options *json.Map)
 		sql_command += fmt.Sprintf("\\`%s\\` ", table_name_escaped)
 	}
 
-	valid_columns, valid_columns_errors := table.GetTableColumns()
+	valid_columns, valid_columns_errors := helper.GetTableColumns(table_data)
 	if valid_columns_errors != nil {
-		return nil, nil, valid_columns_errors
+		errors = append(errors, valid_columns_errors...)
+	} else if common.IsNil(valid_columns) {
+		errors = append(errors, fmt.Errorf("table_columns is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
+	}
+
+	for valid_column, _ := range *valid_columns {
+		valid_columns_errors := verify.ValidateColumnName(valid_column)
+		if valid_columns_errors != nil {
+			errors = append(errors, valid_columns_errors...)
+		}
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
 	}
 
 	schemas_map, schemas_map_errors := helper.GetSchemas(table_data, "[schema]")
@@ -81,6 +93,12 @@ func getCreateTableSQLMySQL(table Table, table_data json.Map, options *json.Map)
 		column_escaped, column_escaped_errors := common.EscapeString(column, "'")
 		if column_escaped_errors != nil {
 			errors = append(errors, column_escaped_errors)
+		} else if common.IsNil(column_escaped) {
+			errors = append(errors, fmt.Errorf("column_escaped is nil"))
+		}
+
+		if len(errors) > 0 {
+			return nil, nil, errors
 		}
 
 		if options.IsBoolTrue("use_file") {
@@ -100,6 +118,8 @@ func getCreateTableSQLMySQL(table Table, table_data json.Map, options *json.Map)
 		if type_of_errors != nil {
 			errors = append(errors, type_of_errors...)
 			continue
+		} else if common.IsNil(typeOf) {
+			errors = append(errors, fmt.Errorf("type is nil"))
 		}
 
 		switch *typeOf {

@@ -685,7 +685,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return getCreateTableSQLMySQL(*getTable(), *getData(), options)
+		return sql_generator_mysql.GetCreateTableSQLMySQL(verify, *getData(), options)
 	}
 
 	createTable := func() []error {
