@@ -257,22 +257,18 @@ func MapTableSchemaFromDB(verify *validate.Validator, struct_type string, table_
 									switch *rule_value {
 									case "domain_name":
 										domain_name_filter := json.NewMap()
-										//domain_name_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
 										domain_name_filter.SetObjectForMap("function", verify.GetValidateDatabaseNameFunc())
 										filters.AppendMap(domain_name_filter)
 									case "repository_name":
 										repostiory_name_filter := json.NewMap()
-										//repostiory_name_filter.SetObjectForMap("values", verify.GetRepositoryNameCharacterWhitelist())
 										repostiory_name_filter.SetObjectForMap("function", verify.GetValidateRepositoryNameFunc())
 										filters.AppendMap(repostiory_name_filter)
 									case "repository_account_name":
 										repository_account_name_filter := json.NewMap()
-										//repository_account_name_filter.SetObjectForMap("values", verify.GetRepositoryAccountNameCharacterWhitelist())
 										repository_account_name_filter.SetObjectForMap("function", verify.GetValidateRepositoryAccountNameFunc())
 										filters.AppendMap(repository_account_name_filter)
 									case "branch_name":
 										branch_name_filter := json.NewMap()
-										//branch_name_filter.SetObjectForMap("values", verify.GetBranchNameCharacterWhitelist())
 										branch_name_filter.SetObjectForMap("function", verify.GetValidateBranchNameFunc())
 										filters.AppendMap(branch_name_filter)
 									default:

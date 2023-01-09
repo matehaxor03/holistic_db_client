@@ -402,34 +402,8 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 			}
 
 			function_uncast := filter_map.GetObjectForMap("function")
-
-			//fmt.Println(common.GetType(*function))
-			//if function_errors != nil {
-			//	errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function had errors %s", struct_type, parameter, "filters", filter_index, fmt.Sprintf("%s", function_errors)))
-			//	return errors
-			//} 
 			
-			// todo: fix npe check 
 			function := function_uncast.(*func(string) []error)
-			//fmt.Println(function)
-			//fmt.Println(fmt.Sprintf("%s", function))
-			//fmt.Println(fmt.Sprintf("%s", common.GetType(function)))
-
-
-
-			//if common.IsNil(function) {
-			//	errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d function is nil", struct_type, parameter, "filters", filter_index))
-			//	return errors
-			//}
-
-			//if filter_map.GetType("values") == "nil" || filter_map.GetType("values") == "<nil>" {
-			//	errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s at index: %d values is nil", struct_type, parameter, "filters", filter_index))
-			//	return errors
-			//}
-
-			//filter_map.SetString("value", string_value)
-			//filter_map.SetString("data_type", &struct_type)
-			//filter_map.SetString("label", &parameter)
 
 			function_execution_errors := (*function)(*string_value)
 			if function_execution_errors != nil {

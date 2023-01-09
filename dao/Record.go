@@ -399,17 +399,12 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	map_system_fields.SetObjectForMap("[table]", table)
 	data.SetMap("[system_fields]", map_system_fields)
 
-	///
-
 	map_system_schema := json.NewMap()
 
-	// Start table
-	
 	map_table_schema := json.NewMap()
 	type_table := "dao.Table"
 	map_table_schema.SetString("type", &type_table)
 	map_system_schema.SetMap("[table]", map_table_schema)
-	// End table
 
 	data.SetMap("[system_schema]", map_system_schema)
 

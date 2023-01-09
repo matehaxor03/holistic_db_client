@@ -91,26 +91,13 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 		return nil, nil, record_foreign_key_columns_errors
 	}
 
-
-	//for primary_key_table_column, _ := range *primary_key_table_columns {
 	for _, record_primary_key_column := range *record_primary_key_columns {
 		if _, found := (*primary_key_table_columns)[record_primary_key_column]; !found {
 			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", record_primary_key_column))
 		}
-		//if primary_key_table_column == record_primary_key_column {
-		//	found_primary_key_column = true
-		//}
 	}
 
-		/*
-		if !found_primary_key_column {
-			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", primary_key_table_column))
-		}*/
-	//}
-
 	for foreign_key_table_column, _ := range *foreign_key_table_columns {
-		//found_foreign_key_column := false
-		//for _, record_foreign_key_column := range *record_foreign_key_columns {
 		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
 			record_forign_key_column_data, record_forign_key_column_data_errors := record.GetField(foreign_key_table_column, "self")
 			if record_forign_key_column_data_errors != nil {
@@ -118,29 +105,9 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 			} else if common.IsNil(record_forign_key_column_data) {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
-		//}
 		}
 	}
-		//} 
-		//}
-	
-			//foreign_key_table_column == record_foreign_key_column {
-			//	found_foreign_key_column = true
-			//}
-		//}
 
-		/*if found_foreign_key_column {
-			//record_forign_key_column_data, record_forign_key_column_data_errors := GetField(struct_type, getData(), "[schema]", "[fields]", foreign_key_table_column, "self")
-			record_forign_key_column_data, record_forign_key_column_data_errors := record.GetField(foreign_key_table_column, "self")
-			if record_forign_key_column_data_errors != nil {
-				errors = append(errors, fmt.Errorf("error: record had error getting foreign key field: %s", foreign_key_table_column))
-			} else if common.Contains(*record_columns, foreign_key_table_column) && common.IsNil(record_forign_key_column_data) {
-				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
-			}
-		}*/
-	//}
-
-	//SetField(struct_type, getData(), "[schema]", "[fields]", "last_modified_date", common.GetTimeNow())
 	set_last_modified_date_errors := record.SetLastModifiedDate(common.GetTimeNow())
 	if set_last_modified_date_errors != nil {
 		errors = append(errors, set_last_modified_date_errors...)
@@ -155,13 +122,11 @@ func getUpdateRecordSQLMySQL(struct_type string, table Table, record Record, opt
 			if set_archieved_date_errors != nil {
 				errors = append(errors, set_archieved_date_errors...)
 			}
-			//SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", common.GetTimeNow())
 		} else {
 			set_archieved_date_errors := record.SetField("archieved_date", "0000-00-00 00:00:00.000000")
 			if set_archieved_date_errors != nil {
 				errors = append(errors, set_archieved_date_errors...)
 			}
-			//SetField(struct_type, getData(), "[schema]", "[fields]", "archieved_date", "0000-00-00 00:00:00.000000")
 		}
 	}
 

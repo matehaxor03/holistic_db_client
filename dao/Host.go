@@ -5,7 +5,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
-	//"fmt"
 )
 
 type Host struct {
@@ -33,8 +32,6 @@ func newHost(verify *validate.Validator, host_name string, port_number string) (
 	map_host_name_schema.SetStringValue("type", "string")
 	map_host_name_schema_filters := json.NewArrayValue()
 	map_host_name_schema_filter := json.NewMapValue()
-	//map_host_name_schema_filter.SetObjectForMap("values", verify.GetDomainNameCharacterWhitelist())
-	//fmt.Println(verify.GetValidateDomainNameFunc())
 	map_host_name_schema_filter.SetObjectForMap("function", verify.GetValidateDomainNameFunc())
 	map_host_name_schema_filters.AppendMapValue(map_host_name_schema_filter)
 	map_host_name_schema.SetArrayValue("filters", map_host_name_schema_filters)
@@ -44,7 +41,6 @@ func newHost(verify *validate.Validator, host_name string, port_number string) (
 	map_port_number_schema.SetStringValue("type", "string")
 	map_port_number_schema_filters := json.NewArrayValue()
 	map_port_number_schema_filter := json.NewMapValue()
-	//map_port_number_schema_filter.SetObjectForMap("values", verify.GetPortNumberCharacterWhitelist())
 	map_port_number_schema_filter.SetObjectForMap("function", verify.GetValidatePortNumberFunc())
 	map_port_number_schema_filters.AppendMapValue(map_port_number_schema_filter)
 	map_port_number_schema.SetArrayValue("filters", map_port_number_schema_filters)

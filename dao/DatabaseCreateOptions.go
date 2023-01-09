@@ -3,7 +3,6 @@ package dao
 import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
-	//validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
@@ -27,8 +26,6 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 	map_system_fields.SetObjectForMap("[collate]", collate)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
-	///
-
 	map_system_schema := json.NewMapValue()
 
 
@@ -37,7 +34,6 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 
 	map_character_set_schema_filters := json.NewArrayValue()
 	map_character_set_schema_filter := json.NewMapValue()
-	//map_character_set_schema_filter.SetObjectForMap("values", verify.GetCharacterSetWordWhitelist())
 	map_character_set_schema_filter.SetObjectForMap("function",  verify.GetValidateCharacterSetFunc())
 	map_character_set_schema_filters.AppendMapValue(map_character_set_schema_filter)
 	map_character_set_schema.SetArrayValue("filters", map_character_set_schema_filters)
@@ -49,26 +45,13 @@ func newDatabaseCreateOptions(verify *validate.Validator, character_set *string,
 
 	map_collate_schema_filters := json.NewArrayValue()
 	map_collate_schema_filter := json.NewMapValue()
-	//map_collate_schema_filter.SetObjectForMap("values", verify.GetCollateWordWhitelist())
 	map_collate_schema_filter.SetObjectForMap("function",  verify.GetValidateCollateFunc())
 	map_collate_schema_filters.AppendMapValue(map_collate_schema_filter)
 	map_collate_schema.SetArrayValue("filters", map_collate_schema_filters)
 	map_system_schema.SetMapValue("[collate]", map_collate_schema)
 
-
 	data.SetMapValue("[system_schema]", map_system_schema)
 
-	/*
-	data := json.Map{
-		"[fields]": json.NewMapValue(),
-		"[schema]": json.NewMapValue(),
-		"[system_fields]":json.Map{"[character_set]":character_set, "[collate]":collate},
-		"[system_schema]":json.Map{"[character_set]":json.Map{"type":"*string",
-			"filters": json.Array{json.Map{"values": GET_CHARACTER_SETS(), "function": getWhitelistStringFunc()}}},
-			"[collate]": json.Map{"type":"*string",
-			"filters": json.Array{json.Map{"values": GET_COLLATES(), "function": getWhitelistStringFunc()}}},
-		},
-	}*/
 
 	getData := func() *json.Map {
 		return &data

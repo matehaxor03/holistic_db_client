@@ -32,8 +32,6 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 	map_system_fields.SetObjectForMap("[domain_name]", domain_name)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
-	///
-
 	map_system_schema := json.NewMapValue()
 	
 	map_client_schema := json.NewMapValue()

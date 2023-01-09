@@ -27,8 +27,6 @@ func NewDomainName(domain_name string) (*DomainName, []error) {
 	map_system_fields.SetObjectForMap("[domain_name]", domain_name)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
-	///
-
 	map_system_schema := json.NewMapValue()
 
 

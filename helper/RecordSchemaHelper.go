@@ -3,7 +3,6 @@ package helper
 import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	//"strings"
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
@@ -74,9 +73,7 @@ func GetRecordPrimaryKeyColumns(caller string, data *json.Map, table_primary_key
 		if _, found := (*table_primary_key_columns)[record_column]; found {
 			columns = append(columns, record_column)
 		}
-		/*if common.Contains(*table_primary_key_columns, record_column) {
-			columns = append(columns, record_column)
-		} */
+
 	}
 	return &columns, nil
 }
@@ -103,10 +100,6 @@ func GetRecordForeignKeyColumns(caller string, data *json.Map, table_foreign_key
 		if _, found := (*table_foreign_key_columns)[record_column]; found {
 			columns[record_column] = true
 		}
-		
-		/*if common.Contains(*table_foreign_key_columns, record_column) {
-			columns = append(columns, record_column)
-		} */
 	}
 	return &columns, nil
 }

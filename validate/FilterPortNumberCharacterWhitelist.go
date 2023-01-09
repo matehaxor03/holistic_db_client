@@ -37,8 +37,6 @@ func NewPortNumberCharacterWhitelist() (*PortNumberCharacterWhitelist) {
 			errors = append(errors, whitelist_errors...)
 		}
 
-		//todo: check port number range
-
 		if len(errors) > 0 {
 			return errors
 		}

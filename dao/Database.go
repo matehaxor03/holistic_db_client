@@ -6,7 +6,6 @@ import (
 	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	//validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
@@ -83,41 +82,31 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	map_system_fields.SetObjectForMap("[database_create_options]", database_create_options)
 	data.SetMapValue("[system_fields]", map_system_fields)
 
-	///
-
 	map_system_schema := json.NewMapValue()
 	
 	map_host_schema := json.NewMapValue()
 	map_host_schema.SetStringValue("type", "dao.Host")
 	map_system_schema.SetMapValue("[host]", map_host_schema)
 
-
-	// START database_name
 	map_database_name_schema := json.NewMapValue()
 	map_database_name_schema.SetStringValue("type", "string")
 	map_database_name_schema.SetIntValue("min_length", 2)
 	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
 	map_database_name_schema_filters := json.NewArrayValue()
 	map_database_name_schema_filter := json.NewMapValue()
-	//map_database_name_schema_filter.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 	map_database_name_schema_filter.SetObjectForMap("function",  verify.GetValidateDatabaseNameFunc())
 	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
 	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
 	map_system_schema.SetMapValue("[database_name]", map_database_name_schema)
-	// END database_name
 
-	// START database username
 	map_database_username := json.NewMapValue()
 	map_database_username.SetStringValue("type", "string")
 	array_database_username_filters := json.NewArrayValue()
 	map_database_username_filter := json.NewMapValue()
-	//map_database_username_filter.SetObjectForMap("values", verify.GetUsernameCharacterWhitelist())
 	map_database_username_filter.SetObjectForMap("function",  verify.GetValidateUsernameFunc())
 	array_database_username_filters.AppendMapValue(map_database_username_filter)
 	map_database_username.SetArrayValue("filters", array_database_username_filters)
 	map_system_schema.SetMapValue("[database_username]", map_database_username)
-	// End database username
-
 
 	map_create_options_schema := json.NewMapValue()
 	map_create_options_schema.SetStringValue("type", "*dao.DatabaseCreateOptions")

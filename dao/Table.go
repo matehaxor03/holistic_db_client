@@ -8,7 +8,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
-	//validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
@@ -84,11 +83,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 		map_table_name_schema := json.NewMap()
 		map_table_name_schema.SetStringValue("type", "string")
-		//map_table_name_schema.SetBoolValue("not_empty_string_value", true)
-		//map_table_name_schema.SetIntValue("min_length", 2)
 		map_table_name_schema_filters := json.NewArray()
 		map_table_name_schema_filter := json.NewMap()
-		//map_table_name_schema_filter.SetObjectForMap("values", verify.GetTableNameCharacterWhitelist())
 		map_table_name_schema_filter.SetObjectForMap("function",  verify.GetValidateTableNameFunc())
 		map_table_name_schema_filters.AppendMap(map_table_name_schema_filter)
 		map_table_name_schema.SetArray("filters", map_table_name_schema_filters)

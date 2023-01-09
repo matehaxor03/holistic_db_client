@@ -4,7 +4,6 @@ import (
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	//validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
@@ -25,38 +24,30 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 	map_system_fields := json.NewMapValue()
 	map_system_schema := json.NewMapValue()
 
-	// Start Database
 	map_system_fields.SetObjectForMap("[database]", database)
 	map_database_schema := json.NewMapValue()
 	map_database_schema.SetStringValue("type", "dao.Database")
 	map_system_schema.SetMapValue("[database]", map_database_schema)
-	// End Database
 
 
-	// Start User
 	map_system_fields.SetObjectForMap("[user]", user)
 	map_user_schema := json.NewMapValue()
 	map_user_schema.SetStringValue("type", "dao.User")
 	map_system_schema.SetMapValue("[user]", map_user_schema)
-	// End User
 
 
-	// Start Grant
 	map_system_fields.SetObjectForMap("[grant]", grant)
 	map_grant_schema := json.NewMapValue()
 	map_grant_schema.SetStringValue("type", "string")
 
 	map_grant_schema_filters := json.NewArrayValue()
 	map_grant_schema_filter := json.NewMapValue()
-	//map_grant_schema_filter.SetObjectForMap("values", GET_ALLOWED_GRANTS())
 	map_grant_schema_filter.SetObjectForMap("function",  verify.GetValidateGrantFunc())
 	map_grant_schema_filters.AppendMapValue(map_grant_schema_filter)
 	map_grant_schema.SetArrayValue("filters", map_grant_schema_filters)
 	map_system_schema.SetMapValue("[grant]", map_grant_schema)
-	// End Grant
 
 
-	// Start Database Filter
 	if database_filter != nil {
 		map_system_fields.SetObjectForMap("[database_filter]", database_filter)
 		map_database_filter_schema := json.NewMapValue()
@@ -66,32 +57,21 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		
 		if *database_filter == "*" {
 			map_database_filter_schema_filter1 := json.NewMapValue()
-			//map_database_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
 			map_database_filter_schema_filter1.SetObjectForMap("function",  verify.GetValidateDatabaseNameFilterAllFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter1)
 		} else {
-			//if *database_filter == "*" {
-		//	map_database_filter_schema_filter := json.NewMapValue()
-			//map_database_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
-		//	map_database_filter_schema_filter.SetObjectForMap("function",  verify.GetValidateDatabaseFilterAllFunc())
-		//	map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter)
 			map_database_filter_schema_filter2 := json.NewMapValue()
-			//map_database_filter_schema_filter1.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 			map_database_filter_schema_filter2.SetObjectForMap("function",  verify.GetValidateDatabaseNameFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter2)
 
 			map_database_filter_schema_filter3 := json.NewMapValue()
-			//map_database_filter_schema_filter2.SetObjectForMap("values", verify.GetDatabaseReservedWordsBlackList())
 			map_database_filter_schema_filter3.SetObjectForMap("function",  verify.GetValidateDatabaseReservedWordFunc())
 			map_database_filter_schema_filters.AppendMapValue(map_database_filter_schema_filter3)
 		}
 		map_database_filter_schema.SetArrayValue("filters", map_database_filter_schema_filters)
 		map_system_schema.SetMapValue("[database_filter]", map_database_filter_schema)
 	}
-	// End Database Filter
 
-
-	// Start Table Filter
 	if table_filter != nil {
 		map_system_fields.SetObjectForMap("[table_filter]", table_filter)
 		map_table_filter_schema := json.NewMapValue()
@@ -100,24 +80,20 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		map_table_filter_schema_filters := json.NewArrayValue()
 		if *table_filter == "*" {
 			map_table_filter_schema_filter := json.NewMapValue()
-			//map_table_filter_schema_filter.SetObjectForMap("values", GET_ALLOWED_FILTERS())
 			map_table_filter_schema_filter.SetObjectForMap("function",  verify.GetValidateTableNameFilterAllFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter)
 		} else {
 			map_table_filter_schema_filter1 := json.NewMapValue()
-			//map_table_filter_schema_filter1.SetObjectForMap("values", verify.GetDatabaseNameWhitelistCharacters())
 			map_table_filter_schema_filter1.SetObjectForMap("function",  verify.GetValidateTableNameFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter1)
 
 			map_table_filter_schema_filter2 := json.NewMapValue()
-			//map_table_filter_schema_filter2.SetObjectForMap("values", verify.GetDatabaseReservedWordsBlackList())
 			map_table_filter_schema_filter2.SetObjectForMap("function",  verify.GetValidateDatabaseReservedWordFunc())
 			map_table_filter_schema_filters.AppendMapValue(map_table_filter_schema_filter2)
 		}
 		map_table_filter_schema.SetArrayValue("filters", map_table_filter_schema_filters)
 		map_system_schema.SetMapValue("[table_filter]", map_table_filter_schema)
 	}
-	// End Table Filter
 
 	
 
