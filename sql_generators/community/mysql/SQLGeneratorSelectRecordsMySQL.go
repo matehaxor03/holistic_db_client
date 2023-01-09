@@ -1,4 +1,4 @@
-package dao
+package mysql
 
 import (
 	"fmt"
@@ -6,55 +6,69 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	helper "github.com/matehaxor03/holistic_db_client/helper"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
+func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-	} else {
-		validate_errors := table.Validate()
-		if errors != nil {
-			errors = append(errors, validate_errors...)
-		}
-	}
-
-	if len(errors) > 0 {
-		return nil, nil, errors
-	}
 
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 	}
 
-	table_schema, table_schema_errors := table.GetSchema()
+	table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")
 	if table_schema_errors != nil {
 		errors = append(errors, table_schema_errors...)
+	} else if common.IsNil(table_schema) {
+		errors = append(errors, fmt.Errorf("table_schema is nil"))
 	}
 
-	temp_table_name, temp_table_name_errors := table.GetTableName()
-	if temp_table_name_errors != nil {
-		errors = append(errors, temp_table_name_errors...)
+	table_columns, table_columns_errors := helper.GetTableColumns(table_data)
+	if table_columns_errors != nil {
+		errors = append(errors, table_columns_errors...)
+	} else if common.IsNil(table_columns) {
+		errors = append(errors, fmt.Errorf("table_columns is nil"))
+	}
+
+	table_name, table_name_errors := helper.GetTableName(table_data)
+	if table_name_errors != nil {
+		errors = append(errors, table_name_errors...)
+	} else if common.IsNil(table_name) {
+		errors = append(errors, fmt.Errorf("table_name is nil"))
+	}
+
+	if len(errors) > 0 {
+		return nil, nil, errors
+	}
+	
+	for table_column, _  := range *table_columns {
+		table_column_errors := verify.ValidateColumnName(table_column)
+		if table_column_errors != nil {
+			errors = append(errors, table_column_errors...)
+		}
+	}
+
+	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
+	if table_name_escaped_errors != nil {
+		errors = append(errors, table_name_escaped_errors)
 	}
 
 	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(temp_table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
+	table_name_validation_errors := verify.ValidateTableName(table_name)
+	if table_name_validation_errors != nil {
+		errors = append(errors, table_name_validation_errors...)
+	}
+
+	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
 	if filters != nil {
-		table_columns, table_columns_errors := table.GetTableColumns()
-		if table_columns_errors != nil {
-			return nil, nil, table_columns_errors
-		}
-
 		filter_columns := filters.GetKeys()
 		for _, filter_column := range filter_columns {
 			
@@ -63,7 +77,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			} 
 
 			if _, found := (*table_columns)[filter_column]; !found {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, temp_table_name, *table_columns))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, table_name_escaped, *table_columns))
 			}
 		}
 
@@ -79,7 +93,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			}
 				
 			if table_schema.IsNull(filter_column) {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, temp_table_name, table_schema.GetKeys()))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, table_name_escaped, table_schema.GetKeys()))
 				continue
 			}
 
@@ -90,7 +104,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			}
 
 			if table_schema_column.IsNull("type") {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, temp_table_name))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, table_name_escaped))
 				continue
 			}
 
@@ -104,7 +118,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 				} else if strings.Contains(table_column_type_simple, "float") && strings.Contains(filter_column_type_simple, "float"){
 
 				} else {
-					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, temp_table_name, *table_column_type))
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, table_name_escaped, *table_column_type))
 				}
 				
 
@@ -114,11 +128,6 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 	}
 
 	if select_fields != nil {
-		table_columns, table_columns_errors := table.GetTableColumns()
-		if table_columns_errors != nil {
-			return nil, nil, table_columns_errors
-		}
-
 		for _, select_field := range *(select_fields.GetValues()) {
 			select_field_value, select_field_value_errors := select_field.GetString()
 			if select_field_value_errors != nil {
@@ -133,39 +142,34 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			}
 
 			if _, found := (*table_columns)[*select_field_value]; !found {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *select_field_value, temp_table_name, *table_columns))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *select_field_value, table_name_escaped, *table_columns))
 			}			
 		}
 	}
 
 	if filters_logic  != nil {
-		table_columns, table_columns_errors := table.GetTableColumns()
-		if table_columns_errors != nil {
-			return nil, nil, table_columns_errors
-		}
-
 		temp_filters_fields := filters_logic.GetKeys()
 		for _, temp_filters_field := range temp_filters_fields {
 
 			if temp_filters_field != getCountColumnNameSQLMySQL() {
 				if _, found :=(*table_columns)[temp_filters_field]; !found {
-					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, temp_table_name, *table_columns))
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, table_name_escaped, *table_columns))
 				}
 			}
 
 			if !filters_logic.IsString(temp_filters_field) {
-				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic is not a string", temp_filters_field, temp_table_name))
+				errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic is not a string", temp_filters_field, table_name_escaped))
 			} else {
 				temp_logic_value, temp_logic_value_errors := filters_logic.GetString(temp_filters_field)
 				if temp_logic_value_errors != nil {
 					errors = append(errors, temp_logic_value_errors...)
 				} else if common.IsNil(temp_logic_value) {
-					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value had error getting string value", temp_filters_field, temp_table_name))
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value had error getting string value", temp_filters_field, table_name_escaped))
 				} else {
 					if !(*temp_logic_value != "=" ||
 						*temp_logic_value != ">" ||
 						*temp_logic_value != "<") {
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", temp_filters_field, temp_table_name, *temp_logic_value))
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", temp_filters_field, table_name_escaped, *temp_logic_value))
 					} 
 				}
 			}
@@ -174,11 +178,6 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 
 	order_by_clause := ""
 	if !common.IsNil(order_by) && len(*(order_by.GetValues())) > 0 {
-		table_columns, table_columns_errors := table.GetTableColumns()
-		if table_columns_errors != nil {
-			return nil, nil, table_columns_errors
-		}
-
 		order_by_columns := len(*(order_by.GetValues()))
 		for order_by_index, order_by_field := range *(order_by.GetValues()) {
 
@@ -206,7 +205,7 @@ func getSelectRecordsSQLMySQL(verify *validate.Validator, table Table, select_fi
 			
 			if order_by_column_name != getCountColumnNameSQLMySQL() {
 				if _, found := (*table_columns)[order_by_column_name]; !found {
-					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, temp_table_name, *table_columns))
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, table_name_escaped, *table_columns))
 				}
 			}
 
