@@ -1,10 +1,10 @@
 package mysql
 
 import (
-	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
+	"strings"
 )
 
 func GetDatabaseExistsSQL(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
@@ -27,13 +27,19 @@ func GetDatabaseExistsSQL(verify *validate.Validator, database_name string, opti
 		return nil, nil, errors
 	}
 
-	sql_command := "USE "
+	var sql_command strings.Builder
+	sql_command.WriteString("USE ")
 	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
+		sql_command.WriteString("`")
+		sql_command.WriteString(database_name_escaped)
+		sql_command.WriteString("`;")
 	} else {
-		sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
+		sql_command.WriteString("\\`")
+		sql_command.WriteString(database_name_escaped)
+		sql_command.WriteString("\\`;")
 	}
 
-	return &sql_command, options, nil
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 
