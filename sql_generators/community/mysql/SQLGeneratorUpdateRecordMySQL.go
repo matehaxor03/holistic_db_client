@@ -15,15 +15,15 @@ import (
 func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	table_name_validation_errors := verify.ValidateTableName(table_name)
-	if table_name_validation_errors != nil {
-		errors = append(errors, table_name_validation_errors...)
-	}
-	
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
+	}
+
+	table_name_validation_errors := verify.ValidateTableName(table_name)
+	if table_name_validation_errors != nil {
+		errors = append(errors, table_name_validation_errors...)
 	}
 
 	if len(errors) > 0 {

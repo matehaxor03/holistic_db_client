@@ -19,11 +19,6 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		return nil, nil, table_validation_errors
 	}
 
-	if common.IsNil(record_data) {
-		errors = append(errors, fmt.Errorf("record_data is nil"))
-		return nil, nil, errors
-	}
-
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)

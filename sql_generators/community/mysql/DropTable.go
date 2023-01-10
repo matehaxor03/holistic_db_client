@@ -15,11 +15,6 @@ func GetDropTableSQL(verify *validate.Validator, table_name string, drop_table_i
 		options.SetBoolValue("use_file", false)
 	}
 
-	if common.IsNil(table_name) {
-		errors = append(errors, fmt.Errorf("table_name is nil"))
-		return nil, nil, errors
-	}
-
 	validation_errors := verify.ValidateTableName(table_name)
 	if validation_errors != nil {
 		return nil, nil, validation_errors

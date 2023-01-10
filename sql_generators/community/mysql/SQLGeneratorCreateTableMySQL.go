@@ -29,6 +29,11 @@ func GetCreateTableSQLMySQL(verify *validate.Validator, table_data json.Map, opt
 		return nil, nil, errors
 	}
 
+	validate_table_name_errors := verify.ValidateTableName(temp_table_name)
+	if validate_table_name_errors != nil  {
+		errors = append(errors, validate_table_name_errors...)
+	}
+
 	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
