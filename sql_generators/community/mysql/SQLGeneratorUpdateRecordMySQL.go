@@ -41,7 +41,7 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		return nil, nil, record_columns_errors
 	}
 
-	for _, record_column  := range *record_columns {
+	for record_column, _   := range *record_columns {
 		if strings.HasPrefix(record_column, "credential") {
 			options.SetBoolValue("use_file", true)
 		}

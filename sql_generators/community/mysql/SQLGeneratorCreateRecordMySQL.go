@@ -109,7 +109,8 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 	}
 
 	sql_command += " ("
-	for index, record_column := range *record_columns {
+	index := 0
+	for record_column, _ := range *record_columns {
 		if _, found := (valid_columns)[record_column]; !found {
 			errors = append(errors, fmt.Errorf("column does not exist"))
 			continue
@@ -138,10 +139,12 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		if index < (len(*record_columns) - 1) {
 			sql_command += ", "
 		}
+		index++
 	}
 
 	sql_command += ") VALUES ("
-	for index, record_column := range *record_columns {
+	index = 0
+	for record_column, _  := range *record_columns {
 		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", record_column, "self")
 		if paramter_errors != nil {
 			errors = append(errors, paramter_errors...)
@@ -332,6 +335,7 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		if index < (len(*record_columns) - 1) {
 			sql_command += ", "
 		}
+		index++
 	}
 	sql_command += ");"
 

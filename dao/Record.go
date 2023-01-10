@@ -346,7 +346,7 @@ type Record struct {
 	SetField func(field string, value interface{}) ([]error)
 	GetUpdateSQL func() (*string, []error)
 	GetCreateSQL func() (*string, *json.Map, []error)
-	GetRecordColumns func() (*[]string, []error)
+	GetRecordColumns func() (*map[string]bool, []error)
 	GetArchieved func() (*bool, []error)
 	GetArchievedDate func() (*time.Time, []error)
 	GetNonPrimaryKeyColumnsUpdate func() (*map[string]bool, []error)
@@ -435,7 +435,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return data
 	}
 
-	getRecordColumns := func() (*[]string, []error) {
+	getRecordColumns := func() (*map[string]bool, []error) {
 		return helper.GetRecordColumns(*getData())
 	}
 
@@ -1051,7 +1051,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			}
 			return fields_map, nil
 		},
-		GetRecordColumns: func() (*[]string, []error) {
+		GetRecordColumns: func() (*map[string]bool, []error) {
 			return getRecordColumns()
 		},
 		GetArchieved: func() (*bool, []error) {

@@ -6,12 +6,16 @@ import (
 	common "github.com/matehaxor03/holistic_common/common"
 )
 
-func GetRecordColumns(data json.Map) (*[]string, []error) {
+func GetRecordColumns(data json.Map) (*map[string]bool, []error) {
 	fields_map, fields_map_errors := GetFields(data, "[fields]")
 	if fields_map_errors != nil {
 		return nil, fields_map_errors
 	}
-	columns := fields_map.GetKeys()
+	columns_from_schema := fields_map.GetKeys()
+	columns := make(map[string]bool)
+	for _, column := range columns_from_schema {
+		columns[column] = true
+	}
 	return &columns, nil
 }
 
@@ -34,7 +38,7 @@ func GetRecordNonPrimaryKeyColumnsUpdate(data json.Map, table_non_primary_key_co
 	}
 
 	columns := make(map[string]bool)
-	for _, record_column := range *record_columns {
+	for record_column, _  := range *record_columns {
 		if record_column == "created_date" {
 			continue
 		}
@@ -69,7 +73,7 @@ func GetRecordPrimaryKeyColumns(data json.Map, table_primary_key_columns *map[st
 	}
 
 	var columns []string
-	for _, record_column := range *record_columns {
+	for record_column, _  := range *record_columns {
 		if _, found := (*table_primary_key_columns)[record_column]; found {
 			columns = append(columns, record_column)
 		}
@@ -96,7 +100,7 @@ func GetRecordForeignKeyColumns(data json.Map, table_foreign_key_columns *map[st
 	}
 
 	columns := make(map[string]bool)
-	for _, record_column := range *record_columns {
+	for record_column, _  := range *record_columns {
 		if _, found := (*table_foreign_key_columns)[record_column]; found {
 			columns[record_column] = true
 		}
