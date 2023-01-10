@@ -633,8 +633,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 
 	getSchema := func() (*json.Map, []error) {
+		if schema_from_database != nil {
+			return schema_from_database, nil
+		}
+
 		var errors []error
-	
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
@@ -673,6 +676,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 		setData(new_data)
+		schema_from_database = temp_schema
 		return temp_schema, nil
 	}
 
