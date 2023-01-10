@@ -1,11 +1,9 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
-	"strings"
 )
 
 type DatabaseReservedWordsBlackList struct {
@@ -27,12 +25,7 @@ func NewDatabaseReservedWordsBlackList() (*DatabaseReservedWordsBlackList) {
 			errors = append(errors, fmt.Errorf("value is empty"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", strings.ToUpper(value))
-		parameters.SetObjectForMap("values", &database_reserved_words)
-		parameters.SetStringValue("label", "Validator.ValidateDatabaseReservedWord")
-		parameters.SetStringValue("data_type", "database.cross_cutting_field_value")
-		whitelist_errors := validation_functions.BlackListStringToUpper(parameters)
+		whitelist_errors := validation_functions.BlackListStringToUpper(database_reserved_words, value, "Validator.ValidateDatabaseReservedWord", "database.cross_cutting_field_value" )
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

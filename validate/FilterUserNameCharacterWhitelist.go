@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -30,12 +29,7 @@ func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("username is too short must be at least 2 characters"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", username)
-		parameters.SetObjectForMap("values", &valid_username_characters)
-		parameters.SetStringValue("label", "Validator.ValidateUsername")
-		parameters.SetStringValue("data_type", "dao.User.username")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(valid_username_characters, username, "Validator.ValidateUsername", "dao.User.username")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

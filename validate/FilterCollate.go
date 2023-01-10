@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
@@ -20,12 +19,7 @@ func NewCollateWordWhitelist() (*CollateWordWhitelist) {
 			return nil
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", collate)
-		parameters.SetObjectForMap("values", &valid_words)
-		parameters.SetStringValue("label", "Validator.ValidateCollate")
-		parameters.SetStringValue("data_type", "database.collate")
-		whitelist_errors := validation_functions.WhiteListString(parameters)
+		whitelist_errors := validation_functions.WhiteListString(valid_words, collate, "Validator.ValidateCollate", "database.collate")
 		if whitelist_errors != nil {
 			return whitelist_errors
 		}

@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -26,12 +25,7 @@ func NewBranchNameCharacterWhitelist() (*BranchNameCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("branch_name is empty"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", branch_name)
-		parameters.SetObjectForMap("values", &valid_characters)
-		parameters.SetStringValue("label", "Validator.ValidateBranchName")
-		parameters.SetStringValue("data_type", "git.branch_name")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(valid_characters, branch_name, "Validator.ValidateBranchName", "git.branch_name")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

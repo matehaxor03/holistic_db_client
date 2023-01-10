@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -26,12 +25,7 @@ func NewRepositoryNameCharacterWhitelist() (*RepositoryNameCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("respository_name is empty"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", respository_name)
-		parameters.SetObjectForMap("values", &valid_characters)
-		parameters.SetStringValue("label", "Validator.ValidateRepostoryName")
-		parameters.SetStringValue("data_type", "git.repository_name")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(valid_characters, respository_name,  "Validator.ValidateRepostoryName", "git.repository_name")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

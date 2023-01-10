@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -23,12 +22,7 @@ func NewGrantNameWhitelist() (*GrantNameWhitelist) {
 			return nil
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", grant)
-		parameters.SetObjectForMap("values", &valid_words)
-		parameters.SetStringValue("label", "Validator.validateGrant")
-		parameters.SetStringValue("data_type", "dao.Grant.grant")
-		whitelist_errors := validation_functions.WhiteListString(parameters)
+		whitelist_errors := validation_functions.WhiteListString(valid_words, grant, "Validator.validateGrant", "dao.Grant.grant")
 		if whitelist_errors != nil {
 			return whitelist_errors
 		}

@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 )
@@ -20,12 +19,7 @@ func NewCharacterSetWordWhitelist() (*CharacterSetWordWhitelist) {
 			return nil
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", character_set)
-		parameters.SetObjectForMap("values", &valid_words)
-		parameters.SetStringValue("label", "Validator.ValidateCharacterSet")
-		parameters.SetStringValue("data_type", "database.character_set")
-		whitelist_errors := validation_functions.WhiteListString(parameters)
+		whitelist_errors := validation_functions.WhiteListString(valid_words, character_set, "Validator.ValidateCharacterSet", "database.character_set")
 		if whitelist_errors != nil {
 			return whitelist_errors
 		}

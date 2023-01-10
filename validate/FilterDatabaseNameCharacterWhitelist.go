@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -30,12 +29,7 @@ func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("database_name is too short must be at least 2 characters"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", database_name)
-		parameters.SetObjectForMap("values", &database_name_character_whitelist)
-		parameters.SetStringValue("label", "Validator.ValidateDatabaseName")
-		parameters.SetStringValue("data_type", "dao.Database.database_name")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(database_name_character_whitelist, database_name, "Validator.ValidateDatabaseName",  "dao.Database.database_name")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

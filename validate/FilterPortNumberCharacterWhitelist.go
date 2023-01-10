@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -26,12 +25,7 @@ func NewPortNumberCharacterWhitelist() (*PortNumberCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("port_number is empty"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", port_number)
-		parameters.SetObjectForMap("values", &valid_characters)
-		parameters.SetStringValue("label", "Validator.ValidatePortNumber")
-		parameters.SetStringValue("data_type", "host.port_number")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(valid_characters, port_number, "Validator.ValidatePortNumber", "host.port_number")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}

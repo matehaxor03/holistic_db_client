@@ -1,7 +1,6 @@
 package validate
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
 	validation_functions "github.com/matehaxor03/holistic_db_client/validation_functions"
 	"fmt"
@@ -27,19 +26,13 @@ func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
 			errors = append(errors, fmt.Errorf("domain_name is empty"))
 		}
 
-		parameters := json.NewMapValue()
-		parameters.SetStringValue("value", domain_name)
-		parameters.SetObjectForMap("values", &valid_characters)
-		parameters.SetStringValue("label", "Validator.ValidateDomainName")
-		parameters.SetStringValue("data_type", "host.domain_name")
-		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
+		whitelist_errors := validation_functions.WhitelistCharacters(valid_characters, domain_name,  "Validator.ValidateDomainName",  "host.domain_name")
 		if whitelist_errors != nil {
 			errors = append(errors, whitelist_errors...)
 		}
 
 		
-		parameters.SetObjectForMap("values", &valid_words)
-		whitelist_word_errors := validation_functions.WhiteListString(parameters)
+		whitelist_word_errors := validation_functions.WhiteListString(valid_words, domain_name,  "Validator.ValidateDomainName",  "host.domain_name")
 		if whitelist_word_errors != nil {
 			errors = append(errors, whitelist_word_errors...)
 		}
