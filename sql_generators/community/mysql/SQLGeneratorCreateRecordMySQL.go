@@ -86,24 +86,24 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		return nil, nil, errors
 	}
 
-	
-	sql_command := "INSERT INTO "
-	
-	if options.IsBoolTrue("use_file") {
-		sql_command += "`"
-	} else {
-		sql_command += "\\`"
-	}
-
-	sql_command += table_name_escaped
+	var sql_command strings.Builder
+	sql_command.WriteString("INSERT INTO ")
 	
 	if options.IsBoolTrue("use_file") {
-		sql_command += "`"
+		sql_command.WriteString("`")
 	} else {
-		sql_command += "\\`"
+		sql_command.WriteString("\\`")
 	}
 
-	sql_command += " ("
+	sql_command.WriteString(table_name_escaped)
+	
+	if options.IsBoolTrue("use_file") {
+		sql_command.WriteString( "`")
+	} else {
+		sql_command.WriteString("\\`")
+	}
+
+	sql_command.WriteString(" (")
 	index := 0
 	for record_column, _ := range *record_columns {
 		if _, found := (valid_columns)[record_column]; !found {
@@ -118,26 +118,26 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		}
 		
 		if options.IsBoolTrue("use_file") {
-			sql_command += "`"
+			sql_command.WriteString("`")
 		} else {
-			sql_command += "\\`"
+			sql_command.WriteString("\\`")
 		}
 
-		sql_command += record_column_escaped
+		sql_command.WriteString(record_column_escaped)
 		
 		if options.IsBoolTrue("use_file") {
-			sql_command += "`"
+			sql_command.WriteString("`")
 		} else {
-			sql_command += "\\`"
+			sql_command.WriteString("\\`")
 		}
 
 		if index < (len(*record_columns) - 1) {
-			sql_command += ", "
+			sql_command.WriteString(", ")
 		}
 		index++
 	}
 
-	sql_command += ") VALUES ("
+	sql_command.WriteString(") VALUES (")
 	index = 0
 	for record_column, _  := range *record_columns {
 		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", record_column, "self")
@@ -159,82 +159,82 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 		switch rep {
 		case "*uint64":
 			value := column_data.(*uint64)
-			sql_command += strconv.FormatUint(*value, 10)
+			sql_command.WriteString(strconv.FormatUint(*value, 10))
 		case "uint64":
 			value := column_data.(uint64)
-			sql_command += strconv.FormatUint(value, 10)
+			sql_command.WriteString(strconv.FormatUint(value, 10))
 		case "*int64":
 			value := column_data.(*int64)
-			sql_command += strconv.FormatInt(*value, 10)
+			sql_command.WriteString(strconv.FormatInt(*value, 10))
 		case "int64":
 			value := column_data.(int64)
-			sql_command += strconv.FormatInt(value, 10)
+			sql_command.WriteString(strconv.FormatInt(value, 10))
 		case "*uint32":
 			value := column_data.(*uint32)
-			sql_command += strconv.FormatUint(uint64(*value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 		case "uint32":
 			value := column_data.(uint32)
-			sql_command += strconv.FormatUint(uint64(value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 		case "*int32":
 			value := column_data.(*int32)
-			sql_command += strconv.FormatInt(int64(*value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 		case "int32":
 			value := column_data.(int32)
-			sql_command += strconv.FormatInt(int64(value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 		case "*uint16":
 			value := column_data.(*uint16)
-			sql_command += strconv.FormatUint(uint64(*value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 		case "uint16":
 			value := column_data.(uint16)
-			sql_command += strconv.FormatUint(uint64(value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 		case "*int16":
 			value := column_data.(*int16)
-			sql_command += strconv.FormatInt(int64(*value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 		case "int16":
 			value := column_data.(int16)
-			sql_command += strconv.FormatInt(int64(value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 		case "*uint8":
 			value := column_data.(*uint8)
-			sql_command += strconv.FormatUint(uint64(*value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 		case "uint8":
 			value := column_data.(uint8)
-			sql_command += strconv.FormatUint(uint64(value), 10)
+			sql_command.WriteString(strconv.FormatUint(uint64(value), 10))
 		case "*int8":
 			value := column_data.(*int8)
-			sql_command += strconv.FormatInt(int64(*value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 		case "int8":
 			value := column_data.(int8)
-			sql_command += strconv.FormatInt(int64(value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 		case "*int":
 			value := column_data.(*int)
-			sql_command += strconv.FormatInt(int64(*value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 		case "int":
 			value := column_data.(int)
-			sql_command += strconv.FormatInt(int64(value), 10)
+			sql_command.WriteString(strconv.FormatInt(int64(value), 10))
 		case "float32":
 			float_32_string_value := fmt.Sprintf("%f", column_data.(float32))
+			sql_command.WriteString(float_32_string_value)
 			if !strings.Contains(float_32_string_value, ".") {
-				float_32_string_value += ".0"
+				sql_command.WriteString(".0")
 			}
-			sql_command += float_32_string_value
 		case "*float32":
 			float_32_string_value := fmt.Sprintf("%f", *(column_data.(*float32)))
+			sql_command.WriteString(float_32_string_value)
 			if !strings.Contains(float_32_string_value, ".") {
-				float_32_string_value += ".0"
+				sql_command.WriteString(".0")
 			}
-			sql_command += float_32_string_value
 		case "float64":
 			float_64_string_value := fmt.Sprintf("%f", column_data.(float64))
+			sql_command.WriteString(float_64_string_value)
 			if !strings.Contains(float_64_string_value, ".") {
-				float_64_string_value += ".0"
+				sql_command.WriteString(".0")
 			}
-			sql_command += float_64_string_value
 		case "*float64":
 			float_64_string_value := fmt.Sprintf("%f", *(column_data.(*float64)))
+			sql_command.WriteString(float_64_string_value)
 			if !strings.Contains(float_64_string_value, ".") {
-				float_64_string_value += ".0"
+				sql_command.WriteString(".0")
 			}
-			sql_command += float_64_string_value
 		case "*time.Time":
 			value := column_data.(*time.Time)
 			decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
@@ -255,9 +255,13 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 					}
 
 					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						sql_command.WriteString("'")
+						sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
+						sql_command.WriteString("'")
 					}
 				}
 			}
@@ -281,9 +285,13 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 					}
 
 					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
 					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+						sql_command.WriteString("'")
+						sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
+						sql_command.WriteString("'")
 					}
 				}
 			}
@@ -294,9 +302,13 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 			}
 
 			if options.IsBoolTrue("use_file") {
-				sql_command += "'" + value_escaped + "'"
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
 			} else {
-				sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				sql_command.WriteString("'")
+				sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
+				sql_command.WriteString("'")
 			}
 
 		case "*string":
@@ -306,37 +318,42 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 			}
 
 			if options.IsBoolTrue("use_file") {
-				sql_command += "'" + value_escaped + "'"
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
 			} else {
-				sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
+				sql_command.WriteString("'")
+				sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
+				sql_command.WriteString("'")
 			}
 
 		case "bool":
 			if column_data.(bool) {
-				sql_command += "1"
+				sql_command.WriteString("1")
 			} else {
-				sql_command += "0"
+				sql_command.WriteString("0")
 			}
 		case "*bool":
 			if *(column_data.(*bool)) {
-				sql_command += "1"
+				sql_command.WriteString("1")
 			} else {
-				sql_command += "0"
+				sql_command.WriteString("0")
 			}
 		default:
 			errors = append(errors, fmt.Errorf("error: Record.getCreateSQL type: %s not supported for table please implement", rep))
 		}
 
 		if index < (len(*record_columns) - 1) {
-			sql_command += ", "
+			sql_command.WriteString(", ")
 		}
 		index++
 	}
-	sql_command += ");"
+	sql_command.WriteString(");")
 
 	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
-	return &sql_command, options, nil
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
