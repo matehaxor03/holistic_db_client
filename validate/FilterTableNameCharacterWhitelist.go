@@ -8,7 +8,6 @@ import (
 )
 
 type TableNameCharacterWhitelist struct {
-	GetTableNameCharacterWhitelist func() (*json.Map)
 	ValidateTableName func(table_name string) ([]error)
 	GetValidateTableNameFunc func() (*func(string) []error)
 }
@@ -50,10 +49,6 @@ func NewTableNameCharacterWhitelist() (*TableNameCharacterWhitelist) {
 	}
 
 	x := TableNameCharacterWhitelist {
-		GetTableNameCharacterWhitelist: func() (*json.Map) {
-			v := validation_constants.GetMySQLTableNameWhitelistCharacters()
-			return &v
-		},
 		ValidateTableName: func(table_name string) ([]error) {
 			return validateTableName(table_name)
 		},

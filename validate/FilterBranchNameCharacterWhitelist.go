@@ -8,7 +8,6 @@ import (
 )
 
 type BranchNameCharacterWhitelist struct {
-	GetBranchNameCharacterWhitelist func() (*json.Map)
 	ValidateBranchName func(branch_name string) ([]error)
 	GetValidateBranchNameFunc func() (*func(string) []error)
 }
@@ -46,10 +45,6 @@ func NewBranchNameCharacterWhitelist() (*BranchNameCharacterWhitelist) {
 	}
 
 	x := BranchNameCharacterWhitelist {
-		GetBranchNameCharacterWhitelist: func() (*json.Map) {
-			v := validation_constants.GetValidBranchNameCharacters()
-			return &v
-		},
 		ValidateBranchName: func(branch_name string) ([]error) {
 			return validateBranchName(branch_name)
 		},

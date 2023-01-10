@@ -7,7 +7,6 @@ import (
 )
 
 type CollateWordWhitelist struct {
-	GetCollateWordWhitelist func() (*json.Map)
 	ValidateCollate func(collate string) ([]error)
 	GetValidateCollateFunc func() (*func(string) []error)
 }
@@ -36,10 +35,6 @@ func NewCollateWordWhitelist() (*CollateWordWhitelist) {
 	}
 
 	x := CollateWordWhitelist {
-		GetCollateWordWhitelist: func() (*json.Map) {
-			v := validation_constants.GET_COLLATES()
-			return &v
-		},
 		ValidateCollate: func(collate string) ([]error) {
 			return validateCollate(collate)
 		},

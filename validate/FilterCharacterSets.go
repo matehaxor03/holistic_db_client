@@ -7,7 +7,6 @@ import (
 )
 
 type CharacterSetWordWhitelist struct {
-	GetCharacterSetWordWhitelist func() (*json.Map)
 	ValidateCharacterSet func(character_set string) ([]error)
 	GetValidateCharacterSetFunc func() (*func(string) []error)
 }
@@ -36,10 +35,6 @@ func NewCharacterSetWordWhitelist() (*CharacterSetWordWhitelist) {
 	}
 
 	x := CharacterSetWordWhitelist {
-		GetCharacterSetWordWhitelist: func() (*json.Map) {
-			v := validation_constants.GET_CHARACTER_SETS()
-			return &v
-		},
 		ValidateCharacterSet: func(character_set string) ([]error) {
 			return validateCharacterSet(character_set)
 		},

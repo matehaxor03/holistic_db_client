@@ -8,7 +8,6 @@ import (
 )
 
 type DatabaseNameCharacterWhitelist struct {
-	GetDatabaseNameCharacterWhitelist func() (*json.Map)
 	ValidateDatabaseName func(database_name string) ([]error)
 	GetValidateDatabaseNameFunc func() (*func(string) []error)
 }
@@ -50,10 +49,6 @@ func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {
 	}
 
 	x := DatabaseNameCharacterWhitelist {
-		GetDatabaseNameCharacterWhitelist: func() (*json.Map) {
-			v := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
-			return &v
-		},
 		ValidateDatabaseName: func(database_name string) ([]error) {
 			return validateDatabaseName(database_name)
 		},

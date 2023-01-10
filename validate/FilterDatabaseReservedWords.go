@@ -9,7 +9,6 @@ import (
 )
 
 type DatabaseReservedWordsBlackList struct {
-	GetDatabaseReservedWordsBlackList func() (*json.Map)
 	ValidateDatabaseReservedWord func(value string) ([]error)
 	GetValidateDatabaseReservedWordFunc func() (*func(string) []error)
 }
@@ -47,10 +46,6 @@ func NewDatabaseReservedWordsBlackList() (*DatabaseReservedWordsBlackList) {
 	}
 
 	x := DatabaseReservedWordsBlackList{
-		GetDatabaseReservedWordsBlackList: func() (*json.Map) {
-			v := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
-			return &v
-		},
 		ValidateDatabaseReservedWord: func(value string) ([]error) {
 			return validateDatabaseReservedWord(value)
 		},

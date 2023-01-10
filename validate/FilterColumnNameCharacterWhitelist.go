@@ -8,7 +8,6 @@ import(
 )
 
 type ColumnNameCharacterWhitelist struct {
-	GetColumnNameCharacterWhitelist func() (*json.Map)
 	ValidateColumnName func(column_name string) ([]error)
 	GetValidateColumnNameFunc func() (*func(string) []error)
 }
@@ -52,10 +51,6 @@ func NewColumnNameCharacterWhitelist() (*ColumnNameCharacterWhitelist) {
 
 
 	x := ColumnNameCharacterWhitelist {
-		GetColumnNameCharacterWhitelist: func() (*json.Map) {
-			v := validation_constants.GetMySQLColumnNameWhitelistCharacters()
-			return &v
-		},
 		ValidateColumnName: func(column_name string) ([]error) {
 			return validateColumnName(column_name)
 		},

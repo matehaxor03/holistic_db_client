@@ -8,7 +8,6 @@ import (
 )
 
 type UsernameCharacterWhitelist struct {
-	GetUsernameCharacterWhitelist func() (*json.Map)
 	ValidateUsername func(username string) ([]error)
 	GetValidateUsernameFunc func() (*func(string) []error)
 }
@@ -50,10 +49,6 @@ func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
 	}
 
 	x := UsernameCharacterWhitelist {
-		GetUsernameCharacterWhitelist: func() (*json.Map) {
-			v := validation_constants.GetValidUsernameCharacters()
-			return &v
-		},
 		ValidateUsername: func(username string) ([]error) {
 			return validateUsername(username)
 		},
