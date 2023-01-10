@@ -1,13 +1,15 @@
 package mysql
 
 import (
-	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
+	"strings"
 )
 
 func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, character_set *string, collate *string,  options *json.Map) (*string, *json.Map, []error) {
+	var sql_command strings.Builder
+	
 	var errors []error
 	if common.IsNil(options) {
 		options = json.NewMap()
@@ -27,11 +29,15 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 		return nil, nil, errors
 	}
 
-	sql_command := "CREATE DATABASE "
+	sql_command.WriteString("CREATE DATABASE ")
 	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s`", database_name_escaped)
+		sql_command.WriteString("`")
+		sql_command.WriteString(database_name_escaped)
+		sql_command.WriteString("`")
 	} else {
-		sql_command += fmt.Sprintf("\\`%s\\`", database_name_escaped)
+		sql_command.WriteString("\\`")
+		sql_command.WriteString(database_name_escaped)
+		sql_command.WriteString("\\`")
 	}
 
 	if character_set != nil {
@@ -39,7 +45,8 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 		if character_set_errors != nil {
 			return nil, nil, character_set_errors
 		}
-		sql_command += fmt.Sprintf(" CHARACTER SET %s", *character_set)
+		sql_command.WriteString(" CHARACTER SET ")
+		sql_command.WriteString(*character_set)
 	}
 
 	if collate != nil {
@@ -47,13 +54,15 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 		if collate_errors != nil {
 			return nil, nil, collate_errors
 		} 
-		sql_command += fmt.Sprintf(" COLLATE %s", *collate)
+		sql_command.WriteString(" COLLATE ")
+		sql_command.WriteString(*collate)
 	}
-	sql_command += ";"
+	sql_command.WriteString(";")
 
 	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
-	return &sql_command, options, nil
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
