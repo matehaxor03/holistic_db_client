@@ -521,7 +521,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("use_file", false)
 
 		getOrSetTableSchema(table_name, nil, "delete")
-		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQL(verify, table_name, true, options)
+		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableSQLIfExists(verify, table_name, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors

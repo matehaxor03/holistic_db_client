@@ -363,7 +363,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -395,7 +395,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, true, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQLIfExists(verify, temp_table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
