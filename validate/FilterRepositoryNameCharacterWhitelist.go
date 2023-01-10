@@ -28,7 +28,7 @@ func NewRepositoryNameCharacterWhitelist() (*RepositoryNameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", respository_name)
-		parameters.SetMap("values", &valid_characters)
+		parameters.SetObjectForMap("values", &valid_characters)
 		parameters.SetStringValue("label", "Validator.ValidateRepostoryName")
 		parameters.SetStringValue("data_type", "git.repository_name")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

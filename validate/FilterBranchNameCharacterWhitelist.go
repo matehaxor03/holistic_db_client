@@ -28,7 +28,7 @@ func NewBranchNameCharacterWhitelist() (*BranchNameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", branch_name)
-		parameters.SetMap("values", &valid_characters)
+		parameters.SetObjectForMap("values", &valid_characters)
 		parameters.SetStringValue("label", "Validator.ValidateBranchName")
 		parameters.SetStringValue("data_type", "git.branch_name")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

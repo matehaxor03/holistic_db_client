@@ -1,75 +1,71 @@
 package validation_constants
 
-import (
-    json "github.com/matehaxor03/holistic_json/json"
-)
-
-func GetMySQLColumnNameWhitelistCharacters() json.Map {
-    valid_chars := json.NewMapValue()
-	valid_chars.SetNil("0")
-	valid_chars.SetNil("1")
-	valid_chars.SetNil("2")
-	valid_chars.SetNil("3")
-	valid_chars.SetNil("4")
-	valid_chars.SetNil("5")
-	valid_chars.SetNil("6")
-	valid_chars.SetNil("7")
-	valid_chars.SetNil("8")
-	valid_chars.SetNil("9")
-	valid_chars.SetNil("A")
-	valid_chars.SetNil("B")
-	valid_chars.SetNil("C")
-	valid_chars.SetNil("D")
-	valid_chars.SetNil("E")
-	valid_chars.SetNil("F")
-	valid_chars.SetNil("G")
-	valid_chars.SetNil("H")
-	valid_chars.SetNil("I")
-	valid_chars.SetNil("J")
-	valid_chars.SetNil("K")
-	valid_chars.SetNil("L")
-	valid_chars.SetNil("M")
-	valid_chars.SetNil("N")
-	valid_chars.SetNil("O")
-	valid_chars.SetNil("P")
-	valid_chars.SetNil("Q")
-	valid_chars.SetNil("R")
-	valid_chars.SetNil("S")
-	valid_chars.SetNil("T")
-	valid_chars.SetNil("U")
-	valid_chars.SetNil("V")
-	valid_chars.SetNil("W")
-	valid_chars.SetNil("X")
-	valid_chars.SetNil("Y")
-	valid_chars.SetNil("Z")
-	valid_chars.SetNil("_")
-	valid_chars.SetNil("-")
-	valid_chars.SetNil("a")
-	valid_chars.SetNil("b")
-	valid_chars.SetNil("c")
-	valid_chars.SetNil("d")
-	valid_chars.SetNil("e")
-	valid_chars.SetNil("f")
-	valid_chars.SetNil("g")
-	valid_chars.SetNil("h")
-	valid_chars.SetNil("i")
-	valid_chars.SetNil("j")
-	valid_chars.SetNil("k")
-	valid_chars.SetNil("l")
-	valid_chars.SetNil("m")
-	valid_chars.SetNil("n")
-	valid_chars.SetNil("o")
-	valid_chars.SetNil("p")
-	valid_chars.SetNil("q")
-	valid_chars.SetNil("r")
-	valid_chars.SetNil("s")
-	valid_chars.SetNil("t")
-	valid_chars.SetNil("u")
-	valid_chars.SetNil("v")
-	valid_chars.SetNil("w")
-	valid_chars.SetNil("x")
-	valid_chars.SetNil("y")
-	valid_chars.SetNil("z")
-	valid_chars.SetNil(".")
+func GetMySQLColumnNameWhitelistCharacters() map[string]interface{} {
+    valid_chars := make(map[string]interface{})
+	valid_chars["0"] = nil
+	valid_chars["1"] = nil
+	valid_chars["2"] = nil
+	valid_chars["3"] = nil
+	valid_chars["4"] = nil
+	valid_chars["5"] = nil
+	valid_chars["6"] = nil
+	valid_chars["7"] = nil
+	valid_chars["8"] = nil
+	valid_chars["9"] = nil
+	valid_chars["a"] = nil
+	valid_chars["b"] = nil
+	valid_chars["c"] = nil
+	valid_chars["d"] = nil
+	valid_chars["e"] = nil
+	valid_chars["f"] = nil
+	valid_chars["g"] = nil
+	valid_chars["h"] = nil
+	valid_chars["i"] = nil
+	valid_chars["j"] = nil
+	valid_chars["k"] = nil
+	valid_chars["l"] = nil
+	valid_chars["m"] = nil
+	valid_chars["n"] = nil
+	valid_chars["o"] = nil
+	valid_chars["p"] = nil
+	valid_chars["q"] = nil
+	valid_chars["r"] = nil
+	valid_chars["s"] = nil
+	valid_chars["t"] = nil
+	valid_chars["u"] = nil
+	valid_chars["v"] = nil
+	valid_chars["w"] = nil
+	valid_chars["x"] = nil
+	valid_chars["y"] = nil
+	valid_chars["z"] = nil
+	valid_chars["A"] = nil
+	valid_chars["B"] = nil
+	valid_chars["C"] = nil
+	valid_chars["D"] = nil
+	valid_chars["E"] = nil
+	valid_chars["F"] = nil
+	valid_chars["G"] = nil
+	valid_chars["H"] = nil
+	valid_chars["I"] = nil
+	valid_chars["J"] = nil
+	valid_chars["K"] = nil
+	valid_chars["L"] = nil
+	valid_chars["M"] = nil
+	valid_chars["N"] = nil
+	valid_chars["O"] = nil
+	valid_chars["P"] = nil
+	valid_chars["Q"] = nil
+	valid_chars["R"] = nil
+	valid_chars["S"] = nil
+	valid_chars["T"] = nil
+	valid_chars["U"] = nil
+	valid_chars["V"] = nil
+	valid_chars["W"] = nil
+	valid_chars["X"] = nil
+	valid_chars["Y"] = nil
+	valid_chars["Z"] = nil
+	valid_chars["-"] = nil
+	valid_chars["_"] = nil
+	valid_chars["."] = nil
 	return valid_chars
 }

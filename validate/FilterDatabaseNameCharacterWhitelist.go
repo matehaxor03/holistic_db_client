@@ -32,7 +32,7 @@ func NewDatabaseNameCharacterWhitelist() (*DatabaseNameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", database_name)
-		parameters.SetMap("values", &database_name_character_whitelist)
+		parameters.SetObjectForMap("values", &database_name_character_whitelist)
 		parameters.SetStringValue("label", "Validator.ValidateDatabaseName")
 		parameters.SetStringValue("data_type", "dao.Database.database_name")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

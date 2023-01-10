@@ -15,7 +15,7 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	previous_database_name, _ := database.GetDatabaseName()
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
-	for _, blacklist_database_name := range blacklist_map.GetKeys() {
+	for blacklist_database_name, _ := range blacklist_map {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -50,7 +50,7 @@ func TestDatabaseCanCreateWithBlackListName(t *testing.T) {
 	
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_database_name := range blacklist_map.GetKeys() {
+	for blacklist_database_name, _ := range blacklist_map {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -75,7 +75,7 @@ func TestDatabaseCanCreateWithBlackListNameUppercase(t *testing.T) {
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_database_name := range blacklist_map.GetKeys() {
+	for blacklist_database_name, _ := range blacklist_map {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -101,7 +101,7 @@ func TestDatabaseCanCreateWithBlackListNameLowercase(t *testing.T) {
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 
-	for _, blacklist_database_name := range blacklist_map.GetKeys() {
+	for blacklist_database_name, _  := range blacklist_map {
 		
 		if len(blacklist_database_name) == 1 || strings.Contains(blacklist_database_name, ";") {
 			continue
@@ -126,7 +126,7 @@ func TestDatabaseCanCreateWithWhiteListCharacters(t *testing.T) {
 
 	whitelist_map := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 
-	for _, whitelist_database_character := range whitelist_map.GetKeys() {
+	for whitelist_database_character, _  := range whitelist_map {
 		database, new_database_errors := client.GetDatabaseInterface("a" + whitelist_database_character + "a", &character_set, &collate)
 			
 		if new_database_errors != nil {
@@ -174,7 +174,7 @@ func TestDatabaseCannotCreateWithWhiteListCharactersIfDatabaseNameLength1(t *tes
 
 	whitelist_map := validation_constants.GetMySQLDatabaseNameWhitelistCharacters()
 
-	for _, whitelist_database_character := range whitelist_map.GetKeys() {
+	for whitelist_database_character, _  := range whitelist_map {
 		database, new_database_errors := client.GetDatabaseInterface(whitelist_database_character, &character_set, &collate)
 		
 		if new_database_errors == nil {

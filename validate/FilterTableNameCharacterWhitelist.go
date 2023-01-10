@@ -32,7 +32,7 @@ func NewTableNameCharacterWhitelist() (*TableNameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", table_name)
-		parameters.SetMap("values", &table_name_character_whitelist)
+		parameters.SetObjectForMap("values", &table_name_character_whitelist)
 		parameters.SetStringValue("label", "Validator.ValidateTableName")
 		parameters.SetStringValue("data_type", "dao.Table.table_name")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

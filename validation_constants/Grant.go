@@ -1,9 +1,5 @@
 package validation_constants
 
-import(
-	json "github.com/matehaxor03/holistic_json/json"
-)
-
 func GRANT_ALL() string {
 	return "ALL"
 }
@@ -20,11 +16,11 @@ func GRANT_SELECT() string {
 	return "SELECT"
 }
 
-func GET_ALLOWED_GRANTS() json.Map {
-	valid := json.NewMapValue()
-	valid.SetNil(GRANT_ALL())
-	valid.SetNil(GRANT_INSERT())
-	valid.SetNil(GRANT_UPDATE())
-	valid.SetNil(GRANT_SELECT())
-	return valid
+func GET_ALLOWED_GRANTS() map[string]interface{} {
+	valid_chars := make(map[string]interface{})
+	valid_chars[GRANT_SELECT()] = nil
+	valid_chars[GRANT_UPDATE()] = nil
+	valid_chars[GRANT_INSERT()] = nil
+	valid_chars[GRANT_ALL()] = nil
+	return valid_chars
 }

@@ -29,7 +29,7 @@ func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", domain_name)
-		parameters.SetMap("values", &valid_characters)
+		parameters.SetObjectForMap("values", &valid_characters)
 		parameters.SetStringValue("label", "Validator.ValidateDomainName")
 		parameters.SetStringValue("data_type", "host.domain_name")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)
@@ -38,7 +38,7 @@ func NewDomainNameCharacterWhitelist() (*DomainNameCharacterWhitelist) {
 		}
 
 		
-		parameters.SetMap("values", &valid_words)
+		parameters.SetObjectForMap("values", &valid_words)
 		whitelist_word_errors := validation_functions.WhiteListString(parameters)
 		if whitelist_word_errors != nil {
 			errors = append(errors, whitelist_word_errors...)

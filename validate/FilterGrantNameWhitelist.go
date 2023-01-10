@@ -25,7 +25,7 @@ func NewGrantNameWhitelist() (*GrantNameWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", grant)
-		parameters.SetMap("values", &valid_words)
+		parameters.SetObjectForMap("values", &valid_words)
 		parameters.SetStringValue("label", "Validator.validateGrant")
 		parameters.SetStringValue("data_type", "dao.Grant.grant")
 		whitelist_errors := validation_functions.WhiteListString(parameters)

@@ -29,7 +29,7 @@ func NewDatabaseReservedWordsBlackList() (*DatabaseReservedWordsBlackList) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", strings.ToUpper(value))
-		parameters.SetMap("values", &database_reserved_words)
+		parameters.SetObjectForMap("values", &database_reserved_words)
 		parameters.SetStringValue("label", "Validator.ValidateDatabaseReservedWord")
 		parameters.SetStringValue("data_type", "database.cross_cutting_field_value")
 		whitelist_errors := validation_functions.BlackListStringToUpper(parameters)

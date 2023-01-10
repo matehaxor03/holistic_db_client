@@ -32,7 +32,7 @@ func NewUsernameCharacterWhitelist() (*UsernameCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", username)
-		parameters.SetMap("values", &valid_username_characters)
+		parameters.SetObjectForMap("values", &valid_username_characters)
 		parameters.SetStringValue("label", "Validator.ValidateUsername")
 		parameters.SetStringValue("data_type", "dao.User.username")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

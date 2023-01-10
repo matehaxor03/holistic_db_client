@@ -22,7 +22,7 @@ func NewCollateWordWhitelist() (*CollateWordWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", collate)
-		parameters.SetMap("values", &valid_words)
+		parameters.SetObjectForMap("values", &valid_words)
 		parameters.SetStringValue("label", "Validator.ValidateCollate")
 		parameters.SetStringValue("data_type", "database.collate")
 		whitelist_errors := validation_functions.WhiteListString(parameters)

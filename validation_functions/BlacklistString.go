@@ -8,16 +8,15 @@ import (
 
 func BlackListString(m json.Map) []error {
 	var errors []error
-	map_values, map_values_errors := m.GetMap("values")
+	map_values := m.GetObjectForMap("values")
+	map_values = map_values.(*map[string]interface{})
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
-	} else if map_values == nil {
+	if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(map_values.GetKeys()) == 0 {
+	} else if len(*(map_values.(*map[string]interface{}))) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -31,7 +30,7 @@ func BlackListString(m json.Map) []error {
 		return errors
 	}
 
-	if map_values.HasKey(*str) {
+	if _, found := (*(map_values.(*map[string]interface{})))[*str]; found {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	
@@ -44,16 +43,15 @@ func BlackListString(m json.Map) []error {
 
 func BlackListStringToUpper(m json.Map) []error {
 	var errors []error
-	map_values, map_values_errors := m.GetMap("values")
+	map_values := m.GetObjectForMap("values")
+	map_values = map_values.(*map[string]interface{})
 	str, _ := m.GetString("value")
 	label, _ := m.GetString("label")
 	data_type, _ := m.GetString("data_type")
 
-	if map_values_errors != nil {
-		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has get map has errors %s", *data_type, *label, fmt.Sprintf("%s", map_values_errors)))
-	} else if map_values == nil {
+	if map_values == nil {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has nil map", *data_type, *label))
-	} else if len(map_values.GetKeys()) == 0 {
+	} else if len(*(map_values.(*map[string]interface{}))) == 0 {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: has empty array", *data_type, *label))
 	}
 
@@ -67,7 +65,7 @@ func BlackListStringToUpper(m json.Map) []error {
 		return errors
 	}
 
-	if map_values.HasKey(strings.ToUpper(*str)) {
+	if _, found := (*(map_values.(*map[string]interface{})))[strings.ToUpper(*str)]; found {
 		errors = append(errors, fmt.Errorf("error: %s: %s: BlackListString: found value: %s", *data_type, *label, *str))
 	}
 	

@@ -22,7 +22,7 @@ func NewCharacterSetWordWhitelist() (*CharacterSetWordWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", character_set)
-		parameters.SetMap("values", &valid_words)
+		parameters.SetObjectForMap("values", &valid_words)
 		parameters.SetStringValue("label", "Validator.ValidateCharacterSet")
 		parameters.SetStringValue("data_type", "database.character_set")
 		whitelist_errors := validation_functions.WhiteListString(parameters)

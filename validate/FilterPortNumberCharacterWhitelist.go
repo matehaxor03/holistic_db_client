@@ -28,7 +28,7 @@ func NewPortNumberCharacterWhitelist() (*PortNumberCharacterWhitelist) {
 
 		parameters := json.NewMapValue()
 		parameters.SetStringValue("value", port_number)
-		parameters.SetMap("values", &valid_characters)
+		parameters.SetObjectForMap("values", &valid_characters)
 		parameters.SetStringValue("label", "Validator.ValidatePortNumber")
 		parameters.SetStringValue("data_type", "host.port_number")
 		whitelist_errors := validation_functions.WhitelistCharacters(parameters)

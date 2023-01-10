@@ -188,7 +188,7 @@ func generateKeywordAndReservedWordsBlacklist(client *dao.Client) []error {
 	var errors []error
 	invalid_strings := map[string]bool{}
 	
-	package_name := "db_client"
+	package_name := "validation_constants"
 	filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.go", package_name)
 	raw_text_filename := fmt.Sprintf("./%s/MySQLKeywordsAndReservedWordsBlacklist.txt", package_name)
 	method_name := "GetMySQLKeywordsAndReservedWordsInvalidWords()"
@@ -572,7 +572,7 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 	}
 	defer valid_rune_file.Close()
 
-	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\nimport (\n    json \"github.com/matehaxor03/holistic_json/json\"\n)\nfunc %s json.Map {\nvalue := json.NewMapValue()\n", package_name, method_name)); valid_error != nil {
+	if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("package %s\n\nfunc %s map[string]interface{} {\nvalue := make(map[string]interface{})\n", package_name, method_name)); valid_error != nil {
 		errors = append(errors, valid_error)
 		return errors
 	}
@@ -586,7 +586,7 @@ func createMapValidationKeysStrings(filename string, package_name string, method
 
 	length := len(valid_runes)
 	for index, key := range sorted_keys {
-		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    value.SetNil(\"%s\")", key)); valid_error != nil {
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    value[\"%s\"] = nil", key)); valid_error != nil {
 			errors = append(errors, valid_error)
 			return errors
 		}
