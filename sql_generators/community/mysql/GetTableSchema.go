@@ -28,14 +28,13 @@ func GetTableSchemaSQL(verify *validate.Validator, table_name string, options *j
 		return nil, nil, errors
 	}
 
-	sql_command := "SHOW FULL COLUMNS FROM "
-	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s`;", table_name_escaped)
-	} else {
-		sql_command += fmt.Sprintf("\\`%s\\`;", table_name_escaped)
-	}
-
-	return &sql_command, options, nil
+	var sql_command strings.Builder
+	sql_command.WriteString("SHOW FULL COLUMNS FROM ")
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString(";")
+	
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 
 

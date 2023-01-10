@@ -123,15 +123,9 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 
 	var sql_command strings.Builder
 	sql_command.WriteString("UPDATE ")
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("` \n")
-	} else {
-		sql_command.WriteString("\\`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("\\` \n")
-	}
+
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString(" \n")
 
 	sql_command.WriteString("SET ")
 
@@ -154,19 +148,8 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 			continue
 		}
 		
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
 		
 		sql_command.WriteString(record_non_identity_column_escaped)
-		
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
 
 		sql_command.WriteString("=")
 		column_data := record_data.GetObjectForMap(record_non_primary_key_column)
@@ -273,15 +256,9 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 							errors = append(errors, value_escaped_errors)
 						}
 
-						if options.IsBoolTrue("use_file") {
-							sql_command.WriteString("'")
-							sql_command.WriteString(value_escaped)
-							sql_command.WriteString("'")
-						} else {
-							sql_command.WriteString("'")
-							sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-							sql_command.WriteString("'")
-						}
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
 					}
 				}
 			case "time.Time":
@@ -303,15 +280,9 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 							errors = append(errors, value_escaped_errors)
 						}
 
-						if options.IsBoolTrue("use_file") {
-							sql_command.WriteString("'")
-							sql_command.WriteString(value_escaped)
-							sql_command.WriteString("'")
-						} else {
-							sql_command.WriteString("'")
-							sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-							sql_command.WriteString("'")
-						}
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
 					}
 				}
 			case "string":
@@ -321,32 +292,21 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 				}
 				
 				
-				if options.IsBoolTrue("use_file") {
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
-				} else {
-					sql_command.WriteString("'")
-					sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-					sql_command.WriteString("'")
-				}
-				
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
+
 			case "*string":
 				value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
 				if value_escaped_errors != nil {
 					errors = append(errors, value_escaped_errors)
 				}
 
-				if options.IsBoolTrue("use_file") {
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
-				} else {
-					sql_command.WriteString("'")
-					sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-					sql_command.WriteString("'")
-				}
-			
+
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
+
 			case "bool":
 				if column_data.(bool) {
 					sql_command.WriteString("1")
@@ -387,19 +347,8 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 			continue
 		}
 
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
-		
+	
 		sql_command.WriteString(primary_key_table_column_ecaped)
-		
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
 
 		sql_command.WriteString(" = ")
 		column_data := record_data.GetObjectForMap(primary_key_table_column)
@@ -506,15 +455,10 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 							errors = append(errors, value_escaped_errors)
 						}
 
-						if options.IsBoolTrue("use_file") {
-							sql_command.WriteString("'")
-							sql_command.WriteString(value_escaped)
-							sql_command.WriteString("'")
-						} else {
-							sql_command.WriteString("'")
-							sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-							sql_command.WriteString("'")
-						}
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
+
 					}
 				}
 			case "time.Time":
@@ -536,15 +480,11 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 							errors = append(errors, value_escaped_errors)
 						}
 
-						if options.IsBoolTrue("use_file") {
-							sql_command.WriteString("'")
-							sql_command.WriteString(value_escaped)
-							sql_command.WriteString("'")
-						} else {
-							sql_command.WriteString("'")
-							sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-							sql_command.WriteString("'")
-						}
+
+						sql_command.WriteString("'")
+						sql_command.WriteString(value_escaped)
+						sql_command.WriteString("'")
+
 					}
 				}
 			case "string":
@@ -552,17 +492,11 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 				if value_escaped_errors != nil {
 					errors = append(errors, value_escaped_errors)
 				}
-				
-				
-				if options.IsBoolTrue("use_file") {
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
-				} else {
-					sql_command.WriteString("'")
-					sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-					sql_command.WriteString("'")
-				}
+
+
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
 				
 			case "*string":
 				value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
@@ -570,15 +504,10 @@ func GetUpdateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 					errors = append(errors, value_escaped_errors)
 				}
 
-				if options.IsBoolTrue("use_file") {
-					sql_command.WriteString("'")
-					sql_command.WriteString(value_escaped)
-					sql_command.WriteString("'")
-				} else {
-					sql_command.WriteString("'")
-					sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-					sql_command.WriteString("'")
-				}
+
+				sql_command.WriteString("'")
+				sql_command.WriteString(value_escaped)
+				sql_command.WriteString("'")
 			
 			case "bool":
 				if column_data.(bool) {

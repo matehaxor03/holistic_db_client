@@ -29,16 +29,8 @@ func GetDropTableSQLIfExists(verify *validate.Validator, table_name string, opti
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP TABLE IF EXISTS ")
-
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("`;")
-	} else {
-		sql_command.WriteString("\\`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("\\`;")
-	}
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString(";")
 
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil
@@ -66,16 +58,8 @@ func GetDropTableSQL(verify *validate.Validator, table_name string, options *jso
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP TABLE ")
-
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("`;")
-	} else {
-		sql_command.WriteString("\\`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("\\`;")
-	}
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString(";")
 
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil

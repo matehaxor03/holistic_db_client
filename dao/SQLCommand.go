@@ -113,6 +113,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
+			database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
+			if database_name_escaped_errors != nil {
+				errors = append(errors, database_name_escaped_errors)
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
 			if database_username != "root" {
 				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + (database_username) + ".config"
 			} else {
@@ -141,18 +150,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if options.IsBoolTrue("use_mysql_database") {
-				if options.IsBoolTrue("use_file") {
-					sql += fmt.Sprintf("USE `%s`;\n", "mysql")
-				} else {
-					sql += fmt.Sprintf("USE \\`%s\\`;\n", "mysql")
-				}
+				sql += fmt.Sprintf("USE %s;\n", "mysql")
 			} else {
 				if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
-					if options.IsBoolTrue("use_file") {
-						sql += fmt.Sprintf("USE `%s`;\n", database_name)
-					} else {
-						sql += fmt.Sprintf("USE \\`%s\\`;\n", database_name)
-					}
+					sql += fmt.Sprintf("USE %s;\n", database_name_escaped)
 				}
 			}
 			
@@ -201,6 +202,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}*/
 
 			if len(errors) > 0 {
+				//fmt.Println(command)
 				return nil, errors
 			}
 

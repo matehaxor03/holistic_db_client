@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -25,12 +25,11 @@ func GetTableNamesSQL(verify *validate.Validator, database_name string, options 
 		return nil, nil, errors
 	}
 
-	sql_command := "SHOW TABLES IN "
-	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s`;", database_name_escaped)
-	} else {
-		sql_command += fmt.Sprintf("\\`%s\\`;", database_name_escaped)
-	}
-	return &sql_command, options, nil
+	var sql_command strings.Builder
+	sql_command.WriteString("SHOW TABLES IN ")
+	sql_command.WriteString(database_name_escaped)
+	sql_command.WriteString(";")
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 

@@ -47,11 +47,7 @@ func GetCreateTableSQLMySQL(verify *validate.Validator, table_data json.Map, opt
 
 	sql_command := ""
 	sql_command += "CREATE TABLE "
-	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s` ", table_name_escaped)
-	} else {
-		sql_command += fmt.Sprintf("\\`%s\\` ", table_name_escaped)
-	}
+	sql_command += fmt.Sprintf("%s ", table_name_escaped)
 
 	valid_columns, valid_columns_errors := helper.GetTableColumns(table_data)
 	if valid_columns_errors != nil {
@@ -106,18 +102,7 @@ func GetCreateTableSQLMySQL(verify *validate.Validator, table_data json.Map, opt
 			return nil, nil, errors
 		}
 
-		if options.IsBoolTrue("use_file") {
-			sql_command += "`"
-		} else {
-			sql_command += "\\`"
-		}
 		sql_command += column_escaped
-		
-		if options.IsBoolTrue("use_file") {
-			sql_command += "`"
-		} else {
-			sql_command += "\\`"
-		}
 
 		typeOf, type_of_errors := columnSchema.GetString("type")
 		if type_of_errors != nil {

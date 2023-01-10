@@ -89,19 +89,9 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 	var sql_command strings.Builder
 	sql_command.WriteString("INSERT INTO ")
 	
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-	} else {
-		sql_command.WriteString("\\`")
-	}
-
+	
 	sql_command.WriteString(table_name_escaped)
 	
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString( "`")
-	} else {
-		sql_command.WriteString("\\`")
-	}
 
 	sql_command.WriteString(" (")
 	index := 0
@@ -117,19 +107,7 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 			continue
 		}
 		
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
-
 		sql_command.WriteString(record_column_escaped)
-		
-		if options.IsBoolTrue("use_file") {
-			sql_command.WriteString("`")
-		} else {
-			sql_command.WriteString("\\`")
-		}
 
 		if index < (len(*record_columns) - 1) {
 			sql_command.WriteString(", ")
@@ -254,15 +232,9 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 						errors = append(errors, value_escaped_errors)
 					}
 
-					if options.IsBoolTrue("use_file") {
-						sql_command.WriteString("'")
-						sql_command.WriteString(value_escaped)
-						sql_command.WriteString("'")
-					} else {
-						sql_command.WriteString("'")
-						sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-						sql_command.WriteString("'")
-					}
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
 				}
 			}
 		case "time.Time":
@@ -284,15 +256,9 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 						errors = append(errors, value_escaped_errors)
 					}
 
-					if options.IsBoolTrue("use_file") {
-						sql_command.WriteString("'")
-						sql_command.WriteString(value_escaped)
-						sql_command.WriteString("'")
-					} else {
-						sql_command.WriteString("'")
-						sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-						sql_command.WriteString("'")
-					}
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
 				}
 			}
 		case "string":
@@ -301,15 +267,9 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 				errors = append(errors, value_escaped_errors)
 			}
 
-			if options.IsBoolTrue("use_file") {
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
-			} else {
-				sql_command.WriteString("'")
-				sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-				sql_command.WriteString("'")
-			}
+			sql_command.WriteString("'")
+			sql_command.WriteString(value_escaped)
+			sql_command.WriteString("'")
 
 		case "*string":
 			value_escaped, value_escaped_errors := common.EscapeString(*(column_data.(*string)), "'")
@@ -317,15 +277,9 @@ func GetCreateRecordSQLMySQL(verify *validate.Validator, table_name string, tabl
 				errors = append(errors, value_escaped_errors)
 			}
 
-			if options.IsBoolTrue("use_file") {
-				sql_command.WriteString("'")
-				sql_command.WriteString(value_escaped)
-				sql_command.WriteString("'")
-			} else {
-				sql_command.WriteString("'")
-				sql_command.WriteString(strings.ReplaceAll(value_escaped, "`", "\\`"))
-				sql_command.WriteString("'")
-			}
+			sql_command.WriteString("'")
+			sql_command.WriteString(value_escaped)
+			sql_command.WriteString("'")
 
 		case "bool":
 			if column_data.(bool) {

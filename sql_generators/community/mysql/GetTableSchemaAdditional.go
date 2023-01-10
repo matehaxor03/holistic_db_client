@@ -45,16 +45,15 @@ func GetTableSchemaAdditionalSQL(verify *validate.Validator, database_name strin
 		options.SetBoolValue("json_output", false)
 	}
 
-	sql_command := "SHOW TABLE STATUS FROM "
-		
-	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s` ", database_name_escaped)
-	} else {
-		sql_command += fmt.Sprintf("\\`%s\\` ", database_name_escaped)
-	}
-	sql_command += "WHERE name='" + table_name_escaped + "';"
-
-	return &sql_command, options, nil
+	var sql_command strings.Builder
+	sql_command.WriteString("SHOW TABLE STATUS FROM ")
+	sql_command.WriteString(database_name_escaped)
+	sql_command.WriteString(" WHERE NAME='")
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString("';")
+	
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 
 

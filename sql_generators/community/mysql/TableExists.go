@@ -28,16 +28,9 @@ func GetCheckTableExistsSQL(verify *validate.Validator, table_name string, optio
 	
 	var sql_command strings.Builder
 	sql_command.WriteString("SELECT 0 FROM ")
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("`")
-	} else {
-		sql_command.WriteString("\\`")
-		sql_command.WriteString(table_name_escaped)
-		sql_command.WriteString("\\`")
-	}
+	sql_command.WriteString(table_name_escaped)
 	sql_command.WriteString(" LIMIT 1;")
+
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil
 }

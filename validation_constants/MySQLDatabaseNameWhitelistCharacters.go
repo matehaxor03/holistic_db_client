@@ -64,7 +64,6 @@ func GetMySQLDatabaseNameWhitelistCharacters() map[string]interface{} {
 	valid_chars["X"] = nil
 	valid_chars["Y"] = nil
 	valid_chars["Z"] = nil
-	valid_chars["-"] = nil
 	valid_chars["_"] = nil
 	return valid_chars
 }

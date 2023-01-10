@@ -29,15 +29,8 @@ func GetDatabaseExistsSQL(verify *validate.Validator, database_name string, opti
 
 	var sql_command strings.Builder
 	sql_command.WriteString("USE ")
-	if options.IsBoolTrue("use_file") {
-		sql_command.WriteString("`")
-		sql_command.WriteString(database_name_escaped)
-		sql_command.WriteString("`;")
-	} else {
-		sql_command.WriteString("\\`")
-		sql_command.WriteString(database_name_escaped)
-		sql_command.WriteString("\\`;")
-	}
+	sql_command.WriteString(database_name_escaped)
+	sql_command.WriteString(";")
 
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil
