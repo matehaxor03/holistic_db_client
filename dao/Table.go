@@ -689,7 +689,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	createTable := func() []error {
-		var errors []error
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
@@ -703,24 +702,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 		if execute_errors != nil {
 			return execute_errors
-		}
-
-		temp_schema, temp_schema_errors := getSchema()
-		if temp_schema_errors != nil {
-			errors = append(errors, temp_schema_errors...)
-		} else if common.IsNil(temp_schema) {
-			errors = append(errors, fmt.Errorf("schema is nil"))
-		}
-
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("temp_table_name is nil"))
-		}
-
-		if len(errors) > 0 {
-			return errors
 		}
 
 		return nil
