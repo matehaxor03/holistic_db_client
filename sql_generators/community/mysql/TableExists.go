@@ -1,7 +1,7 @@
 package mysql
 
 import (
-	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -26,14 +26,19 @@ func GetCheckTableExistsSQL(verify *validate.Validator, table_name string, optio
 		return nil, nil, errors
 	}
 	
-	sql_command := fmt.Sprintf("SELECT 0 FROM ")
+	var sql_command strings.Builder
+	sql_command.WriteString("SELECT 0 FROM ")
 	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s`", table_name_escaped)
+		sql_command.WriteString("`")
+		sql_command.WriteString(table_name_escaped)
+		sql_command.WriteString("`")
 	} else {
-		sql_command += fmt.Sprintf("\\`%s\\`", table_name_escaped)
+		sql_command.WriteString("\\`")
+		sql_command.WriteString(table_name_escaped)
+		sql_command.WriteString("\\`")
 	}
-	sql_command += " LIMIT 1;"
-
-	return &sql_command, options, nil
+	sql_command.WriteString(" LIMIT 1;")
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 
