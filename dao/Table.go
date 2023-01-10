@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strconv"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -37,7 +36,6 @@ type Table struct {
 }
 
 func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
-	var lock_get_schema = &sync.Mutex{}
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -635,8 +633,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 
 	getSchema := func() (*json.Map, []error) {
-		lock_get_schema.Lock()
-		defer lock_get_schema.Unlock()
 		var errors []error
 	
 		options := json.NewMap()
