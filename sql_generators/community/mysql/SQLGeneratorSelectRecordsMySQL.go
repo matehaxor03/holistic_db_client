@@ -176,8 +176,9 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 		}
 	}
 
-	order_by_clause := ""
+	order_by_clause_result := ""
 	if !common.IsNil(order_by) && len(*(order_by.GetValues())) > 0 {
+		var order_by_clause strings.Builder
 		order_by_columns := len(*(order_by.GetValues()))
 		for order_by_index, order_by_field := range *(order_by.GetValues()) {
 
@@ -228,41 +229,32 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 				continue
 			}
 			
-			if options.IsBoolTrue("use_file") {
-				order_by_clause += "`"
-			} else {
-				order_by_clause += "\\`"
-			}
+			
 			escaped_order_by_column_name, escaped_order_by_column_name_errors := common.EscapeString(order_by_column_name, "'")
 			if escaped_order_by_column_name_errors != nil {
 				errors = append(errors, escaped_order_by_column_name_errors)
 				continue
 			}
 
-			order_by_clause += escaped_order_by_column_name
-			if options.IsBoolTrue("use_file") {
-				order_by_clause += "`"
-			} else {
-				order_by_clause += "\\`"
-			}
-
-			order_by_clause += " "
-
-			order_by_clause += order_by_string_value_validated
+			order_by_clause.WriteString(escaped_order_by_column_name)
+			order_by_clause.WriteString(" ")
+			order_by_clause.WriteString(order_by_string_value_validated)
 
 			if order_by_index < (order_by_columns - 1) {
-				order_by_clause += ", "
+				order_by_clause.WriteString(", ")
 			} else {
-				order_by_clause += " "
+				order_by_clause.WriteString(" ")
 			}
 		}
+		order_by_clause_result = order_by_clause.String()
 	}
 
 	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
-	sql_command := "SELECT "
+	var sql_command strings.Builder
+	sql_command.WriteString("SELECT ")
 	if select_fields != nil && len(*(select_fields.GetValues())) > 0 {
 		select_fields_values_length := len(*(select_fields.GetValues()))
 		for i, _ := range *(select_fields.GetValues()) {
@@ -276,29 +268,25 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 			if escape_string_value_errors != nil {
 				errors = append(errors, escape_string_value_errors)
 			} else {
-				sql_command += escape_string_value
+				sql_command.WriteString(escape_string_value)
 				if i < (select_fields_values_length - 1) {
-					sql_command += ", "
+					sql_command.WriteString(", ")
 				} else {
-					sql_command += " "
+					sql_command.WriteString(" ")
 				}
 			}
 		}
 	} else {
-		sql_command += "* "
+		sql_command.WriteString("* ")
 	}
 
-	sql_command += "FROM "
-	
-	if options.IsBoolTrue("use_file") {
-		sql_command += fmt.Sprintf("`%s` ", table_name_escaped)
-	} else {
-		sql_command += fmt.Sprintf("\\`%s\\` ", table_name_escaped)
-	}
+	sql_command.WriteString("FROM ")
+	sql_command.WriteString(table_name_escaped)
+	sql_command.WriteString(" ")
 
 	if filters != nil {
 		if len(filters.GetKeys()) > 0 {
-			sql_command += "WHERE "
+			sql_command.WriteString("WHERE ")
 		}
 
 		for index, column_filter := range filters.GetKeys() {
@@ -319,22 +307,14 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 				errors = append(errors, column_filter_escaped_errors)
 			}
 
-			if options.IsBoolTrue("use_file") {
-				sql_command += "`"
-			} else {
-				sql_command += "\\`"
-			}
-			sql_command += column_filter_escaped
-			if options.IsBoolTrue("use_file") {
-				sql_command += "`"
-			} else {
-				sql_command += "\\`"
-			}
+			
+			sql_command.WriteString(column_filter_escaped)
+			
 
 			if common.IsNil(filters_logic) {
-				sql_command += " = "
+				sql_command.WriteString(" = ")
 			} else if !filters_logic.HasKey(column_filter) {
-				sql_command += " = "
+				sql_command.WriteString(" = ")
 			} else {
 				filters_logic_temp, filters_logic_temp_errors := filters_logic.GetString(column_filter)
 				if filters_logic_temp_errors != nil {
@@ -342,14 +322,14 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 				} else if common.IsNil(filters_logic_temp) {
 					errors = append(errors, fmt.Errorf("filters logic is nil"))
 				} else {
-					sql_command += " "
-					sql_command += *filters_logic_temp
-					sql_command += " "
+					sql_command.WriteString(" ")
+					sql_command.WriteString(*filters_logic_temp)
+					sql_command.WriteString(" ")
 				}
 			}
 
 			if filters.IsNull(column_filter) {
-				sql_command += "NULL "
+				sql_command.WriteString("NULL ")
 			} else {
 				//todo check data type with schema
 				type_of := filters.GetType(column_filter)
@@ -362,7 +342,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(*value, 10)
+						sql_command.WriteString(strconv.FormatUint(*value, 10))
 					}
 				case "uint64":
 					value, value_errors := column_data.GetUInt64()
@@ -371,7 +351,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(*value, 10)
+						sql_command.WriteString(strconv.FormatUint(*value, 10))
 					}
 				case "*int64":
 					value, value_errors := column_data.GetInt64()
@@ -380,7 +360,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "int64":
 					value, value_errors := column_data.GetInt64()
@@ -389,7 +369,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "*uint32":
 					value, value_errors := column_data.GetUInt32()
@@ -398,7 +378,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "uint32":
 					value, value_errors := column_data.GetUInt32()
@@ -407,7 +387,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "*int32":
 					value, value_errors := column_data.GetInt32()
@@ -416,7 +396,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "int32":
 					value, value_errors := column_data.GetInt32()
@@ -425,7 +405,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "*uint16":
 					value, value_errors := column_data.GetUInt16()
@@ -434,7 +414,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "uint16":
 					value, value_errors := column_data.GetUInt16()
@@ -443,7 +423,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "*int16":
 					value, value_errors := column_data.GetInt16()
@@ -452,7 +432,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "int16":
 					value, value_errors := column_data.GetInt16()
@@ -461,7 +441,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "*uint8":
 					value, value_errors := column_data.GetUInt8()
@@ -470,7 +450,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "uint8":
 					value, value_errors := column_data.GetUInt8()
@@ -479,7 +459,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatUint(uint64(*value), 10)
+						sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
 					}
 				case "*int8":
 					value, value_errors := column_data.GetInt8()
@@ -488,7 +468,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "int8":
 					value, value_errors := column_data.GetInt8()
@@ -497,7 +477,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "*int":
 					value, value_errors := column_data.GetInt()
@@ -506,7 +486,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "int":
 					value, value_errors := column_data.GetInt()
@@ -515,7 +495,7 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command += strconv.FormatInt(int64(*value), 10)
+						sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
 					}
 				case "float32":
 					value, value_errors := column_data.GetFloat32()
@@ -524,7 +504,11 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=  fmt.Sprintf("%f", *value)
+						value_string :=fmt.Sprintf("%f", *value)
+						sql_command.WriteString(value_string)
+						if !strings.Contains(value_string, ".") {
+							sql_command.WriteString(".0")
+						}
 					}
 				case "*float32":
 					value, value_errors := column_data.GetFloat32()
@@ -533,7 +517,11 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=  fmt.Sprintf("%f", *value)
+						value_string := fmt.Sprintf("%f", *value)
+						sql_command.WriteString(value_string)
+						if !strings.Contains(value_string, ".") {
+							sql_command.WriteString(".0")
+						}
 					}
 				case "float64":
 					value, value_errors := column_data.GetFloat64()
@@ -542,7 +530,11 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=  fmt.Sprintf("%f", *value)
+						value_string :=fmt.Sprintf("%f", *value)
+						sql_command.WriteString(value_string)
+						if !strings.Contains(value_string, ".") {
+							sql_command.WriteString(".0")
+						}
 					}
 				case "*float64":
 					value, value_errors := column_data.GetFloat64()
@@ -551,7 +543,11 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 					} else if common.IsNil(value) {
 						errors = append(errors,fmt.Errorf("*uint64 is nil"))
 					} else {
-						sql_command +=  fmt.Sprintf("%f", *value)
+						value_string :=fmt.Sprintf("%f", *value)
+						sql_command.WriteString(value_string)
+						if !strings.Contains(value_string, ".") {
+							sql_command.WriteString(".0")
+						}
 					}
 				case "*time.Time":
 					decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
@@ -580,11 +576,9 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 								errors = append(errors, value_escaped_errors)
 							}
 	
-							if options.IsBoolTrue("use_file") {
-								sql_command += "'" + value_escaped + "'"
-							} else {
-								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-							}
+							sql_command.WriteString("'")
+							sql_command.WriteString(value_escaped)
+							sql_command.WriteString("'")
 						}
 					}
 				case "time.Time":
@@ -614,11 +608,9 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 								errors = append(errors, value_escaped_errors)
 							}
 	
-							if options.IsBoolTrue("use_file") {
-								sql_command += "'" + value_escaped + "'"
-							} else {
-								sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-							}
+							sql_command.WriteString("'")
+							sql_command.WriteString(value_escaped)
+							sql_command.WriteString("'")
 						}
 					}
 				case "string":
@@ -636,11 +628,9 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 						errors = append(errors, value_escaped_errors)
 					}
 					
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
-					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-					}
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
 					
 				case "*string":
 					column_data_value, column_data_value_errors := column_data.GetString()
@@ -657,56 +647,61 @@ func GetSelectRecordsSQLMySQL(verify *validate.Validator, table_data json.Map, s
 						errors = append(errors, value_escaped_errors)
 					}
 
-					if options.IsBoolTrue("use_file") {
-						sql_command += "'" + value_escaped + "'"
-					} else {
-						sql_command += strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`")
-					}
+					sql_command.WriteString("'")
+					sql_command.WriteString(value_escaped)
+					sql_command.WriteString("'")
 				
 				case "bool":
 
 					if column_data.IsBoolTrue() {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				case "*bool":
 					if column_data.IsBoolTrue() {
-						sql_command += "1"
+						sql_command.WriteString("1")
 					} else {
-						sql_command += "0"
+						sql_command.WriteString("0")
 					}
 				default:
 					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
 				}
-				sql_command += " "
+				sql_command.WriteString(" ")
 			}
 
 			if index < len(filters.GetKeys()) - 1 {
-				sql_command += "AND "
+				sql_command.WriteString("AND ")
 			}
 		}
 	}
 
-	if order_by_clause != "" {
-		sql_command += "ORDER BY " + (order_by_clause + " ")
+	if order_by_clause_result != "" {
+		sql_command.WriteString("ORDER BY ")
+		sql_command.WriteString(order_by_clause_result)
+		sql_command.WriteString(" ")
 	}
 
 	if limit != nil {
 		limit_value := strconv.FormatUint(*limit, 10)
-		sql_command += fmt.Sprintf("LIMIT %s ", limit_value)
+		sql_command.WriteString("LIMIT ")
+		sql_command.WriteString(limit_value)
+		sql_command.WriteString(" ")
 	}
 
 	if offset != nil {
 		offset_value := strconv.FormatUint(*offset, 10)
-		sql_command += fmt.Sprintf("OFFSET %s ", offset_value)
+		sql_command.WriteString("OFFSET ")
+		sql_command.WriteString(offset_value)
+		sql_command.WriteString(" ")
 	}
-	sql_command += ";"
+	sql_command.WriteString(";")
 
 	if len(errors) > 0 {
 		return nil, nil, errors
 	}
 
-	return &sql_command, options, nil
+	sql_command_result := sql_command.String()
+	return &sql_command_result, options, nil
 }
 
