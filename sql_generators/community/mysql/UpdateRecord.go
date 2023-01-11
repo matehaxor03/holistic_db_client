@@ -80,7 +80,8 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 
 	for foreign_key_table_column, _ := range *foreign_key_table_columns {
 		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
-			if record_data.IsNull(foreign_key_table_column) {
+			record_foreign_key_value := record_data.GetObjectForMap(foreign_key_table_column)
+			if record_foreign_key_value == nil {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
 		}
