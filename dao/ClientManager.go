@@ -46,7 +46,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 
-		use_database_errors := client.UseDatabaseByName(database_username)
+		use_database_errors := client.UseDatabaseByName(database_name)
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}
