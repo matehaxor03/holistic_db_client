@@ -15,6 +15,10 @@ import (
 func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
+	var temp strings.Builder
+	record_data.ToJSONString(&temp)
+	fmt.Println(temp.String())
+
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
