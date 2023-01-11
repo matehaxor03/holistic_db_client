@@ -55,7 +55,7 @@ func GetRecordNonPrimaryKeyColumnsUpdate(data json.Map, table_non_primary_key_co
 	return &columns, nil
 }
 
-func GetRecordPrimaryKeyColumns(data json.Map, table_primary_key_columns *map[string]bool) (*[]string, []error) {
+func GetRecordPrimaryKeyColumns(data json.Map, table_primary_key_columns *map[string]bool) (*map[string]bool, []error) {
 	var errors []error
 	if common.IsNil(table_primary_key_columns) {
 		errors = append(errors, fmt.Errorf("table_primary_key_columns is nil. GetRecordPrimaryKeyColumns()"))
@@ -72,10 +72,10 @@ func GetRecordPrimaryKeyColumns(data json.Map, table_primary_key_columns *map[st
 		return nil, errors
 	}
 
-	var columns []string
+	columns := make(map[string]bool)
 	for record_column, _  := range *record_columns {
 		if _, found := (*table_primary_key_columns)[record_column]; found {
-			columns = append(columns, record_column)
+			columns[record_column] = true
 		}
 
 	}

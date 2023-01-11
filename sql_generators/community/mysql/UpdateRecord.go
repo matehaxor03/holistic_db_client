@@ -72,16 +72,15 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 		return nil, nil, record_foreign_key_columns_errors
 	}
 
-	for _, record_primary_key_column := range *record_primary_key_columns {
-		if _, found := (*primary_key_table_columns)[record_primary_key_column]; !found {
-			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", record_primary_key_column))
+	for primary_key_table_column, _ := range *primary_key_table_columns {
+		if _, found := (*record_primary_key_columns)[primary_key_table_column]; !found {
+			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", primary_key_table_column))
 		}
 	}
 
 	for foreign_key_table_column, _ := range *foreign_key_table_columns {
 		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
-			record_forign_key_column_data := record_data.GetObjectForMap(foreign_key_table_column)
-			if common.IsNil(record_forign_key_column_data) {
+			if record_data.IsNull(foreign_key_table_column) {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
 		}
