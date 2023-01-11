@@ -285,6 +285,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	exists := func() (*bool, []error) {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 		
 		var errors []error
 		validate_errors := validate()
@@ -325,6 +327,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		if len(errors) > 0 {
 			return errors
@@ -356,6 +360,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, table_name, options)
 		if sql_command_errors != nil {
@@ -379,6 +385,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		errors := validate()
 		if errors != nil {
@@ -497,6 +505,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		errors := validate()
 		if errors != nil {
@@ -629,6 +639,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	createTable := func() []error {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		sql_command, new_options, sql_command_errors := getCreateTableSQL(options)
 

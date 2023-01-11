@@ -148,7 +148,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
-
+		options.SetBoolValue("get_last_insert_id", false)
+		
 		databaseCreateOptions := getDatabaseCreateOptions()
 
 		var collate *string = nil
@@ -256,6 +257,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
 
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseSQL(verify, database_name, options)
 		if sql_command_errors != nil {
@@ -280,6 +283,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
 
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseIfExistsSQL(verify, database_name, options)
 		if sql_command_errors != nil {
@@ -303,6 +308,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options := json.NewMap()
 		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
 		
 		var errors []error
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, table_name, options)
@@ -342,6 +349,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
 
 
 		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
@@ -428,6 +437,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 	deleteTableByTableNameIfExists := func(table_name string) []error {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		getOrSetTableSchema(table_name, nil, "delete")
 		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, table_name, options)
@@ -477,6 +488,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		cached_additonal_schema, cached_additonal_schema_errors := getOrSetAdditionalTableSchema(table_name, nil)
 		if cached_additonal_schema_errors != nil {

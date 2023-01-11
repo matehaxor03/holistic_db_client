@@ -614,6 +614,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", true)
 		options.SetBoolValue("transactional", false)
+		options.SetBoolValue("get_last_insert_id", true)
 		
 
 		return sql_generator_mysql.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
