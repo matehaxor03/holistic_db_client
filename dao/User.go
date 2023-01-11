@@ -145,18 +145,9 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			return nil, nil, temp_credentials_errors
 		}
 
-		temp_username, temp_username_errors := temp_credentials.GetUsername()
-		if temp_username_errors != nil {
-			return nil, nil, temp_username_errors
-		}
-
-		temp_password, temp_password_errors := temp_credentials.GetPassword()
-		if temp_password_errors != nil {
-			return nil, nil, temp_password_errors
-		} else if common.IsNil(temp_password) {
-			errors = append(errors, fmt.Errorf("error: User.getCreateSQL password is nil"))
-		}
-
+		temp_username := temp_credentials.GetUsername()
+		temp_password := temp_credentials.GetPassword()
+	
 		if len(errors) > 0 {
 			return nil, nil, errors
 		}
@@ -288,10 +279,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 				return temp_credentials_errors
 			}
 
-			temp_username, temp_username_errors := temp_credentials.GetUsername()
-			if temp_username_errors != nil {
-				return temp_username_errors
-			}
+			temp_username := temp_credentials.GetUsername()
 
 			temp_username_escaped, temp_username_escaped_errors := common.EscapeString(temp_username, "'")
 			if temp_username_escaped_errors != nil {

@@ -241,10 +241,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return nil, grant_value_errors
 		}
 
-		username_value, username_value_errors := credentials.GetUsername()
-		if username_value_errors != nil {
-			return nil, username_value_errors
-		}
+		username_value := credentials.GetUsername()
 
 		domain_name_value, domain_name_value_errors := domain_name.GetDomainName()
 		if domain_name_value_errors != nil {
