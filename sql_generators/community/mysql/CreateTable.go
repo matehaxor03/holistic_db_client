@@ -34,7 +34,7 @@ func GetCreateTableSQL(verify *validate.Validator, table_name string, table_data
 
 	var sql_command strings.Builder
 	sql_command.WriteString("CREATE TABLE ")
-	box(options, &sql_command, table_name_escaped,"`","`")
+	Box(options, &sql_command, table_name_escaped,"`","`")
 	sql_command.WriteString(" ")
 
 	valid_columns, valid_columns_errors := helper.GetTableColumns(table_data)
@@ -90,7 +90,7 @@ func GetCreateTableSQL(verify *validate.Validator, table_name string, table_data
 			return nil, nil, errors
 		}
 
-		box(options, &sql_command, column_escaped,"`","`")
+		Box(options, &sql_command, column_escaped,"`","`")
 
 		typeOf, type_of_errors := columnSchema.GetString("type")
 		if type_of_errors != nil {

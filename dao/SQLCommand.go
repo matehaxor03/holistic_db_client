@@ -8,10 +8,11 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
+	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(database Database, sql_command *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -28,15 +29,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(database Database, sql_command *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
 			var errors []error
 
 			if common.IsNil(database) {
 				errors = append(errors, fmt.Errorf("host is nil"))
 			}
 
-			if common.IsNil(sql_command) {
-				errors = append(errors, fmt.Errorf("sql_command is nil"))
+			if common.IsNil(raw_sql) {
+				errors = append(errors, fmt.Errorf("sql is nil"))
 			}
 
 			if common.IsNil(options) {
@@ -72,10 +73,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is empty string"))
 			}
 
-			if sql_command == nil {
-				errors = append(errors, fmt.Errorf("error: sql command is nil"))
-			} else if *sql_command == "" {
-				errors = append(errors, fmt.Errorf("error: sql command is an empty string"))
+			if *raw_sql == "" {
+				errors = append(errors, fmt.Errorf("error: sql is an empty string"))
 			}
 
 			if len(errors) > 0 {
@@ -124,30 +123,34 @@ func newSQLCommand() (*SQLCommand, []error) {
 			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
 			command := ""
 
-			sql := ""
+			var sql_command strings.Builder
 
 			if options.IsBoolTrue("transactional") {
-				sql += "START TRANSACTION;\n"
+				sql_command.WriteString("START TRANSACTION;\n")
 			}
 
 			if options.IsBoolTrue("use_mysql_database") {
-				sql += fmt.Sprintf("USE %s;\n", "mysql")
+				sql_command.WriteString("USE mysql;\n")
 			} else {
 				if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
-					sql += fmt.Sprintf("USE %s;\n", database_name_escaped)
+					sql_command.WriteString("USE ")
+					sql_generator_mysql.Box(options, &sql_command, database_name_escaped, "`","`")
+					sql_command.WriteString(";\n")
 				}
 			}
 			
-			sql += " " + *sql_command
+			sql_command.WriteString(" ")
+			sql_command.WriteString(*raw_sql)
 
 			if options.IsBoolTrue("get_last_insert_id") {
-				sql += " SELECT LAST_INSERT_ID();"
+				sql_command.WriteString(" SELECT LAST_INSERT_ID();")
 			}
 
 			if options.IsBoolTrue("transactional") {
-				sql += "COMMIT;\n"
+				sql_command.WriteString("COMMIT;\n")
 			}
 
+			sql := sql_command.String()
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
 				command = sql_header_command + " < " + filename

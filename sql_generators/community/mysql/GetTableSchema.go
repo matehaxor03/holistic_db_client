@@ -30,7 +30,7 @@ func GetTableSchemaSQL(verify *validate.Validator, table_name string, options *j
 
 	var sql_command strings.Builder
 	sql_command.WriteString("SHOW FULL COLUMNS FROM ")
-	box(options, &sql_command, table_name_escaped,"`","`")
+	Box(options, &sql_command, table_name_escaped,"`","`")
 
 	//sql_command.WriteString(table_name_escaped)
 	sql_command.WriteString(";")

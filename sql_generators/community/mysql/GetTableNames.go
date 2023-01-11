@@ -27,7 +27,7 @@ func GetTableNamesSQL(verify *validate.Validator, database_name string, options 
 
 	var sql_command strings.Builder
 	sql_command.WriteString("SHOW TABLES IN ")
-	box(options, &sql_command, database_name_escaped,"`","`")
+	Box(options, &sql_command, database_name_escaped,"`","`")
 
 	//sql_command.WriteString(database_name_escaped)
 	sql_command.WriteString(";")

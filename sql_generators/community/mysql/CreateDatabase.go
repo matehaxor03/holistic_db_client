@@ -30,7 +30,7 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 	}
 
 	sql_command.WriteString("CREATE DATABASE ")
-	box(options, &sql_command, database_name_escaped,"`","`")
+	Box(options, &sql_command, database_name_escaped,"`","`")
 
 	//sql_command.WriteString(database_name_escaped)
 

@@ -47,7 +47,7 @@ func GetTableSchemaAdditionalSQL(verify *validate.Validator, database_name strin
 
 	var sql_command strings.Builder
 	sql_command.WriteString("SHOW TABLE STATUS FROM ")
-	box(options, &sql_command, database_name_escaped,"`","`")
+	Box(options, &sql_command, database_name_escaped,"`","`")
 	//sql_command.WriteString(database_name_escaped)
 	sql_command.WriteString(" WHERE NAME='")
 	sql_command.WriteString(table_name_escaped)

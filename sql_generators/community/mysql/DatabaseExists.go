@@ -29,7 +29,7 @@ func GetDatabaseExistsSQL(verify *validate.Validator, database_name string, opti
 
 	var sql_command strings.Builder
 	sql_command.WriteString("USE ")
-	box(options, &sql_command, database_name_escaped,"`","`")
+	Box(options, &sql_command, database_name_escaped,"`","`")
 
 	//sql_command.WriteString(database_name_escaped)
 	sql_command.WriteString(";")

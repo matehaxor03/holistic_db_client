@@ -29,7 +29,7 @@ func GetDropTableIfExistsSQL(verify *validate.Validator, table_name string, opti
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP TABLE IF EXISTS ")
-	box(options, &sql_command, table_name_escaped,"`","`")
+	Box(options, &sql_command, table_name_escaped,"`","`")
 
 	//sql_command.WriteString(table_name_escaped)
 	sql_command.WriteString(";")
@@ -60,7 +60,7 @@ func GetDropTableSQL(verify *validate.Validator, table_name string, options *jso
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP TABLE ")
-	box(options, &sql_command, table_name_escaped,"`","`")
+	Box(options, &sql_command, table_name_escaped,"`","`")
 
 	//sql_command.WriteString(table_name_escaped)
 	sql_command.WriteString(";")

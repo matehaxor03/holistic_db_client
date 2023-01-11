@@ -131,7 +131,7 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 	var sql_command strings.Builder
 	sql_command.WriteString("UPDATE ")
 
-	box(options, &sql_command,table_name_escaped,"`","`")
+	Box(options, &sql_command,table_name_escaped,"`","`")
 
 	sql_command.WriteString(" \n")
 
@@ -162,7 +162,7 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 		
-		box(options, &sql_command,record_non_identity_column_escaped,"`","`")
+		Box(options, &sql_command,record_non_identity_column_escaped,"`","`")
 
 		sql_command.WriteString("=")
 
@@ -368,7 +368,7 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 
-		box(options, &sql_command, primary_key_table_column_ecaped,"`","`")
+		Box(options, &sql_command, primary_key_table_column_ecaped,"`","`")
 
 		sql_command.WriteString(" = ")
 

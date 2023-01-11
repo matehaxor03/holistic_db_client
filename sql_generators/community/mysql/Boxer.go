@@ -5,7 +5,7 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func box(options *json.Map, builder *strings.Builder, thing string, opening_symbol string, closing_symbol string) {
+func Box(options *json.Map, builder *strings.Builder, thing string, opening_symbol string, closing_symbol string) {
 	runes := []rune(thing)
 	slash := []byte("\\")
 
