@@ -393,7 +393,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQLIfExists(verify, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, temp_table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -685,7 +685,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return sql_generator_mysql.GetCreateTableSQLMySQL(verify, *getData(), options)
+		return sql_generator_mysql.GetCreateTableSQL(verify, *getData(), options)
 	}
 
 	createTable := func() []error {
@@ -784,7 +784,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			options.SetBoolValue("use_file", false)
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
-			sql_command, new_options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQLMySQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
+			sql_command, new_options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -863,7 +863,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
-			sql_command, options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQLMySQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
+			sql_command, options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}

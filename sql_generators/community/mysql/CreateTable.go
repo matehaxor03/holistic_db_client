@@ -10,7 +10,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetCreateTableSQLMySQL(verify *validate.Validator, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+func GetCreateTableSQL(verify *validate.Validator, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {

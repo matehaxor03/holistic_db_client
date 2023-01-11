@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetDropTableSQLIfExists(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+func GetDropTableIfExistsSQL(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {

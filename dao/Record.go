@@ -625,7 +625,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, nil, errors
 		}
 	
-		return sql_generator_mysql.GetUpdateRecordSQLMySQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
+		return sql_generator_mysql.GetUpdateRecordSQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
@@ -681,7 +681,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("transactional", false)
 		
 
-		return sql_generator_mysql.GetCreateRecordSQLMySQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
+		return sql_generator_mysql.GetCreateRecordSQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	created_record := Record{
