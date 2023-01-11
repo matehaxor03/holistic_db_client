@@ -95,6 +95,7 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 
 	sql_command.WriteString(" (")
 	index := 0
+	var record_columns_ordered []string
 	for record_column, _ := range *record_columns {
 		if _, found := (valid_columns)[record_column]; !found {
 			errors = append(errors, fmt.Errorf("column does not exist"))
@@ -112,12 +113,14 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 		if index < (len(*record_columns) - 1) {
 			sql_command.WriteString(", ")
 		}
+
+		record_columns_ordered = append(record_columns_ordered, record_column)
 		index++
 	}
 
 	sql_command.WriteString(") VALUES (")
 	index = 0
-	for record_column, _  := range *record_columns {
+	for _, record_column  := range record_columns_ordered {
 		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", record_column, "self")
 		if paramter_errors != nil {
 			errors = append(errors, paramter_errors...)
