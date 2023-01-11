@@ -151,25 +151,14 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 
 		databaseCreateOptions := getDatabaseCreateOptions()
 
-		var collate_value *string = nil
-		var character_set_value *string = nil
+		var collate *string = nil
+		var character_set *string = nil
 		if databaseCreateOptions != nil {
-			character_set, character_set_errors := databaseCreateOptions.GetCharacterSet()
-			if character_set_errors != nil {
-				return character_set_errors
-			} else if !common.IsNil(character_set) {
-				character_set_value = character_set
-			}
-
-			collate, collate_errors := databaseCreateOptions.GetCollate()
-			if collate_errors != nil {
-				return collate_errors
-			} else if !common.IsNil(collate) {
-				collate_value = collate
-			}
+			character_set = databaseCreateOptions.GetCharacterSet()
+			collate = databaseCreateOptions.GetCollate()
 		}
 
-		sql_command, new_options, generate_sql_errors :=  sql_generator_mysql.GetCreateDatabaseSQL(verify, database_name, character_set_value, collate_value, options)
+		sql_command, new_options, generate_sql_errors :=  sql_generator_mysql.GetCreateDatabaseSQL(verify, database_name, character_set, collate, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors
