@@ -220,15 +220,8 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, errors
 		}
 
-		temp_host_name, temp_host_name_errors := temp_host.GetHostName()
-		if temp_host_name_errors != nil {
-			return nil, temp_host_name_errors
-		}
-
-		temp_port_number, temp_port_number_errors := temp_host.GetPortNumber()
-		if temp_port_number_errors != nil {
-			return nil, temp_port_number_errors
-		}
+		temp_host_name := temp_host.GetHostName()
+		temp_port_number := temp_host.GetPortNumber()
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {

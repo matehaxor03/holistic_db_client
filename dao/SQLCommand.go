@@ -82,15 +82,9 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			host_name, host_name_errors := host.GetHostName()
-			if host_name_errors != nil {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting hostname: %s", fmt.Sprintf("%s", host_name_errors)))
-			}
-
-			port_number, port_number_errors := host.GetPortNumber()
-			if port_number_errors != nil {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting port number: %s", fmt.Sprintf("%s", port_number_errors)))
-			}
+			host_name := host.GetHostName()
+			port_number := host.GetPortNumber()
+			
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", host_name, port_number)
 			credentials_command := ""

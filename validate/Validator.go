@@ -11,6 +11,7 @@ type Validator struct {
 	ValidateRepositoryName func(repository_name string) ([]error)
 	ValidateRepositoryAccountName func(repository_account_name string) ([]error)
 	ValidatePortNumber func(port_number string) ([]error)
+	ValidateDomainName func(domain_name string) ([]error)
 
 
 	GetValidateGrantFunc func() (*func(string) []error)
@@ -78,6 +79,9 @@ func NewValidator() (*Validator) {
 		},
 		ValidatePortNumber: func(port_number string) ([]error) {
 			return valid_port_number_characters.ValidatePortNumber(port_number)
+		},
+		ValidateDomainName: func(domain_name string) ([]error) {
+			return valid_domain_name_characters.ValidateDomainName(domain_name)
 		},
 
 		GetValidateDatabaseNameFilterAllFunc: func() (*func(string) []error) {

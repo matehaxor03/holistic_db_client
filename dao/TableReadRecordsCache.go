@@ -41,24 +41,9 @@ func newTableReadRecordsCache() (*TableReadRecordsCache) {
 			return nil, errors
 		}
 
-		host_name, host_name_errors := host.GetHostName()
-		if host_name_errors != nil {
-			errors = append(errors, host_name_errors...)
-		} else if common.IsNil(host_name) {
-			errors = append(errors, fmt.Errorf("host_name is nil"))
-		}
-
-		port_number, port_number_errors := host.GetPortNumber()
-		if port_number_errors != nil {
-			errors = append(errors, port_number_errors...)
-		} else if common.IsNil(port_number) {
-			errors = append(errors, fmt.Errorf("port_number is nil"))
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
+		host_name := host.GetHostName()
+		port_number := host.GetPortNumber()
+	
 		key := host_name + "#" + port_number + "#" + database_name + "#" + sql
 		
 		if common.IsNil(records) {
