@@ -54,9 +54,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	database_username_value, database_username_value_found := params[CLS_USER]
+	database_username_value_ptr, database_username_found := params[CLS_USER]
+	database_username := ""
+	if database_username_value_ptr != nil && database_username_found {
+		database_username = *database_username_value_ptr
+	}
 
-	database_name, _ := params[CLS_DATABASE_NAME]
+	database_name_ptr, database_name_found := params[CLS_DATABASE_NAME]
+	database_name := ""
+	if database_name_ptr != nil && database_name_found {
+		database_name = *database_name_ptr
+	}
+	
 	character_set, _ := params[CLS_CHARACTER_SET]
 	collate, _ := params[CLS_COLLATE]
 
@@ -76,19 +85,45 @@ func main() {
 		class_value = strings.ToUpper(*class_pt)
 	}
 
+	host_name_pt, host_name_found := params[CLS_HOST]
+	host_name_value := ""
+	if host_name_pt != nil && host_name_found {
+		host_name_value = *host_name_pt
+	}
+
+	port_number_pt, port_number_found := params[CLS_PORT]
+	port_number_value := ""
+	if port_number_pt != nil && port_number_found {
+		port_number_value = *port_number_pt
+	}
+
+	if !host_name_found {
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_HOST, CLS_HOST))
+	}
+
+	if !port_number_found {
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_PORT, CLS_PORT))
+	}
+
+
+	if !database_name_found {
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
+	}
+
+	if !database_username_found {
+		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
+	}
+
 	if command_pt == nil || !command_found {
 		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_COMMAND, CLS_COMMAND))
 	}
 
-	if !database_username_value_found || common.IsNil(database_username_value) {
-		context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_USER, CLS_USER))
-	}
 
 	if context.HasErrors() {
 		os.Exit(1)
 	}
 
-	client, client_errors := client_manager.GetClient(*database_username_value)
+	client, client_errors := client_manager.GetClient(host_name_value, port_number_value, database_name, database_username)
 	if client_errors != nil {
 		errors = append(errors, client_errors...)
 	}
@@ -104,26 +139,26 @@ func main() {
 		}
 
 		if class_value == DATABASE_CLASS {
-			if database_name == nil || *database_name == "" {
+			if database_name == "" {
 				context.LogError(fmt.Errorf("error: %s is a mandatory field e.g %s=", CLS_DATABASE_NAME, CLS_DATABASE_NAME))
 				os.Exit(1)
 			}
 
-			database_exists, database_exists_errors := client.DatabaseExists(*database_name)
+			database_exists, database_exists_errors := client.DatabaseExists(database_name)
 			if database_exists_errors != nil {
 				context.LogErrors(database_exists_errors)
 				os.Exit(1)
 			}
 
 			if database_exists == false {
-				_, database_errors := client.CreateDatabase(*database_name, character_set, collate)
+				_, database_errors := client.CreateDatabase(database_name, character_set, collate)
 
 				if database_errors != nil {
 					context.LogErrors(database_errors)
 					os.Exit(1)
 				}
 			} else {
-				context.LogError(fmt.Errorf("error: database: %s exists: %b", *database_name, database_exists))
+				context.LogError(fmt.Errorf("error: database: %s exists: %b", database_name, database_exists))
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {

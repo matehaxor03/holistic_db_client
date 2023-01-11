@@ -244,33 +244,27 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			temp_database_name = temp_database_name_value
 		} 
 
-		connection_string := "holistic_db_config#" + temp_host_name + "#" + temp_port_number + "#" + temp_database_name + "#" + username
-		tuple_credentials, tuple_credentials_errors := temp_client_manager.GetTupleCredentials(connection_string)
-		if tuple_credentials_errors != nil {
-			return nil, tuple_credentials_errors
-		}
-
-		new_temp_host, new_temp_host_errors := newHost(verify, (tuple_credentials.host_name), (tuple_credentials.port_number))
+		new_temp_host, new_temp_host_errors := newHost(verify, temp_host_name, temp_port_number)
 		if new_temp_host_errors != nil {
 			return nil, new_temp_host_errors
 		}
 
-		client, client_errors := newClient(verify, temp_client_manager, new_temp_host, &(tuple_credentials.database_username), nil)
+		client, client_errors := newClient(verify, temp_client_manager, new_temp_host, &username, nil)
 		if client_errors != nil {
 			return nil, client_errors
 		}
 
-		credentials, credentials_errors := newCredentials(verify, (tuple_credentials.database_username), "")
+		credentials, credentials_errors := newCredentials(verify, username, "")
 		if credentials_errors != nil {
 			return nil, credentials_errors
 		}
 
-		use_database_errors := client.UseDatabaseByName((tuple_credentials.database_name))
+		use_database_errors := client.UseDatabaseByName(temp_database_name)
 		if use_database_errors != nil {
 			return nil, use_database_errors
 		}
 
-		domain_name, domain_name_errors := NewDomainName(verify, (tuple_credentials.host_name))
+		domain_name, domain_name_errors := NewDomainName(verify, temp_host_name)
 		if domain_name_errors != nil {
 			return nil, domain_name_errors
 		}
