@@ -15,10 +15,6 @@ import (
 func mapValueFromDBToRecord(verify *validate.Validator, table Table, current_json *json.Value) (*Record, []error) {
 	var errors []error
 
-	if common.IsNil(table) {
-		errors = append(errors, fmt.Errorf("table is nil"))
-	}
-
 	if common.IsNil(current_json) {
 		errors = append(errors, fmt.Errorf("current_json is nil"))
 	}
@@ -349,7 +345,7 @@ type Record struct {
 	GetForeignKeyColumns func() (*map[string]bool, []error)
 	SetLastModifiedDate func(value *time.Time) []error
 	SetArchievedDate func(value *time.Time) []error
-	GetTable func() (Table, []error)
+	GetTable func() (Table)
 }
 
 func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
@@ -396,19 +392,8 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 
 	data.SetMap("[fields]", &record_data)
 	data.SetMap("[schema]", table_schema)
-
-	map_system_fields := json.NewMap()
-	map_system_fields.SetObjectForMap("[table]", table)
-	data.SetMap("[system_fields]", map_system_fields)
-
-	map_system_schema := json.NewMap()
-
-	map_table_schema := json.NewMap()
-	type_table := "dao.Table"
-	map_table_schema.SetString("type", &type_table)
-	map_system_schema.SetMap("[table]", map_table_schema)
-
-	data.SetMap("[system_schema]", map_system_schema)
+	data.SetMap("[system_fields]", json.NewMap())
+	data.SetMap("[system_schema]", json.NewMap())
 
 	schema_column_names := table_schema.GetKeys()
 	for _, schema_column_name := range schema_column_names {
@@ -434,19 +419,8 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return helper.GetRecordColumns(*getData())
 	}
 
-	getTable := func() (Table, []error) {
-		var errors []error
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[table]", "dao.Table")
-		if temp_value_errors != nil {
-			errors = append(errors, temp_value_errors...)
-		} else if common.IsNil(temp_value) {
-			errors = append(errors, fmt.Errorf("table is nil"))
-		}
-		
-		if len(errors) > 0 {
-			return Table{}, errors
-		}
-		return temp_value.(Table), nil
+	getTable := func() (Table) {
+		return table
 	}
 
 	getArchieved := func() (*bool, []error) {
@@ -526,7 +500,20 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), struct_type)
+		var errors []error
+		if table_validation_errors := table.Validate(); table_validation_errors != nil {
+			errors = append(errors, table_validation_errors...)
+		}
+
+		if generic_validation_errors := ValidateData(getData(), struct_type); generic_validation_errors != nil {
+			errors = append(errors, generic_validation_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
 	}
 
 	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
@@ -535,14 +522,9 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, errors
 		}
 
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			return nil, temp_table_errors
-		}
-
-		temp_database := temp_table.GetDatabase()
+		database := table.GetDatabase()
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -577,31 +559,15 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
 	
-		if len(errors) > 0 {
-			return nil, nil, errors
-		}
-
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			errors = append(errors, temp_table_errors...)
-		} else if common.IsNil(temp_table) {
-			errors = append(errors, fmt.Errorf("table is nil"))
-		}
-		
-		if len(errors) > 0 {
-			return nil, nil, errors
-		}
-
-		temp_table_name := temp_table.GetTableName()
 	
-		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
+		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
 			errors = append(errors, temp_table_schema_errors...)
 		} else if common.IsNil(temp_table_schema) {
 			errors = append(errors, fmt.Errorf("table schema is nil"))
 		}
 
-		temp_table_columns, temp_table_columns_errors := temp_table.GetTableColumns()
+		temp_table_columns, temp_table_columns_errors := table.GetTableColumns()
 		if temp_table_columns_errors != nil {
 			errors = append(errors, temp_table_columns_errors...)
 		} else if common.IsNil(temp_table_columns) {
@@ -612,7 +578,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, nil, errors
 		}
 	
-		return sql_generator_mysql.GetUpdateRecordSQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
+		return sql_generator_mysql.GetUpdateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	getCreateSQL := func() (*string, *json.Map, []error) {
@@ -626,27 +592,14 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, nil, errors
 		}
 
-		temp_table, temp_table_errors := getTable()
-		if temp_table_errors != nil {
-			errors = append(errors, temp_table_errors...)
-		} else if common.IsNil(temp_table) {
-			errors = append(errors, fmt.Errorf("table is nil"))
-		}
-
-		if len(errors) > 0 {
-			return nil, nil, errors
-		}
-
-		temp_table_name := temp_table.GetTableName()
-
-		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
+		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
 			errors = append(errors, temp_table_schema_errors...)
 		} else if common.IsNil(temp_table_schema) {
 			errors = append(errors, fmt.Errorf("table schema is nil"))
 		}
 
-		temp_table_columns, temp_table_columns_errors := temp_table.GetTableColumns()
+		temp_table_columns, temp_table_columns_errors := table.GetTableColumns()
 		if temp_table_columns_errors != nil {
 			errors = append(errors, temp_table_columns_errors...)
 		} else if common.IsNil(temp_table_columns) {
@@ -663,7 +616,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("transactional", false)
 		
 
-		return sql_generator_mysql.GetCreateRecordSQL(verify, temp_table_name, *temp_table_schema, *temp_table_columns, *getData(), options)
+		return sql_generator_mysql.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	created_record := Record{
@@ -1063,7 +1016,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		SetArchievedDate: func(value *time.Time) []error {
 			return setArchievedDate(value)
 		},
-		GetTable: func() (Table, []error) {
+		GetTable: func() (Table) {
 			return getTable()
 		},
 	}
