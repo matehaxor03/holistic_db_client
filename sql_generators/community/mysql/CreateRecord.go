@@ -90,8 +90,8 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 	sql_command.WriteString("INSERT INTO ")
 	
 	
-	sql_command.WriteString(table_name_escaped)
-	
+	box(options, &sql_command, table_name_escaped,"`","`")
+
 
 	sql_command.WriteString(" (")
 	index := 0
@@ -107,7 +107,7 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 		
-		sql_command.WriteString(record_column_escaped)
+		box(options, &sql_command,record_column_escaped,"`","`")
 
 		if index < (len(*record_columns) - 1) {
 			sql_command.WriteString(", ")

@@ -229,7 +229,7 @@ func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_da
 				continue
 			}
 
-			order_by_clause.WriteString(escaped_order_by_column_name)
+			box(options, &order_by_clause, escaped_order_by_column_name,"`","`")
 			order_by_clause.WriteString(" ")
 			order_by_clause.WriteString(order_by_string_value_validated)
 
@@ -261,7 +261,7 @@ func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_da
 			if escape_string_value_errors != nil {
 				errors = append(errors, escape_string_value_errors)
 			} else {
-				sql_command.WriteString(escape_string_value)
+				box(options, &sql_command, escape_string_value,"`","`")			
 				if i < (select_fields_values_length - 1) {
 					sql_command.WriteString(", ")
 				} else {
@@ -274,7 +274,7 @@ func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_da
 	}
 
 	sql_command.WriteString("FROM ")
-	sql_command.WriteString(table_name_escaped)
+	box(options, &sql_command, table_name_escaped,"`","`")
 	sql_command.WriteString(" ")
 
 	if filters != nil {
@@ -300,9 +300,7 @@ func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_da
 				errors = append(errors, column_filter_escaped_errors)
 			}
 
-			
-			sql_command.WriteString(column_filter_escaped)
-			
+			box(options, &sql_command, column_filter_escaped,"`","`")			
 
 			if common.IsNil(filters_logic) {
 				sql_command.WriteString(" = ")

@@ -29,8 +29,9 @@ func GetDropDatabaseIfExistsSQL(verify *validate.Validator, database_name string
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP DATABASE IF EXISTS ")
-	
-	sql_command.WriteString(database_name_escaped)
+	box(options, &sql_command, database_name_escaped,"`","`")
+
+	//sql_command.WriteString(database_name_escaped)
 	
 	sql_command.WriteString(";")
 	sql_command_result := sql_command.String()
@@ -60,7 +61,9 @@ func GetDropDatabaseSQL(verify *validate.Validator, database_name string, option
 
 	var sql_command strings.Builder
 	sql_command.WriteString("DROP DATABASE ")
-	sql_command.WriteString(database_name_escaped)
+	box(options, &sql_command, database_name_escaped,"`","`")
+
+	//sql_command.WriteString(database_name_escaped)
 	sql_command.WriteString(";")
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil
