@@ -279,10 +279,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			}
 
 
-			temp_host, temp_host_errors := database.GetHost()
-			if temp_host_errors != nil {
-				return temp_host_errors
-			}
+			temp_host := database.GetHost()
 
 			temp_host_name, temp_host_name_errors := temp_host.GetHostName()
 			if temp_host_name_errors != nil {

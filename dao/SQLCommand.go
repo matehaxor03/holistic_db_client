@@ -56,26 +56,19 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			host, host_errors := database.GetHost()
-			if host_errors != nil {
-				errors = append(errors, host_errors...)
-			} else if common.IsNil(host) {
-				errors = append(errors, fmt.Errorf("error: host is nil"))
-			} else {
-				host_errs := host.Validate()
-				if host_errs != nil {
-					errors = append(errors, host_errs...)
-				}
+			host := database.GetHost()
+			if host_errors := host.Validate(); host_errors != nil {
+				return nil, host_errors
 			}
 
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
-			database_username, database_username_errors := database.GetDatabaseUsername()
-			if database_username_errors != nil {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database username: %s", fmt.Sprintf("%s", database_username_errors)))
-			} else if database_username == "" {
+			database_username := database.GetDatabaseUsername()
+			if database_username == nil {
+				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is not set"))
+			} else if *database_username == "" {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is empty string"))
 			}
 
@@ -101,18 +94,12 @@ func newSQLCommand() (*SQLCommand, []error) {
 
 			host_command := fmt.Sprintf("--host=%s --port=%s --protocol=TCP ", host_name, port_number)
 			credentials_command := ""
-
-			database_name, database_name_errors := database.GetDatabaseName()
-			if database_name_errors != nil {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors getting database_name: %s", fmt.Sprintf("%s", database_name_errors)))
-			} else if database_name == "" {
-				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand had errors database_name is empty string"))
-			} 
 			
 			if len(errors) > 0 {
 				return nil, errors
 			}
 
+			database_name := database.GetDatabaseName()
 			database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
 			if database_name_escaped_errors != nil {
 				errors = append(errors, database_name_escaped_errors)
@@ -122,10 +109,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			if database_username != "root" {
-				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + (database_username) + ".config"
+			if *database_username != "root" {
+				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + (*database_username) + ".config"
 			} else {
-				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + (database_username) + ".config"
+				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + (*database_username) + ".config"
 			}
 
 			if len(errors) > 0 {

@@ -6,7 +6,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
-	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
@@ -17,12 +16,12 @@ type Database struct {
 	DeleteIfExists  func() []error
 	Exists          func() (bool, []error)
 	TableExists     func(table_name string) (bool, []error)
-	GetDatabaseName func() (string, []error)
-	GetDatabaseUsername func() (string, []error)
+	GetDatabaseName func() (string)
+	GetDatabaseUsername func() (*string)
 	SetDatabaseUsername func(database_username string) []error
 	SetDatabaseName func(database_name string) []error
 	DeleteTableByTableNameIfExists func(table_name string) []error
-	GetHost       func() (Host, []error)
+	GetHost       func() (Host)
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
 	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
 	GetTable        func(table_name string) (*Table, []error)
@@ -37,9 +36,9 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, host Host, database_username string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var errors []error
-
+	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
 	table_additional_schema_cache := newTableAdditionalSchemaCache()
 	
@@ -47,9 +46,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	if SQLCommand_errors != nil {
 		errors = append(errors, SQLCommand_errors...)
 	}
-
-	var this_database *Database
-	struct_type := "*dao.Database"
 
 	setDatabase := func(database *Database) {
 		this_database = database
@@ -59,94 +55,45 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		return this_database
 	}
 
-	data := json.NewMapValue()
-	data.SetMapValue("[fields]", json.NewMapValue())
-	data.SetMapValue("[schema]", json.NewMapValue())
-
-	map_system_fields := json.NewMapValue()
-	map_system_fields.SetObjectForMap("[host]", host)
-	map_system_fields.SetObjectForMap("[database_name]", database_name)
-	map_system_fields.SetObjectForMap("[database_username]", database_username)
-	map_system_fields.SetObjectForMap("[database_create_options]", database_create_options)
-	data.SetMapValue("[system_fields]", map_system_fields)
-
-	map_system_schema := json.NewMapValue()
-	
-	map_host_schema := json.NewMapValue()
-	map_host_schema.SetStringValue("type", "dao.Host")
-	map_system_schema.SetMapValue("[host]", map_host_schema)
-
-	map_database_name_schema := json.NewMapValue()
-	map_database_name_schema.SetStringValue("type", "string")
-	map_database_name_schema.SetIntValue("min_length", 2)
-	map_database_name_schema_filters := json.NewArrayValue()
-	map_database_name_schema_filter := json.NewMapValue()
-	map_database_name_schema_filter.SetObjectForMap("function",  verify.GetValidateDatabaseNameFunc())
-	map_database_name_schema_filters.AppendMapValue(map_database_name_schema_filter)
-	map_database_name_schema.SetArrayValue("filters", map_database_name_schema_filters)
-	map_system_schema.SetMapValue("[database_name]", map_database_name_schema)
-
-	map_database_username := json.NewMapValue()
-	map_database_username.SetStringValue("type", "string")
-	array_database_username_filters := json.NewArrayValue()
-	map_database_username_filter := json.NewMapValue()
-	map_database_username_filter.SetObjectForMap("function",  verify.GetValidateUsernameFunc())
-	array_database_username_filters.AppendMapValue(map_database_username_filter)
-	map_database_username.SetArrayValue("filters", array_database_username_filters)
-	map_system_schema.SetMapValue("[database_username]", map_database_username)
-
-	map_create_options_schema := json.NewMapValue()
-	map_create_options_schema.SetStringValue("type", "*dao.DatabaseCreateOptions")
-	map_system_schema.SetMapValue("[database_create_options]", map_create_options_schema)
-
-	data.SetMapValue("[system_schema]", map_system_schema)
-
-	getData := func() (*json.Map) {
-		return &data
-	}
-
 	validate := func() []error {
-		return ValidateData(getData(), struct_type)
-	}
-
-	getDatabaseCreateOptions := func() (*DatabaseCreateOptions, []error) {
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]",  "[database_create_options]", "*dao.DatabaseCreateOptions")
-		if temp_value_errors != nil {
-			return nil, temp_value_errors
-		} else if common.IsNil(temp_value) {
-			return nil, nil
-		}
-		return temp_value.(*DatabaseCreateOptions), nil
-	}
-
-	getHost := func() (Host, []error) {
 		var errors []error
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[host]", "dao.Host")
-		if temp_value_errors != nil {
-			errors = append(errors, temp_value_errors...)
-		} else if common.IsNil(temp_value) {
-			errors = append(errors, fmt.Errorf("host is nil"))
+		if host_errors := host.Validate(); host_errors != nil {
+			errors = append(errors, host_errors...)
 		}
 		
-		if len(errors) > 0 {
-			return Host{}, errors
+		if database_username != nil {
+			if database_username_errors := verify.ValidateUsername(*database_username); database_username_errors != nil {
+				errors = append(errors, database_username_errors...)
+			}
+		}
+		
+		if database_name_errors := verify.ValidateDatabaseName(database_name); database_name_errors != nil {
+			errors = append(errors, database_name_errors...)
 		}
 
-		return temp_value.(Host), nil
+		if database_create_options != nil {
+			if database_create_options_errors := database_create_options.Validate(); database_create_options_errors != nil {
+				errors = append(errors, database_create_options_errors...)
+			}
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
 	}
 
-	getDatabaseName := func() (string, []error) {
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_name]", "string")
-		if temp_value_errors != nil {
-			errors = append(errors, temp_value_errors...)
-		} else if common.IsNil(temp_value) {
-			errors = append(errors, fmt.Errorf("database name is nil"))
-		}
+	getDatabaseCreateOptions := func() (*DatabaseCreateOptions) {
+		return database_create_options
+	}
 
-		if len(errors) > 0 { 
-			return "", errors
-		}
-		return temp_value.(string), nil
+	getHost := func() (Host) {
+		return host
+	}
+
+	getDatabaseName := func() (string) {
+		return database_name
 	}
 
 	setDatabaseName := func(new_database_name string) []error {
@@ -154,24 +101,21 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		if database_name_errors != nil {
 			return database_name_errors
 		}
-		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database_name]", new_database_name)
+		database_name = new_database_name
+		return nil
 	}
 
-	getDatabaseUsername := func() (*string, []error) {
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", "*string")
-		if temp_value_errors != nil {
-			errors = append(errors, temp_value_errors...)
-		} 
-
-		if len(errors) > 0 { 
-			return nil, errors
-		}
-
-		return temp_value.(*string), nil
+	getDatabaseUsername := func() (*string) {
+		return database_username
 	}
 	
 	setDatabaseUsername := func(new_database_username string) []error {
-		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[database_username]", new_database_username)
+		if database_username_errors := verify.ValidateUsername(new_database_username); database_username_errors != nil {
+			return database_username_errors
+		}
+
+		database_username = &new_database_username
+		return nil
 	}
 
 	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
@@ -205,10 +149,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 
-		databaseCreateOptions, databaseCreateOptions_errors := getDatabaseCreateOptions()
-		if databaseCreateOptions_errors != nil {
-			return databaseCreateOptions_errors
-		}
+		databaseCreateOptions := getDatabaseCreateOptions()
 
 		var collate_value *string = nil
 		var character_set_value *string = nil
@@ -245,12 +186,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 	exists := func() (*bool, []error) {
 		var errors []error
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
-
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, temp_database_name, nil)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, getDatabaseName(), nil)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -281,12 +217,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
-
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableNamesSQL(verify, temp_database_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableNamesSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -337,12 +268,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return temp_database_name_errors
-		}
-
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseSQL(verify, temp_database_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -366,12 +292,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return temp_database_name_errors
-		}
-
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseIfExistsSQL(verify, temp_database_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseIfExistsSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -574,13 +495,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		} else if !common.IsNil(cached_additonal_schema) {
 			return cached_additonal_schema, nil
 		}
-
-		temp_database_name, temp_database_name_errors := getDatabaseName()
-		if temp_database_name_errors != nil {
-			return nil, temp_database_name_errors
-		}
 		
-		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, temp_database_name, table_name, options)
+		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -718,10 +634,10 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 
 			return tables, nil
 		},
-		GetHost: func() (Host, []error) {
+		GetHost: func() (Host) {
 			return getHost()
 		},
-		GetDatabaseName: func() (string, []error) {
+		GetDatabaseName: func() (string) {
 			return getDatabaseName()
 		},
 		SetDatabaseName: func(database_name string) ([]error) {
@@ -730,14 +646,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 		SetDatabaseUsername: func(database_username string) []error {
 			return setDatabaseUsername(database_username)
 		},
-		GetDatabaseUsername: func() (string, []error) {
-			database_username_temp, database_username_temp_errors := getDatabaseUsername()
-			if database_username_temp_errors != nil {
-				return "", database_username_temp_errors
-			} else if common.IsNil(database_username_temp) {
-				return "", nil
-			}
-			return *database_username_temp, nil
+		GetDatabaseUsername: func() (*string) {
+			return getDatabaseUsername()
 		},
 		GetTableSchema: func(table_name string) (*json.Map, []error) {
 			return getTableSchema(table_name)

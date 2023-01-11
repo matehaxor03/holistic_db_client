@@ -132,7 +132,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, errors
 		}
 		
-		database, errs := newDatabase(verify, *temp_host, *temp_database_username, database_name, temp_database_create_options)
+		database, errs := newDatabase(verify, *temp_host, temp_database_username, database_name, temp_database_create_options)
 		if errs != nil {
 			return nil, errs
 		}
@@ -192,7 +192,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return errors
 		}
 
-		database, database_errors := newDatabase(verify, *temp_host, *temp_database_username, database_name, nil)
+		database, database_errors := newDatabase(verify, *temp_host, temp_database_username, database_name, nil)
 		if database_errors != nil {
 			return database_errors
 		}
@@ -237,11 +237,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 		temp_database_name := ""
 		if temp_database != nil {
-			temp_database_name_value, temp_database_name_value_errors := temp_database.GetDatabaseName()
-			if temp_database_name_value_errors != nil {
-				return nil, temp_database_name_value_errors
-			}
-			temp_database_name = temp_database_name_value
+			temp_database_name = temp_database.GetDatabaseName()
 		} 
 
 		new_temp_host, new_temp_host_errors := newHost(verify, temp_host_name, temp_port_number)
@@ -319,7 +315,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return errors
 			}
 			
-			database, database_errors := newDatabase(verify, *temp_host, *temp_database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *temp_host, temp_database_username, database_name, nil)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -353,7 +349,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return false, errors
 			}
 
-			database, database_errors := newDatabase(verify, *temp_host, *temp_database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *temp_host, temp_database_username, database_name, nil)
 			if database_errors != nil {
 				return false, database_errors
 			}

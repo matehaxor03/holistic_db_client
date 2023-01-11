@@ -24,19 +24,8 @@ func newTableAdditionalSchemaCache() (*TableAdditionalSchemaCache) {
 			return nil, errors
 		}
 
-		database_name, database_name_errors := database.GetDatabaseName()
-		if database_name_errors != nil {
-			errors = append(errors, database_name_errors...)
-		} else if common.IsNil(database_name) {
-			errors = append(errors, fmt.Errorf("database_name is nil"))
-		}
-
-		host, host_errors := database.GetHost()
-		if host_errors != nil {
-			errors = append(errors, host_errors...)
-		} else if common.IsNil(host) {
-			errors = append(errors, fmt.Errorf("host is nil"))
-		}
+		database_name := database.GetDatabaseName()
+		host := database.GetHost()
 
 		if len(errors) > 0 {
 			return nil, errors

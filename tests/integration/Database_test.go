@@ -12,7 +12,7 @@ import (
 
 func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 	database := helper.GetTestDatabase(t)
-	previous_database_name, _ := database.GetDatabaseName()
+	previous_database_name := database.GetDatabaseName()
 
 	blacklist_map := validation_constants.GetMySQLKeywordsAndReservedWordsInvalidWords()
 	for blacklist_database_name, _ := range blacklist_map {
@@ -27,10 +27,7 @@ func TestDatabaseCanSetDatabaseNameWithBlackListName(t *testing.T) {
 			t.Errorf(fmt.Sprintf("error: SetDatabaseName should not return error when database_name is blacklisted, %s", set_database_name_errors))
 		}
 
-		database_name, database_name_errors := database.GetDatabaseName()
-		if database_name_errors != nil {
-			t.Errorf(fmt.Sprintf("error: %s", database_name_errors))
-		}
+		database_name := database.GetDatabaseName()
 
 		if database_name != blacklist_database_name {
 			t.Errorf("error: database_name was not updated to the blacklisted database_name")
