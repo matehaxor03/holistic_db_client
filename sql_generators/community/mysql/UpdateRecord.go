@@ -45,6 +45,14 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 		return nil, nil, record_columns_errors
 	}
 
+	record_fields, record_fields_error := helper.GetFields(record_data, "[fields]")
+	if record_fields_error != nil {
+		return nil, nil, record_fields_error
+	} else if common.IsNil(record_fields) {
+		errors = append(errors, fmt.Errorf("record fields is nil"))
+		return nil, nil, errors
+	}
+
 	for record_column, _   := range *record_columns {
 		if strings.HasPrefix(record_column, "credential") {
 			options.SetBoolValue("use_file", true)
@@ -79,13 +87,12 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 	for primary_key_table_column, _ := range *primary_key_table_columns {
 		if _, found := (*record_primary_key_columns)[primary_key_table_column]; !found {
 			errors = append(errors, fmt.Errorf("error: record did not contain primary key column: %s", primary_key_table_column))
-		}
+		} 
 	}
 
 	for foreign_key_table_column, _ := range *foreign_key_table_columns {
 		if _, found := (*record_foreign_key_columns)[foreign_key_table_column]; found {
-			record_foreign_key_value := record_data.GetObjectForMap(foreign_key_table_column)
-			if record_foreign_key_value == nil {
+			if record_fields.IsNull(foreign_key_table_column) {
 				errors = append(errors, fmt.Errorf("error: record had foreign key set however was null: %s", foreign_key_table_column))
 			}
 		}
