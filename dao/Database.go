@@ -176,7 +176,13 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 
 	exists := func() (*bool, []error) {
 		var errors []error
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, getDatabaseName(), nil)
+		options := json.NewMap()
+		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("creating_database", true)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, getDatabaseName(), options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -206,6 +212,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		var errors []error
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("creating_database", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableNamesSQL(verify, database_name, options)
 		if sql_command_errors != nil {
@@ -350,7 +358,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
-
 
 
 		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
@@ -660,6 +667,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		GlobalGeneralLogDisable: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("read_no_records", true)
+			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'OFF';"
 			_, command_errors :=  executeUnsafeCommand(&command, options)
@@ -671,6 +680,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		GlobalGeneralLogEnable: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("read_no_records", true)
+			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL general_log = 'ON';"
 			_, command_errors := executeUnsafeCommand(&command, options)
@@ -682,6 +693,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		GlobalSetTimeZoneUTC: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("read_no_records", true)
+			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL time_zone = '+00:00';"
 			_, command_errors :=  executeUnsafeCommand(&command, options)
@@ -693,6 +706,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		GlobalSetSQLMode: func() []error {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("read_no_records", true)
+			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
 			command := "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
 			_, command_errors := executeUnsafeCommand(&command, options)
