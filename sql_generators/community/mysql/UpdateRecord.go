@@ -147,19 +147,24 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 
+		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", record_non_primary_key_column, "self")
+		if paramter_errors != nil {
+			errors = append(errors, paramter_errors...)
+			continue
+		}
+
 		column_definition, column_definition_errors := table_schema.GetMap(record_non_primary_key_column)
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
 			continue
 		} else if common.IsNil(column_definition) {
-			errors = append(errors, fmt.Errorf("column definition not found")) 
+			errors = append(errors, fmt.Errorf("column_definition not found"))
 			continue
 		}
 		
 		box(options, &sql_command,record_non_identity_column_escaped,"`","`")
 
 		sql_command.WriteString("=")
-		column_data := record_data.GetObjectForMap(record_non_primary_key_column)
 
 		if common.IsNil(column_data) {
 			sql_command.WriteString("NULL")
@@ -348,16 +353,24 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 
-		column_definition, column_definition_errors := table_schema.GetMap(primary_key_table_column_ecaped)
+		column_data, paramter_errors := helper.GetField(record_data, "[schema]", "[fields]", primary_key_table_column, "self")
+		if paramter_errors != nil {
+			errors = append(errors, paramter_errors...)
+			continue
+		}
+
+		column_definition, column_definition_errors := table_schema.GetMap(primary_key_table_column)
 		if column_definition_errors != nil {
 			errors = append(errors, column_definition_errors...) 
+			continue
+		} else if common.IsNil(column_definition) {
+			errors = append(errors, fmt.Errorf("column_definition not found"))
 			continue
 		}
 
 		box(options, &sql_command, primary_key_table_column_ecaped,"`","`")
 
 		sql_command.WriteString(" = ")
-		column_data := record_data.GetObjectForMap(primary_key_table_column)
 
 		if common.IsNil(column_data) {
 			sql_command.WriteString("NULL")
