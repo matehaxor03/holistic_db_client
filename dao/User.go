@@ -157,10 +157,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			return nil, nil, temp_domain_name_errors
 		}
 
-		temp_domain_name_value, temp_domain_name_value_errors := temp_domain_name.GetDomainName()
-		if temp_domain_name_value_errors != nil {
-			return nil, nil, temp_domain_name_value_errors
-		}
+		temp_domain_name_value := temp_domain_name.GetDomainName()
 
 		username_escaped, username_escaped_errors := common.EscapeString(temp_username, "'")
 		if username_escaped_errors != nil {
