@@ -79,7 +79,6 @@ func newDatabase(verify *validate.Validator, host Host, database_username string
 	map_database_name_schema := json.NewMapValue()
 	map_database_name_schema.SetStringValue("type", "string")
 	map_database_name_schema.SetIntValue("min_length", 2)
-	map_database_name_schema.SetBoolValue("not_empty_string_value", true)
 	map_database_name_schema_filters := json.NewArrayValue()
 	map_database_name_schema_filter := json.NewMapValue()
 	map_database_name_schema_filter.SetObjectForMap("function",  verify.GetValidateDatabaseNameFunc())

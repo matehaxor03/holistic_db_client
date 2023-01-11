@@ -20,7 +20,6 @@ func GetValidSchemaFields() json.Map {
 	schema_fields.SetNil("default")
 	schema_fields.SetNil("validated")
 	schema_fields.SetNil("filters")
-	schema_fields.SetNil("not_empty_string_value")
 	schema_fields.SetNil("min_length")
 	schema_fields.SetNil("max_length")
 	schema_fields.SetNil("decimal_places")

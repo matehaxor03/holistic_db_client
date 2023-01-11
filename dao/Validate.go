@@ -349,13 +349,6 @@ func ValidateParameterData(struct_type string, schemas *json.Map, schemas_type s
 		} 
 
 
-		if schema_of_parameter.IsBoolTrue("not_empty_string_value") {
-			if *string_value == "" {
-				errors = append(errors, fmt.Errorf("error: table: %s column: %s attribute: %s was an empty string", struct_type, parameter, "not_empty_string_value"))
-			}
-		}
-
-
 		if len(errors) > 0 {
 			return errors
 		} 
