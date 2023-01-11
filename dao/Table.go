@@ -12,14 +12,14 @@ import (
 
 type Table struct {
 	Validate              func() []error
-	Exists                func() (*bool, []error)
+	Exists                func() (bool, []error)
 	Create                func() []error
 	Read                func() []error
 	Delete                func() []error
 	DeleteIfExists        func() []error
 	GetSchema             func() (*json.Map, []error)
 	GetAdditionalSchema   func() (*json.Map, []error)
-	GetTableName          func() (string, []error)
+	GetTableName          func() (string)
 	SetTableName          func(table_name string) []error
 	GetTableColumns       func() (*map[string]bool, []error)
 	GetIdentityColumns    func()  (*map[string]bool, []error)
@@ -32,7 +32,7 @@ type Table struct {
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record *json.Map) ([]error)
 	ReadRecords         func(select_fields *json.Array, filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
-	GetDatabase           func() (Database, []error)
+	GetDatabase           func() (Database)
 }
 
 func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
@@ -70,27 +70,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		d := json.NewMapValue()
 
 		d.SetMap("[fields]", json.NewMap())
-		map_system_fields := json.NewMap()
-		map_system_fields.SetObjectForMap("[database]", b)
-		map_system_fields.SetObjectForMap("[table_name]", n)
-		d.SetMap("[system_fields]", map_system_fields)
-
-		map_system_schema := json.NewMap()
-
-		map_database_schema := json.NewMap()
-		map_database_schema.SetStringValue("type", "dao.Database")
-		map_system_schema.SetMap("[database]", map_database_schema)
-
-		map_table_name_schema := json.NewMap()
-		map_table_name_schema.SetStringValue("type", "string")
-		map_table_name_schema_filters := json.NewArray()
-		map_table_name_schema_filter := json.NewMap()
-		map_table_name_schema_filter.SetObjectForMap("function",  verify.GetValidateTableNameFunc())
-		map_table_name_schema_filters.AppendMap(map_table_name_schema_filter)
-		map_table_name_schema.SetArray("filters", map_table_name_schema_filters)
-		map_system_schema.SetMap("[table_name]", map_table_name_schema)
-
-		d.SetMap("[system_schema]", map_system_schema)
+		d.SetMap("[system_fields]", json.NewMap())
+		d.SetMap("[system_schema]", json.NewMap())
 
 		if user_defined_schema != nil && schema_from_database == nil {
 			default_schema := json.NewMap()
@@ -162,8 +143,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	var this_table_columns *map[string]bool = nil
 	var this_non_primary_key_columns *map[string]bool = nil
 
-	getTableName := func() (string, []error) {
-		return helper.GetTableName(*getData())
+	getTableName := func() (string) {
+		return table_name
 	}
 
 	getTableColumns := func() (*map[string]bool, []error) {
@@ -257,23 +238,28 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	validate := func() []error {
-		return ValidateData(getData(), "*dao.Table")
+		var errors []error
+		if database_errors := database.Validate(); database_errors != nil {
+			errors = append(errors, database_errors...)
+		}
+
+		if table_name_errors := verify.ValidateTableName(table_name); table_name_errors != nil {
+			errors = append(errors, table_name_errors...)
+		}
+
+		if generic_validation_errors := ValidateData(getData(), "*dao.Table"); generic_validation_errors != nil {
+			errors = append(errors, generic_validation_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
 	}
 
-	getDatabase := func() (Database, []error) {
-		var errors []error
-		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[database]", "dao.Database")
-		if temp_value_errors != nil {
-			errors = append(errors, temp_value_errors...)
-		} else if common.IsNil(temp_value) {
-			errors = append(errors, fmt.Errorf("database is nil"))
-		}
-		
-		if len(errors) > 0 {
-			return Database{}, errors
-		}
-		
-		return temp_value.(Database), temp_value_errors
+	getDatabase := func() (Database) {
+		return database
 	}
 
 	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
@@ -281,13 +267,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		if errors != nil {
 			return nil, errors
 		}
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -311,13 +292,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			return nil, temp_table_name_errors
-		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -350,18 +326,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("table_name is nil"))
-		}
-
 		if len(errors) > 0 {
 			return errors
 		}
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -385,19 +354,13 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} 
-
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, temp_table_name, options)
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
-
 
 		_, sql_errors := executeUnsafeCommand(sql_command, new_options)
 
@@ -609,26 +572,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	getAdditionalSchema := func() (*json.Map, []error) {
-		var errors []error
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			errors = append(errors, temp_database_errors...)
-		} else if common.IsNil(temp_database) {
-			errors = append(errors, fmt.Errorf("database is nil"))
-		}
-
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("table_name is nil"))
-		}
-
-		if len(errors) > 0 {
-			return nil,  errors
-		}
-
-		return database.GetAdditionalTableSchema(temp_table_name)
+		return database.GetAdditionalTableSchema(table_name)
 	}
 
 
@@ -641,18 +585,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
-
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			return nil, temp_table_name_errors
-		}
-
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
-		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, temp_table_name, options)
+	
+		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -664,13 +598,13 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, temp_table_name, json_array)
+		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
 		}
 
-		new_data, setup_data_errors := setupData(temp_database, temp_table_name, nil, temp_schema)
+		new_data, setup_data_errors := setupData(database, table_name, nil, temp_schema)
 		if setup_data_errors != nil {
 			errors = append(errors, setup_data_errors...)
 			return nil, errors
@@ -681,11 +615,15 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	setTableName := func(new_table_name string) []error {
-		return helper.SetField(*getData(), "[system_schema]", "[system_fields]", "[table_name]", new_table_name)
+		if new_table_name_errors := verify.ValidateTableName(new_table_name); new_table_name_errors != nil {
+			return new_table_name_errors
+		}
+		table_name = new_table_name
+		return nil
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return sql_generator_mysql.GetCreateTableSQL(verify, *getData(), options)
+		return sql_generator_mysql.GetCreateTableSQL(verify, table_name, *getData(), options)
 	}
 
 	createTable := func() []error {
@@ -714,28 +652,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		temp_database, temp_database_errors := getDatabase()
-		if temp_database_errors != nil {
-			errors = append(errors, temp_database_errors...)
-		} else if common.IsNil(temp_database) {
-			errors = append(errors, fmt.Errorf("error: Table.read database is nil"))
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		temp_table_name, temp_table_name_errors := getTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("error: Table.read table_name is nil"))
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
 		temp_schema, temp_schema_errors := getSchema()
 		if temp_schema_errors != nil {
 			errors = append(errors, temp_schema_errors...)
@@ -753,7 +669,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		Validate: func() []error {
 			return validate()
 		},
-		GetDatabase: func() (Database, []error) {
+		GetDatabase: func() (Database) {
 			return getDatabase()
 		},
 		GetTableColumns: func() (*map[string]bool, []error) {
@@ -784,7 +700,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			options.SetBoolValue("use_file", false)
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
-			sql_command, new_options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
+			sql_command, new_options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -863,7 +779,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
-			sql_command, options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
+			sql_command, options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -936,8 +852,16 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		CreateRecords: func(records json.Array) ([]error) {
 			return createRecords(records)
 		},
-		Exists: func() (*bool, []error) {
-			return exists()
+		Exists: func() (bool, []error) {
+			table_exists, table_exists_errors := exists()
+			if table_exists_errors != nil {
+				return false, table_exists_errors
+			} else if common.IsNil(table_exists) {
+				var table_exists_errors []error
+				errors = append(errors, fmt.Errorf("exists returned nil")) 
+				return false, table_exists_errors
+			}
+			return *table_exists, nil
 		},
 		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
@@ -945,7 +869,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		GetAdditionalSchema: func() (*json.Map, []error) {
 			return getAdditionalSchema()
 		},
-		GetTableName: func() (string, []error) {
+		GetTableName: func() (string) {
 			return getTableName()
 		},
 		SetTableName: func(table_name string) []error {

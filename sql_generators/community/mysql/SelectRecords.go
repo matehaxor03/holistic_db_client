@@ -10,7 +10,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetSelectRecordsSQL(verify *validate.Validator, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
+func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
@@ -30,13 +30,6 @@ func GetSelectRecordsSQL(verify *validate.Validator, table_data json.Map, select
 		errors = append(errors, table_columns_errors...)
 	} else if common.IsNil(table_columns) {
 		errors = append(errors, fmt.Errorf("table_columns is nil"))
-	}
-
-	table_name, table_name_errors := helper.GetTableName(table_data)
-	if table_name_errors != nil {
-		errors = append(errors, table_name_errors...)
-	} else if common.IsNil(table_name) {
-		errors = append(errors, fmt.Errorf("table_name is nil"))
 	}
 
 	if len(errors) > 0 {

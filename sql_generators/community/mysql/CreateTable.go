@@ -10,7 +10,7 @@ import (
 	validate "github.com/matehaxor03/holistic_db_client/validate"
 )
 
-func GetCreateTableSQL(verify *validate.Validator, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+func GetCreateTableSQL(verify *validate.Validator, table_name string, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
 	if common.IsNil(options) {
@@ -18,27 +18,14 @@ func GetCreateTableSQL(verify *validate.Validator, table_data json.Map, options 
 		options.SetBoolValue("use_file", false)
 	}
 
-	temp_table_name, temp_table_name_errors := helper.GetTableName(table_data)
-	if temp_table_name_errors != nil {
-		errors = append(errors, temp_table_name_errors...)
-	} else if common.IsNil(temp_table_name) {
-		errors = append(errors, fmt.Errorf("temp_table_name is nil"))
-	}
-
-	if len(errors) > 0 {
-		return nil, nil, errors
-	}
-
-	validate_table_name_errors := verify.ValidateTableName(temp_table_name)
+	validate_table_name_errors := verify.ValidateTableName(table_name)
 	if validate_table_name_errors != nil  {
 		errors = append(errors, validate_table_name_errors...)
 	}
 
-	table_name_escaped, table_name_escaped_error := common.EscapeString(temp_table_name, "'")
+	table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 	if table_name_escaped_error != nil {
 		errors = append(errors, table_name_escaped_error)
-	} else if common.IsNil(temp_table_name) {
-		errors = append(errors, fmt.Errorf("table_name_escaped is nil"))
 	}
 
 	if len(errors) > 0 {

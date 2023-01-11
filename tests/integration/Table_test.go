@@ -35,13 +35,7 @@ func TestTableExistsTrue(t *testing.T) {
 	exists, exists_errors := table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("exists is 'false' when it should be 'true'")
 	} 
 }
@@ -52,13 +46,7 @@ func TestTableExistsFalse(t *testing.T) {
 	exists, exists_errors := table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("exists is 'true' when it should be 'false'")
 	} 
 }
@@ -69,13 +57,7 @@ func TestTableCreateWithExists(t *testing.T) {
 	exists, exists_errors := table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("exists is 'true' when it should be 'false'")
 	} 
 
@@ -87,13 +69,7 @@ func TestTableCreateWithExists(t *testing.T) {
 	exists, exists_errors = table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("exists is 'false' when it should be 'true'")
 	} 
 }
@@ -105,13 +81,7 @@ func TestTableDeleteWithExists(t *testing.T) {
 	exists, exists_errors := table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if !(*exists) {
+	} else if !(exists) {
 		t.Errorf("exists is 'false' when it should be 'true'")
 	} 
 
@@ -120,13 +90,7 @@ func TestTableDeleteWithExists(t *testing.T) {
 	exists, exists_errors = table.Exists()
 	if exists_errors != nil {
 		t.Error(exists_errors)
-	} 
-
-	if exists == nil {
-		t.Errorf("exists is nil")
-	} 
-
-	if (*exists) {
+	} else if (exists) {
 		t.Errorf("exists is 'true' when it should be 'false'")
 	} 
 }
@@ -146,12 +110,8 @@ func TestTableCanSetTableNameWithBlackListName(t *testing.T) {
 			t.Errorf(fmt.Sprintf("SetTableName should not return error when table_name is blacklisted %s", set_table_name_errors))
 		}
 
-		table_name, table_name_errors := table.GetTableName()
-		if table_name_errors != nil {
-			t.Errorf(fmt.Sprintf("%s", table_name_errors))
-		}
+		table_name := table.GetTableName()
 		
-
 		if table_name != blacklist_table_name {
 			t.Errorf("table_name was not updated to the blacklisted table_name")
 		}

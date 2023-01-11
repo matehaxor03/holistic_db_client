@@ -41,12 +41,7 @@ func mapValueFromDBToRecord(verify *validate.Validator, table Table, current_jso
 		errors = append(errors, fmt.Errorf("table_schema is nil"))
 	}
 
-	table_name, table_name_errors := table.GetTableName()
-	if table_name_errors != nil {
-		errors = append(errors, table_name_errors...)
-	} else if common.IsNil(table_name) {
-		errors = append(errors, fmt.Errorf("table_name is nil"))
-	}
+	table_name := table.GetTableName()
 
 	if len(errors) > 0 {
 		return nil, errors
@@ -545,10 +540,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, temp_table_errors
 		}
 
-		temp_database, temp_database_errors := temp_table.GetDatabase()
-		if temp_database_errors != nil {
-			return nil, temp_database_errors
-		}
+		temp_database := temp_table.GetDatabase()
 		
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
 		if sql_command_errors != nil {
@@ -600,13 +592,8 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, nil, errors
 		}
 
-		temp_table_name, temp_table_name_errors := temp_table.GetTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("table_name is nil"))
-		}
-
+		temp_table_name := temp_table.GetTableName()
+	
 		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
 		if temp_table_schema_errors != nil {
 			errors = append(errors, temp_table_schema_errors...)
@@ -650,12 +637,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return nil, nil, errors
 		}
 
-		temp_table_name, temp_table_name_errors := temp_table.GetTableName()
-		if temp_table_name_errors != nil {
-			errors = append(errors, temp_table_name_errors...)
-		} else if common.IsNil(temp_table_name) {
-			errors = append(errors, fmt.Errorf("table_name is nil"))
-		}
+		temp_table_name := temp_table.GetTableName()
 
 		temp_table_schema, temp_table_schema_errors := temp_table.GetSchema()
 		if temp_table_schema_errors != nil {

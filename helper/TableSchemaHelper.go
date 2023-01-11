@@ -5,20 +5,6 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 )
 
-func GetTableName(m json.Map) (string, []error) {
-	var errors []error
-	temp_value, temp_value_errors := GetField(m, "[system_schema]", "[system_fields]", "[table_name]", "string")
-	if temp_value_errors != nil {
-		errors = append(errors, temp_value_errors...)
-	} 
-	
-	if len(errors) > 0 {
-		return "", errors
-	}
-	
-	return temp_value.(string), nil
-}
-
 func GetTableColumns(data json.Map) (*map[string]bool, []error) {
 	temp_schemas, temp_schemas_error := GetSchemas(data, "[schema]")
 	if temp_schemas_error != nil {
