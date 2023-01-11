@@ -73,7 +73,6 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 			continue
 		}
 
-		options.SetBoolValue("get_last_insert_id", true)
 		options.SetStringValue("auto_increment_column_name", valid_column)
 		auto_increment_columns += 1
 	}
