@@ -1,10 +1,10 @@
 package dao
 
 import (
-	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	"fmt"
+	json "github.com/matehaxor03/holistic_json/json"
 	"sync"
+	"fmt"
 )
 
 type TableSchemaCache struct {

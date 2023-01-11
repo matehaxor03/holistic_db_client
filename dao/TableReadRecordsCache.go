@@ -2,7 +2,7 @@ package dao
 
 import (
 	common "github.com/matehaxor03/holistic_common/common"
-	"fmt"
+	"sync"
 )
 
 type TableReadRecordsCache struct {
@@ -11,18 +11,12 @@ type TableReadRecordsCache struct {
 
 func newTableReadRecordsCache() (*TableReadRecordsCache) {
 	cache := map[string](*[]Record){}
+	lock_read_records_cache := &sync.Mutex{}
 	
-	getOrSetReadRecords := func(table Table, sql string, records *[]Record) (*[]Record, []error) {		
-		var errors []error
-	
-		if common.IsNil(records) {
-			errors = append(errors, fmt.Errorf("records is nil"))
-		}
-
-		if len(errors) > 0 {
-			return nil, errors
-		}
-
+	getOrSetReadRecords := func(table Table, sql string, records *[]Record) (*[]Record, []error) {			
+		lock_read_records_cache.Lock()
+		defer lock_read_records_cache.Unlock()
+		
 		database := table.GetDatabase()
 		database_name := database.GetDatabaseName()
 		host := database.GetHost()
