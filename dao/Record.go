@@ -558,7 +558,8 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
-	
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 	
 		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
