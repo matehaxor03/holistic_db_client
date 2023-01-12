@@ -269,7 +269,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("get_last_insert_id", false)
 
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseSQL(verify, database_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropDatabaseSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -295,7 +295,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("get_last_insert_id", false)
 
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropDatabaseIfExistsSQL(verify, database_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropDatabaseIfExistsSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
