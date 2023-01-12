@@ -29,7 +29,7 @@ func GetCheckTableExistsSQL(verify *validate.Validator, table_name string, optio
 	var sql_command strings.Builder
 	sql_command.WriteString("SELECT 0 FROM ")
 	Box(options, &sql_command, table_name_escaped,"`","`")
-	sql_command.WriteString(" LIMIT 1;")
+	sql_command.WriteString(" LIMIT 1 ;")
 
 	sql_command_result := sql_command.String()
 	return &sql_command_result, options, nil
