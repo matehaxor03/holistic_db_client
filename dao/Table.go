@@ -511,9 +511,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		if records.Len() == 1 {
 			options.SetBoolValue("get_last_insert_id", true)
 			options.SetBoolValue("read_no_records", false)
+			options.SetBoolValue("no_column_headers", false)
 		} else {
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("read_no_records", true)
+			options.SetBoolValue("no_column_headers", true)
 		}
 
 		errors := validate()

@@ -613,7 +613,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("no_column_headers", true)
+		options.SetBoolValue("no_column_headers", false)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("get_last_insert_id", true)
 		
