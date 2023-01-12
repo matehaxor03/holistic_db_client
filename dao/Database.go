@@ -183,7 +183,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDatabaseExistsSQL(verify, getDatabaseName(), options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDatabaseExistsSQL(verify, getDatabaseName(), options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
