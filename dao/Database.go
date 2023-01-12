@@ -41,6 +41,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
 	table_additional_schema_cache := newTableAdditionalSchemaCache()
+	mysql_wrapper := sql_generator_mysql.NewMySQL()
 	
 	SQLCommand, SQLCommand_errors := newSQLCommand()
 	if SQLCommand_errors != nil {
@@ -159,7 +160,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 			collate = databaseCreateOptions.GetCollate()
 		}
 
-		sql_command, new_options, generate_sql_errors :=  sql_generator_mysql.GetCreateDatabaseSQL(verify, database_name, character_set, collate, options)
+		sql_command, new_options, generate_sql_errors :=  mysql_wrapper.GetCreateDatabaseSQL(verify, database_name, character_set, collate, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors

@@ -356,6 +356,8 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	if SQLCommand_errors != nil {
 		errors = append(errors, SQLCommand_errors...)
 	}
+	mysql_wrapper := sql_generator_mysql.NewMySQL()
+
 
 	/*
 	getThis := func() *Record {
@@ -618,7 +620,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("get_last_insert_id", true)
 		options.SetBoolValue("read_no_records", false)
 
-		return sql_generator_mysql.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
+		return mysql_wrapper.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
 	created_record := Record{

@@ -42,6 +42,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	if SQLCommand_errors != nil {
 		errors = append(errors, SQLCommand_errors...)
 	}
+	mysql_wrapper := sql_generator_mysql.NewMySQL()
+
 
 	table_read_records_cache := newTableReadRecordsCache()
 	var data *json.Map
@@ -646,7 +648,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
-		return sql_generator_mysql.GetCreateTableSQL(verify, table_name, *getData(), options)
+		return mysql_wrapper.GetCreateTableSQL(verify, table_name, *getData(), options)
 	}
 
 	createTable := func() []error {
