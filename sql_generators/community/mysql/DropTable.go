@@ -7,65 +7,76 @@ import (
 	"strings"
 )
 
-func GetDropTableIfExistsSQL(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
-	var errors []error
-
-	if options == nil {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
-	}
-
-	validation_errors := verify.ValidateTableName(table_name)
-	if validation_errors != nil {
-		return nil, nil, validation_errors
-	}
-
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
-		return  nil, nil, errors 
-	}
-
-
-	var sql_command strings.Builder
-	sql_command.WriteString("DROP TABLE IF EXISTS ")
-	Box(options, &sql_command, table_name_escaped,"`","`")
-
-	//sql_command.WriteString(table_name_escaped)
-	sql_command.WriteString(";")
-
-	sql_command_result := sql_command.String()
-	return &sql_command_result, options, nil
+type DropTableSQL struct {
+	GetDropTableIfExistsSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
+	GetDropTableSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
 }
 
-func GetDropTableSQL(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
-	var errors []error
+func newDropTableSQL() (*DropTableSQL) {
+	get_drop_table_if_exists_sql := func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+		var errors []error
 
-	if options == nil {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		if options == nil {
+			options := json.NewMap()
+			options.SetBoolValue("use_file", false)
+		}
+
+		validation_errors := verify.ValidateTableName(table_name)
+		if validation_errors != nil {
+			return nil, nil, validation_errors
+		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return  nil, nil, errors 
+		}
+
+
+		var sql_command strings.Builder
+		sql_command.WriteString("DROP TABLE IF EXISTS ")
+		Box(options, &sql_command, table_name_escaped,"`","`")
+		sql_command.WriteString(";")
+
+		sql_command_result := sql_command.String()
+		return &sql_command_result, options, nil
 	}
 
-	validation_errors := verify.ValidateTableName(table_name)
-	if validation_errors != nil {
-		return nil, nil, validation_errors
+	get_drop_table_sql := func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+		var errors []error
+
+		if options == nil {
+			options := json.NewMap()
+			options.SetBoolValue("use_file", false)
+		}
+
+		validation_errors := verify.ValidateTableName(table_name)
+		if validation_errors != nil {
+			return nil, nil, validation_errors
+		}
+
+		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
+		if table_name_escaped_errors != nil {
+			errors = append(errors, table_name_escaped_errors)
+			return  nil, nil, errors 
+		}
+
+
+		var sql_command strings.Builder
+		sql_command.WriteString("DROP TABLE ")
+		Box(options, &sql_command, table_name_escaped,"`","`")
+		sql_command.WriteString(";")
+
+		sql_command_result := sql_command.String()
+		return &sql_command_result, options, nil
 	}
 
-	table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
-	if table_name_escaped_errors != nil {
-		errors = append(errors, table_name_escaped_errors)
-		return  nil, nil, errors 
+	return &DropTableSQL{
+		GetDropTableIfExistsSQL: func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+			return get_drop_table_if_exists_sql(verify, table_name, options)
+		},
+		GetDropTableSQL: func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+			return get_drop_table_sql(verify, table_name, options)
+		},
 	}
-
-
-	var sql_command strings.Builder
-	sql_command.WriteString("DROP TABLE ")
-	Box(options, &sql_command, table_name_escaped,"`","`")
-
-	//sql_command.WriteString(table_name_escaped)
-	sql_command.WriteString(";")
-
-	sql_command_result := sql_command.String()
-	return &sql_command_result, options, nil
 }
-

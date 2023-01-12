@@ -449,7 +449,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("get_last_insert_id", false)
 
 		getOrSetTableSchema(table_name, nil, "delete")
-		sql_command, new_options, generate_sql_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, table_name, options)
+		sql_command, new_options, generate_sql_errors := mysql_wrapper.GetDropTableIfExistsSQL(verify, table_name, options)
 
 		if generate_sql_errors != nil {
 			return generate_sql_errors

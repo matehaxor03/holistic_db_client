@@ -336,7 +336,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropTableSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
@@ -365,7 +365,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetDropTableIfExistsSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropTableIfExistsSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			return sql_command_errors
 		}
