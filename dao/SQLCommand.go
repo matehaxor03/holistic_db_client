@@ -117,7 +117,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				sql_command_use_file = false
 			}
 
-			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s", credentials_command, host_command)
+			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s --quick --wait --reconnect", credentials_command, host_command)
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
 			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
@@ -177,14 +177,14 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, bash_errors...)
 			}
 
-			
+			/*
 			if shell_output != nil {
 				fmt.Println(*shell_output)
 			}
 
 			if len(errors) > 0 {
 				fmt.Println(errors)
-			}
+			}*/
 
 			if len(errors) > 0 {
 				//fmt.Println(command)
