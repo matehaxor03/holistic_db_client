@@ -720,6 +720,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		Count: func(filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("get_last_insert_id", false)
+
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
 			sql_command, new_options, sql_command_errors := sql_generator_mysql.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)

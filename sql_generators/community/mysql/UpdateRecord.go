@@ -18,6 +18,7 @@ func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_sch
 	if common.IsNil(options) {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("transactional", false)
 	}
 
