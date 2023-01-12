@@ -465,6 +465,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
 
 		errors := validate()
 		if errors != nil {
@@ -505,8 +507,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("transactional", false)
-		options.SetBoolValue("read_no_records", true)
-		options.SetBoolValue("get_last_insert_id", false)
+
+		if records.Len() == 1 {
+			options.SetBoolValue("get_last_insert_id", true)
+			options.SetBoolValue("read_no_records", false)
+		} else {
+			options.SetBoolValue("get_last_insert_id", false)
+			options.SetBoolValue("read_no_records", true)
+		}
 
 		errors := validate()
 		if errors != nil {
@@ -595,6 +603,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
 	
 		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, table_name, options)
 		if sql_command_errors != nil {
