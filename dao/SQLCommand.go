@@ -177,14 +177,14 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, bash_errors...)
 			}
 
-			/*
+			
 			if shell_output != nil {
 				fmt.Println(*shell_output)
 			}
 
 			if len(errors) > 0 {
 				fmt.Println(errors)
-			}*/
+			}
 
 			if len(errors) > 0 {
 				//fmt.Println(command)

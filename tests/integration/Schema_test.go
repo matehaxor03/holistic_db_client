@@ -73,3 +73,20 @@ func TestSchemaCannotCreateTableIfHasValueAttribute(t *testing.T) {
 	}
 }
 
+func TestSchemaCanGetSchema(t *testing.T) {
+	table_name := helper.GetTestTableName()
+	table, table_errors := helper.GetTestDatabaseCreated(t).CreateTable(table_name, (helper.GetTestSchema()))
+	if table_errors != nil {
+		t.Errorf("expect table_errors to be nil: %s", fmt.Sprintf("%s", table_errors))
+	} else if table == nil {
+		t.Errorf("expect table to be not nil")
+	} else {
+		schema, schema_errors := table.GetSchema()
+		if schema_errors != nil {
+			t.Errorf(fmt.Sprintf("%s",schema_errors))
+		} else if schema == nil {
+			t.Errorf("schema is nil")
+		}
+	}
+}
+
