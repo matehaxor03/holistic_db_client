@@ -15,7 +15,7 @@ import (
 func GetUpdateRecordSQL(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("get_last_insert_id", false)

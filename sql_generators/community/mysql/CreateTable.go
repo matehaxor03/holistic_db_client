@@ -13,7 +13,7 @@ import (
 func GetCreateTableSQL(verify *validate.Validator, table_name string, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 	}

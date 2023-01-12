@@ -9,7 +9,7 @@ import (
 
 func GetDropDatabaseIfExistsSQL(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(options) {
+	if options == nil {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)
@@ -41,7 +41,7 @@ func GetDropDatabaseIfExistsSQL(verify *validate.Validator, database_name string
 
 func GetDropDatabaseSQL(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(options) {
+	if options == nil {
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("deleting_database", true)

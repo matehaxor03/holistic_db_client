@@ -39,7 +39,7 @@ func GetTableSchemaAdditionalSQL(verify *validate.Validator, database_name strin
 		return nil, nil ,errors
 	}
 
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", false)

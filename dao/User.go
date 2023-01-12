@@ -130,7 +130,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	getCreateSQL := func(options *json.Map) (*string, *json.Map, []error) {
-		if common.IsNil(options) {
+		if options == nil {
 			options := json.NewMap()
 			options.SetBoolValue("use_file", true)
 		}

@@ -13,7 +13,7 @@ import (
 func GetSelectRecordsSQL(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
 
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 	}

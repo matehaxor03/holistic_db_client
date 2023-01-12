@@ -11,7 +11,7 @@ func GetCreateDatabaseSQL(verify *validate.Validator, database_name string, char
 	var sql_command strings.Builder
 	
 	var errors []error
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("creating_database", true)

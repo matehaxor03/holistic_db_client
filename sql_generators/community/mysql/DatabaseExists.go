@@ -9,7 +9,7 @@ import (
 
 func GetDatabaseExistsSQL(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
 	var errors []error
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("checking_database_exists", true)

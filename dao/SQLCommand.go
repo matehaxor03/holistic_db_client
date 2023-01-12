@@ -40,7 +40,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, fmt.Errorf("sql is nil"))
 			}
 
-			if common.IsNil(options) {
+			if options == nil {
 				options = json.NewMap()
 			}
 

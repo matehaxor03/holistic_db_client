@@ -19,7 +19,7 @@ func GetCreateRecordSQL(verify *validate.Validator, table_name string, table_sch
 		return nil, nil, table_validation_errors
 	}
 
-	if common.IsNil(options) {
+	if options == nil {
 		options = json.NewMap()
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("no_column_headers", false)

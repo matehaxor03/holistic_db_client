@@ -616,7 +616,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("no_column_headers", false)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("get_last_insert_id", true)
-		
+		options.SetBoolValue("read_no_records", false)
 
 		return sql_generator_mysql.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
@@ -642,7 +642,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 				return errors
 			}
 
-			if options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
+			if options.IsBoolFalse("read_no_records") && options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
 				if len(*(json_array.GetValues())) != 1 {
 					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
 					return errors
