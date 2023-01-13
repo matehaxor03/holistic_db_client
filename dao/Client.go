@@ -14,14 +14,15 @@ type Client struct {
 	DeleteDatabase      func(database_name string) []error
 	DatabaseExists      func(database_name string) (bool, []error)
 	UseDatabase         func(database Database) []error
-	UseDatabaseByName   func(database_name string) ([]error)
-	UseDatabaseUsername func(database_username string) []error
+	SetDatabaseUsername func(database_username string) []error
 	GetUser             func(username string) (*User, []error)
 	CreateUser          func(username string, password string, domain_name string) (*User, []error)
 	UserExists          func(username string) (bool, []error)
 	GetDatabaseUsername func() (*string)
 	GetHost             func() (*Host)
+	GetDatabaseByName   func(database_name string) (*Database, []error)
 	GetDatabase         func() (*Database)
+	SetDatabase         func(database *Database)
 	GetClientManager    func() (ClientManager)
 	Validate            func() []error
 	Grant            func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
@@ -116,17 +117,6 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		return nil
 	}
 
-	useDatabaseByName := func(new_database_name string) ([]error) {
-		database, database_errors := newDatabase(verify, *getHost(), getDatabaseUsername(), new_database_name, nil, table_schema_lock, lock_table_additional_schema)
-		if database_errors != nil {
-			return database_errors
-		}
-
-		setDatabase(database)
-		return nil
-	}
-
-
 	getUser := func(username string) (*User, []error) {
 		var errors []error
 
@@ -158,9 +148,9 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, credentials_errors
 		}
 
-		use_database_errors := client.UseDatabaseByName(temp_database_name)
-		if use_database_errors != nil {
-			return nil, use_database_errors
+		get_database_by_name, get_database_by_name_errors := client.GetDatabaseByName(temp_database_name)
+		if get_database_by_name_errors != nil {
+			return nil, get_database_by_name_errors
 		}
 
 		domain_name, domain_name_errors := NewDomainName(verify, temp_host_name)
@@ -168,7 +158,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, domain_name_errors
 		}
 
-		user, user_errors := newUser(*database, *credentials, *domain_name)
+		user, user_errors := newUser(*get_database_by_name, *credentials, *domain_name)
 		if user_errors != nil {
 			return nil, user_errors
 		}
@@ -295,6 +285,24 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		GetClientManager: func() (ClientManager) {
 			return getClientManager()
 		},
+		GetDatabaseByName: func(get_database_name string) (*Database, []error)  {
+			var errors []error
+			host := getHost()
+			if host == nil {
+				errors = append(errors, fmt.Errorf("host is nil"))
+			}
+
+			database_username := getDatabaseUsername()
+			if database_username == nil {
+				errors = append(errors, fmt.Errorf("database username is nil"))
+			}
+
+			if len(errors) > 0 {
+				return nil, errors
+			}
+
+			return newDatabase(verify, *getHost(), getDatabaseUsername(), get_database_name, nil, table_schema_lock, lock_table_additional_schema)
+		},
 		UseDatabase: func(new_database Database) []error {
 			database_errors := new_database.Validate()
 			if database_errors != nil {
@@ -304,29 +312,14 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			setDatabase(&new_database)
 			return nil
 		},
-		UseDatabaseByName: func(database_name string) ([]error) {
-			return useDatabaseByName(database_name)
-		},
-		UseDatabaseUsername: func(database_username string) []error {
-			setDatabaseUsername(database_username)
-			return nil
+		SetDatabaseUsername: func(database_username string) []error {
+			return setDatabaseUsername(database_username)
 		},
 		Grant: func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 			var errors []error
 			temp_database := database
 			if database == nil {
-				temp_database_username := getDatabaseUsername()
-				if common.IsNil(temp_database_username) {
-					errors = append(errors, fmt.Errorf("database username is nil"))
-				} else if *temp_database_username == "" {
-					errors = append(errors, fmt.Errorf("database username is an empty string"))
-				} else {
-					useDatabaseByName(*temp_database_username)
-					temp_database := getDatabase()
-					if common.IsNil(temp_database) {
-						errors = append(errors, fmt.Errorf("database is nil"))
-					}
-				}
+				errors = append(errors, fmt.Errorf("database is nil"))
 			}
 
 			if len(errors) > 0 {
@@ -362,24 +355,14 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 			client := getClient()
 
-			use_database_errors := client.UseDatabaseByName("mysql")
-			if use_database_errors != nil {
+			mysql_database, mysql_database_errors := client.GetDatabaseByName("mysql")
+			if mysql_database_errors != nil {
 				fmt.Errorf("use database errors")
-				errors = append(errors, use_database_errors...)
+				errors = append(errors, mysql_database_errors...)
 				return false, errors
 			}
 
-			temp_database := getDatabase()
-			 if common.IsNil(temp_database) {
-				fmt.Errorf("get database errors")
-				errors = append(errors, fmt.Errorf("database is nil"))
-			}
-
-			if len(errors) > 0 {
-				return false, errors
-			}
-
-			table, table_errors := temp_database.GetTable("user")
+			table, table_errors := mysql_database.GetTable("user")
 			if table_errors != nil {
 				errors = append(errors, table_errors...)
 				return false, errors
@@ -420,6 +403,9 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		},
 		ValidateTableName: func(table_name string) []error {
 			return verify.ValidateTableName(table_name)
+		},
+		SetDatabase: func(set_database *Database) {
+			database = set_database
 		},
 	}
 	setClient(&x)

@@ -404,11 +404,8 @@ func testTableName(client *dao.Client) []error {
 		return database_errors
 	}
 
-	use_database_errors := client.UseDatabaseByName(database_name)
-	if use_database_errors != nil {
-		return use_database_errors
-	}
-
+	client.SetDatabase(database)
+	
 	for current_value <= max_value {
 		percent_completed = (float64(current_value) / float64(max_value)) * 100.0
 		percent_completed_string_value := fmt.Sprintf("%.2f", percent_completed) + "%"
@@ -495,10 +492,7 @@ func testColumnName(client *dao.Client) []error {
 		return database_errors
 	}
 
-	use_database_errors := client.UseDatabaseByName(database_name)
-	if use_database_errors != nil {
-		return use_database_errors
-	}
+	client.SetDatabase(database)
 
 	for current_value <= max_value {
 		percent_completed = (float64(current_value) / float64(max_value)) * 100.0

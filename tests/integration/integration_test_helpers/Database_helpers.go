@@ -90,10 +90,7 @@ func GetTestDatabase(t *testing.T) (dao.Database) {
 		return  dao.Database{}
 	}
 
-	use_database_errors := client.UseDatabaseByName(test_database_name)
-	if use_database_errors != nil {
-		errors = append(errors, use_database_errors...)
-	}
+	client.SetDatabase(database)
 
 	if len(errors) > 0 {
 		t.Error(errors)
