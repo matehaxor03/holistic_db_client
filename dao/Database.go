@@ -370,7 +370,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 			return cached_schema, nil
 		} 
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableSchemaSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -382,7 +382,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, table_name, json_array)
+		temp_schema, schem_errors := mysql_wrapper.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors

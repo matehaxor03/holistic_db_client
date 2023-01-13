@@ -611,7 +611,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options.SetBoolValue("get_last_insert_id", false)
 
 	
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableSchemaSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableSchemaSQL(verify, table_name, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		}
@@ -623,7 +623,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return  nil, errors
 		}
 
-		temp_schema, schem_errors := sql_generator_mysql.MapTableSchemaFromDB(verify, table_name, json_array)
+		temp_schema, schem_errors := mysql_wrapper.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
 			return nil, errors
