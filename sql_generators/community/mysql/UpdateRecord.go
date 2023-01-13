@@ -273,6 +273,10 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 								errors = append(errors, value_escaped_errors)
 							}
 
+							if value_escaped == "0001-01-01 00:00:00.000000" {
+								value_escaped = "0000-00-00 00:00:00.000000"
+							}
+
 							sql_command.WriteString("'")
 							sql_command.WriteString(value_escaped)
 							sql_command.WriteString("'")
@@ -295,6 +299,10 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 							value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
 							if value_escaped_errors != nil {
 								errors = append(errors, value_escaped_errors)
+							}
+
+							if value_escaped == "0001-01-01 00:00:00.000000" {
+								value_escaped = "0000-00-00 00:00:00.000000"
 							}
 
 							sql_command.WriteString("'")
