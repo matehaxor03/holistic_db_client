@@ -14,6 +14,7 @@ type MySQL struct {
 	GetDropDatabaseSQL func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error)
 	GetDropTableIfExistsSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
 	GetDropTableSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
+	GetTableNamesSQL func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error)
 }
 
 func NewMySQL() (*MySQL) {
@@ -23,6 +24,7 @@ func NewMySQL() (*MySQL) {
 	get_database_exists_sql := newDatabaseExistsSQL()
 	drop_database_sql := newDropDatabaseSQL()
 	drop_table_sql := newDropTableSQL()
+	get_table_names_sql := newTableNamesSQL()
 
 	return &MySQL{
 		GetCreateDatabaseSQL: func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options *json.Map) (*string, *json.Map, []error) {	
@@ -48,6 +50,9 @@ func NewMySQL() (*MySQL) {
 		},
 		GetDropTableSQL: func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
 			return drop_table_sql.GetDropTableSQL(verify, table_name, options)
+		},
+		GetTableNamesSQL: func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
+			return get_table_names_sql.GetTableNamesSQL(verify, database_name, options)
 		},
 	}
 }

@@ -216,7 +216,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetTableNamesSQL(verify, database_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableNamesSQL(verify, database_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
