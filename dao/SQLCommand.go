@@ -102,10 +102,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			if *database_username != "root" {
-				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + (*database_username) + ".config"
+			temp_database_username := *database_username
+			if temp_database_username == "holistic_write" || temp_database_username == "holistic_read" {
+				temp_database_username = temp_database_username + "0"
+			}
+
+			if temp_database_username != "root" {
+				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + temp_database_username + ".config"
 			} else {
-				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + (*database_username) + ".config"
+				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "##" + temp_database_username + ".config"
 			}
 
 			if len(errors) > 0 {
