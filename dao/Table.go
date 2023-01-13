@@ -992,6 +992,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			options := json.NewMap()
 			options.SetBoolValue("use_file", false)
 			options.SetBoolValue("get_last_insert_id", false)
+			options.SetBoolValue("read_no_records", false)
+			options.SetBoolValue("no_column_headers", false)
 
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")

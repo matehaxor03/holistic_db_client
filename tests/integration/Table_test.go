@@ -18,6 +18,22 @@ func TestTableCreate(t *testing.T) {
 	}
 }
 
+func TestTableCanCount(t *testing.T) {
+	table := helper.GetTestTableBasicWithCreatedDatabase(t)
+
+    table_errors := table.Create()
+	if table_errors != nil {
+		t.Error(table_errors)
+	} else {
+		count_value, count_value_errors := table.Count(nil, nil, nil, nil, nil)
+		if count_value_errors != nil {
+			t.Error(count_value_errors)
+		} else if *count_value != 0 {
+			t.Errorf("expected 0 records")
+		}
+	}
+}
+
 func TestTableDelete(t *testing.T) {
 	table := helper.GetTestTableBasicWithCreatedDatabase(t)
 

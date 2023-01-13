@@ -265,7 +265,11 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				if escape_string_value_errors != nil {
 					errors = append(errors, escape_string_value_errors)
 				} else {
-					Box(options, &sql_command, escape_string_value,"`","`")			
+					if escape_string_value != getCountColumnNameSQLMySQL() {
+						Box(options, &sql_command, escape_string_value,"`","`")			
+					} else {
+						sql_command.WriteString(getCountColumnNameSQLMySQL())		
+					}
 					if i < (select_fields_values_length - 1) {
 						sql_command.WriteString(", ")
 					} else {
