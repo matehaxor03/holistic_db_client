@@ -57,14 +57,9 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
+			client := database.GetClient()
+			client_manager := client.GetClientManager()
 			host := database.GetHost()
-			if host_errors := host.Validate(); host_errors != nil {
-				return nil, host_errors
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
 
 			database_username := database.GetDatabaseUsername()
 			if database_username == nil {
@@ -106,8 +101,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if *database_username != "root" {
 				temp_database_username := ""
 				temp_database_username = *database_username
-				if temp_database_username == "holistic_write" || temp_database_username == "holistic_read" {
-					temp_database_username += "1"
+				if temp_database_username == "holistic_w" || temp_database_username == "holistic_r" {
+					temp_database_username += fmt.Sprintf("%d", client_manager.GetNextUserCount())
 				}
 				credentials_command = "--defaults-extra-file=" + directory + "/holistic_db_config#" + host_name + "#" + port_number + "#" + database_name + "#" + temp_database_username + ".config"
 			} else {

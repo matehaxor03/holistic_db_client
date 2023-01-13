@@ -30,6 +30,7 @@ type Database struct {
 	GetTableNames   func() ([]string, []error)
 	GetTableSchema func(table_name string) (*json.Map, []error)
 	GetAdditionalTableSchema func(table_name string) (*json.Map, []error)
+	GetClient func() (Client)
 
 	GlobalGeneralLogDisable	func() []error
 	GlobalGeneralLogEnable	func() []error
@@ -37,7 +38,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Database, []error) {	
 	var errors []error
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
@@ -55,6 +56,10 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 
 	getDatabase := func() *Database {
 		return this_database
+	}
+
+	getClient := func() Client {
+		return client
 	}
 
 	validate := func() []error {
@@ -671,6 +676,9 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		GetAdditionalTableSchema: func(table_name string) (*json.Map, []error) {
 			// todo clone schema
 			return getAdditionalTableSchema(table_name)
+		},
+		GetClient: func() Client {
+			return getClient()
 		},
 		GlobalGeneralLogDisable: func() []error {
 			options := json.NewMap()

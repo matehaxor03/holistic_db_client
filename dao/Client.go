@@ -54,7 +54,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, temp_database_create_options_errors
 		}
 		
-		database_interface, database_interface_errors := newDatabase(verify, *host, database_username, database_name, temp_database_create_options, table_schema_lock, lock_table_additional_schema)
+		database_interface, database_interface_errors := newDatabase(verify, *this_client, *host, database_username, database_name, temp_database_create_options, table_schema_lock, lock_table_additional_schema)
 		if database_interface_errors != nil {
 			return nil, database_interface_errors
 		}
@@ -205,7 +205,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return errors
 			}
 			
-			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -231,7 +231,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return false, errors
 			}
 
-			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
 			if database_errors != nil {
 				return false, database_errors
 			}
@@ -301,7 +301,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, errors
 			}
 
-			return newDatabase(verify, *getHost(), getDatabaseUsername(), get_database_name, nil, table_schema_lock, lock_table_additional_schema)
+			return newDatabase(verify, *this_client, *getHost(), getDatabaseUsername(), get_database_name, nil, table_schema_lock, lock_table_additional_schema)
 		},
 		UseDatabase: func(new_database Database) []error {
 			database_errors := new_database.Validate()

@@ -8,6 +8,7 @@ import (
 type ClientManager struct {
 	GetClient func(host_name string, port_number string, database_name string, database_username string) (*Client, []error)
 	Validate func() []error
+	GetNextUserCount func() int
 }
 
 func NewClientManager() (*ClientManager, []error) {
@@ -22,6 +23,8 @@ func NewClientManager() (*ClientManager, []error) {
 		return this_client_manager
 	}
 	
+	user_count := 0
+	lock_user_count := &sync.Mutex{}
 	lock_client := &sync.Mutex{}
 	lock_table_schema := &sync.Mutex{}
 	lock_table_additional_schema := &sync.Mutex{}
@@ -70,6 +73,15 @@ func NewClientManager() (*ClientManager, []error) {
 			lock_client.Lock()
 			defer lock_client.Unlock()
 			return getClient(host_name, port_number, database_name, database_username)
+		},
+		GetNextUserCount: func() int {
+			lock_user_count.Lock()
+			defer lock_user_count.Unlock()
+			user_count++
+			if user_count >= 100 {
+				user_count = 0
+			}
+			return user_count
 		},
 	}
 	setClientManager(&x)
