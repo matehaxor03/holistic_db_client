@@ -29,7 +29,6 @@ func newDatabaseExistsSQL() (*DatabaseExistsSQL) {
 		var sql_command strings.Builder
 		sql_command.WriteString("USE ")
 		Box(&sql_command, database_name_escaped,"`","`")
-
 		sql_command.WriteString(";")
 
 		sql_command_result := sql_command.String()
