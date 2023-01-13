@@ -234,7 +234,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				//fmt.Println(command)
+				fmt.Println(command)
+				fmt.Println(fmt.Errorf("%s", errors))
 				return nil, errors
 			}
 
