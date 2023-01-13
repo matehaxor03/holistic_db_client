@@ -404,6 +404,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		
 		database_errors := database.Validate()
 		if database_errors != nil {
+			fmt.Errorf("database validation errors")
 			errors = append(errors, database_errors...)
 		}
 
