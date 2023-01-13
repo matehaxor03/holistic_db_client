@@ -17,6 +17,8 @@ type MySQL struct {
 	GetTableNamesSQL func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error)
 	GetTableSchemaSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
 	MapTableSchemaFromDB func(verify *validate.Validator, table_name string, json_array *json.Array) (*json.Map, []error)
+	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error)
+	MapAdditionalSchemaFromDBToMap func(json_array *json.Array) (*json.Map, []error)
 }
 
 func NewMySQL() (*MySQL) {
@@ -28,6 +30,7 @@ func NewMySQL() (*MySQL) {
 	drop_table_sql := newDropTableSQL()
 	get_table_names_sql := newTableNamesSQL()
 	get_table_schema_sql := newTableSchemaSQL()
+	get_table_schema_additional_sql := newTableSchemaAdditionalSQL()
 
 	return &MySQL{
 		GetCreateDatabaseSQL: func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options *json.Map) (*string, *json.Map, []error) {	
@@ -62,6 +65,12 @@ func NewMySQL() (*MySQL) {
 		},
 		MapTableSchemaFromDB: func(verify *validate.Validator, table_name string, json_array *json.Array) (*json.Map, []error) {
 			return get_table_schema_sql.MapTableSchemaFromDB(verify, table_name, json_array)
+		},
+		GetTableSchemaAdditionalSQL: func(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+			return get_table_schema_additional_sql.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
+		},
+		MapAdditionalSchemaFromDBToMap: func(json_array *json.Array) (*json.Map, []error) {
+			return get_table_schema_additional_sql.MapAdditionalSchemaFromDBToMap(json_array)
 		},
 	}
 }

@@ -505,7 +505,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 			return cached_additonal_schema, nil
 		}
 		
-		sql_command, new_options,  sql_command_errors := sql_generator_mysql.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
+		sql_command, new_options,  sql_command_errors := mysql_wrapper.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
 		if sql_command_errors != nil {
 			return nil, sql_command_errors
 		}
@@ -517,7 +517,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 			return nil, errors
 		}
 
-		additional_schema, additional_schema_errors := sql_generator_mysql.MapAdditionalSchemaFromDBToMap(json_array)
+		additional_schema, additional_schema_errors := mysql_wrapper.MapAdditionalSchemaFromDBToMap(json_array)
 		if additional_schema_errors != nil {
 			errors = append(errors, additional_schema_errors...)
 		} else if common.IsNil(additional_schema) {
