@@ -132,7 +132,6 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 		
 		lock_sql_command.Lock()
-		defer lock_sql_command.Unlock()
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, *getDatabase(), sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -141,9 +140,11 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 
 		if len(errors) > 0 {
+			defer lock_sql_command.Unlock()
 			return nil, errors
 		}
 
+		defer lock_sql_command.Unlock()
 		return sql_command_results, nil
 	}
 
@@ -362,21 +363,22 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	getTableSchema := func(table_name string) (*json.Map, []error) {
 		table_schema_lock.Lock()
-		defer table_schema_lock.Unlock()
 		var errors []error
 	
 		options := json.NewMap()
 		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("json_output", true)
+		//options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("read_no_records", false)
 
 		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
 		if cached_schema_errors != nil {
 			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
+				defer table_schema_lock.Unlock()
 				return nil, cached_schema_errors
 			}
 		} else if !common.IsNil(cached_schema) {
+			defer table_schema_lock.Unlock()
 			return cached_schema, nil
 		} 
 		
@@ -389,12 +391,14 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
+			defer table_schema_lock.Unlock()
 			return  nil, errors
 		}
 
 		temp_schema, schem_errors := mysql_wrapper.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
+			defer table_schema_lock.Unlock()
 			return nil, errors
 		}
 
@@ -402,6 +406,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			getOrSetTableSchema(table_name, temp_schema, "set")
 		}
 
+		defer table_schema_lock.Unlock()
 		return temp_schema, nil
 	}
 
@@ -498,12 +503,12 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	getAdditionalTableSchema := func(table_name string) (*json.Map, []error) {
 		lock_table_additional_schema.Lock()
-		defer lock_table_additional_schema.Unlock()
 		var errors []error
 		validate_errors := validate()
 		
 		if validate_errors != nil {
 			errors = append(errors, validate_errors...)
+			defer lock_table_additional_schema.Unlock()
 			return nil, errors
 		}
 		options := json.NewMap()
@@ -514,13 +519,16 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 		cached_additonal_schema, cached_additonal_schema_errors := getOrSetAdditionalTableSchema(table_name, nil)
 		if cached_additonal_schema_errors != nil {
+			defer lock_table_additional_schema.Unlock()
 			return nil, cached_additonal_schema_errors
 		} else if !common.IsNil(cached_additonal_schema) {
+			defer lock_table_additional_schema.Unlock()
 			return cached_additonal_schema, nil
 		}
 		
 		sql_command, new_options,  sql_command_errors := mysql_wrapper.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
 		if sql_command_errors != nil {
+			defer lock_table_additional_schema.Unlock()
 			return nil, sql_command_errors
 		}
 
@@ -528,6 +536,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
+			defer lock_table_additional_schema.Unlock()
 			return nil, errors
 		}
 
@@ -539,11 +548,13 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 
 		if len(errors) > 0 {
+			defer lock_table_additional_schema.Unlock()
 			return nil , errors
 		}
 
 
 		getOrSetAdditionalTableSchema(table_name, additional_schema)
+		defer lock_table_additional_schema.Unlock()
 		return additional_schema, nil
 	}
 

@@ -51,6 +51,8 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	data = json.NewMap()
 	
 	var this_table *Table
+	var this_schema_from_database *json.Map = nil
+	var this_additional_schema_from_database *json.Map = nil
 
 	setTable := func(table *Table) {
 		this_table = table
@@ -272,7 +274,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 		
 		lock_sql_command.Lock()
-		defer lock_sql_command.Unlock()
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -281,9 +282,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 
 		if len(errors) > 0 {
+			defer lock_sql_command.Unlock()
 			return nil, errors
 		}
 
+		defer lock_sql_command.Unlock()
 		return sql_command_results, nil
 	}
 
@@ -597,39 +600,25 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	getAdditionalSchema := func() (*json.Map, []error) {
-		return database.GetAdditionalTableSchema(table_name)
+		if this_additional_schema_from_database != nil {
+			return this_additional_schema_from_database, nil
+		}
+		temp_addtional_schema_from_db, temp_addtional_schema_from_db_errors := database.GetAdditionalTableSchema(table_name)
+		if temp_addtional_schema_from_db_errors != nil {
+			return nil, temp_addtional_schema_from_db_errors
+		}
+		this_additional_schema_from_database = temp_addtional_schema_from_db
+		return this_additional_schema_from_database, nil
 	}
 
-
 	getSchema := func() (*json.Map, []error) {
-		if schema_from_database != nil {
-			return schema_from_database, nil
+		if this_schema_from_database != nil {
+			return this_schema_from_database, nil
 		}
 
-		var errors []error
-		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
-		options.SetBoolValue("json_output", true)
-		options.SetBoolValue("read_no_records", false)
-		options.SetBoolValue("get_last_insert_id", false)
-
-	
-		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableSchemaSQL(verify, table_name, options)
-		if sql_command_errors != nil {
-			errors = append(errors, sql_command_errors...)
-		}
-
-		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
-
-		if sql_errors != nil {
-			errors = append(errors, sql_errors...)
-			return  nil, errors
-		}
-
-		temp_schema, schem_errors := mysql_wrapper.MapTableSchemaFromDB(verify, table_name, json_array)
-		if schem_errors != nil {
-			errors = append(errors, schem_errors...)
-			return nil, errors
+		temp_schema, temp_schema_errors := database.GetTableSchema(table_name)
+		if temp_schema_errors != nil {
+			return nil, temp_schema_errors
 		}
 
 		new_data, setup_data_errors := setupData(database, table_name, nil, temp_schema)
@@ -638,7 +627,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 		setData(new_data)
-		schema_from_database = temp_schema
+		this_schema_from_database = temp_schema
 		return temp_schema, nil
 	}
 
