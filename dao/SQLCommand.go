@@ -107,6 +107,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			fmt.Println(temp_database_username)
 			if temp_database_username == "holistic_write" || temp_database_username == "holistic_read" {
 				temp_database_username += "1"
+				fmt.Println(temp_database_username)
 			} else {
 				fmt.Println("'" + temp_database_username + "'")
 			}
