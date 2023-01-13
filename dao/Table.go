@@ -297,7 +297,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 		
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableExistsSQL(verify, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)

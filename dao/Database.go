@@ -321,7 +321,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 
 		
 		var errors []error
-		sql_command, new_options, sql_command_errors := sql_generator_mysql.GetCheckTableExistsSQL(verify, table_name, options)
+		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableExistsSQL(verify, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
