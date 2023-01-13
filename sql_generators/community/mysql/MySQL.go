@@ -21,6 +21,7 @@ type MySQL struct {
 	MapAdditionalSchemaFromDBToMap func(json_array *json.Array) (*json.Map, []error)
 	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error)
 	GetTableExistsSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
+	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error)
 }
 
 func NewMySQL() (*MySQL) {
@@ -35,6 +36,7 @@ func NewMySQL() (*MySQL) {
 	get_table_schema_additional_sql := newTableSchemaAdditionalSQL()
 	get_select_records_sql := newSelectRecordsSQL()
 	get_table_exists_sql := newTableExistsSQL() 
+	get_update_record_sql := newUpdateRecordSQL()
 
 	return &MySQL{
 		GetCreateDatabaseSQL: func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options *json.Map) (*string, *json.Map, []error) {	
@@ -81,6 +83,9 @@ func NewMySQL() (*MySQL) {
 		},
 		GetTableExistsSQL: func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
 			return get_table_exists_sql.GetTableExistsSQL(verify, table_name, options)
+		},
+		GetUpdateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+			return get_update_record_sql.GetUpdateRecordSQL(verify, table_name, table_schema, valid_columns, record_data, options)
 		},
 	}
 }
