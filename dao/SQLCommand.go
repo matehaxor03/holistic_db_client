@@ -2,10 +2,6 @@ package dao
 
 import (
 	"fmt"
-	"io/ioutil"
-	"bufio"
-	"os"
-	"time"
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
@@ -27,12 +23,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 		if index < len(directory_parts) - 1 {
 			directory += "/"
 		}
-	}
-
-	cleanup_files := func(input_file string, stdout_file string, std_err_file string) {
-		os.Remove(input_file)
-		os.Remove(stdout_file)
-		os.Remove(std_err_file)	
 	}
 
 	x := SQLCommand{
@@ -120,15 +110,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s --wait --quick ", credentials_command, host_command)
 
-			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
-			time_now := time.Now().UnixNano()
-			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time_now, string(uuid))
-			filename_stdout := directory + "/" + fmt.Sprintf("%v%s-stdout.sql", time_now, string(uuid))
-			filename_stderr := directory + "/" + fmt.Sprintf("%v%s-stderr.sql", time_now, string(uuid))
-
-
-			command := ""
-
 			var sql_command strings.Builder
 
 			if options.IsBoolTrue("transactional") {
@@ -155,91 +136,23 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if options.IsBoolTrue("transactional") {
 				sql_command.WriteString("COMMIT;\n")
 			}
-
-			sql := sql_command.String()
-			ioutil.WriteFile(filename, []byte(sql), 0600)
-			command = sql_header_command + " < " + filename +  " > " + filename_stdout + " 2> " + filename_stderr + " | touch " + filename_stdout + " && touch " + filename_stderr
-			
-			//fmt.Println(command)
-			//defer os.Remove(filename)
-			//defer os.Remove(filename_stdout)
-			//defer os.Remove(filename_stderr)
-			
 			
 			if len(errors) > 0 {
-				cleanup_files(filename,filename_stdout, filename_stderr)
 				return records, errors
 			}
 
-			//fmt.Println(command)
-			//fmt.Println(sql)
-			_, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
+			stdout_lines, bash_errors := bashCommand.ExecuteUnsafeCommandUsingFiles(sql_header_command, sql_command.String())
 
+		
 			if bash_errors != nil {
-				//fmt.Println(fmt.Sprintf("%s", bash_errors))
-				cleanup_files(filename,filename_stdout, filename_stderr)
 				errors = append(errors, bash_errors...)
 			}
 
-			
-			/*
-			if shell_output != nil {
-				fmt.Println(*shell_output)
-			}
-
 			if len(errors) > 0 {
-				fmt.Println(errors)
-			}*/
-
-			var stdout_lines []string
-			if _, opening_stdout_error := os.Stat(filename_stdout); opening_stdout_error == nil {
-				file_stdout, file_stdout_errors := os.Open(filename_stdout)
-				if file_stdout_errors != nil {
-					errors = append(errors, file_stdout_errors)
-				} else {
-					defer file_stdout.Close()
-					stdout_scanner := bufio.NewScanner(file_stdout)
-					stdout_scanner_buffer := make([]byte, maxCapacity)
-					stdout_scanner.Buffer(stdout_scanner_buffer, maxCapacity)
-					stdout_scanner.Split(bufio.ScanLines)
-					for stdout_scanner.Scan() {
-						current_text := stdout_scanner.Text()
-						if current_text != "" {
-							stdout_lines = append(stdout_lines, current_text)
-						}
-					}
-				}
-			}
-
-			if _, opening_stderr_error := os.Stat(filename_stderr); opening_stderr_error == nil {
-				file_stderr, file_stderr_errors := os.Open(filename_stderr)
-				if file_stderr_errors != nil {
-					errors = append(errors, file_stderr_errors)
-				} else {
-					defer file_stderr.Close()
-					stderr_scanner := bufio.NewScanner(file_stderr)
-					stderr_scanner_buffer := make([]byte, maxCapacity)
-					stderr_scanner.Buffer(stderr_scanner_buffer, maxCapacity)
-					stderr_scanner.Split(bufio.ScanLines)
-					for stderr_scanner.Scan() {
-						current_text := stderr_scanner.Text()
-						if current_text != "" {
-							errors = append(errors, fmt.Errorf("%s", current_text))
-						}
-					}
-				}
-			}
-
-			if len(errors) > 0 {
-				cleanup_files(filename,filename_stdout, filename_stderr)
-
-				//fmt.Println(command)
-				//fmt.Println(fmt.Errorf("%s", errors))
 				return records, errors
 			}
 
 			if options.IsBoolTrue("read_no_records") {
-				cleanup_files(filename,filename_stdout, filename_stderr)
 				return records, nil
 			}
 
@@ -300,7 +213,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 					}
 				}
 			}
-			cleanup_files(filename,filename_stdout, filename_stderr)
 			return records, nil
 		},
 	}
