@@ -116,6 +116,8 @@ func newUser(database Database, credentials Credentials, domain_name DomainName,
 			return nil, temp_database_errors
 		}
 		
+		lock_sql_command.Lock()
+		defer lock_sql_command.Unlock()
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, temp_database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
