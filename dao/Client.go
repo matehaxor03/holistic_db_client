@@ -349,11 +349,13 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		UserExists: func(username string) (bool, []error) {
 			errors := validate()
 			if len(errors) > 0 {
+				fmt.Errorf("validation errors")
 				return false, errors
 			}
 
 			_, user_errors := getUser("root") 
 			if user_errors != nil {
+				fmt.Errorf("get root user errors")
 				errors = append(errors, user_errors...)
 				return false, errors
 			}
@@ -362,12 +364,14 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 			use_database_errors := client.UseDatabaseByName("mysql")
 			if use_database_errors != nil {
+				fmt.Errorf("use database errors")
 				errors = append(errors, use_database_errors...)
 				return false, errors
 			}
 
 			temp_database := getDatabase()
 			 if common.IsNil(temp_database) {
+				fmt.Errorf("get database errors")
 				errors = append(errors, fmt.Errorf("database is nil"))
 			}
 
