@@ -131,7 +131,6 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		lock_sql_command.Lock()
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, *getDatabase(), sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -140,11 +139,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 
 		if len(errors) > 0 {
-			defer lock_sql_command.Unlock()
 			return nil, errors
 		}
 
-		defer lock_sql_command.Unlock()
 		return sql_command_results, nil
 	}
 

@@ -169,6 +169,9 @@ func newSQLCommand() (*SQLCommand, []error) {
 
 			//fmt.Println(command)
 			//fmt.Println(sql)
+			lock_sql_command.Lock()
+			defer lock_sql_command.Unlock()
+			time.Sleep(50 * time.Millisecond)
 			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
 
 			if sql_command_use_file {
