@@ -11,17 +11,13 @@ import (
 )
 
 type SelectRecordsSQL struct {
-	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error)
+	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error)
 }
 
 func newSelectRecordsSQL() (*SelectRecordsSQL) {
-	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
+	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error) {
 		var errors []error
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-		}
-
+	
 		table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")
 		if table_schema_errors != nil {
 			errors = append(errors, table_schema_errors...)
@@ -37,7 +33,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 		
 		for table_column, _  := range *table_columns {
@@ -53,7 +49,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		table_name_validation_errors := verify.ValidateTableName(table_name)
@@ -62,7 +58,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		if filters != nil {
@@ -79,7 +75,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			}
 
 			if len(errors) > 0 {
-				return nil, nil, errors
+				return nil, options, errors
 			}
 
 			for _, filter_column := range filter_columns {
@@ -128,10 +124,10 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			for _, select_field := range *(select_fields.GetValues()) {
 				select_field_value, select_field_value_errors := select_field.GetString()
 				if select_field_value_errors != nil {
-					return nil, nil, select_field_value_errors
+					return nil, options, select_field_value_errors
 				} else if common.IsNil(select_field_value) {
 					errors = append(errors, fmt.Errorf("select_field_value is nil"))
-					return nil, nil, errors
+					return nil, options, errors
 				}
 
 				if *select_field_value == getCountColumnNameSQLMySQL() {
@@ -233,7 +229,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					continue
 				}
 
-				Box(options, &order_by_clause, escaped_order_by_column_name,"`","`")
+				Box(&order_by_clause, escaped_order_by_column_name,"`","`")
 				order_by_clause.WriteString(" ")
 				order_by_clause.WriteString(order_by_string_value_validated)
 
@@ -247,7 +243,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		var sql_command strings.Builder
@@ -266,7 +262,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					errors = append(errors, escape_string_value_errors)
 				} else {
 					if escape_string_value != getCountColumnNameSQLMySQL() {
-						Box(options, &sql_command, escape_string_value,"`","`")			
+						Box(&sql_command, escape_string_value,"`","`")			
 					} else {
 						sql_command.WriteString(getCountColumnNameSQLMySQL())		
 					}
@@ -282,7 +278,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		sql_command.WriteString("FROM ")
-		Box(options, &sql_command, table_name_escaped,"`","`")
+		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(" ")
 
 		if filters != nil {
@@ -308,7 +304,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					errors = append(errors, column_filter_escaped_errors)
 				}
 
-				Box(options, &sql_command, column_filter_escaped,"`","`")			
+				Box(&sql_command, column_filter_escaped,"`","`")			
 
 				if common.IsNil(filters_logic) {
 					sql_command.WriteString(" = ")
@@ -697,7 +693,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		sql_command.WriteString(";")
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		sql_command_result := sql_command.String()
@@ -705,7 +701,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 	}
 
 	return &SelectRecordsSQL{
-		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options *json.Map) (*string, *json.Map, []error) {
+		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error) {
 			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, filters_logic, order_by, limit, offset, options)
 		},
 	}

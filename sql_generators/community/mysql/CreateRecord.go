@@ -12,35 +12,27 @@ import (
 )
 
 type CreateRecordSQL struct {
-	GetCreateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error)
+	GetCreateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error)
 }
 
 func newCreateRecordSQL() (*CreateRecordSQL) {
-	get_create_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+	get_create_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
 		var errors []error
 
 		table_validation_errors := verify.ValidateTableName(table_name)
 		if table_validation_errors != nil {
-			return nil, nil, table_validation_errors
-		}
-
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-			options.SetBoolValue("no_column_headers", false)
-			options.SetBoolValue("get_last_insert_id", true)
-			options.SetBoolValue("transactional", false)
+			return nil, options, table_validation_errors
 		}
 
 		record_columns, record_columns_errors := helper.GetRecordColumns(record_data)
 		if record_columns_errors != nil {
-			return nil, nil, record_columns_errors
+			return nil, options, record_columns_errors
 		}
 
 		table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 		if table_name_escaped_error != nil {
 			errors = append(errors, table_name_escaped_error)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		auto_increment_columns := 0
@@ -87,14 +79,14 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		var sql_command strings.Builder
 		sql_command.WriteString("INSERT INTO ")
 		
 		
-		Box(options, &sql_command, table_name_escaped,"`","`")
+		Box(&sql_command, table_name_escaped,"`","`")
 
 
 		sql_command.WriteString(" (")
@@ -112,7 +104,7 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 				continue
 			}
 			
-			Box(options, &sql_command,record_column_escaped,"`","`")
+			Box(&sql_command,record_column_escaped,"`","`")
 
 			if index < (len(*record_columns) - 1) {
 				sql_command.WriteString(", ")
@@ -312,7 +304,7 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 		sql_command.WriteString(");")
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		sql_command_result := sql_command.String()
@@ -320,7 +312,7 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 	}
 
 	return &CreateRecordSQL{
-		GetCreateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+		GetCreateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
 			return get_create_record_sql(verify, table_name, table_schema, valid_columns, record_data, options)
 		},
 	}

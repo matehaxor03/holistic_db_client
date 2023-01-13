@@ -13,76 +13,64 @@ import (
 )
 
 type UpdateRecordSQL struct {
-	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error)
+	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error)
 }
 
 func newUpdateRecordSQL() (*UpdateRecordSQL) {
-	get_update_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+	get_update_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
 		var errors []error
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-			options.SetBoolValue("get_last_insert_id", false)
-			options.SetBoolValue("transactional", false)
-		}
-
+		
 		table_name_validation_errors := verify.ValidateTableName(table_name)
 		if table_name_validation_errors != nil {
 			errors = append(errors, table_name_validation_errors...)
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		table_name_escaped, table_name_escaped_errors := common.EscapeString(table_name, "'")
 		if table_name_escaped_errors != nil {
 			errors = append(errors, table_name_escaped_errors)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
-		record_columns, record_columns_errors := helper.GetRecordColumns(record_data)
+		_, record_columns_errors := helper.GetRecordColumns(record_data)
 		if record_columns_errors != nil {
-			return nil, nil, record_columns_errors
+			return nil, options, record_columns_errors
 		}
 
 		record_fields, record_fields_error := helper.GetFields(record_data, "[fields]")
 		if record_fields_error != nil {
-			return nil, nil, record_fields_error
+			return nil, options, record_fields_error
 		} else if common.IsNil(record_fields) {
 			errors = append(errors, fmt.Errorf("record fields is nil"))
-			return nil, nil, errors
-		}
-
-		for record_column, _   := range *record_columns {
-			if strings.HasPrefix(record_column, "credential") {
-				options.SetBoolValue("use_file", true)
-			}
+			return nil, options, errors
 		}
 
 		primary_key_table_columns, primary_key_table_columns_errors := helper.GetTablePrimaryKeyColumnsForSchema(table_schema)
 		if primary_key_table_columns_errors != nil {
-			return nil, nil, primary_key_table_columns_errors
+			return nil, options, primary_key_table_columns_errors
 		}
 
 		foreign_key_table_columns, foreign_key_table_columns_errors := helper.GetTableForeignKeyColumnsForSchema(table_schema)
 		if foreign_key_table_columns_errors != nil {
-			return nil, nil, foreign_key_table_columns_errors
+			return nil, options, foreign_key_table_columns_errors
 		}
 
 		table_non_primary_key_columns, table_non_primary_key_columns_errors := helper.GetTableNonPrimaryKeyColumnsForSchema(table_schema)
 		if table_non_primary_key_columns_errors != nil {
-			return nil, nil, table_non_primary_key_columns_errors
+			return nil, options, table_non_primary_key_columns_errors
 		}
 
 		record_primary_key_columns, record_primary_key_columns_errors := helper.GetRecordPrimaryKeyColumns(record_data, primary_key_table_columns)
 		if record_primary_key_columns_errors != nil {
-			return nil, nil, record_primary_key_columns_errors
+			return nil, options, record_primary_key_columns_errors
 		}
 
 		record_foreign_key_columns, record_foreign_key_columns_errors := helper.GetRecordForeignKeyColumns(record_data, foreign_key_table_columns)
 		if record_foreign_key_columns_errors != nil {
-			return nil, nil, record_foreign_key_columns_errors
+			return nil, options, record_foreign_key_columns_errors
 		}
 
 		for primary_key_table_column, _ := range *primary_key_table_columns {
@@ -130,13 +118,13 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		var sql_command strings.Builder
 		sql_command.WriteString("UPDATE ")
 
-		Box(options, &sql_command,table_name_escaped,"`","`")
+		Box(&sql_command,table_name_escaped,"`","`")
 
 		sql_command.WriteString(" \n")
 
@@ -167,7 +155,7 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 				continue
 			}
 			
-			Box(options, &sql_command,record_non_identity_column_escaped,"`","`")
+			Box(&sql_command,record_non_identity_column_escaped,"`","`")
 
 			sql_command.WriteString("=")
 
@@ -381,7 +369,7 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 				continue
 			}
 
-			Box(options, &sql_command, primary_key_table_column_ecaped,"`","`")
+			Box(&sql_command, primary_key_table_column_ecaped,"`","`")
 
 			sql_command.WriteString(" = ")
 
@@ -566,7 +554,7 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 		sql_command.WriteString(" ;")
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		sql_command_result := sql_command.String()
@@ -574,7 +562,7 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 	}
 
 	return &UpdateRecordSQL{
-		GetUpdateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+		GetUpdateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
 			return get_update_record_sql(verify, table_name, table_schema, valid_columns, record_data, options)
 		},
 	}

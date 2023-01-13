@@ -69,7 +69,7 @@ type Record struct {
 	GetField func(field string, return_type string) (interface{}, []error)
 	SetField func(field string, value interface{}) ([]error)
 	GetUpdateSQL func() (*string, []error)
-	GetCreateSQL func() (*string, *json.Map, []error)
+	GetCreateSQL func() (*string, json.Map, []error)
 	GetRecordColumns func() (*map[string]bool, []error)
 	GetArchieved func() (*bool, []error)
 	GetArchievedDate func() (*time.Time, []error)
@@ -251,10 +251,11 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
 		errors := validate()
+		records := json.NewArrayValue()
 		if errors != nil {
-			return nil, errors
+			return records, errors
 		}
 
 		database := table.GetDatabase()
@@ -266,7 +267,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return sql_command_results, errors
 		}
 		return sql_command_results, nil
 	}
@@ -281,18 +282,17 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil, errors
 	}
 
-	getUpdateSQL := func() (*string, *json.Map, []error) {
+	getUpdateSQL := func() (*string, json.Map, []error) {
 		var errors []error
 		validate_errors := validate()
-		if validate_errors != nil {
-			return nil, nil, validate_errors
-		}
-		
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
+
+		if validate_errors != nil {
+			return nil, options, validate_errors
+		}
 	
 		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
@@ -309,21 +309,27 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 	
 		return mysql_wrapper.GetUpdateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
-	getCreateSQL := func() (*string, *json.Map, []error) {
+	getCreateSQL := func() (*string, json.Map, []error) {
 		var errors []error
+		options := json.NewMapValue()
+		options.SetBoolValue("no_column_headers", false)
+		options.SetBoolValue("transactional", false)
+		options.SetBoolValue("get_last_insert_id", true)
+		options.SetBoolValue("read_no_records", false)
+
 		validate_errors := validate()
 		if validate_errors != nil {
 			errors = append(errors, validate_errors...)
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		temp_table_schema, temp_table_schema_errors := table.GetSchema()
@@ -341,15 +347,10 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 		
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
-		options.SetBoolValue("no_column_headers", false)
-		options.SetBoolValue("transactional", false)
-		options.SetBoolValue("get_last_insert_id", true)
-		options.SetBoolValue("read_no_records", false)
+	
 
 		return mysql_wrapper.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
@@ -434,7 +435,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			}
 			return sql, nil
 		},
-		GetCreateSQL: func() (*string, *json.Map, []error) {
+		GetCreateSQL: func() (*string, json.Map, []error) {
 			return getCreateSQL()
 		},
 		Update: func() []error {

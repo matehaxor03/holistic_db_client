@@ -9,12 +9,12 @@ import (
 )
 
 type TableSchemaAdditionalSQL struct {
-	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error)
-	MapAdditionalSchemaFromDBToMap func(json_array *json.Array) (*json.Map, []error)
+	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error)
+	MapAdditionalSchemaFromDBToMap func(json_array json.Array) (*json.Map, []error)
 }
 
 func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
-	get_table_schema_additional_sql := func(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+	get_table_schema_additional_sql := func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error) {
 		var errors []error
 		database_name_validation_errors := verify.ValidateDatabaseName(database_name)
 		if database_name_validation_errors != nil {
@@ -41,18 +41,12 @@ func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil ,errors
-		}
-
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-			options.SetBoolValue("json_output", false)
+			return nil, options ,errors
 		}
 
 		var sql_command strings.Builder
 		sql_command.WriteString("SHOW TABLE STATUS FROM ")
-		Box(options, &sql_command, database_name_escaped,"`","`")
+		Box(&sql_command, database_name_escaped,"`","`")
 		sql_command.WriteString(" WHERE NAME='")
 		sql_command.WriteString(table_name_escaped)
 		sql_command.WriteString("';")
@@ -62,18 +56,14 @@ func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
 	}
 
 	return &TableSchemaAdditionalSQL{
-		GetTableSchemaAdditionalSQL: func(verify *validate.Validator, database_name string, table_name string, options *json.Map) (*string, *json.Map, []error) {
+		GetTableSchemaAdditionalSQL: func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error) {
 			return get_table_schema_additional_sql(verify, database_name, table_name, options)
 		},
-		MapAdditionalSchemaFromDBToMap: func(json_array *json.Array) (*json.Map, []error) {
+		MapAdditionalSchemaFromDBToMap: func(json_array json.Array) (*json.Map, []error) {
 			var errors []error
-			if json_array == nil {
-				errors = append(errors, fmt.Errorf("error: show table status returned nil records"))
-				return nil, errors
-			}
 
 			if len(*(json_array.GetValues())) == 0 {
-				errors = append(errors, fmt.Errorf("error:  show table status did not return any records"))
+				errors = append(errors, fmt.Errorf("error: show table status did not return any records"))
 				return nil, errors
 			}
 

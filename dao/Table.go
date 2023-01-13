@@ -266,10 +266,10 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return database
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
 		errors := validate()
 		if errors != nil {
-			return nil, errors
+			return json.NewArrayValue(), errors
 		}
 		
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
@@ -280,15 +280,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return sql_command_results, errors
 		}
 
 		return sql_command_results, nil
 	}
 
 	exists := func() (*bool, []error) {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 		
@@ -329,8 +328,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 	
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -362,8 +360,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -386,8 +383,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 	
 	updateRecords := func(records json.Array) []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -466,8 +462,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	updateRecord := func(record *json.Map) []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -508,8 +503,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	createRecords := func(records json.Array) []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
 
 		if records.Len() == 1 {
@@ -635,13 +629,12 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return nil
 	}
 
-	getCreateTableSQL := func(options *json.Map) (*string, *json.Map, []error) {	
+	getCreateTableSQL := func(options json.Map) (*string, json.Map, []error) {	
 		return mysql_wrapper.GetCreateTableSQL(verify, table_name, *getData(), options)
 	}
 
 	createTable := func() []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -977,8 +970,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil
 		},
 		Count: func(filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("read_no_records", false)
 			options.SetBoolValue("no_column_headers", false)
@@ -1062,8 +1054,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return record, nil
 		},
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			sql_command, options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors

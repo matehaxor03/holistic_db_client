@@ -11,17 +11,12 @@ import (
 )
 
 type CreateTableSQL struct {
-	GetCreateTableSQL func(verify *validate.Validator, table_name string, table_data json.Map, options *json.Map) (*string, *json.Map, []error)
+	GetCreateTableSQL func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error)
 }
 
 func newCreateTableSQL() (*CreateTableSQL) {
-	get_create_table_sql := func(verify *validate.Validator, table_name string, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+	get_create_table_sql := func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error) {
 		var errors []error
-
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-		}
 
 		validate_table_name_errors := verify.ValidateTableName(table_name)
 		if validate_table_name_errors != nil  {
@@ -34,12 +29,12 @@ func newCreateTableSQL() (*CreateTableSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		var sql_command strings.Builder
 		sql_command.WriteString("CREATE TABLE ")
-		Box(options, &sql_command, table_name_escaped,"`","`")
+		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(" ")
 
 		valid_columns, valid_columns_errors := helper.GetTableColumns(table_data)
@@ -50,7 +45,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		for valid_column, _ := range *valid_columns {
@@ -61,12 +56,12 @@ func newCreateTableSQL() (*CreateTableSQL) {
 		}
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		schemas_map, schemas_map_errors := helper.GetSchemas(table_data, "[schema]")
 		if schemas_map_errors != nil {
-			return nil, nil, schemas_map_errors
+			return nil, options, schemas_map_errors
 		}
 
 		primary_key_count := 0
@@ -92,10 +87,10 @@ func newCreateTableSQL() (*CreateTableSQL) {
 			}
 
 			if len(errors) > 0 {
-				return nil, nil, errors
+				return nil, options, errors
 			}
 
-			Box(options, &sql_command, column_escaped,"`","`")
+			Box(&sql_command, column_escaped,"`","`")
 
 			typeOf, type_of_errors := columnSchema.GetString("type")
 			if type_of_errors != nil {
@@ -241,11 +236,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 										errors = append(errors, value_escaped_errors)
 									} else {
 										sql_command.WriteString(" DEFAULT ")
-										if options.IsBoolTrue("use_file") {
-											sql_command.WriteString("'" + value_escaped + "'")
-										} else {
-											sql_command.WriteString(strings.ReplaceAll("'" + value_escaped + "'", "`", "\\`"))
-										}
+										sql_command.WriteString("'" + value_escaped + "'")
 									}	
 								}
 							}
@@ -372,13 +363,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 							}
 
 							sql_command.WriteString(" DEFAULT ")
-
-							if options.IsBoolTrue("use_file") {
-								sql_command.WriteString( "'" + default_value_escaped + "'")
-							} else {
-								sql_command.WriteString(strings.ReplaceAll("'" + default_value_escaped + "'", "`", "\\`"))
-							}
-
+							sql_command.WriteString( "'" + default_value_escaped + "'")
 						}
 					} 
 				}
@@ -402,7 +387,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 		// todo: check that length of row for all columns does not exceed 65,535 bytes (it's not hard but low priority)
 
 		if len(errors) > 0 {
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		sql_command_result := sql_command.String()
@@ -410,7 +395,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 	}
 
 	return &CreateTableSQL{
-		GetCreateTableSQL: func(verify *validate.Validator, table_name string, table_data json.Map, options *json.Map) (*string, *json.Map, []error) {
+		GetCreateTableSQL: func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error) {
 			return get_create_table_sql(verify, table_name, table_data, options)
 		},
 	}

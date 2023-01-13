@@ -10,33 +10,28 @@ import (
 )
 
 type TableSchemaSQL struct {
-	GetTableSchemaSQL func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error)
-	MapTableSchemaFromDB func(verify *validate.Validator, table_name string, json_array *json.Array) (*json.Map, []error)
+	GetTableSchemaSQL func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error)
+	MapTableSchemaFromDB func(verify *validate.Validator, table_name string, json_array json.Array) (*json.Map, []error)
 }
 
 func newTableSchemaSQL() (*TableSchemaSQL) {
-	get_table_schema_sql := func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+	get_table_schema_sql := func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
 		var errors []error
-
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-		}
 
 		validation_errors := verify.ValidateTableName(table_name)
 		if validation_errors != nil {
-			return nil, nil, validation_errors
+			return nil, options, validation_errors
 		}
 
 		table_name_escaped, table_name_escaped_error := common.EscapeString(table_name, "'")
 		if table_name_escaped_error != nil {
 			errors = append(errors, table_name_escaped_error)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 
 		var sql_command strings.Builder
 		sql_command.WriteString("SHOW FULL COLUMNS FROM ")
-		Box(options, &sql_command, table_name_escaped,"`","`")
+		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(";")
 		
 		sql_command_result := sql_command.String()
@@ -44,17 +39,13 @@ func newTableSchemaSQL() (*TableSchemaSQL) {
 	}
 
 	return &TableSchemaSQL{
-		GetTableSchemaSQL: func(verify *validate.Validator, table_name string, options *json.Map) (*string, *json.Map, []error) {
+		GetTableSchemaSQL: func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
 			return get_table_schema_sql(verify, table_name, options)
 		},
-		MapTableSchemaFromDB: func(verify *validate.Validator, table_name string, json_array *json.Array) (*json.Map, []error) {
+		MapTableSchemaFromDB: func(verify *validate.Validator, table_name string, json_array json.Array) (*json.Map, []error) {
 			var errors []error
 			if common.IsNil(table_name) {
 				errors = append(errors, fmt.Errorf("error: table_name is nil"))
-			}
-
-			if common.IsNil(json_array) {
-				errors = append(errors, fmt.Errorf("error: show columns returned nil records"))
 			}
 
 			if len(errors) > 0 {

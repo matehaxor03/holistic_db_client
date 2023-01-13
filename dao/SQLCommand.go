@@ -13,7 +13,7 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(database Database, raw_sql *string, options json.Map) (json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -30,9 +30,11 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options json.Map) (json.Array, []error) {
 			var errors []error
 			const maxCapacity = 10*1024*1024  
+			records := json.NewArrayValue()
+
 
 
 			if common.IsNil(database) {
@@ -43,12 +45,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, fmt.Errorf("sql is nil"))
 			}
 
-			if options == nil {
-				options = json.NewMap()
-			}
-
 			if len(errors) > 0 {
-				return nil, errors
+				return records, errors
 			}
 
 			validate_errors := database.Validate()
@@ -57,7 +55,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return records, errors
 			}
 
 			client := database.GetClient()
@@ -76,7 +74,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return records, errors
 			}
 
 			host_name := host.GetHostName()
@@ -87,7 +85,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			credentials_command := ""
 			
 			if len(errors) > 0 {
-				return nil, errors
+				return records, errors
 			}
 
 			database_name := database.GetDatabaseName()
@@ -97,7 +95,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
+				return records, errors
 			}
 
 			
@@ -113,12 +111,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				return nil, errors
-			}
-
-			sql_command_use_file := true
-			if options.IsBoolFalse("use_file") {
-				sql_command_use_file = false
+				return records, errors
 			}
 
 			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s --wait --quick ", credentials_command, host_command)
@@ -143,7 +136,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			} else {
 				if !(options.IsBoolTrue("creating_database") || options.IsBoolTrue("deleting_database") || options.IsBoolTrue("checking_database_exists") || options.IsBoolTrue("updating_database_global_settings")) {
 					sql_command.WriteString("USE ")
-					sql_generator_mysql.Box(options, &sql_command, database_name_escaped, "`","`")
+					sql_generator_mysql.Box(&sql_command, database_name_escaped, "`","`")
 					sql_command.WriteString(";\n")
 				}
 			}
@@ -160,24 +153,16 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			sql := sql_command.String()
-			if sql_command_use_file {
-				ioutil.WriteFile(filename, []byte(sql), 0600)
-				command = sql_header_command + " < " + filename +  " > " + filename_stdout + " 2> " + filename_stderr
-				//fmt.Println(command)
-				if sql_command_use_file {
-					defer os.Remove(filename)
-					defer os.Remove(filename_stdout)
-					defer os.Remove(filename_stderr)
-				}
-			} else {
-				command = sql_header_command + " <<[END]\n " + sql + "\n[END]"
-			}
-
+			ioutil.WriteFile(filename, []byte(sql), 0600)
+			command = sql_header_command + " < " + filename +  " > " + filename_stdout + " 2> " + filename_stderr
+			//fmt.Println(command)
+			defer os.Remove(filename)
+			defer os.Remove(filename_stdout)
+			defer os.Remove(filename_stderr)
+			
+			
 			if len(errors) > 0 {
-				if sql_command_use_file {
-					os.Remove(filename)
-				}
-				return nil, errors
+				return records, errors
 			}
 
 			//fmt.Println(command)
@@ -234,14 +219,13 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				fmt.Println(command)
-				fmt.Println(fmt.Errorf("%s", errors))
-				return nil, errors
+				//fmt.Println(command)
+				//fmt.Println(fmt.Errorf("%s", errors))
+				return records, errors
 			}
 
-			records := json.NewArrayValue()
 			if options.IsBoolTrue("read_no_records") {
-				return &records, nil
+				return records, nil
 			}
 
 			reading_columns := true
@@ -301,7 +285,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 					}
 				}
 			}
-			return &records, nil
+			return records, nil
 		},
 	}
 

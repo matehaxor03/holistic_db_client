@@ -124,10 +124,11 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
 		errors := validate()
+		records := json.NewArrayValue()
 		if errors != nil {
-			return nil, errors
+			return records, errors
 		}
 		
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*getDatabase(), sql_command, options)
@@ -138,7 +139,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return records, errors
 		}
 
 		return sql_command_results, nil
@@ -150,8 +151,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	create := func() []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -182,8 +182,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	exists := func() (*bool, []error) {
 		var errors []error
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -216,8 +215,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	getTableNames := func() (*[]string, []error) {
 		var errors []error
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -267,8 +265,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	delete := func() ([]error) {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -293,8 +290,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	deleteIfExists := func() ([]error) {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -319,8 +315,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	tableExists :=  func(table_name string) (*bool, []error) {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -360,9 +355,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	getTableSchema := func(table_name string) (*json.Map, []error) {
 		var errors []error
 	
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
-		//options.SetBoolValue("json_output", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("read_no_records", false)
 
@@ -449,8 +442,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	deleteTableByTableNameIfExists := func(table_name string) []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -499,9 +491,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			errors = append(errors, validate_errors...)
 			return nil, errors
 		}
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
-		options.SetBoolValue("json_output", true)
+		options := json.NewMapValue()
 		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("read_no_records", false)
 
@@ -676,8 +666,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return getClient()
 		},
 		GlobalGeneralLogDisable: func() []error {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -689,8 +678,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil
 		},
 		GlobalGeneralLogEnable: func() []error {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -702,8 +690,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil
 		},
 		GlobalSetTimeZoneUTC: func() []error {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -715,8 +702,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil
 		},
 		GlobalSetSQLMode: func() []error {
-			options := json.NewMap()
-			options.SetBoolValue("use_file", true)
+			options := json.NewMapValue()
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)

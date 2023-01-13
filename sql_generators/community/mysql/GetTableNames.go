@@ -8,31 +8,27 @@ import (
 )
 
 type TableNamesSQL struct {
-	GetTableNamesSQL func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error)
+	GetTableNamesSQL func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error)
 }
 
 func newTableNamesSQL() (*TableNamesSQL) {
-	get_table_names_sql := func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
-		if options == nil {
-			options = json.NewMap()
-			options.SetBoolValue("use_file", true)
-		}
-	
+	get_table_names_sql := func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+		var errors []error
+
 		validation_errors := verify.ValidateDatabaseName(database_name)
 		if validation_errors != nil {
-			return nil, nil, validation_errors
+			return nil, options, validation_errors
 		}
 	
 		database_name_escaped, database_name_escaped_errors := common.EscapeString(database_name, "'")
 		if database_name_escaped_errors != nil {
-			var errors []error
 			errors = append(errors, database_name_escaped_errors)
-			return nil, nil, errors
+			return nil, options, errors
 		}
 	
 		var sql_command strings.Builder
 		sql_command.WriteString("SHOW TABLES IN ")
-		Box(options, &sql_command, database_name_escaped,"`","`")
+		Box(&sql_command, database_name_escaped,"`","`")
 	
 		sql_command.WriteString(";")
 		sql_command_result := sql_command.String()
@@ -40,7 +36,7 @@ func newTableNamesSQL() (*TableNamesSQL) {
 	}
 
 	return &TableNamesSQL{
-		GetTableNamesSQL: func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
+		GetTableNamesSQL: func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
 			return get_table_names_sql(verify, database_name, options)
 		},
 	}

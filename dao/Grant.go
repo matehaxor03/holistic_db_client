@@ -190,15 +190,17 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		return temp_value.(*string), nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options *json.Map) (*json.Array, []error) {
+	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
 		errors := validate()
+		records := json.NewArrayValue()
+
 		if errors != nil {
-			return nil, errors
+			return records, errors
 		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
-			return nil, temp_database_errors
+			return records, temp_database_errors
 		}
 		
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
@@ -209,7 +211,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		}
 
 		if len(errors) > 0 {
-			return nil, errors
+			return records, errors
 		}
 
 		return sql_command_results, nil
@@ -288,8 +290,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 	}
 
 	executeGrant := func() []error {
-		options := json.NewMap()
-		options.SetBoolValue("use_file", true)
+		options := json.NewMapValue()
 		sql_command, sql_command_errors := getSQL()
 
 		if sql_command_errors != nil {
