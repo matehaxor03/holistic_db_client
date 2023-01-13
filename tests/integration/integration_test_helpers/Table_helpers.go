@@ -20,7 +20,7 @@ func EnsureTableIsDeleted(t *testing.T, table *dao.Table) {
 }
 
 var table_count uint64 = 0
-var lock_get_table_name = &sync.Mutex{}
+var lock_get_table_name = &sync.RWMutex{}
 
 func GetTestTableName() string {
 	lock_get_table_name.Lock()

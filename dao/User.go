@@ -18,7 +18,7 @@ type User struct {
 	UpdatePassword func(new_password string) []error
 }
 
-func newUser(database Database, credentials Credentials, domain_name DomainName, lock_sql_command *sync.Mutex) (*User, []error) {
+func newUser(database Database, credentials Credentials, domain_name DomainName, lock_sql_command *sync.RWMutex) (*User, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()

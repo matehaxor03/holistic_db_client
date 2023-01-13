@@ -36,7 +36,7 @@ type Table struct {
 	GetDatabase           func() (Database)
 }
 
-func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map, lock_sql_command *sync.Mutex) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map, lock_sql_command *sync.RWMutex) (*Table, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()

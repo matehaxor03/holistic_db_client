@@ -29,7 +29,7 @@ type Client struct {
 	ValidateTableName func(table_name string) []error
 }
 
-func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex, lock_sql_command *sync.Mutex) (*Client, []error) {
+func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database, table_schema_lock *sync.RWMutex, lock_table_additional_schema *sync.RWMutex, lock_sql_command *sync.RWMutex) (*Client, []error) {
 	var this_client *Client
 
 	setClient := func(client *Client) {

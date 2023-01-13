@@ -13,7 +13,7 @@ type TableSchemaCache struct {
 
 func newTableSchemaCache() (*TableSchemaCache) {
 	cache := json.NewMap()
-	lock_table_schema_cache := &sync.Mutex{}
+	lock_table_schema_cache := &sync.RWMutex{}
 
 	
 	getOrSet := func(database Database, table_name string, schema *json.Map, mode string) (*json.Map, []error) {		

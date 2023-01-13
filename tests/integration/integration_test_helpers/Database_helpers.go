@@ -10,9 +10,9 @@ import (
 )
 
 var database_count uint64 = 0
-var lock_get_client_manager = &sync.Mutex{}
-var lock_get_database = &sync.Mutex{}
-var lock_get_database_name = &sync.Mutex{}
+var lock_get_client_manager = &sync.RWMutex{}
+var lock_get_database = &sync.RWMutex{}
+var lock_get_database_name = &sync.RWMutex{}
 var client_manager *dao.ClientManager
 
 func getTestDatabaseName() string {

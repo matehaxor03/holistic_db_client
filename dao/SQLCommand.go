@@ -13,7 +13,7 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(lock_sql_command *sync.Mutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(lock_sql_command *sync.RWMutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -30,7 +30,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(lock_sql_command *sync.Mutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(lock_sql_command *sync.RWMutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
 			var errors []error
 
 			if common.IsNil(database) {

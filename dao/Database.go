@@ -38,7 +38,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex, lock_sql_command *sync.Mutex) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.RWMutex, lock_table_additional_schema *sync.RWMutex, lock_sql_command *sync.RWMutex) (*Database, []error) {	
 	var errors []error
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()

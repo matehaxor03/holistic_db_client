@@ -11,7 +11,7 @@ type TableReadRecordsCache struct {
 
 func newTableReadRecordsCache() (*TableReadRecordsCache) {
 	cache := map[string](*[]Record){}
-	lock_read_records_cache := &sync.Mutex{}
+	lock_read_records_cache := &sync.RWMutex{}
 	
 	getOrSetReadRecords := func(table Table, sql string, records *[]Record) (*[]Record, []error) {			
 		lock_read_records_cache.Lock()

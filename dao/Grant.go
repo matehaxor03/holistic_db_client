@@ -14,7 +14,7 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string, lock_sql_command *sync.Mutex) (*Grant, []error) {
+func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string, lock_sql_command *sync.RWMutex) (*Grant, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()

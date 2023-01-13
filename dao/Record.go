@@ -82,7 +82,7 @@ type Record struct {
 	GetTable func() (Table)
 }
 
-func newRecord(verify *validate.Validator, table Table, record_data json.Map, lock_sql_command *sync.Mutex) (*Record, []error) {
+func newRecord(verify *validate.Validator, table Table, record_data json.Map, lock_sql_command *sync.RWMutex) (*Record, []error) {
 	var errors []error
 	//var this *Record
 	

@@ -24,11 +24,11 @@ func NewClientManager() (*ClientManager, []error) {
 	}
 	
 	user_count := 0
-	lock_user_count := &sync.Mutex{}
-	lock_client := &sync.Mutex{}
-	lock_table_schema := &sync.Mutex{}
-	lock_table_additional_schema := &sync.Mutex{}
-	lock_sql_command := &sync.Mutex{}
+	lock_user_count := &sync.RWMutex{}
+	lock_client := &sync.RWMutex{}
+	lock_table_schema := &sync.RWMutex{}
+	lock_table_additional_schema := &sync.RWMutex{}
+	lock_sql_command := &sync.RWMutex{}
 	
 	getClient := func(host_name string, port_number string, database_name string, database_username string) (*Client, []error) {
 		var errors []error
