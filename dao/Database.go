@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strings"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -38,7 +37,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.RWMutex, lock_table_additional_schema *sync.RWMutex, lock_sql_command *sync.RWMutex) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var errors []error
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
@@ -131,7 +130,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, *getDatabase(), sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*getDatabase(), sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -152,7 +151,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	create := func() []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -184,7 +183,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	exists := func() (*bool, []error) {
 		var errors []error
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -218,7 +217,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	getTableNames := func() (*[]string, []error) {
 		var errors []error
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("creating_database", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -269,7 +268,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	delete := func() ([]error) {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -295,7 +294,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	deleteIfExists := func() ([]error) {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("deleting_database", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -359,11 +358,10 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	getTableSchema := func(table_name string) (*json.Map, []error) {
-		table_schema_lock.Lock()
 		var errors []error
 	
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		//options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("read_no_records", false)
@@ -371,11 +369,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
 		if cached_schema_errors != nil {
 			if fmt.Sprintf("%s", cached_schema_errors[0]) != "cache is not there" {
-				defer table_schema_lock.Unlock()
 				return nil, cached_schema_errors
 			}
 		} else if !common.IsNil(cached_schema) {
-			defer table_schema_lock.Unlock()
 			return cached_schema, nil
 		} 
 		
@@ -388,14 +384,12 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
-			defer table_schema_lock.Unlock()
 			return  nil, errors
 		}
 
 		temp_schema, schem_errors := mysql_wrapper.MapTableSchemaFromDB(verify, table_name, json_array)
 		if schem_errors != nil {
 			errors = append(errors, schem_errors...)
-			defer table_schema_lock.Unlock()
 			return nil, errors
 		}
 
@@ -403,7 +397,6 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			getOrSetTableSchema(table_name, temp_schema, "set")
 		}
 
-		defer table_schema_lock.Unlock()
 		return temp_schema, nil
 	}
 
@@ -446,7 +439,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema, lock_sql_command)
+		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -457,7 +450,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	deleteTableByTableNameIfExists := func(table_name string) []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -483,7 +476,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil, lock_sql_command)
+		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil)
 
 		if new_table_errors != nil {
 			errors = append(errors, new_table_errors...)
@@ -499,33 +492,28 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	}
 
 	getAdditionalTableSchema := func(table_name string) (*json.Map, []error) {
-		lock_table_additional_schema.Lock()
 		var errors []error
 		validate_errors := validate()
 		
 		if validate_errors != nil {
 			errors = append(errors, validate_errors...)
-			defer lock_table_additional_schema.Unlock()
 			return nil, errors
 		}
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
 		options.SetBoolValue("read_no_records", false)
 
 		cached_additonal_schema, cached_additonal_schema_errors := getOrSetAdditionalTableSchema(table_name, nil)
 		if cached_additonal_schema_errors != nil {
-			defer lock_table_additional_schema.Unlock()
 			return nil, cached_additonal_schema_errors
 		} else if !common.IsNil(cached_additonal_schema) {
-			defer lock_table_additional_schema.Unlock()
 			return cached_additonal_schema, nil
 		}
 		
 		sql_command, new_options,  sql_command_errors := mysql_wrapper.GetTableSchemaAdditionalSQL(verify, database_name, table_name, options)
 		if sql_command_errors != nil {
-			defer lock_table_additional_schema.Unlock()
 			return nil, sql_command_errors
 		}
 
@@ -533,7 +521,6 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
-			defer lock_table_additional_schema.Unlock()
 			return nil, errors
 		}
 
@@ -545,13 +532,11 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		}
 
 		if len(errors) > 0 {
-			defer lock_table_additional_schema.Unlock()
 			return nil , errors
 		}
 
 
 		getOrSetAdditionalTableSchema(table_name, additional_schema)
-		defer lock_table_additional_schema.Unlock()
 		return additional_schema, nil
 	}
 
@@ -692,7 +677,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		},
 		GlobalGeneralLogDisable: func() []error {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -705,7 +690,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		},
 		GlobalGeneralLogEnable: func() []error {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -718,7 +703,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		},
 		GlobalSetTimeZoneUTC: func() []error {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
@@ -731,7 +716,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		},
 		GlobalSetSQLMode: func() []error {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)

@@ -3,17 +3,17 @@ package dao
 import (
 	"fmt"
 	"io/ioutil"
+	"bufio"
 	"os"
 	"time"
 	"strings"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(lock_sql_command *sync.RWMutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -30,8 +30,10 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(lock_sql_command *sync.RWMutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
 			var errors []error
+			const maxCapacity = 10*1024*1024  
+
 
 			if common.IsNil(database) {
 				errors = append(errors, fmt.Errorf("host is nil"))
@@ -119,10 +121,15 @@ func newSQLCommand() (*SQLCommand, []error) {
 				sql_command_use_file = false
 			}
 
-			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s --wait --reconnect --batch", credentials_command, host_command)
+			sql_header_command := fmt.Sprintf("/usr/local/mysql/bin/mysql %s %s --wait --quick ", credentials_command, host_command)
 
 			uuid, _ := ioutil.ReadFile("/proc/sys/kernel/random/uuid")
-			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time.Now().UnixNano(), string(uuid))
+			time_now := time.Now().UnixNano()
+			filename := directory + "/" + fmt.Sprintf("%v%s.sql", time_now, string(uuid))
+			filename_stdout := directory + "/" + fmt.Sprintf("%v%s-stdout.sql", time_now, string(uuid))
+			filename_stderr := directory + "/" + fmt.Sprintf("%v%s-stderr.sql", time_now, string(uuid))
+
+
 			command := ""
 
 			var sql_command strings.Builder
@@ -155,7 +162,13 @@ func newSQLCommand() (*SQLCommand, []error) {
 			sql := sql_command.String()
 			if sql_command_use_file {
 				ioutil.WriteFile(filename, []byte(sql), 0600)
-				command = sql_header_command + " < " + filename
+				command = sql_header_command + " < " + filename +  " > " + filename_stdout + " 2> " + filename_stderr
+				//fmt.Println(command)
+				if sql_command_use_file {
+					defer os.Remove(filename)
+					defer os.Remove(filename_stdout)
+					defer os.Remove(filename_stderr)
+				}
 			} else {
 				command = sql_header_command + " <<[END]\n " + sql + "\n[END]"
 			}
@@ -169,19 +182,13 @@ func newSQLCommand() (*SQLCommand, []error) {
 
 			//fmt.Println(command)
 			//fmt.Println(sql)
-			lock_sql_command.Lock()
-			defer lock_sql_command.Unlock()
-			time.Sleep(50 * time.Millisecond)
-			shell_output, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
-
-			if sql_command_use_file {
-				os.Remove(filename)
-			}
+			_, bash_errors := bashCommand.ExecuteUnsafeCommand(command, nil, nil)
 
 			if bash_errors != nil {
 				errors = append(errors, bash_errors...)
 			}
 
+			
 			/*
 			if shell_output != nil {
 				fmt.Println(*shell_output)
@@ -191,17 +198,47 @@ func newSQLCommand() (*SQLCommand, []error) {
 				fmt.Println(errors)
 			}*/
 
+			var stdout_lines []string
+			file_stdout, file_stdout_errors := os.Open(filename_stdout)
+			if file_stdout_errors != nil {
+				errors = append(errors, file_stdout_errors)
+			} else {
+				defer file_stdout.Close()
+				stdout_scanner := bufio.NewScanner(file_stdout)
+				stdout_scanner_buffer := make([]byte, maxCapacity)
+				stdout_scanner.Buffer(stdout_scanner_buffer, maxCapacity)
+				stdout_scanner.Split(bufio.ScanLines)
+				for stdout_scanner.Scan() {
+					current_text := stdout_scanner.Text()
+					if current_text != "" {
+						stdout_lines = append(stdout_lines, current_text)
+					}
+				}
+			}
+
+			file_stderr, file_stderr_errors := os.Open(filename_stderr)
+			if file_stderr_errors != nil {
+				errors = append(errors, file_stderr_errors)
+			} else {
+				defer file_stderr.Close()
+				stderr_scanner := bufio.NewScanner(file_stderr)
+				stderr_scanner_buffer := make([]byte, maxCapacity)
+				stderr_scanner.Buffer(stderr_scanner_buffer, maxCapacity)
+				stderr_scanner.Split(bufio.ScanLines)
+				for stderr_scanner.Scan() {
+					current_text := stderr_scanner.Text()
+					if current_text != "" {
+						errors = append(errors, fmt.Errorf("%s", current_text))
+					}
+				}
+			}
+
 			if len(errors) > 0 {
 				//fmt.Println(command)
 				return nil, errors
 			}
 
 			records := json.NewArrayValue()
-
-			if shell_output == nil || len(*shell_output) == 0 {
-				return &records, nil
-			}
-
 			if options.IsBoolTrue("read_no_records") {
 				return &records, nil
 			}
@@ -211,7 +248,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			columns_count := 0
 			columns := json.NewArray()
 			record := json.NewMap()
-			for _, shell_row := range *shell_output {
+			for _, shell_row := range stdout_lines {
 				shell_row = strings.TrimSpace(shell_row)
 				current_row_rune := []rune(shell_row)
 				current_row_length := len(current_row_rune)

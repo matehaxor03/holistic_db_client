@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strconv"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -36,7 +35,7 @@ type Table struct {
 	GetDatabase           func() (Database)
 }
 
-func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map, lock_sql_command *sync.RWMutex) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -273,7 +272,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -331,7 +330,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 	
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -364,7 +363,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -388,7 +387,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	
 	updateRecords := func(records json.Array) []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -425,7 +424,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, lock_sql_command)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -468,7 +467,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	updateRecord := func(record *json.Map) []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -478,7 +477,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		record_obj, record_errors := newRecord(verify, *getTable(), *record, lock_sql_command)
+		record_obj, record_errors := newRecord(verify, *getTable(), *record)
 		if record_errors != nil {
 			return record_errors
 		} else if common.IsNil(record_obj) {
@@ -510,7 +509,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	createRecords := func(records json.Array) []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("transactional", false)
 
 		if records.Len() == 1 {
@@ -555,7 +554,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, lock_sql_command)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -642,7 +641,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	createTable := func() []error {
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
@@ -933,7 +932,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 	
-		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record, lock_sql_command)
+		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record)
 		if mapped_record_obj_errors != nil {
 			errors = append(errors, mapped_record_obj_errors...)
 		} else if common.IsNil(mapped_record_obj){
@@ -979,7 +978,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		},
 		Count: func(filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("read_no_records", false)
 			options.SetBoolValue("no_column_headers", false)
@@ -1050,7 +1049,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(verify, *getTable(), new_record_data, lock_sql_command)
+			record, record_errors := newRecord(verify, *getTable(), new_record_data)
 			if record_errors != nil {
 				return nil, record_errors
 			}
@@ -1064,7 +1063,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		},
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			sql_command, options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors

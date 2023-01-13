@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -82,7 +81,7 @@ type Record struct {
 	GetTable func() (Table)
 }
 
-func newRecord(verify *validate.Validator, table Table, record_data json.Map, lock_sql_command *sync.RWMutex) (*Record, []error) {
+func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
 	var errors []error
 	//var this *Record
 	
@@ -259,7 +258,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, lo
 		}
 
 		database := table.GetDatabase()
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -290,7 +289,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, lo
 		}
 		
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
@@ -346,7 +345,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, lo
 		}
 		
 		options := json.NewMap()
-		options.SetBoolValue("use_file", false)
+		options.SetBoolValue("use_file", true)
 		options.SetBoolValue("no_column_headers", false)
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("get_last_insert_id", true)

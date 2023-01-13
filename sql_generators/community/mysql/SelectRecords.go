@@ -19,7 +19,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		var errors []error
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 
 		table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")

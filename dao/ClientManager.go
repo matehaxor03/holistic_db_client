@@ -26,9 +26,6 @@ func NewClientManager() (*ClientManager, []error) {
 	user_count := 0
 	lock_user_count := &sync.RWMutex{}
 	lock_client := &sync.RWMutex{}
-	lock_table_schema := &sync.RWMutex{}
-	lock_table_additional_schema := &sync.RWMutex{}
-	lock_sql_command := &sync.RWMutex{}
 	
 	getClient := func(host_name string, port_number string, database_name string, database_username string) (*Client, []error) {
 		var errors []error
@@ -42,7 +39,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 		
-		client, client_errors := newClient(verify, *getClientManager(), host, &database_username, nil, lock_table_schema, lock_table_additional_schema, lock_sql_command)
+		client, client_errors := newClient(verify, *getClientManager(), host, &database_username, nil)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)

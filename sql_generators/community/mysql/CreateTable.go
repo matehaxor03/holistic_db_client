@@ -20,7 +20,7 @@ func newCreateTableSQL() (*CreateTableSQL) {
 
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 
 		validate_table_name_errors := verify.ValidateTableName(table_name)

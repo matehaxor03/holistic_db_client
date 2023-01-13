@@ -15,7 +15,7 @@ func newTableNamesSQL() (*TableNamesSQL) {
 	get_table_names_sql := func(verify *validate.Validator, database_name string, options *json.Map) (*string, *json.Map, []error) {
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 	
 		validation_errors := verify.ValidateDatabaseName(database_name)

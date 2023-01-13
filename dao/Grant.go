@@ -2,7 +2,6 @@ package dao
 
 import (
 	"fmt"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -14,7 +13,7 @@ type Grant struct {
 	Grant         func() []error
 }
 
-func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string, lock_sql_command *sync.RWMutex) (*Grant, []error) {
+func newGrant(verify *validate.Validator, database Database, user User, grant string, database_filter *string, table_filter *string) (*Grant, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -202,7 +201,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return nil, temp_database_errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, temp_database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {

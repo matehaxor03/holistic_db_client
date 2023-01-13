@@ -17,7 +17,7 @@ func newCreateDatabaseSQL() (*CreateDatabaseSQL) {
 		var errors []error
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("creating_database", true)
 			options.SetBoolValue("read_no_records", true)
 		}

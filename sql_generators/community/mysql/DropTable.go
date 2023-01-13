@@ -18,7 +18,7 @@ func newDropTableSQL() (*DropTableSQL) {
 
 		if options == nil {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 
 		validation_errors := verify.ValidateTableName(table_name)
@@ -47,7 +47,7 @@ func newDropTableSQL() (*DropTableSQL) {
 
 		if options == nil {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 
 		validation_errors := verify.ValidateTableName(table_name)

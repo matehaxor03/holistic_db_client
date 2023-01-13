@@ -26,7 +26,7 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("no_column_headers", false)
 			options.SetBoolValue("get_last_insert_id", true)
 			options.SetBoolValue("transactional", false)

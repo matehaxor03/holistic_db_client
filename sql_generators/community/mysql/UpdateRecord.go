@@ -21,7 +21,7 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 		var errors []error
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("transactional", false)
 		}

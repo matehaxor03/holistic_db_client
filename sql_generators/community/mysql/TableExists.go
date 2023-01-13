@@ -16,7 +16,7 @@ func newTableExistsSQL() (*TableExistsSQL) {
 		var errors []error
 		if options == nil {
 			options := json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 		}
 
 		validation_errors := verify.ValidateTableName(table_name)

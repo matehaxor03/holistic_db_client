@@ -3,7 +3,6 @@ package dao
 import (
 	"fmt"
 	"strings"
-	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -18,7 +17,7 @@ type User struct {
 	UpdatePassword func(new_password string) []error
 }
 
-func newUser(database Database, credentials Credentials, domain_name DomainName, lock_sql_command *sync.RWMutex) (*User, []error) {
+func newUser(database Database, credentials Credentials, domain_name DomainName) (*User, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -116,7 +115,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName,
 			return nil, temp_database_errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, temp_database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(temp_database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {

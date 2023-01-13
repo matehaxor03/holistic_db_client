@@ -46,7 +46,7 @@ func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
 
 		if options == nil {
 			options = json.NewMap()
-			options.SetBoolValue("use_file", false)
+			options.SetBoolValue("use_file", true)
 			options.SetBoolValue("json_output", false)
 		}
 
