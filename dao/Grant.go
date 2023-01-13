@@ -144,7 +144,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		return temp_value.(User), nil
 	}
 
-	getGrantValue := func() (*string, []error) {
+	getGrantValue := func() (string, []error) {
 		var errors []error
 		temp_value, temp_value_errors := helper.GetField(*getData(), "[system_schema]", "[system_fields]", "[grant]", "string")
 		if temp_value_errors != nil {
@@ -153,9 +153,9 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			errors = append(errors, fmt.Errorf("grant value is nil"))
 		}
 		if len(errors) > 0 {
-			return nil, errors
+			return "", errors
 		}
-		return temp_value.(*string), nil
+		return temp_value.(string), nil
 	}
 
 	getDatabaseFilter := func() (*string, []error) {
