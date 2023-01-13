@@ -102,10 +102,13 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return nil, errors
 			}
 
-			temp_database_username := *database_username
+			var temp_database_username string = ""
+			temp_database_username = *database_username
 			fmt.Println(temp_database_username)
 			if temp_database_username == "holistic_write" || temp_database_username == "holistic_read" {
 				temp_database_username = temp_database_username + "0"
+			} else {
+				fmt.Println("'" + temp_database_username + "'")
 			}
 
 			if temp_database_username != "root" {
