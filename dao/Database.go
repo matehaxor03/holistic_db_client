@@ -362,7 +362,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
-
+		options.SetBoolValue("read_no_records", false)
 
 		cached_schema, cached_schema_errors := getOrSetTableSchema(table_name, nil, "get")
 		if cached_schema_errors != nil {
@@ -502,6 +502,7 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 		options.SetBoolValue("use_file", false)
 		options.SetBoolValue("json_output", true)
 		options.SetBoolValue("get_last_insert_id", false)
+		options.SetBoolValue("read_no_records", false)
 
 		cached_additonal_schema, cached_additonal_schema_errors := getOrSetAdditionalTableSchema(table_name, nil)
 		if cached_additonal_schema_errors != nil {
