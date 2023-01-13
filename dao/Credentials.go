@@ -18,10 +18,6 @@ func newCredentials(verify *validate.Validator, username string, password string
 		if username_errors := verify.ValidateUsername(username); username_errors != nil {
 			errors = append(errors, username_errors...)
 		}
-
-		if password_errors := verify.ValidateUsername(password); password_errors != nil {
-			errors = append(errors, password_errors...)
-		}
 		
 		if len(errors) > 0 {
 			return errors
