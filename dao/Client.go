@@ -342,13 +342,13 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		UserExists: func(username string) (bool, []error) {
 			errors := validate()
 			if len(errors) > 0 {
-				fmt.Errorf("validation errors")
+				fmt.Println("validation errors")
 				return false, errors
 			}
 
 			_, user_errors := getUser("root") 
 			if user_errors != nil {
-				fmt.Errorf("get root user errors")
+				fmt.Println("get root user errors")
 				errors = append(errors, user_errors...)
 				return false, errors
 			}
@@ -357,19 +357,21 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 			mysql_database, mysql_database_errors := client.GetDatabaseByName("mysql")
 			if mysql_database_errors != nil {
-				fmt.Errorf("use database errors")
+				fmt.Println("GetDatabaseByName errors")
 				errors = append(errors, mysql_database_errors...)
 				return false, errors
 			}
 
 			table, table_errors := mysql_database.GetTable("user")
 			if table_errors != nil {
+				fmt.Println("GetTable errors")
 				errors = append(errors, table_errors...)
 				return false, errors
 			}
 
 			username_escaped, username_escaped_error := common.EscapeString(username, "'")
 			if username_escaped_error != nil {
+				fmt.Println("username_escaped_error errors")
 				errors = append(errors, username_escaped_error)
 				return false, errors
 			}
@@ -383,6 +385,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil)
 
 			if records_errors != nil {
+				fmt.Println("records_errors errors")
 				return false, records_errors
 			}
 
