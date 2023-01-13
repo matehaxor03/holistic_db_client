@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -27,7 +28,7 @@ type Client struct {
 	ValidateTableName func(table_name string) []error
 }
 
-func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
+func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Client, []error) {
 	var this_client *Client
 
 	setClient := func(client *Client) {
@@ -52,7 +53,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, temp_database_create_options_errors
 		}
 		
-		database_interface, database_interface_errors := newDatabase(verify, *host, database_username, database_name, temp_database_create_options)
+		database_interface, database_interface_errors := newDatabase(verify, *host, database_username, database_name, temp_database_create_options, table_schema_lock, lock_table_additional_schema)
 		if database_interface_errors != nil {
 			return nil, database_interface_errors
 		}
@@ -116,7 +117,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 	}
 
 	useDatabaseByName := func(new_database_name string) ([]error) {
-		database, database_errors := newDatabase(verify, *getHost(), getDatabaseUsername(), new_database_name, nil)
+		database, database_errors := newDatabase(verify, *getHost(), getDatabaseUsername(), new_database_name, nil, table_schema_lock, lock_table_additional_schema)
 		if database_errors != nil {
 			return database_errors
 		}
@@ -147,7 +148,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, new_temp_host_errors
 		}
 
-		client, client_errors := newClient(verify, getClientManager(), new_temp_host, &username, nil)
+		client, client_errors := newClient(verify, getClientManager(), new_temp_host, &username, nil, table_schema_lock, lock_table_additional_schema)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -214,7 +215,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return errors
 			}
 			
-			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -240,7 +241,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return false, errors
 			}
 
-			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
 			if database_errors != nil {
 				return false, database_errors
 			}

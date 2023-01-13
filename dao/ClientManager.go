@@ -23,6 +23,8 @@ func NewClientManager() (*ClientManager, []error) {
 	}
 	
 	lock_client := &sync.Mutex{}
+	lock_table_schema := &sync.Mutex{}
+	lock_table_additional_schema := &sync.Mutex{}
 	
 	getClient := func(host_name string, port_number string, database_name string, database_username string) (*Client, []error) {
 		var errors []error
@@ -36,7 +38,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 		
-		client, client_errors := newClient(verify, *getClientManager(), host, &database_username, nil)
+		client, client_errors := newClient(verify, *getClientManager(), host, &database_username, nil, lock_table_schema, lock_table_additional_schema)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)

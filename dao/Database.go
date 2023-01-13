@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"strings"
+	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -36,7 +37,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Database, []error) {	
 	var errors []error
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
@@ -353,6 +354,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 	}
 
 	getTableSchema := func(table_name string) (*json.Map, []error) {
+		table_schema_lock.Lock()
+		defer table_schema_lock.Unlock()
 		var errors []error
 	
 		options := json.NewMap()
@@ -486,6 +489,8 @@ func newDatabase(verify *validate.Validator, host Host, database_username *strin
 	}
 
 	getAdditionalTableSchema := func(table_name string) (*json.Map, []error) {
+		lock_table_additional_schema.Lock()
+		defer lock_table_additional_schema.Unlock()
 		var errors []error
 		validate_errors := validate()
 		
