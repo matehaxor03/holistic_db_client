@@ -3,6 +3,7 @@ package dao
 import (
 	"fmt"
 	"strconv"
+	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_db_client/validate"
@@ -35,7 +36,7 @@ type Table struct {
 	GetDatabase           func() (Database)
 }
 
-func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map, lock_sql_command *sync.Mutex) (*Table, []error) {
 	var errors []error
 
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -270,7 +271,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -422,7 +423,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, lock_sql_command)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -475,7 +476,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		record_obj, record_errors := newRecord(verify, *getTable(), *record)
+		record_obj, record_errors := newRecord(verify, *getTable(), *record, lock_sql_command)
 		if record_errors != nil {
 			return record_errors
 		} else if common.IsNil(record_obj) {
@@ -552,7 +553,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, lock_sql_command)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -944,7 +945,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 	
-		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record)
+		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record, lock_sql_command)
 		if mapped_record_obj_errors != nil {
 			errors = append(errors, mapped_record_obj_errors...)
 		} else if common.IsNil(mapped_record_obj){
@@ -1061,7 +1062,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(verify, *getTable(), new_record_data)
+			record, record_errors := newRecord(verify, *getTable(), new_record_data, lock_sql_command)
 			if record_errors != nil {
 				return nil, record_errors
 			}

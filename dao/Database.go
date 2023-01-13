@@ -38,7 +38,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex, lock_sql_command *sync.Mutex) (*Database, []error) {	
 	var errors []error
 	var this_database *Database
 	table_schema_cache := newTableSchemaCache()
@@ -131,7 +131,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*getDatabase(), sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(lock_sql_command, *getDatabase(), sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -442,7 +442,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema)
+		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema, lock_sql_command)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -479,7 +479,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil)
+		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil, lock_sql_command)
 
 		if new_table_errors != nil {
 			errors = append(errors, new_table_errors...)

@@ -29,7 +29,7 @@ type Client struct {
 	ValidateTableName func(table_name string) []error
 }
 
-func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex) (*Client, []error) {
+func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database, table_schema_lock *sync.Mutex, lock_table_additional_schema *sync.Mutex, lock_sql_command *sync.Mutex) (*Client, []error) {
 	var this_client *Client
 
 	setClient := func(client *Client) {
@@ -54,7 +54,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, temp_database_create_options_errors
 		}
 		
-		database_interface, database_interface_errors := newDatabase(verify, *this_client, *host, database_username, database_name, temp_database_create_options, table_schema_lock, lock_table_additional_schema)
+		database_interface, database_interface_errors := newDatabase(verify, *this_client, *host, database_username, database_name, temp_database_create_options, table_schema_lock, lock_table_additional_schema, lock_sql_command)
 		if database_interface_errors != nil {
 			return nil, database_interface_errors
 		}
@@ -138,7 +138,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, new_temp_host_errors
 		}
 
-		client, client_errors := newClient(verify, getClientManager(), new_temp_host, &username, nil, table_schema_lock, lock_table_additional_schema)
+		client, client_errors := newClient(verify, getClientManager(), new_temp_host, &username, nil, table_schema_lock, lock_table_additional_schema, lock_sql_command)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -158,7 +158,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, domain_name_errors
 		}
 
-		user, user_errors := newUser(*get_database_by_name, *credentials, *domain_name)
+		user, user_errors := newUser(*get_database_by_name, *credentials, *domain_name, lock_sql_command)
 		if user_errors != nil {
 			return nil, user_errors
 		}
@@ -205,7 +205,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return errors
 			}
 			
-			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema, lock_sql_command)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -231,7 +231,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return false, errors
 			}
 
-			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, table_schema_lock, lock_table_additional_schema, lock_sql_command)
 			if database_errors != nil {
 				return false, database_errors
 			}
@@ -261,7 +261,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, errors
 			}
 
-			user, user_errors := newUser(*database, *credentials, *domain)
+			user, user_errors := newUser(*database, *credentials, *domain, lock_sql_command)
 			if user_errors != nil {
 				return nil, user_errors
 			}
@@ -301,7 +301,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, errors
 			}
 
-			return newDatabase(verify, *this_client, *getHost(), getDatabaseUsername(), get_database_name, nil, table_schema_lock, lock_table_additional_schema)
+			return newDatabase(verify, *this_client, *getHost(), getDatabaseUsername(), get_database_name, nil, table_schema_lock, lock_table_additional_schema, lock_sql_command)
 		},
 		UseDatabase: func(new_database Database) []error {
 			database_errors := new_database.Validate()
@@ -326,7 +326,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, errors
 			}
 			
-			grant_obj, grant_errors := newGrant(verify, *temp_database, user, grant, database_filter, table_filter)
+			grant_obj, grant_errors := newGrant(verify, *temp_database, user, grant, database_filter, table_filter, lock_sql_command)
 
 			if grant_errors != nil {
 				return nil, grant_errors

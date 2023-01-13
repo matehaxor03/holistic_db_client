@@ -6,13 +6,14 @@ import (
 	"os"
 	"time"
 	"strings"
+	"sync"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
+	ExecuteUnsafeCommand func(lock_sql_command *sync.Mutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -29,7 +30,9 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
+		ExecuteUnsafeCommand: func(lock_sql_command *sync.Mutex, database Database, raw_sql *string, options *json.Map) (*json.Array, []error) {
+			lock_sql_command.Lock()
+			defer lock_sql_command.Unlock()
 			var errors []error
 
 			if common.IsNil(database) {
