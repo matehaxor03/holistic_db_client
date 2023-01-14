@@ -31,27 +31,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			const maxCapacity = 10*1024*1024  
 			records := json.NewArrayValue()
 
-			if common.IsNil(database) {
-				errors = append(errors, fmt.Errorf("host is nil"))
-			}
-
-			if common.IsNil(raw_sql) {
-				errors = append(errors, fmt.Errorf("sql is nil"))
-			}
-
-			if len(errors) > 0 {
-				return records, errors
-			}
-
-			validate_errors := database.Validate()
-			if validate_errors != nil {
-				errors = append(errors, validate_errors...)
-			}
-
-			if len(errors) > 0 {
-				return records, errors
-			}
-
 			client := database.GetClient()
 			client_manager := client.GetClientManager()
 			host := database.GetHost()
@@ -87,7 +66,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 			if len(errors) > 0 {
 				return records, errors
 			}
-
 			
 			if *database_username != "root" {
 				temp_database_username := ""
