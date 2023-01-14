@@ -9,12 +9,12 @@ import (
 )
 
 type TableSchemaAdditionalSQL struct {
-	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error)
+	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 	MapAdditionalSchemaFromDBToMap func(json_array json.Array) (*json.Map, []error)
 }
 
 func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
-	get_table_schema_additional_sql := func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error) {
+	get_table_schema_additional_sql := func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 		database_name_validation_errors := verify.ValidateDatabaseName(database_name)
 		if database_name_validation_errors != nil {
@@ -51,12 +51,11 @@ func newTableSchemaAdditionalSQL() (*TableSchemaAdditionalSQL) {
 		sql_command.WriteString(table_name_escaped)
 		sql_command.WriteString("';")
 		
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &TableSchemaAdditionalSQL{
-		GetTableSchemaAdditionalSQL: func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*string, json.Map, []error) {
+		GetTableSchemaAdditionalSQL: func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_table_schema_additional_sql(verify, database_name, table_name, options)
 		},
 		MapAdditionalSchemaFromDBToMap: func(json_array json.Array) (*json.Map, []error) {

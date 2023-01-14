@@ -8,12 +8,12 @@ import (
 )
 
 type DropDatabaseSQL struct {
-	GetDropDatabaseIfExistsSQL func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error)
-	GetDropDatabaseSQL func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error)
+	GetDropDatabaseIfExistsSQL func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error)
+	GetDropDatabaseSQL func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newDropDatabaseSQL() (*DropDatabaseSQL) {
-	get_drop_database_if_exists_sql := func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+	get_drop_database_if_exists_sql := func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 	
 		validation_errors := verify.ValidateDatabaseName(database_name)
@@ -33,11 +33,10 @@ func newDropDatabaseSQL() (*DropDatabaseSQL) {
 
 		
 		sql_command.WriteString(";")
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
-	get_drop_database_sql := func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+	get_drop_database_sql := func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		validation_errors := verify.ValidateDatabaseName(database_name)
@@ -56,15 +55,14 @@ func newDropDatabaseSQL() (*DropDatabaseSQL) {
 		Box(&sql_command, database_name_escaped,"`","`")
 
 		sql_command.WriteString(";")
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &DropDatabaseSQL{
-		GetDropDatabaseIfExistsSQL: func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+		GetDropDatabaseIfExistsSQL: func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_drop_database_if_exists_sql(verify, database_name, options)
 		},
-		GetDropDatabaseSQL: func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+		GetDropDatabaseSQL: func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_drop_database_sql(verify, database_name, options)
 		},
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 type SQLCommand struct {
-	ExecuteUnsafeCommand func(database Database, raw_sql *string, options json.Map) (json.Array, []error)
+	ExecuteUnsafeCommand func(database Database, raw_sql strings.Builder, options json.Map) (json.Array, []error)
 }
 
 func newSQLCommand() (*SQLCommand, []error) {
@@ -26,7 +26,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 	}
 
 	x := SQLCommand{
-		ExecuteUnsafeCommand: func(database Database, raw_sql *string, options json.Map) (json.Array, []error) {
+		ExecuteUnsafeCommand: func(database Database, raw_sql strings.Builder, options json.Map) (json.Array, []error) {
 			var errors []error
 			const maxCapacity = 10*1024*1024  
 			records := json.NewArrayValue()
@@ -61,10 +61,6 @@ func newSQLCommand() (*SQLCommand, []error) {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is not set"))
 			} else if *database_username == "" {
 				errors = append(errors, fmt.Errorf("error: SQLCommand.ExecuteUnsafeCommand database_username is empty string"))
-			}
-
-			if *raw_sql == "" {
-				errors = append(errors, fmt.Errorf("error: sql is an empty string"))
 			}
 
 			if len(errors) > 0 {
@@ -127,7 +123,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 			
 			sql_command.WriteString(" ")
-			sql_command.WriteString(*raw_sql)
+			sql_command.WriteString(raw_sql.String())
 
 			if options.IsBoolTrue("get_last_insert_id") {
 				sql_command.WriteString(" SELECT LAST_INSERT_ID();")

@@ -8,11 +8,11 @@ import (
 )
 
 type TableExistsSQL struct {
-	GetTableExistsSQL func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error)
+	GetTableExistsSQL func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newTableExistsSQL() (*TableExistsSQL) {
-	get_table_exists_sql := func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+	get_table_exists_sql := func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 		validation_errors := verify.ValidateTableName(table_name)
 		if validation_errors != nil {
@@ -30,12 +30,11 @@ func newTableExistsSQL() (*TableExistsSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(" LIMIT 1 ;")
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &TableExistsSQL{
-		GetTableExistsSQL: func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+		GetTableExistsSQL: func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_table_exists_sql(verify, table_name, options)
 		},
 	}

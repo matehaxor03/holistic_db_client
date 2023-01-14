@@ -126,7 +126,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
 		errors := validate()
 		records := json.NewArrayValue()
 		if errors != nil {
@@ -173,7 +173,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return generate_sql_errors
 		}
 
-		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_sql_command_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -194,7 +194,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, sql_command_errors
 		}
 
-		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -226,7 +226,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, sql_command_errors
 		}
 
-		records, execute_errors := executeUnsafeCommand(sql_command, new_options)
+		records, execute_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -278,7 +278,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return sql_command_errors
 		}
 
-		_, execute_errors :=  executeUnsafeCommand(sql_command, new_options)
+		_, execute_errors :=  executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -303,7 +303,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return sql_command_errors
 		}
 
-		_, execute_errors :=  executeUnsafeCommand(sql_command, new_options)
+		_, execute_errors :=  executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
@@ -336,7 +336,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return false, errors
 		}
 		
-		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_errors := executeUnsafeCommand(*sql_command, new_options)
 		if execute_errors != nil {
 			errors = append(errors, execute_errors...)
 		}
@@ -380,7 +380,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			errors = append(errors, sql_command_errors...)
 		}
 
-		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
+		json_array, sql_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -459,7 +459,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return generate_sql_errors
 		}
 
-		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_sql_command_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -480,7 +480,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return generate_sql_errors
 		}
 
-		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_sql_command_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_sql_command_errors != nil {
 			return execute_sql_command_errors
@@ -535,7 +535,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, sql_command_errors
 		}
 
-		json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
+		json_array, sql_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -690,8 +690,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
-			command := "SET GLOBAL general_log = 'OFF';"
-			_, command_errors :=  executeUnsafeCommand(&command, options)
+			var command strings.Builder
+			command.WriteString("SET GLOBAL general_log = 'OFF';")
+			_, command_errors :=  executeUnsafeCommand(command, options)
 			if command_errors != nil {
 				return command_errors
 			}
@@ -702,8 +703,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
-			command := "SET GLOBAL general_log = 'ON';"
-			_, command_errors := executeUnsafeCommand(&command, options)
+			var command strings.Builder
+			command.WriteString("SET GLOBAL general_log = 'ON';")
+			_, command_errors := executeUnsafeCommand(command, options)
 			if command_errors != nil {
 				return command_errors
 			}
@@ -714,8 +716,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
-			command := "SET GLOBAL time_zone = '+00:00';"
-			_, command_errors :=  executeUnsafeCommand(&command, options)
+			var command strings.Builder
+			command.WriteString("SET GLOBAL time_zone = '+00:00';")
+			_, command_errors :=  executeUnsafeCommand(command, options)
 			if command_errors != nil {
 				return command_errors
 			}
@@ -726,8 +729,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			options.SetBoolValue("read_no_records", true)
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("updating_database_global_settings", true)
-			command := "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';"
-			_, command_errors := executeUnsafeCommand(&command, options)
+			var command strings.Builder
+			command.WriteString("SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';")
+			_, command_errors := executeUnsafeCommand(command, options)
 			if command_errors != nil {
 				return command_errors
 			}

@@ -8,11 +8,11 @@ import (
 )
 
 type DatabaseExistsSQL struct {
-	GetDatabaseExistsSQL func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error)
+	GetDatabaseExistsSQL func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newDatabaseExistsSQL() (*DatabaseExistsSQL) {
-	get_database_exists_sql := func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+	get_database_exists_sql := func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		validation_errors := verify.ValidateDatabaseName(database_name)
@@ -31,12 +31,11 @@ func newDatabaseExistsSQL() (*DatabaseExistsSQL) {
 		Box(&sql_command, database_name_escaped,"`","`")
 		sql_command.WriteString(";")
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &DatabaseExistsSQL{
-		GetDatabaseExistsSQL: func(verify *validate.Validator, database_name string, options json.Map) (*string, json.Map, []error) {
+		GetDatabaseExistsSQL: func(verify *validate.Validator, database_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_database_exists_sql(verify, database_name, options)
 		},
 	}

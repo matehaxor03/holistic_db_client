@@ -11,11 +11,11 @@ import (
 )
 
 type SelectRecordsSQL struct {
-	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error)
+	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newSelectRecordsSQL() (*SelectRecordsSQL) {
-	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error) {
+	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 	
 		table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")
@@ -696,12 +696,11 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			return nil, options, errors
 		}
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &SelectRecordsSQL{
-		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*string, json.Map, []error) {
+		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, filters_logic, order_by, limit, offset, options)
 		},
 	}

@@ -8,12 +8,12 @@ import (
 )
 
 type DropTableSQL struct {
-	GetDropTableIfExistsSQL func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error)
-	GetDropTableSQL func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error)
+	GetDropTableIfExistsSQL func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
+	GetDropTableSQL func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newDropTableSQL() (*DropTableSQL) {
-	get_drop_table_if_exists_sql := func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+	get_drop_table_if_exists_sql := func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		validation_errors := verify.ValidateTableName(table_name)
@@ -33,11 +33,10 @@ func newDropTableSQL() (*DropTableSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(";")
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
-	get_drop_table_sql := func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+	get_drop_table_sql := func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 		validation_errors := verify.ValidateTableName(table_name)
 		if validation_errors != nil {
@@ -56,15 +55,14 @@ func newDropTableSQL() (*DropTableSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(";")
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &DropTableSQL{
-		GetDropTableIfExistsSQL: func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+		GetDropTableIfExistsSQL: func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_drop_table_if_exists_sql(verify, table_name, options)
 		},
-		GetDropTableSQL: func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+		GetDropTableSQL: func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_drop_table_sql(verify, table_name, options)
 		},
 	}

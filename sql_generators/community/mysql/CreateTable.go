@@ -11,11 +11,11 @@ import (
 )
 
 type CreateTableSQL struct {
-	GetCreateTableSQL func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error)
+	GetCreateTableSQL func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newCreateTableSQL() (*CreateTableSQL) {
-	get_create_table_sql := func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error) {
+	get_create_table_sql := func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		validate_table_name_errors := verify.ValidateTableName(table_name)
@@ -390,12 +390,11 @@ func newCreateTableSQL() (*CreateTableSQL) {
 			return nil, options, errors
 		}
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &CreateTableSQL{
-		GetCreateTableSQL: func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*string, json.Map, []error) {
+		GetCreateTableSQL: func(verify *validate.Validator, table_name string, table_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_create_table_sql(verify, table_name, table_data, options)
 		},
 	}

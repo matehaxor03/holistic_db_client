@@ -10,12 +10,12 @@ import (
 )
 
 type TableSchemaSQL struct {
-	GetTableSchemaSQL func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error)
+	GetTableSchemaSQL func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 	MapTableSchemaFromDB func(verify *validate.Validator, table_name string, json_array json.Array) (*json.Map, []error)
 }
 
 func newTableSchemaSQL() (*TableSchemaSQL) {
-	get_table_schema_sql := func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+	get_table_schema_sql := func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		validation_errors := verify.ValidateTableName(table_name)
@@ -34,12 +34,11 @@ func newTableSchemaSQL() (*TableSchemaSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(";")
 		
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &TableSchemaSQL{
-		GetTableSchemaSQL: func(verify *validate.Validator, table_name string, options json.Map) (*string, json.Map, []error) {
+		GetTableSchemaSQL: func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_table_schema_sql(verify, table_name, options)
 		},
 		MapTableSchemaFromDB: func(verify *validate.Validator, table_name string, json_array json.Array) (*json.Map, []error) {

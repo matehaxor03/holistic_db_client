@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -103,7 +104,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 		return temp_value.(DomainName), nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
 		errors := validate()
 		if errors != nil {
 			return json.NewArrayValue(), errors
@@ -128,7 +129,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 		return sql_command_results, nil
 	}
 
-	getCreateSQL := func(options json.Map) (*string, json.Map, []error) {
+	getCreateSQL := func(options json.Map) (*strings.Builder, json.Map, []error) {
 		errors := validate()
 		if len(errors) > 0 {
 			return nil, options, errors
@@ -176,18 +177,15 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 		temp_domain_name_value_escaped = "'" + temp_domain_name_value_escaped + "'"
 		temp_password_escaped = "'" + temp_password_escaped + "'"
 
-		sql_command := "CREATE USER "
-		sql_command += fmt.Sprintf("%s", username_escaped)
-		sql_command += fmt.Sprintf("@%s ", temp_domain_name_value_escaped)
-		sql_command += fmt.Sprintf("IDENTIFIED BY ")
-		sql_command += fmt.Sprintf("%s", temp_password_escaped)
-
-		sql_command += ";"
+		var sql_command strings.Builder
+		sql_command.WriteString("CREATE USER ")
+		sql_command.WriteString(fmt.Sprintf("%s", username_escaped))
+		sql_command.WriteString(fmt.Sprintf("@%s ", temp_domain_name_value_escaped))
+		sql_command.WriteString(fmt.Sprintf("IDENTIFIED BY "))
+		sql_command.WriteString(fmt.Sprintf("%s", temp_password_escaped))
+		sql_command.WriteString(";")
 		return &sql_command, options, nil
 	}
-
-	
-
 
 	validation_errors := validate()
 
@@ -212,7 +210,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 				return sql_command_errors
 			}
 
-			_, execute_errors := executeUnsafeCommand(sql_command, new_options)
+			_, execute_errors := executeUnsafeCommand(*sql_command, new_options)
 
 			if execute_errors != nil {
 				return execute_errors
@@ -274,12 +272,13 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			temp_host_name_escaped = "'" + temp_host_name_escaped + "'"
 			new_password_escaped = "'" + new_password_escaped + "'"
 	
-			sql_command := fmt.Sprintf("ALTER USER %s@%s IDENTIFIED BY %s", temp_username_escaped, temp_host_name_escaped, new_password_escaped)
+			var sql_command strings.Builder
+			sql_command.WriteString(fmt.Sprintf("ALTER USER %s@%s IDENTIFIED BY %s", temp_username_escaped, temp_host_name_escaped, new_password_escaped))
 			if len(errors) > 0 {
 				return errors
 			}
 
-			_, execute_errors := executeUnsafeCommand(&sql_command, options)
+			_, execute_errors := executeUnsafeCommand(sql_command, options)
 
 			if execute_errors != nil {
 				return execute_errors

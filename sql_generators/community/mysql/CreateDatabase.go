@@ -8,11 +8,11 @@ import (
 )
 
 type CreateDatabaseSQL struct {
-	GetCreateDatabaseSQL func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*string, json.Map, []error)
+	GetCreateDatabaseSQL func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newCreateDatabaseSQL() (*CreateDatabaseSQL) {
-	get_create_database_sql := func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*string, json.Map, []error) {
+	get_create_database_sql := func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*strings.Builder, json.Map, []error) {
 		var sql_command strings.Builder
 		var errors []error
 
@@ -54,12 +54,11 @@ func newCreateDatabaseSQL() (*CreateDatabaseSQL) {
 			return nil, options, errors
 		}
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &CreateDatabaseSQL{
-		GetCreateDatabaseSQL: func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*string, json.Map, []error) {	
+		GetCreateDatabaseSQL: func(verify *validate.Validator, database_name string, character_set *string, collate *string,  options json.Map) (*strings.Builder, json.Map, []error) {	
 			return get_create_database_sql(verify, database_name, character_set, collate, options)
 		},
 	}

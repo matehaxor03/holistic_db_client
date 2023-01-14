@@ -68,8 +68,8 @@ type Record struct {
 	GetFields func() (*json.Map, []error)
 	GetField func(field string, return_type string) (interface{}, []error)
 	SetField func(field string, value interface{}) ([]error)
-	GetUpdateSQL func() (*string, []error)
-	GetCreateSQL func() (*string, json.Map, []error)
+	GetUpdateSQL func() (*strings.Builder, []error)
+	GetCreateSQL func() (*strings.Builder, json.Map, []error)
 	GetRecordColumns func() (*map[string]bool, []error)
 	GetArchieved func() (*bool, []error)
 	GetArchievedDate func() (*time.Time, []error)
@@ -251,7 +251,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
 		errors := validate()
 		records := json.NewArrayValue()
 		if errors != nil {
@@ -282,7 +282,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil, errors
 	}
 
-	getUpdateSQL := func() (*string, json.Map, []error) {
+	getUpdateSQL := func() (*strings.Builder, json.Map, []error) {
 		var errors []error
 		validate_errors := validate()
 		options := json.NewMapValue()
@@ -315,7 +315,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return mysql_wrapper.GetUpdateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
-	getCreateSQL := func() (*string, json.Map, []error) {
+	getCreateSQL := func() (*strings.Builder, json.Map, []error) {
 		var errors []error
 		options := json.NewMapValue()
 		options.SetBoolValue("no_column_headers", false)
@@ -370,7 +370,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 				return create_sql_errors
 			}
 
-			json_array, errors := executeUnsafeCommand(sql, options)
+			json_array, errors := executeUnsafeCommand(*sql, options)
 
 			if len(errors) > 0 {
 				return errors
@@ -427,7 +427,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 
 			return nil
 		},
-		GetUpdateSQL: func() (*string, []error) {
+		GetUpdateSQL: func() (*strings.Builder, []error) {
 			//todo push options up higher to hide sensitive info if needed
 			sql, _, generate_sql_errors := getUpdateSQL()
 			if generate_sql_errors != nil {
@@ -435,7 +435,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			}
 			return sql, nil
 		},
-		GetCreateSQL: func() (*string, json.Map, []error) {
+		GetCreateSQL: func() (*strings.Builder, json.Map, []error) {
 			return getCreateSQL()
 		},
 		Update: func() []error {
@@ -444,7 +444,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 				return generate_sql_errors
 			}
 
-			_, execute_errors := executeUnsafeCommand(sql, options)
+			_, execute_errors := executeUnsafeCommand(*sql, options)
 
 			if execute_errors != nil {
 				return execute_errors

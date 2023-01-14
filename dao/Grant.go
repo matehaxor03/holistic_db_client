@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
@@ -190,7 +191,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		return temp_value.(*string), nil
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
 		errors := validate()
 		records := json.NewArrayValue()
 
@@ -217,7 +218,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 		return sql_command_results, nil
 	}
 
-	getSQL := func() (*string, []error) {
+	getSQL := func() (*strings.Builder, []error) {
 		errors := validate()
 		if len(errors) > 0 {
 			return nil, errors
@@ -257,13 +258,13 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return nil, table_filter_errors
 		}
 
-		sql := ""
+		var sql strings.Builder
 		if database_filter != nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s.%s ", grant_value, *database_filter, *table_filter)
+			sql.WriteString(fmt.Sprintf("GRANT %s ON %s.%s ", grant_value, *database_filter, *table_filter))
 		} else if database_filter != nil && table_filter == nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *database_filter)
+			sql.WriteString(fmt.Sprintf("GRANT %s ON %s ", grant_value, *database_filter))
 		} else if database_filter == nil && table_filter != nil {
-			sql = fmt.Sprintf("GRANT %s ON %s ", grant_value, *table_filter)
+			sql.WriteString(fmt.Sprintf("GRANT %s ON %s ", grant_value, *table_filter))
 		} else {
 			errors = append(errors, fmt.Errorf("error: Grant: getSQL: both database_filter and table_filter were nil"))
 		}
@@ -280,7 +281,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return nil, errors
 		}
 
-		sql += fmt.Sprintf("To '%s'@'%s';", username_value_escaped, domain_name_value_escaped)
+		sql.WriteString(fmt.Sprintf("To '%s'@'%s';", username_value_escaped, domain_name_value_escaped))
 
 		if len(errors) > 0 {
 			return nil, errors
@@ -297,7 +298,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 			return sql_command_errors
 		}
 
-		_, execute_errors := executeUnsafeCommand(sql_command, options)
+		_, execute_errors := executeUnsafeCommand(*sql_command, options)
 
 		if execute_errors != nil {
 			return execute_errors

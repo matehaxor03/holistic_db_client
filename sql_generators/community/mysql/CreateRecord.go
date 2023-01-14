@@ -12,11 +12,11 @@ import (
 )
 
 type CreateRecordSQL struct {
-	GetCreateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error)
+	GetCreateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newCreateRecordSQL() (*CreateRecordSQL) {
-	get_create_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
+	get_create_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 
 		table_validation_errors := verify.ValidateTableName(table_name)
@@ -307,12 +307,11 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 			return nil, options, errors
 		}
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &CreateRecordSQL{
-		GetCreateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
+		GetCreateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_create_record_sql(verify, table_name, table_schema, valid_columns, record_data, options)
 		},
 	}

@@ -13,11 +13,11 @@ import (
 )
 
 type UpdateRecordSQL struct {
-	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error)
+	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newUpdateRecordSQL() (*UpdateRecordSQL) {
-	get_update_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
+	get_update_record_sql := func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 		
 		table_name_validation_errors := verify.ValidateTableName(table_name)
@@ -557,12 +557,11 @@ func newUpdateRecordSQL() (*UpdateRecordSQL) {
 			return nil, options, errors
 		}
 
-		sql_command_result := sql_command.String()
-		return &sql_command_result, options, nil
+		return &sql_command, options, nil
 	}
 
 	return &UpdateRecordSQL{
-		GetUpdateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*string, json.Map, []error) {
+		GetUpdateRecordSQL: func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_update_record_sql(verify, table_name, table_schema, valid_columns, record_data, options)
 		},
 	}

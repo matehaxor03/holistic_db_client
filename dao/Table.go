@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"strings"
 	"strconv"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
@@ -266,7 +267,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return database
 	}
 
-	executeUnsafeCommand := func(sql_command *string, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
 		errors := validate()
 		if errors != nil {
 			return json.NewArrayValue(), errors
@@ -350,13 +351,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		sql := ""
+		var sql strings.Builder
 		for _, record_obj := range records_obj {
 			sql_update_snippet, sql_update_snippet_errors := record_obj.GetUpdateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
-				sql += *sql_update_snippet + "\n"
+				sql.WriteString(sql_update_snippet.String())
+				sql.WriteString("\n")
 			}
 		}
 
@@ -364,7 +366,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		_, sql_errors := executeUnsafeCommand(&sql, options)
+		_, sql_errors := executeUnsafeCommand(sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -405,7 +407,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		}
 		
 
-		_, sql_errors := executeUnsafeCommand(sql, options)
+		_, sql_errors := executeUnsafeCommand(*sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -478,13 +480,14 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		sql := ""
+		var sql strings.Builder
 		for _, record_obj := range records_obj {
 			sql_update_snippet, _, sql_update_snippet_errors := record_obj.GetCreateSQL()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {
-				sql += *sql_update_snippet + "\n"
+				sql.WriteString(sql_update_snippet.String())
+				sql.WriteString("\n")
 			}
 		}
 
@@ -492,7 +495,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return errors
 		}
 
-		_, sql_errors := executeUnsafeCommand(&sql, options)
+		_, sql_errors := executeUnsafeCommand(sql, options)
 
 		if sql_errors != nil {
 			errors = append(errors, sql_errors...)
@@ -545,7 +548,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return nil
 	}
 
-	getCreateTableSQL := func(options json.Map) (*string, json.Map, []error) {	
+	getCreateTableSQL := func(options json.Map) (*strings.Builder, json.Map, []error) {	
 		return mysql_wrapper.GetCreateTableSQL(verify, table_name, *getData(), options)
 	}
 
@@ -560,7 +563,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return sql_command_errors
 		}
 
-		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
+		_, execute_errors := executeUnsafeCommand(*sql_command, new_options)
 
 		if execute_errors != nil {
 			return execute_errors
@@ -898,7 +901,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, sql_command_errors
 			}
 
-			json_array, sql_errors := executeUnsafeCommand(sql_command, new_options)
+			json_array, sql_errors := executeUnsafeCommand(*sql_command, new_options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -995,7 +998,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			}
 
 			if cacheable {
-				cachable_records, cachable_records_errors := table_read_records_cache.GetOrSetReadRecords(*getTable(), *sql_command, nil)
+				cachable_records, cachable_records_errors := table_read_records_cache.GetOrSetReadRecords(*getTable(), sql_command.String(), nil)
 				if cachable_records_errors != nil {
 					return nil, cachable_records_errors
 				} else if !common.IsNil(cachable_records) {
@@ -1003,7 +1006,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				}
 			}
 
-			json_array, sql_errors := executeUnsafeCommand(sql_command, options)
+			json_array, sql_errors := executeUnsafeCommand(*sql_command, options)
 
 			if sql_errors != nil {
 				errors = append(errors, sql_errors...)
@@ -1030,7 +1033,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			}
 
 			if cacheable {
-				table_read_records_cache.GetOrSetReadRecords(*getTable(), *sql_command, &mapped_records)
+				table_read_records_cache.GetOrSetReadRecords(*getTable(), sql_command.String(), &mapped_records)
 			}
 
 			return &mapped_records, nil
