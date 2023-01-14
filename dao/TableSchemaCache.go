@@ -1,7 +1,6 @@
 package dao
 
 import (
-	common "github.com/matehaxor03/holistic_common/common"
 	json "github.com/matehaxor03/holistic_json/json"
 	"sync"
 	"fmt"
@@ -12,7 +11,7 @@ type TableSchemaCache struct {
 }
 
 func newTableSchemaCache() (*TableSchemaCache) {
-	cache := json.NewMap()
+	cache := make(map[string]interface{})
 	lock_table_schema_cache := &sync.RWMutex{}
 
 	
@@ -27,6 +26,10 @@ func newTableSchemaCache() (*TableSchemaCache) {
 
 		if mode == "" {
 			errors = append(errors, fmt.Errorf("mode is empty"))
+		} else if mode == "set" {
+			if schema == nil {
+				errors = append(errors, fmt.Errorf("schema is nil"))
+			}
 		}
 
 		if len(errors) > 0 {
@@ -49,33 +52,19 @@ func newTableSchemaCache() (*TableSchemaCache) {
 
 
 		if mode == "get" {
-			 result_from_cache, result_from_cache_errors := cache.GetMap(key)
-			 if result_from_cache_errors != nil {
-				return nil, result_from_cache_errors
-			 } else if common.IsNil(result_from_cache) {
+			 result_from_cache, found := cache[key]
+			 if !found {
 				return nil, nil
-			 } else {
-				return result_from_cache, nil
-			 }
+			} 
+			return result_from_cache.(*json.Map), nil
 		} else if mode == "set" {
-			if common.IsNil(schema) {
-				errors = append(errors, fmt.Errorf("schema is nil"))
-			}
-
-			if len(errors) > 0 {
-				return nil, errors
-			}
-
-			cache.SetMap(key, schema)
+			cache[key] = schema
 			return nil, nil
 		} else if mode == "delete" {
-			if cache.HasKey(key) {
-				_, remove_error := cache.RemoveKey(key)
-				if remove_error != nil {
-					errors = append(errors, remove_error)
-					return nil, errors
-				} 
-			}
+			_, found := cache[key]
+			if found {
+				delete(cache, key)
+			} 
 			return nil, nil
 		} else {
 			errors = append(errors, fmt.Errorf("mode not supported please implement: %s", mode))
