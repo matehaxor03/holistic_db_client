@@ -105,11 +105,7 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 	}
 
 	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
-		errors := validate()
-		if errors != nil {
-			return json.NewArrayValue(), errors
-		}
-
+		var errors []error
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {
 			return json.NewArrayValue(), temp_database_errors
@@ -228,11 +224,6 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			var errors []error
 			options := json.NewMapValue()
 
-			validate_errors := validate()
-			if validate_errors != nil {
-				errors = append(errors, validate_errors...)
-			}
-
 			if len(new_password) == 0 {
 				errors = append(errors, fmt.Errorf("password cannot be empty"))
 			}
@@ -240,7 +231,6 @@ func newUser(database Database, credentials Credentials, domain_name DomainName)
 			if len(errors) > 0 {
 				return errors
 			}
-
 
 			temp_host := database.GetHost()
 

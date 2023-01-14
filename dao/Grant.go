@@ -192,12 +192,7 @@ func newGrant(verify *validate.Validator, database Database, user User, grant st
 	}
 
 	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
-		errors := validate()
 		records := json.NewArrayValue()
-
-		if errors != nil {
-			return records, errors
-		}
 
 		temp_database, temp_database_errors := getDatabase()
 		if temp_database_errors != nil {

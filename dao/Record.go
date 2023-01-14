@@ -252,12 +252,7 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 	}
 
 	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
-		errors := validate()
-		records := json.NewArrayValue()
-		if errors != nil {
-			return records, errors
-		}
-
+		var errors []error
 		database := table.GetDatabase()
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
@@ -284,7 +279,6 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 
 	getUpdateSQL := func() (*strings.Builder, json.Map, []error) {
 		var errors []error
-		validate_errors := validate()
 		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
@@ -323,15 +317,6 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		options.SetBoolValue("get_last_insert_id", true)
 		options.SetBoolValue("read_no_records", false)
 
-		validate_errors := validate()
-		if validate_errors != nil {
-			errors = append(errors, validate_errors...)
-		}
-
-		if len(errors) > 0 {
-			return nil, options, errors
-		}
-
 		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
 			errors = append(errors, temp_table_schema_errors...)
@@ -360,17 +345,16 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 			return validate()
 		},
 		Create: func() []error {
-			errors := validate()
-			if errors != nil {
-				return errors
-			}
-
+			var errors []error
 			sql, options, create_sql_errors := getCreateSQL()
 			if create_sql_errors != nil {
 				return create_sql_errors
 			}
 
-			json_array, errors := executeUnsafeCommand(*sql, options)
+			json_array, execute_errors := executeUnsafeCommand(*sql, options)
+			if execute_errors != nil {
+				errors = append(errors, execute_errors...)
+			}
 
 			if len(errors) > 0 {
 				return errors

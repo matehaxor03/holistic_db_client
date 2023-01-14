@@ -268,11 +268,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
-		errors := validate()
-		if errors != nil {
-			return json.NewArrayValue(), errors
-		}
-		
+		var errors []error
 		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
@@ -385,11 +381,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
-		errors := validate()
-		if errors != nil {
-			return errors
-		}
-
+		var errors []error
 		record_obj, record_errors := newRecord(verify, *getTable(), *record)
 		if record_errors != nil {
 			return record_errors
@@ -434,11 +426,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			options.SetBoolValue("no_column_headers", true)
 		}
 
-		errors := validate()
-		if errors != nil {
-			return errors
-		}
-
+		var errors []error
 		if len(*(records.GetValues())) == 0 {
 			return nil
 		}
@@ -573,12 +561,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	}
 
 	read := func() []error {
-		errors := validate()
-
-		if len(errors) > 0 {
-			return errors
-		}
-
+		var errors []error
 		temp_schema, temp_schema_errors := getSchema()
 		if temp_schema_errors != nil {
 			errors = append(errors, temp_schema_errors...)
@@ -946,12 +929,6 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return read()
 		},
 		DeleteIfExists: func() []error {
-			errors := validate()
-
-			if len(errors) > 0 {
-				return errors
-			}
-
 			return deleteIfExists()
 		},
 		CreateRecord: func(new_record_data json.Map) (*Record, []error) {

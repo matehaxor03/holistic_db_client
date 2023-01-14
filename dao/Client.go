@@ -339,12 +339,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return grant_obj, nil
 		},
 		UserExists: func(username string) (bool, []error) {
-			errors := validate()
-			if len(errors) > 0 {
-				fmt.Println("validation errors")
-				return false, errors
-			}
-
+			var errors []error
 			_, user_errors := getUser("root") 
 			if user_errors != nil {
 				fmt.Println("get root user errors")
