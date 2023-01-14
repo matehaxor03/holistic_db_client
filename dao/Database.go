@@ -21,6 +21,7 @@ type Database struct {
 	SetDatabaseUsername func(database_username string) []error
 	SetDatabaseName func(database_name string) []error
 	DeleteTableByTableNameIfExists func(table_name string) []error
+	DeleteTableByTableName func(table_name string) []error
 	GetHost       func() (Host)
 	CreateTable     func(table_name string, schema json.Map) (*Table, []error)
 	GetTableInterface func(table_name string, schema json.Map) (*Table, []error)
@@ -39,9 +40,10 @@ type Database struct {
 
 func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
 	var errors []error
-	var this_database *Database
+	var this_database Database
 	table_schema_cache := newTableSchemaCache()
 	table_additional_schema_cache := newTableAdditionalSchemaCache()
+	table_exists_cache := newTableExistsCache()
 	mysql_wrapper := sql_generator_mysql.NewMySQL()
 	
 	SQLCommand, SQLCommand_errors := newSQLCommand()
@@ -49,11 +51,11 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		errors = append(errors, SQLCommand_errors...)
 	}
 
-	setDatabase := func(database *Database) {
+	setDatabase := func(database Database) {
 		this_database = database
 	}
 
-	getDatabase := func() *Database {
+	getDatabase := func() Database {
 		return this_database
 	}
 
@@ -131,7 +133,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return records, errors
 		}
 		
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(*getDatabase(), sql_command, options)
+		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase(), sql_command, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -147,7 +149,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	getOrSetAdditionalTableSchema := func(table_name string, additional_schema *json.Map) (*json.Map, []error) {
 		// todo clone schema
-		return table_additional_schema_cache.GetOrSet(*getDatabase(), table_name, additional_schema)
+		return table_additional_schema_cache.GetOrSet(getDatabase(), table_name, additional_schema)
 	}
 
 	create := func() []error {
@@ -314,18 +316,24 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		return nil
 	}
 
-	tableExists :=  func(table_name string) (*bool, []error) {
+	tableExists :=  func(table_name string) (bool, []error) {
+		exists_cache, exists_cache_errors := table_exists_cache.GetOrSet(getDatabase(), table_name, "get")
+		if exists_cache_errors != nil {
+			return false, exists_cache_errors
+		} else if exists_cache {
+			return true, nil
+		}
+
 		options := json.NewMapValue()
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
-		
 		var errors []error
 		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableExistsSQL(verify, table_name, options)
 		
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
-			return nil, errors
+			return false, errors
 		}
 		
 		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
@@ -333,23 +341,22 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			errors = append(errors, execute_errors...)
 		}
 
-		exists := false
 		if errors == nil {
-			exists = true
-			return &exists, nil
+			table_exists_cache.GetOrSet(getDatabase(), table_name, "set")
+			return true, nil
 		}
 
 		error_string := fmt.Sprintf("%s", errors)
 		if strings.Contains(error_string, "doesn't exist") {
-			exists = false
-			return &exists, nil
+			table_exists_cache.GetOrSet(getDatabase(), table_name, "delete")
+			return false, nil
 		}
 
-		return nil, errors
+		return false, errors
 	}
 	
 	getOrSetTableSchema := func(table_name string, schema *json.Map, mode string) (*json.Map, []error) {
-		return table_schema_cache.GetOrSet(*getDatabase(), table_name, schema, mode)
+		return table_schema_cache.GetOrSet(getDatabase(), table_name, schema, mode)
 	}
 
 	getTableSchema := func(table_name string) (*json.Map, []error) {
@@ -410,9 +417,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		table_exists, table_exists_errors := tableExists(table_name)
 		if table_exists_errors != nil {
 			errors = append(errors, table_exists_errors...)
-		} else if common.IsNil(table_exists) {
-			errors = append(errors, fmt.Errorf("Database.getTable.tableExists returned nil bool"))
-		} else if !(*table_exists) {
+		} else if !table_exists {
 			return nil, nil
 		}
 
@@ -432,7 +437,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(verify, *getDatabase(), table_name, nil, table_schema)
+		get_table, get_table_errors := newTable(verify, getDatabase(), table_name, nil, table_schema)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -447,6 +452,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		options.SetBoolValue("get_last_insert_id", false)
 
 		getOrSetTableSchema(table_name, nil, "delete")
+		table_exists_cache.GetOrSet(getDatabase(), table_name, "delete")
 		sql_command, new_options, generate_sql_errors := mysql_wrapper.GetDropTableIfExistsSQL(verify, table_name, options)
 
 		if generate_sql_errors != nil {
@@ -461,6 +467,28 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		return nil
 	}
 
+	deleteTableByTableName := func(table_name string) []error {
+		options := json.NewMapValue()
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("get_last_insert_id", false)
+
+		getOrSetTableSchema(table_name, nil, "delete")
+		table_exists_cache.GetOrSet(getDatabase(), table_name, "delete")
+		sql_command, new_options, generate_sql_errors := mysql_wrapper.GetDropTableSQL(verify, table_name, options)
+
+		if generate_sql_errors != nil {
+			return generate_sql_errors
+		}
+
+		_, execute_sql_command_errors := executeUnsafeCommand(sql_command, new_options)
+
+		if execute_sql_command_errors != nil {
+			return execute_sql_command_errors
+		}
+		return nil
+	}
+
+
 	getTableInterface := func(table_name string, user_defined_schema json.Map) (*Table, []error) {
 		errors := validate()
 
@@ -468,7 +496,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}
 		
-		table, new_table_errors := newTable(verify, *getDatabase(), table_name, &user_defined_schema, nil)
+		table, new_table_errors := newTable(verify, getDatabase(), table_name, &user_defined_schema, nil)
 
 		if new_table_errors != nil {
 			errors = append(errors, new_table_errors...)
@@ -556,15 +584,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return deleteIfExists()
 		},
 		TableExists: func(table_name string) (bool, []error) {
-			temp_table_exists, temp_table_exists_errors := tableExists(table_name)
-			if temp_table_exists_errors != nil {
-				return false, temp_table_exists_errors
-			} else if common.IsNil(temp_table_exists) {
-				var errors []error
-				errors = append(errors, fmt.Errorf("table_exists result is nil"))
-				return false, errors
-			}
-			return *temp_table_exists, nil
+			return tableExists(table_name)
 		},
 		GetTableInterface: func(table_name string, user_defined_schema json.Map) (*Table, []error) {
 			return getTableInterface(table_name, user_defined_schema)
@@ -716,8 +736,11 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		DeleteTableByTableNameIfExists: func(table_name string) []error {
 			return deleteTableByTableNameIfExists(table_name)
 		},
+		DeleteTableByTableName: func(table_name string) []error {
+			return deleteTableByTableName(table_name)
+		},
 	}
-	setDatabase(&x)
+	setDatabase(x)
 
 	valiation_errors := validate()
 	if valiation_errors != nil {

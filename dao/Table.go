@@ -286,100 +286,16 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return sql_command_results, nil
 	}
 
-	exists := func() (*bool, []error) {
-		options := json.NewMapValue()
-		options.SetBoolValue("read_no_records", true)
-		options.SetBoolValue("get_last_insert_id", false)
-		
-		var errors []error
-		validate_errors := validate()
-		if errors != nil {
-			errors = append(errors, validate_errors...)
-			return nil, errors
-		}
-		
-		sql_command, new_options, sql_command_errors := mysql_wrapper.GetTableExistsSQL(verify, table_name, options)
-		
-		if sql_command_errors != nil {
-			errors = append(errors, sql_command_errors...)
-			return nil, errors
-		}
-		
-		_, execute_errors := executeUnsafeCommand(sql_command, new_options)
-
-		if execute_errors != nil {
-			errors = append(errors, execute_errors...)
-		}
-
-		boolean_value := false
-		if len(errors) > 0 {
-			//todo: check error message e.g database does not exist
-			boolean_value = false
-			return &boolean_value, nil
-		}
-
-		boolean_value = true
-		return &boolean_value, nil
+	exists := func() (bool, []error) {
+		return database.TableExists(getTableName())
 	}
 
 	delete := func() ([]error) {
-		errors := validate()
-		if errors != nil {
-			return errors
-		}
-	
-		options := json.NewMapValue()
-		options.SetBoolValue("read_no_records", true)
-		options.SetBoolValue("get_last_insert_id", false)
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropTableSQL(verify, table_name, options)
-		if sql_command_errors != nil {
-			return sql_command_errors
-		}
-		
-		_, sql_errors := executeUnsafeCommand(sql_command, new_options)
-
-		if sql_errors != nil {
-			errors = append(errors, sql_errors...)
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		return nil
+		return database.DeleteTableByTableName(getTableName())
 	}
 
 	deleteIfExists := func() ([]error) {
-		errors := validate()
-		if errors != nil {
-			return errors
-		}
-
-		options := json.NewMapValue()
-		options.SetBoolValue("read_no_records", true)
-		options.SetBoolValue("get_last_insert_id", false)
-
-		sql_command, new_options, sql_command_errors := mysql_wrapper.GetDropTableIfExistsSQL(verify, table_name, options)
-		if sql_command_errors != nil {
-			return sql_command_errors
-		}
-
-		_, sql_errors := executeUnsafeCommand(sql_command, new_options)
-
-		if sql_errors != nil {
-			errors = append(errors, sql_errors...)
-		}
-
-		if len(errors) > 0 {
-			return errors
-		}
-
-		return nil
+		return database.DeleteTableByTableNameIfExists(getTableName())
 	}
 	
 	updateRecords := func(records json.Array) []error {
@@ -1129,15 +1045,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return createRecords(records)
 		},
 		Exists: func() (bool, []error) {
-			table_exists, table_exists_errors := exists()
-			if table_exists_errors != nil {
-				return false, table_exists_errors
-			} else if common.IsNil(table_exists) {
-				var table_exists_errors []error
-				errors = append(errors, fmt.Errorf("exists returned nil")) 
-				return false, table_exists_errors
-			}
-			return *table_exists, nil
+			return exists()
 		},
 		GetSchema: func() (*json.Map, []error) {
 			return getSchema()
