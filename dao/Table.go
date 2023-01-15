@@ -36,15 +36,10 @@ type Table struct {
 	GetDatabase           func() (Database)
 }
 
-func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map) (*Table, []error) {
+func newTable(verify *validate.Validator, database Database, table_name string, user_defined_schema *json.Map, schema_from_database *json.Map,  sql_command SQLCommand) (*Table, []error) {
 	var errors []error
 
-	SQLCommand, SQLCommand_errors := newSQLCommand()
-	if SQLCommand_errors != nil {
-		errors = append(errors, SQLCommand_errors...)
-	}
 	mysql_wrapper := sql_generator_mysql.NewMySQL()
-
 
 	table_read_records_cache := newTableReadRecordsCache()
 	var data *json.Map
@@ -267,9 +262,9 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		return database
 	}
 
-	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command_builder strings.Builder, options json.Map) (json.Array, []error) {
 		var errors []error
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
+		sql_command_results, sql_command_errors := sql_command.ExecuteUnsafeCommand(database, sql_command_builder, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -333,7 +328,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, sql_command)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -382,7 +377,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 		options.SetBoolValue("get_last_insert_id", false)
 
 		var errors []error
-		record_obj, record_errors := newRecord(verify, *getTable(), *record)
+		record_obj, record_errors := newRecord(verify, *getTable(), *record, sql_command)
 		if record_errors != nil {
 			return record_errors
 		} else if common.IsNil(record_obj) {
@@ -454,7 +449,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 
-			record_obj, record_errors := newRecord(verify, *getTable(), *current_map)
+			record_obj, record_errors := newRecord(verify, *getTable(), *current_map, sql_command)
 			if record_errors != nil {
 				errors = append(errors, record_errors...)
 			} else if common.IsNil(record_obj) {
@@ -827,7 +822,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			return nil, errors
 		}
 	
-		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record)
+		mapped_record_obj, mapped_record_obj_errors := newRecord(verify, table, *mapped_record, sql_command)
 		if mapped_record_obj_errors != nil {
 			errors = append(errors, mapped_record_obj_errors...)
 		} else if common.IsNil(mapped_record_obj){
@@ -937,7 +932,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				return nil, errors
 			}
 
-			record, record_errors := newRecord(verify, *getTable(), new_record_data)
+			record, record_errors := newRecord(verify, *getTable(), new_record_data, sql_command)
 			if record_errors != nil {
 				return nil, record_errors
 			}

@@ -38,7 +38,7 @@ type Database struct {
 	GlobalSetSQLMode func() []error
 }
 
-func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions) (*Database, []error) {	
+func newDatabase(verify *validate.Validator, client Client, host Host, database_username *string, database_name string, database_create_options *DatabaseCreateOptions, sql_command SQLCommand) (*Database, []error) {	
 	var errors []error
 	var this_database Database
 	table_schema_cache := newTableSchemaCache()
@@ -46,11 +46,6 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 	table_exists_cache := newTableExistsCache()
 	table_cache := newTableCache()
 	mysql_wrapper := sql_generator_mysql.NewMySQL()
-	
-	SQLCommand, SQLCommand_errors := newSQLCommand()
-	if SQLCommand_errors != nil {
-		errors = append(errors, SQLCommand_errors...)
-	}
 
 	setDatabase := func(database Database) {
 		this_database = database
@@ -127,9 +122,9 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command_builder strings.Builder, options json.Map) (json.Array, []error) {
 		var errors []error
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(getDatabase(), sql_command, options)
+		sql_command_results, sql_command_errors := sql_command.ExecuteUnsafeCommand(getDatabase(), sql_command_builder, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
@@ -427,7 +422,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 			return nil, errors
 		}		
 
-		get_table, get_table_errors := newTable(verify, getDatabase(), table_name, nil, table_schema)
+		get_table, get_table_errors := newTable(verify, getDatabase(), table_name, nil, table_schema, sql_command)
 
 		if get_table_errors != nil {
 			return nil, get_table_errors
@@ -483,7 +478,7 @@ func newDatabase(verify *validate.Validator, client Client, host Host, database_
 
 	getTableInterface := func(table_name string, user_defined_schema json.Map) (*Table, []error) {
 		var errors []error
-		table, new_table_errors := newTable(verify, getDatabase(), table_name, &user_defined_schema, nil)
+		table, new_table_errors := newTable(verify, getDatabase(), table_name, &user_defined_schema, nil, sql_command)
 
 		if new_table_errors != nil {
 			errors = append(errors, new_table_errors...)

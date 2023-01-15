@@ -4,6 +4,6 @@ go 1.19
 
 require github.com/matehaxor03/holistic_json v0.0.86
 
-require github.com/matehaxor03/holistic_common v0.0.61
+require github.com/matehaxor03/holistic_common v0.0.65
 
 retract [v0.0.1, v0.0.377]

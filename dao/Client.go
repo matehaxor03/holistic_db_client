@@ -31,6 +31,11 @@ type Client struct {
 func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
 
+	sql_command, sql_command_errors := newSQLCommand()
+	if sql_command_errors != nil {
+		return nil, sql_command_errors
+	}
+
 	setClient := func(client *Client) {
 		this_client = client
 	}
@@ -53,7 +58,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, temp_database_create_options_errors
 		}
 		
-		database_interface, database_interface_errors := newDatabase(verify, *this_client, *host, database_username, database_name, temp_database_create_options)
+		database_interface, database_interface_errors := newDatabase(verify, *this_client, *host, database_username, database_name, temp_database_create_options, *sql_command)
 		if database_interface_errors != nil {
 			return nil, database_interface_errors
 		}
@@ -204,7 +209,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return errors
 			}
 			
-			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, *sql_command)
 			if database_errors != nil {
 				return database_errors
 			}
@@ -230,7 +235,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return false, errors
 			}
 
-			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil)
+			database, database_errors := newDatabase(verify, *this_client, *host, database_username, database_name, nil, *sql_command)
 			if database_errors != nil {
 				return false, database_errors
 			}
@@ -300,7 +305,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 				return nil, errors
 			}
 
-			return newDatabase(verify, *this_client, *getHost(), getDatabaseUsername(), get_database_name, nil)
+			return newDatabase(verify, *this_client, *getHost(), getDatabaseUsername(), get_database_name, nil, *sql_command)
 		},
 		UseDatabase: func(new_database Database) []error {
 			database_errors := new_database.Validate()

@@ -81,17 +81,12 @@ type Record struct {
 	GetTable func() (Table)
 }
 
-func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*Record, []error) {
+func newRecord(verify *validate.Validator, table Table, record_data json.Map, sql_command SQLCommand) (*Record, []error) {
 	var errors []error
 	//var this *Record
 	
-	SQLCommand, SQLCommand_errors := newSQLCommand()
-	if SQLCommand_errors != nil {
-		errors = append(errors, SQLCommand_errors...)
-	}
+	
 	mysql_wrapper := sql_generator_mysql.NewMySQL()
-
-
 	/*
 	getThis := func() *Record {
 		return this
@@ -251,10 +246,10 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map) (*
 		return nil
 	}
 
-	executeUnsafeCommand := func(sql_command strings.Builder, options json.Map) (json.Array, []error) {
+	executeUnsafeCommand := func(sql_command_builder strings.Builder, options json.Map) (json.Array, []error) {
 		var errors []error
 		database := table.GetDatabase()
-		sql_command_results, sql_command_errors := SQLCommand.ExecuteUnsafeCommand(database, sql_command, options)
+		sql_command_results, sql_command_errors := sql_command.ExecuteUnsafeCommand(database, sql_command_builder, options)
 		if sql_command_errors != nil {
 			errors = append(errors, sql_command_errors...)
 		} else if common.IsNil(sql_command_results) {
