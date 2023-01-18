@@ -29,6 +29,8 @@ type Table struct {
 	GetNonPrimaryKeyColumns func() (*map[string]bool, []error)
 	Count                 func(filter *json.Map, filter_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
+	CreateRecordAsync     func(record json.Map) ([]error)
+
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record *json.Map) ([]error)
@@ -936,6 +938,24 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			}
 
 			return record, nil
+		},
+		CreateRecordAsync: func(new_record_data json.Map) ([]error) {
+			errors := validate()
+			if errors != nil {
+				return errors
+			}
+
+			record, record_errors := newRecord(verify, *getTable(), new_record_data, sql_command)
+			if record_errors != nil {
+				return record_errors
+			}
+
+			create_record_errors := record.CreateAsync()
+			if create_record_errors != nil {
+				return create_record_errors
+			}
+
+			return nil
 		},
 		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMapValue()
