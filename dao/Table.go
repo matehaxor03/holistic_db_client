@@ -410,16 +410,9 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 	createRecords := func(records json.Array) []error {
 		options := json.NewMapValue()
 		options.SetBoolValue("transactional", false)
-
-		if records.Len() == 1 {
-			options.SetBoolValue("get_last_insert_id", true)
-			options.SetBoolValue("read_no_records", false)
-			options.SetBoolValue("no_column_headers", false)
-		} else {
-			options.SetBoolValue("get_last_insert_id", false)
-			options.SetBoolValue("read_no_records", true)
-			options.SetBoolValue("no_column_headers", true)
-		}
+		options.SetBoolValue("get_last_insert_id", false)
+		options.SetBoolValue("read_no_records", true)
+		options.SetBoolValue("no_column_headers", true)
 
 		var errors []error
 		if len(*(records.GetValues())) == 0 {
@@ -465,7 +458,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 		var sql strings.Builder
 		for _, record_obj := range records_obj {
-			sql_update_snippet, _, sql_update_snippet_errors := record_obj.GetCreateSQL()
+			sql_update_snippet, _, sql_update_snippet_errors := record_obj.GetCreateSQLAsync()
 			if sql_update_snippet_errors != nil {
 				errors = append(errors, sql_update_snippet_errors...)
 			} else {

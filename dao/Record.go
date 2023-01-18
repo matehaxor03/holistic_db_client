@@ -15,6 +15,7 @@ import (
 type Record struct {
 	Validate  func() []error
 	Create    func() []error
+	CreateAsync func() []error
 	Update    func() []error
 	GetInt64  func(field string) (*int64, []error)
 	SetInt64  func(field string, value *int64) []error
@@ -70,6 +71,7 @@ type Record struct {
 	SetField func(field string, value interface{}) ([]error)
 	GetUpdateSQL func() (*strings.Builder, []error)
 	GetCreateSQL func() (*strings.Builder, json.Map, []error)
+	GetCreateSQLAsync func() (*strings.Builder, json.Map, []error)
 	GetRecordColumns func() (*map[string]bool, []error)
 	GetArchieved func() (*bool, []error)
 	GetArchievedDate func() (*time.Time, []error)
@@ -304,13 +306,19 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, sq
 		return mysql_wrapper.GetUpdateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
-	getCreateSQL := func() (*strings.Builder, json.Map, []error) {
+	getCreateSQL := func(async bool) (*strings.Builder, json.Map, []error) {
 		var errors []error
 		options := json.NewMapValue()
 		options.SetBoolValue("no_column_headers", false)
 		options.SetBoolValue("transactional", false)
-		options.SetBoolValue("get_last_insert_id", true)
-		options.SetBoolValue("read_no_records", false)
+		
+		if async {
+			options.SetBoolValue("get_last_insert_id", false)
+			options.SetBoolValue("read_no_records", true)
+		} else {
+			options.SetBoolValue("get_last_insert_id", true)
+			options.SetBoolValue("read_no_records", false)
+		}
 
 		temp_table_schema, temp_table_schema_errors := table.GetSchema()
 		if temp_table_schema_errors != nil {
@@ -335,76 +343,87 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, sq
 		return mysql_wrapper.GetCreateRecordSQL(verify, table.GetTableName(), *temp_table_schema, *temp_table_columns, *getData(), options)
 	}
 
+	create := func(async bool) []error {
+		var errors []error
+		sql, new_options, create_sql_errors := getCreateSQL(async)
+		if create_sql_errors != nil {
+			return create_sql_errors
+		}
+
+		json_array, execute_errors := executeUnsafeCommand(*sql, new_options)
+		if execute_errors != nil {
+			errors = append(errors, execute_errors...)
+		}
+
+		if len(errors) > 0 {
+			return errors
+		}
+
+		if new_options.IsBoolFalse("read_no_records") && 
+		   new_options.IsBoolTrue("get_last_insert_id") && 
+		   !new_options.IsEmptyString("auto_increment_column_name") {
+			
+			if len(*(json_array.GetValues())) != 1 {
+				errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
+				return errors
+			}
+
+			record_from_db, record_from_db_errors := (*(json_array.GetValues()))[0].GetMap()
+			if record_from_db_errors != nil {
+				errors = append(errors, record_from_db_errors...)
+				return errors
+			} else if common.IsNil(record_from_db) {
+				errors = append(errors, fmt.Errorf("Record.Create record_from_db is nil"))
+				return errors
+			}
+
+			last_insert_id, last_insert_id_errors := record_from_db.GetString("LAST_INSERT_ID()")
+			if last_insert_id_errors != nil {
+				errors = append(errors, last_insert_id_errors...)
+				return errors
+			} else if common.IsNil(last_insert_id) {
+				errors = append(errors, fmt.Errorf("LAST_INSERT_ID() was nil available columns are: %s", record_from_db.GetKeys()))
+				return errors
+			} 
+
+			last_insert_id_value, count_err := strconv.ParseUint(strings.TrimSpace(*last_insert_id), 10, 64)
+			if count_err != nil {
+				errors = append(errors, count_err)
+				return errors
+			}
+
+			if !new_options.IsNull("auto_increment_column_name") && 
+			   !new_options.IsEmptyString("auto_increment_column_name") {
+				auto_increment_column_name, auto_increment_column_name_errors := new_options.GetString("auto_increment_column_name")
+				if auto_increment_column_name_errors != nil {
+					errors = append(errors, auto_increment_column_name_errors...)
+				} else if common.IsNil(auto_increment_column_name) {
+					errors = append(errors, fmt.Errorf("error: auto_increment_column_name is nil"))
+				}
+
+				set_auto_field_errors := helper.SetField(*getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)
+				if set_auto_field_errors != nil {
+					errors = append(errors, set_auto_field_errors...)
+				}
+			}
+		}
+		
+		if len(errors) > 0 {
+			return errors
+		}
+
+		return nil
+	}
+
 	created_record := Record{
 		Validate: func() []error {
 			return validate()
 		},
 		Create: func() []error {
-			var errors []error
-			sql, options, create_sql_errors := getCreateSQL()
-			if create_sql_errors != nil {
-				return create_sql_errors
-			}
-
-			json_array, execute_errors := executeUnsafeCommand(*sql, options)
-			if execute_errors != nil {
-				errors = append(errors, execute_errors...)
-			}
-
-			if len(errors) > 0 {
-				return errors
-			}
-
-			if options.IsBoolFalse("read_no_records") && options.IsBoolTrue("get_last_insert_id") && !options.IsEmptyString("auto_increment_column_name") {
-				if len(*(json_array.GetValues())) != 1 {
-					errors = append(errors, fmt.Errorf("error: get_last_insert_id not found "))
-					return errors
-				}
-
-				record_from_db, record_from_db_errors := (*(json_array.GetValues()))[0].GetMap()
-				if record_from_db_errors != nil {
-					errors = append(errors, record_from_db_errors...)
-					return errors
-				} else if common.IsNil(record_from_db) {
-					errors = append(errors, fmt.Errorf("Record.Create record_from_db is nil"))
-					return errors
-				}
-
-				last_insert_id, last_insert_id_errors := record_from_db.GetString("LAST_INSERT_ID()")
-				if last_insert_id_errors != nil {
-					errors = append(errors, last_insert_id_errors...)
-					return errors
-				} else if common.IsNil(last_insert_id) {
-					errors = append(errors, fmt.Errorf("LAST_INSERT_ID() was nil available columns are: %s", record_from_db.GetKeys()))
-					return errors
-				} 
-
-				last_insert_id_value, count_err := strconv.ParseUint(strings.TrimSpace(*last_insert_id), 10, 64)
-				if count_err != nil {
-					errors = append(errors, count_err)
-					return errors
-				}
-
-				if !options.IsNull("auto_increment_column_name") && !options.IsEmptyString("auto_increment_column_name") {
-					auto_increment_column_name, auto_increment_column_name_errors := options.GetString("auto_increment_column_name")
-					if auto_increment_column_name_errors != nil {
-						errors = append(errors, auto_increment_column_name_errors...)
-					} else if common.IsNil(auto_increment_column_name) {
-						errors = append(errors, fmt.Errorf("error: auto_increment_column_name is nil"))
-					}
-
-					set_auto_field_errors := helper.SetField(*getData(), "[schema]", "[fields]", *auto_increment_column_name, &last_insert_id_value)
-					if set_auto_field_errors != nil {
-						errors = append(errors, set_auto_field_errors...)
-					}
-				}
-			}
-			
-			if len(errors) > 0 {
-				return errors
-			}
-
-			return nil
+			return create(false)
+		},
+		CreateAsync: func() []error {
+			return create(true)
 		},
 		GetUpdateSQL: func() (*strings.Builder, []error) {
 			//todo push options up higher to hide sensitive info if needed
@@ -415,7 +434,10 @@ func newRecord(verify *validate.Validator, table Table, record_data json.Map, sq
 			return sql, nil
 		},
 		GetCreateSQL: func() (*strings.Builder, json.Map, []error) {
-			return getCreateSQL()
+			return getCreateSQL(false)
+		},
+		GetCreateSQLAsync: func() (*strings.Builder, json.Map, []error) {
+			return getCreateSQL(true)
 		},
 		Update: func() []error {
 			sql, options, generate_sql_errors := getUpdateSQL()
