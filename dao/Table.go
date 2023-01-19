@@ -374,7 +374,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 	updateRecord := func(record *json.Map) []error {
 		options := json.NewMapValue()
-		options.SetBoolValue("transactional", true)
+		options.SetBoolValue("transactional", false)
 		options.SetBoolValue("read_no_records", true)
 		options.SetBoolValue("get_last_insert_id", false)
 
