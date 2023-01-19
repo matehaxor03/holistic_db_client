@@ -6,7 +6,7 @@ import (
 	"sync"
 	common "github.com/matehaxor03/holistic_common/common"
 	dao "github.com/matehaxor03/holistic_db_client/dao"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validation_constants "github.com/matehaxor03/holistic_validator/validation_constants"
 )
 
 var database_count uint64 = 0

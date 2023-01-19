@@ -2,7 +2,7 @@ package mysql
 
 import (
 	json "github.com/matehaxor03/holistic_json/json"
-	validate "github.com/matehaxor03/holistic_db_client/validate"
+	validate "github.com/matehaxor03/holistic_validator/validate"
 	"strings"
 )
 

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"fmt"
 	json "github.com/matehaxor03/holistic_json/json"
-	validation_constants "github.com/matehaxor03/holistic_db_client/validation_constants"
+	validation_constants "github.com/matehaxor03/holistic_validator/validation_constants"
 	helper "github.com/matehaxor03/holistic_db_client/tests/integration/integration_test_helpers"
 )
 

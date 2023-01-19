@@ -5,7 +5,7 @@ import (
 	"strings"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validate "github.com/matehaxor03/holistic_db_client/validate"
+	validate "github.com/matehaxor03/holistic_validator/validate"
 )
 
 type TableSchemaAdditionalSQL struct {

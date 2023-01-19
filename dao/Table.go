@@ -6,7 +6,7 @@ import (
 	"strconv"
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
-	validate "github.com/matehaxor03/holistic_db_client/validate"
+	validate "github.com/matehaxor03/holistic_validator/validate"
 	helper "github.com/matehaxor03/holistic_db_client/helper"
 	sql_generator_mysql "github.com/matehaxor03/holistic_db_client/sql_generators/community/mysql"
 )

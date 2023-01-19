@@ -1,7 +1,7 @@
 package dao
 
 import (
-	validate "github.com/matehaxor03/holistic_db_client/validate"
+	validate "github.com/matehaxor03/holistic_validator/validate"
 )
 
 type DomainName struct {

@@ -2,7 +2,7 @@ package dao
 
 import (
 	"sync"
-	validate "github.com/matehaxor03/holistic_db_client/validate"
+	validate "github.com/matehaxor03/holistic_validator/validate"
 )
 
 type ClientManager struct {
