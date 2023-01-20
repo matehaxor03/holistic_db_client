@@ -94,7 +94,7 @@ func newCreateRecordSQL() (*CreateRecordSQL) {
 		var record_columns_ordered []string
 		for record_column, _ := range *record_columns {
 			if _, found := (valid_columns)[record_column]; !found {
-				errors = append(errors, fmt.Errorf("column does not exist %s", record_column))
+				errors = append(errors, fmt.Errorf("column does not exist: %s for table: %s", record_column, table_name))
 				continue
 			}
 			
