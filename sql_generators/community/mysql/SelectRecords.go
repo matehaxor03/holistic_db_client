@@ -110,6 +110,8 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 
 					} else if strings.Contains(table_column_type_simple, "float") && strings.Contains(filter_column_type_simple, "float"){
 
+					} else if strings.Contains(table_column_type_simple, "int") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
 					} else {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, table_name_escaped, *table_column_type))
 					}
