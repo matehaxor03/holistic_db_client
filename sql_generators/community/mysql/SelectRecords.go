@@ -161,7 +161,8 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					} else {
 						if !(*temp_logic_value != "=" ||
 							*temp_logic_value != ">" ||
-							*temp_logic_value != "<") {
+							*temp_logic_value != "<" ||
+							*temp_logic_value != "in") {
 							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter value logic however it's not supported please implement: %s", temp_filters_field, table_name_escaped, *temp_logic_value))
 						} 
 					}
@@ -286,8 +287,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				sql_command.WriteString("WHERE ")
 			}
 
-			for index, column_filter := range filters.GetKeys() {
-				
+			for index, column_filter := range filters.GetKeys() {				
 				column_definition, column_definition_errors := table_schema.GetMap(column_filter)
 				if column_definition_errors != nil {
 					errors = append(errors, column_definition_errors...) 
@@ -326,343 +326,371 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				if filters.IsNull(column_filter) {
 					sql_command.WriteString("NULL ")
 				} else {
-					//todo check data type with schema
-					type_of := filters.GetType(column_filter)
-					column_data := filters.GetValue(column_filter)
-					switch type_of {
-					case "*uint64":
-						value, value_errors := column_data.GetUInt64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(*value, 10))
-						}
-					case "uint64":
-						value, value_errors := column_data.GetUInt64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(*value, 10))
-						}
-					case "*int64":
-						value, value_errors := column_data.GetInt64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "int64":
-						value, value_errors := column_data.GetInt64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "*uint32":
-						value, value_errors := column_data.GetUInt32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "uint32":
-						value, value_errors := column_data.GetUInt32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "*int32":
-						value, value_errors := column_data.GetInt32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "int32":
-						value, value_errors := column_data.GetInt32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "*uint16":
-						value, value_errors := column_data.GetUInt16()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "uint16":
-						value, value_errors := column_data.GetUInt16()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "*int16":
-						value, value_errors := column_data.GetInt16()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "int16":
-						value, value_errors := column_data.GetInt16()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "*uint8":
-						value, value_errors := column_data.GetUInt8()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "uint8":
-						value, value_errors := column_data.GetUInt8()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
-						}
-					case "*int8":
-						value, value_errors := column_data.GetInt8()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "int8":
-						value, value_errors := column_data.GetInt8()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "*int":
-						value, value_errors := column_data.GetInt()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "int":
-						value, value_errors := column_data.GetInt()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
-						}
-					case "float32":
-						value, value_errors := column_data.GetFloat32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							value_string :=fmt.Sprintf("%f", *value)
-							sql_command.WriteString(value_string)
-							if !strings.Contains(value_string, ".") {
-								sql_command.WriteString(".0")
-							}
-						}
-					case "*float32":
-						value, value_errors := column_data.GetFloat32()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							value_string := fmt.Sprintf("%f", *value)
-							sql_command.WriteString(value_string)
-							if !strings.Contains(value_string, ".") {
-								sql_command.WriteString(".0")
-							}
-						}
-					case "float64":
-						value, value_errors := column_data.GetFloat64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							value_string :=fmt.Sprintf("%f", *value)
-							sql_command.WriteString(value_string)
-							if !strings.Contains(value_string, ".") {
-								sql_command.WriteString(".0")
-							}
-						}
-					case "*float64":
-						value, value_errors := column_data.GetFloat64()
-						if value_errors != nil {
-							errors = append(errors, value_errors...)
-						} else if common.IsNil(value) {
-							errors = append(errors,fmt.Errorf("*uint64 is nil"))
-						} else {
-							value_string :=fmt.Sprintf("%f", *value)
-							sql_command.WriteString(value_string)
-							if !strings.Contains(value_string, ".") {
-								sql_command.WriteString(".0")
-							}
-						}
-					case "*time.Time":
-						decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
-						if decimal_places_error != nil {
-							errors = append(errors, decimal_places_error...)
-						} else if decimal_places == nil {
-							errors = append(errors, fmt.Errorf("decimal_places is nil"))
-						} else {
-							value, value_errors := column_data.GetTimeWithDecimalPlaces(*decimal_places)
-							if value_errors != nil {
-								errors = append(errors, value_errors...)
-								continue
-							} else if common.IsNil(value) {
-								errors = append(errors, fmt.Errorf("time is nil"))
-								continue
-							}
-
-							format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
-							if format_time_errors != nil {
-								errors = append(errors, format_time_errors...)
-							} else if format_time == nil { 
-								errors = append(errors, fmt.Errorf("format time is nil"))
-							} else {
-								value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
-								if value_escaped_errors != nil {
-									errors = append(errors, value_escaped_errors)
-								}
-		
-								sql_command.WriteString("'")
-								sql_command.WriteString(value_escaped)
-								sql_command.WriteString("'")
-							}
-						}
-					case "time.Time":
-						decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
-						if decimal_places_error != nil {
-							errors = append(errors, decimal_places_error...)
-						} else if decimal_places == nil {
-							errors = append(errors, fmt.Errorf("decimal_places is nil"))
-						} else {
-							value, value_errors := column_data.GetTimeWithDecimalPlaces(*decimal_places)
-							if value_errors != nil {
-								errors = append(errors, value_errors...)
-								continue
-							} else if common.IsNil(value) {
-								errors = append(errors, fmt.Errorf("time is nil"))
-								continue
-							}
-
-							format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
-							if format_time_errors != nil {
-								errors = append(errors, format_time_errors...)
-							} else if format_time == nil { 
-								errors = append(errors, fmt.Errorf("format time is nil"))
-							} else {
-								value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
-								if value_escaped_errors != nil {
-									errors = append(errors, value_escaped_errors)
-								}
-		
-								sql_command.WriteString("'")
-								sql_command.WriteString(value_escaped)
-								sql_command.WriteString("'")
-							}
-						}
-					case "string":
-						column_data_value, column_data_value_errors := column_data.GetString()
-						if column_data_value_errors != nil {
-							errors = append(errors, column_data_value_errors...)
-							continue
-						} else if common.IsNil(column_data_value) {
-							errors = append(errors, fmt.Errorf("column data is nil"))
-							continue
-						}
-
-						value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
-						if value_escaped_errors != nil {
-							errors = append(errors, value_escaped_errors)
-						}
-						
-						sql_command.WriteString("'")
-						sql_command.WriteString(value_escaped)
-						sql_command.WriteString("'")
-						
-					case "*string":
-						column_data_value, column_data_value_errors := column_data.GetString()
-						if column_data_value_errors != nil {
-							errors = append(errors, column_data_value_errors...)
-							continue
-						} else if common.IsNil(column_data_value) {
-							errors = append(errors, fmt.Errorf("column data is nil"))
-							continue
-						}
-
-						value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
-						if value_escaped_errors != nil {
-							errors = append(errors, value_escaped_errors)
-						}
-
-						sql_command.WriteString("'")
-						sql_command.WriteString(value_escaped)
-						sql_command.WriteString("'")
-					
-					case "bool":
-
-						if column_data.IsBoolTrue() {
-							sql_command.WriteString("1")
-						} else {
-							sql_command.WriteString("0")
-						}
-					case "*bool":
-						if column_data.IsBoolTrue() {
-							sql_command.WriteString("1")
-						} else {
-							sql_command.WriteString("0")
-						}
-					default:
-						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
+					if filters.IsArray(column_filter) {
+						sql_command.WriteString("( ")
 					}
-					sql_command.WriteString(" ")
+
+					var array_value_errors []error
+					array_values := json.NewArray()
+					
+					if !filters.IsArray(column_filter) { 
+						array_values.AppendValue(filters.GetValue(column_filter))
+					} else {
+						array_values, array_value_errors = filters.GetArray(column_filter)
+						if len(array_value_errors) > 0 {
+							errors = append(errors, array_value_errors...)
+							continue
+						}
+					}
+
+					for index, column_data := range *(array_values.GetValues()) {
+						//todo check data type with schema
+						type_of := column_data.GetType()
+						//type_of := filters.GetType(column_filter)
+						//column_data := filters.GetValue(column_filter)
+						switch type_of {
+						case "*uint64":
+							value, value_errors := column_data.GetUInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(*value, 10))
+							}
+						case "uint64":
+							value, value_errors := column_data.GetUInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(*value, 10))
+							}
+						case "*int64":
+							value, value_errors := column_data.GetInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "int64":
+							value, value_errors := column_data.GetInt64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "*uint32":
+							value, value_errors := column_data.GetUInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "uint32":
+							value, value_errors := column_data.GetUInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "*int32":
+							value, value_errors := column_data.GetInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "int32":
+							value, value_errors := column_data.GetInt32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "*uint16":
+							value, value_errors := column_data.GetUInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "uint16":
+							value, value_errors := column_data.GetUInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "*int16":
+							value, value_errors := column_data.GetInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "int16":
+							value, value_errors := column_data.GetInt16()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "*uint8":
+							value, value_errors := column_data.GetUInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "uint8":
+							value, value_errors := column_data.GetUInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatUint(uint64(*value), 10))
+							}
+						case "*int8":
+							value, value_errors := column_data.GetInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "int8":
+							value, value_errors := column_data.GetInt8()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "*int":
+							value, value_errors := column_data.GetInt()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "int":
+							value, value_errors := column_data.GetInt()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								sql_command.WriteString(strconv.FormatInt(int64(*value), 10))
+							}
+						case "float32":
+							value, value_errors := column_data.GetFloat32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								value_string :=fmt.Sprintf("%f", *value)
+								sql_command.WriteString(value_string)
+								if !strings.Contains(value_string, ".") {
+									sql_command.WriteString(".0")
+								}
+							}
+						case "*float32":
+							value, value_errors := column_data.GetFloat32()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								value_string := fmt.Sprintf("%f", *value)
+								sql_command.WriteString(value_string)
+								if !strings.Contains(value_string, ".") {
+									sql_command.WriteString(".0")
+								}
+							}
+						case "float64":
+							value, value_errors := column_data.GetFloat64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								value_string :=fmt.Sprintf("%f", *value)
+								sql_command.WriteString(value_string)
+								if !strings.Contains(value_string, ".") {
+									sql_command.WriteString(".0")
+								}
+							}
+						case "*float64":
+							value, value_errors := column_data.GetFloat64()
+							if value_errors != nil {
+								errors = append(errors, value_errors...)
+							} else if common.IsNil(value) {
+								errors = append(errors,fmt.Errorf("*uint64 is nil"))
+							} else {
+								value_string :=fmt.Sprintf("%f", *value)
+								sql_command.WriteString(value_string)
+								if !strings.Contains(value_string, ".") {
+									sql_command.WriteString(".0")
+								}
+							}
+						case "*time.Time":
+							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+							if decimal_places_error != nil {
+								errors = append(errors, decimal_places_error...)
+							} else if decimal_places == nil {
+								errors = append(errors, fmt.Errorf("decimal_places is nil"))
+							} else {
+								value, value_errors := column_data.GetTimeWithDecimalPlaces(*decimal_places)
+								if value_errors != nil {
+									errors = append(errors, value_errors...)
+									continue
+								} else if common.IsNil(value) {
+									errors = append(errors, fmt.Errorf("time is nil"))
+									continue
+								}
+
+								format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+								if format_time_errors != nil {
+									errors = append(errors, format_time_errors...)
+								} else if format_time == nil { 
+									errors = append(errors, fmt.Errorf("format time is nil"))
+								} else {
+									value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+									if value_escaped_errors != nil {
+										errors = append(errors, value_escaped_errors)
+									}
+			
+									sql_command.WriteString("'")
+									sql_command.WriteString(value_escaped)
+									sql_command.WriteString("'")
+								}
+							}
+						case "time.Time":
+							decimal_places, decimal_places_error := column_definition.GetInt("decimal_places")
+							if decimal_places_error != nil {
+								errors = append(errors, decimal_places_error...)
+							} else if decimal_places == nil {
+								errors = append(errors, fmt.Errorf("decimal_places is nil"))
+							} else {
+								value, value_errors := column_data.GetTimeWithDecimalPlaces(*decimal_places)
+								if value_errors != nil {
+									errors = append(errors, value_errors...)
+									continue
+								} else if common.IsNil(value) {
+									errors = append(errors, fmt.Errorf("time is nil"))
+									continue
+								}
+
+								format_time, format_time_errors := common.FormatTime(*value, *decimal_places)
+								if format_time_errors != nil {
+									errors = append(errors, format_time_errors...)
+								} else if format_time == nil { 
+									errors = append(errors, fmt.Errorf("format time is nil"))
+								} else {
+									value_escaped, value_escaped_errors := common.EscapeString(*format_time, "'")
+									if value_escaped_errors != nil {
+										errors = append(errors, value_escaped_errors)
+									}
+			
+									sql_command.WriteString("'")
+									sql_command.WriteString(value_escaped)
+									sql_command.WriteString("'")
+								}
+							}
+						case "string":
+							column_data_value, column_data_value_errors := column_data.GetString()
+							if column_data_value_errors != nil {
+								errors = append(errors, column_data_value_errors...)
+								continue
+							} else if common.IsNil(column_data_value) {
+								errors = append(errors, fmt.Errorf("column data is nil"))
+								continue
+							}
+
+							value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+							
+							sql_command.WriteString("'")
+							sql_command.WriteString(value_escaped)
+							sql_command.WriteString("'")
+							
+						case "*string":
+							column_data_value, column_data_value_errors := column_data.GetString()
+							if column_data_value_errors != nil {
+								errors = append(errors, column_data_value_errors...)
+								continue
+							} else if common.IsNil(column_data_value) {
+								errors = append(errors, fmt.Errorf("column data is nil"))
+								continue
+							}
+
+							value_escaped, value_escaped_errors := common.EscapeString(*column_data_value, "'")
+							if value_escaped_errors != nil {
+								errors = append(errors, value_escaped_errors)
+							}
+
+							sql_command.WriteString("'")
+							sql_command.WriteString(value_escaped)
+							sql_command.WriteString("'")
+						
+						case "bool":
+
+							if column_data.IsBoolTrue() {
+								sql_command.WriteString("1")
+							} else {
+								sql_command.WriteString("0")
+							}
+						case "*bool":
+							if column_data.IsBoolTrue() {
+								sql_command.WriteString("1")
+							} else {
+								sql_command.WriteString("0")
+							}
+						default:
+							errors = append(errors, fmt.Errorf("error: Table.ReadRecords: filter type not supported please implement: %s", type_of))
+						}
+						sql_command.WriteString(" ")
+
+						if index < len(*(array_values.GetValues())) - 1 {
+							sql_command.WriteString(", ")
+						}
+					}
+				}
+
+				if filters.IsArray(column_filter) {
+					sql_command.WriteString(") ")
 				}
 
 				if index < len(filters.GetKeys()) - 1 {
