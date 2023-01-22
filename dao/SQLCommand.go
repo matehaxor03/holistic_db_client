@@ -123,6 +123,8 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
+				
+
 				return records, errors
 			}
 

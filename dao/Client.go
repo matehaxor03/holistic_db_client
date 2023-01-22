@@ -381,7 +381,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			filter_fields := json.NewMap()
 			filter_fields.SetStringValue("User", username_escaped)
 
-			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil)
+			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil, nil)
 
 			if records_errors != nil {
 				fmt.Println("records_errors errors")

@@ -25,7 +25,7 @@ func TestTableCanCount(t *testing.T) {
 	if table_errors != nil {
 		t.Error(table_errors)
 	} else {
-		count_value, count_value_errors := table.Count(nil, nil, nil, nil, nil)
+		count_value, count_value_errors := table.Count(nil, nil, nil, nil, nil, nil)
 		if count_value_errors != nil {
 			t.Error(count_value_errors)
 		} else if *count_value != 0 {

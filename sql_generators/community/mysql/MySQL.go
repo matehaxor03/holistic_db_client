@@ -20,7 +20,7 @@ type MySQL struct {
 	MapTableSchemaFromDB func(verify *validate.Validator, table_name string, json_array json.Array) (*json.Map, []error)
 	GetTableSchemaAdditionalSQL func(verify *validate.Validator, database_name string, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 	MapAdditionalSchemaFromDBToMap func(json_array json.Array) (*json.Map, []error)
-	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
+	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
 	GetTableExistsSQL func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error)
 	GetUpdateRecordSQL func(verify *validate.Validator, table_name string, table_schema json.Map, valid_columns map[string]bool, record_data json.Map, options json.Map) (*strings.Builder, json.Map, []error)
 }
@@ -79,8 +79,8 @@ func NewMySQL() (*MySQL) {
 		MapAdditionalSchemaFromDBToMap: func(json_array json.Array) (*json.Map, []error) {
 			return get_table_schema_additional_sql.MapAdditionalSchemaFromDBToMap(json_array)
 		},
-		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
-			return get_select_records_sql.GetSelectRecordsSQL(verify, table_name, table_data, select_fields, filters, filters_logic, order_by, limit, offset, options)
+		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
+			return get_select_records_sql.GetSelectRecordsSQL(verify, table_name, table_data, select_fields, filters, filters_logic, group_by, order_by, limit, offset, options)
 		},
 		GetTableExistsSQL: func(verify *validate.Validator, table_name string, options json.Map) (*strings.Builder, json.Map, []error) {
 			return get_table_exists_sql.GetTableExistsSQL(verify, table_name, options)

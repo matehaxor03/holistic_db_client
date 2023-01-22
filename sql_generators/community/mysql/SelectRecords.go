@@ -11,11 +11,11 @@ import (
 )
 
 type SelectRecordsSQL struct {
-	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
+	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newSelectRecordsSQL() (*SelectRecordsSQL) {
-	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
+	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 	
 		table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")
@@ -244,6 +244,43 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			}
 			order_by_clause_result = order_by_clause.String()
 		}
+
+		group_by_clause_result := ""
+		if group_by != nil {
+			var group_by_clause strings.Builder
+			group_by_columns := len(*(group_by.GetValues()))
+			for group_by_index, group_by_field := range *(group_by.GetValues()) {
+				group_by_field_value, group_by_field_value_errors := group_by_field.GetString()
+				if group_by_field_value_errors != nil {
+					return nil, options, group_by_field_value_errors
+				} else if common.IsNil(group_by_field_value) {
+					errors = append(errors, fmt.Errorf("group_by_field_value is nil"))
+					return nil, options, errors
+				}
+
+				if *group_by_field_value != getCountColumnNameSQLMySQL() {
+					if _, found := (*table_columns)[*group_by_field_value]; !found {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *group_by_field_value, table_name_escaped, *table_columns))
+					}	
+				}
+
+				escaped_group_by_column_name, escaped_group_by_column_name_errors := common.EscapeString(*group_by_field_value, "'")
+				if escaped_group_by_column_name_errors != nil {
+					errors = append(errors, escaped_group_by_column_name_errors)
+					continue
+				}
+				
+				Box(&group_by_clause, escaped_group_by_column_name,"`","`")
+
+				if group_by_index < (group_by_columns - 1) {
+					group_by_clause.WriteString(", ")
+				} else {
+					group_by_clause.WriteString(" ")
+				}
+			}
+			group_by_clause_result = group_by_clause.String()
+		}
+
 
 		if len(errors) > 0 {
 			return nil, options, errors
@@ -701,6 +738,12 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			}
 		}
 
+		if group_by_clause_result != "" {
+			sql_command.WriteString("GROUP BY ")
+			sql_command.WriteString(group_by_clause_result)
+			sql_command.WriteString(" ")
+		}
+
 		if order_by_clause_result != "" {
 			sql_command.WriteString("ORDER BY ")
 			sql_command.WriteString(order_by_clause_result)
@@ -730,8 +773,8 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 	}
 
 	return &SelectRecordsSQL{
-		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
-			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, filters_logic, order_by, limit, offset, options)
+		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
+			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, filters_logic, group_by, order_by, limit, offset, options)
 		},
 	}
 }
