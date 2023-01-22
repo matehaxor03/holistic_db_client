@@ -123,8 +123,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 			}
 
 			if len(errors) > 0 {
-				
-
+				fmt.Println(sql_command.String());
 				return records, errors
 			}
 
