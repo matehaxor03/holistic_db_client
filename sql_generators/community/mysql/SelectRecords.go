@@ -246,7 +246,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		}
 
 		group_by_clause_result := ""
-		if group_by != nil {
+		if group_by != nil && len(*(group_by.GetValues())) > 0 {
 			var group_by_clause strings.Builder
 			group_by_columns := len(*(group_by.GetValues()))
 			for group_by_index, group_by_field := range *(group_by.GetValues()) {
