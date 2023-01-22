@@ -604,19 +604,19 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 			
-			var table_data_type *string
+			table_data_type := ""
 			var table_data_type_errors []error
 			if column != sql_generator_mysql.GetCountColumnNameSQLMySQL() {
-				table_data_type, table_data_type_errors = table_schema_column_map.GetString("type")
+				table_data_type, table_data_type_errors = table_schema_column_map.GetStringValue("type")
 				if table_data_type_errors != nil {
 					errors = append(errors, table_data_type_errors...)
 					continue
 				}
 			} else {
-				*table_data_type = "*uint64"
+				table_data_type = "*uint64"
 			}
 			
-			switch *table_data_type {
+			switch table_data_type {
 			case "*uint64":
 				value, value_errors := current_record.GetUInt64(column)
 				if value_errors != nil {
@@ -815,7 +815,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 					mapped_record.SetFloat64Value(column, value)
 				}
 			default:
-				errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", table_name, column, *table_data_type))
+				errors = append(errors, fmt.Errorf("error: SelectRecords: table: %s column: %s mapping of data type: %s not supported please implement", table_name, column, table_data_type))
 			}
 		}
 	
