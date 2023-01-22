@@ -321,11 +321,9 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(" ")
 
-		if filters != nil {
-			if len(filters.GetKeys()) > 0 {
-				sql_command.WriteString("WHERE ")
-			}
-
+		if filters != nil && len(filters.GetKeys()) > 0 {
+			sql_command.WriteString("WHERE ")
+			
 			for index, column_filter := range filters.GetKeys() {				
 				column_definition, column_definition_errors := table_schema.GetMap(column_filter)
 				if column_definition_errors != nil {
