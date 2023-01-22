@@ -604,12 +604,18 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 				continue
 			}
 			
-			table_data_type, table_data_type_errors := table_schema_column_map.GetString("type")
-			if table_data_type_errors != nil {
-				errors = append(errors, table_data_type_errors...)
-				continue
+			var table_data_type *string
+			var table_data_type_errors []error
+			if column != sql_generator_mysql.GetCountColumnNameSQLMySQL() {
+				table_data_type, table_data_type_errors = table_schema_column_map.GetString("type")
+				if table_data_type_errors != nil {
+					errors = append(errors, table_data_type_errors...)
+					continue
+				}
+			} else {
+				*table_data_type = "*uint64"
 			}
-	
+			
 			switch *table_data_type {
 			case "*uint64":
 				value, value_errors := current_record.GetUInt64(column)

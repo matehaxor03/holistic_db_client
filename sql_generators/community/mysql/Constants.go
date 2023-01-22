@@ -1,5 +1,5 @@
 package mysql
 
-func getCountColumnNameSQLMySQL() string {
+func GetCountColumnNameSQLMySQL() string {
 	return "COUNT(*)"
 }

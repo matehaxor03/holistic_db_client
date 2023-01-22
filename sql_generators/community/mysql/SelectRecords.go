@@ -65,7 +65,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			filter_columns := filters.GetKeys()
 			for _, filter_column := range filter_columns {
 				
-				if filter_column == getCountColumnNameSQLMySQL() {
+				if filter_column == GetCountColumnNameSQLMySQL() {
 					continue
 				} 
 
@@ -132,7 +132,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					return nil, options, errors
 				}
 
-				if *select_field_value == getCountColumnNameSQLMySQL() {
+				if *select_field_value == GetCountColumnNameSQLMySQL() {
 					continue
 				}
 
@@ -146,7 +146,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			temp_filters_fields := filters_logic.GetKeys()
 			for _, temp_filters_field := range temp_filters_fields {
 
-				if temp_filters_field != getCountColumnNameSQLMySQL() {
+				if temp_filters_field != GetCountColumnNameSQLMySQL() {
 					if _, found :=(*table_columns)[temp_filters_field]; !found {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", temp_filters_field, table_name_escaped, *table_columns))
 					}
@@ -200,7 +200,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 
 				order_by_column_name := order_by_map_column_names[0]
 				
-				if order_by_column_name != getCountColumnNameSQLMySQL() {
+				if order_by_column_name != GetCountColumnNameSQLMySQL() {
 					if _, found := (*table_columns)[order_by_column_name]; !found {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: order by column: %s not found for table: %s available columns are: %s", order_by_column_name, table_name_escaped, *table_columns))
 					}
@@ -258,7 +258,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					return nil, options, errors
 				}
 
-				if *group_by_field_value != getCountColumnNameSQLMySQL() {
+				if *group_by_field_value != GetCountColumnNameSQLMySQL() {
 					if _, found := (*table_columns)[*group_by_field_value]; !found {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", *group_by_field_value, table_name_escaped, *table_columns))
 					}	
@@ -301,10 +301,10 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				if escape_string_value_errors != nil {
 					errors = append(errors, escape_string_value_errors)
 				} else {
-					if escape_string_value != getCountColumnNameSQLMySQL() {
+					if escape_string_value != GetCountColumnNameSQLMySQL() {
 						Box(&sql_command, escape_string_value,"`","`")			
 					} else {
-						sql_command.WriteString(getCountColumnNameSQLMySQL())		
+						sql_command.WriteString(GetCountColumnNameSQLMySQL())		
 					}
 					if i < (select_fields_values_length - 1) {
 						sql_command.WriteString(", ")
