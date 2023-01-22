@@ -2,5 +2,5 @@ github.com/matehaxor03/holistic_common v0.0.66 h1:uTx+QJBc+4HHxadfwsqmmFtkIcFuHu
 github.com/matehaxor03/holistic_common v0.0.66/go.mod h1:Fduzjeq/XqKGCdJsBedOS7DzfwQOqTGJtS8T2zQjeCY=
 github.com/matehaxor03/holistic_json v0.0.91 h1:tIA+/vkmdKozcQdZtJXKX52EhxGS9Kd3Rqhjjhq2Ob0=
 github.com/matehaxor03/holistic_json v0.0.91/go.mod h1:8/5MdPf2xxxm8Z2dRw48k1KnaNbpS4HfN0awe1/xN+0=
-github.com/matehaxor03/holistic_validator v0.0.4 h1:eDVhGpFesQzrtewzCOSpYi5WBCT8IhhZZ0TzZbx+IEI=
-github.com/matehaxor03/holistic_validator v0.0.4/go.mod h1:KaTczbHzyD+U1FgOlt91TO+kcVHe7kzPbbto3uSSwfs=
+github.com/matehaxor03/holistic_validator v0.0.5 h1:dBY0xvy0sbWdT5nHoysi0Kfxb2MlHfWAYd/BlwUs3BA=
+github.com/matehaxor03/holistic_validator v0.0.5/go.mod h1:KaTczbHzyD+U1FgOlt91TO+kcVHe7kzPbbto3uSSwfs=
