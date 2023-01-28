@@ -78,6 +78,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				return nil, options, errors
 			}
 
+
 			for _, filter_column := range filter_columns {
 				filter_column_type := filters.GetType(filter_column)
 
