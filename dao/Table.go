@@ -607,6 +607,11 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 			table_data_type := ""
 			var table_data_type_errors []error
 			if column != sql_generator_mysql.GetCountColumnNameSQLMySQL() {
+				if table_schema_column_map == nil {
+					errors = append(errors, fmt.Errorf("table.map_record_from_db_to_record table_schema_column_map is nil for column: %s", column))
+					continue
+				}
+				
 				table_data_type, table_data_type_errors = table_schema_column_map.GetStringValue("type")
 				if table_data_type_errors != nil {
 					errors = append(errors, table_data_type_errors...)
