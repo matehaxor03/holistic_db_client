@@ -11,11 +11,11 @@ import (
 )
 
 type SelectRecordsSQL struct {
-	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
+	GetSelectRecordsSQL func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error)
 }
 
 func newSelectRecordsSQL() (*SelectRecordsSQL) {
-	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
+	get_select_records_sql := func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
 		var errors []error
 	
 		table_schema, table_schema_errors := helper.GetSchemas(table_data, "[schema]")
@@ -61,7 +61,85 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			return nil, options, errors
 		}
 
-		if filters != nil {
+		if filters != nil && filters.Len() > 0 {
+			filters_length := filters.Len()
+			for i := 0; i < filters_length; i++ {
+				filter, filter_errors := filters.GetMap(i)
+				if filter_errors != nil {
+					errors = append(errors, filter_errors...)
+					continue
+				}
+
+				filter_column, filter_column_errors := filter.GetStringValue("column")
+				if filter_column_errors != nil {
+					errors = append(errors, filter_column_errors...)
+					continue
+				}
+
+				if filter_column == GetCountColumnNameSQLMySQL() {
+					continue
+				} 
+
+				if _, found := (*table_columns)[filter_column]; !found {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, table_name_escaped, *table_columns))
+					continue
+				}
+
+				filter_column_type := filter.GetType(filter_column)
+
+				if !common.IsNil(filter_column_type) && !strings.HasPrefix(filter_column_type, "*") {
+					filter_column_type = "*" + filter_column_type
+				}
+					
+				if table_schema.IsNull(filter_column) {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s does not exist however filter had the value, table has columns: %s", filter_column, table_name_escaped, table_schema.GetKeys()))
+					continue
+				}
+
+				table_schema_column, table_schema_column_errors := table_schema.GetMap(filter_column)
+				if table_schema_column_errors != nil {
+					errors = append(errors, table_schema_column_errors...)
+					continue
+				}
+
+				if table_schema_column.IsNull("type") {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s for table: %s did not have atrribute: type", filter_column, table_name_escaped))
+					continue
+				}
+
+				table_column_type, _ := (*table_schema_column).GetString("type")
+				if strings.Replace(*table_column_type, "*", "", -1) != strings.Replace(filter_column_type, "*", "", -1) {
+					table_column_type_simple := strings.Replace(*table_column_type, "*", "", -1)
+					filter_column_type_simple := strings.Replace(filter_column_type, "*", "", -1)
+					if strings.Contains(table_column_type_simple, "int") && strings.Contains(filter_column_type_simple, "int") {
+
+					} else if strings.Contains(table_column_type_simple, "float") && strings.Contains(filter_column_type_simple, "float"){
+
+					} else if strings.Contains(table_column_type_simple, "int") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else {
+						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, table_name_escaped, *table_column_type))
+					}
+					
+
+					//todo ignore if filter data_type is nil and table column allows nil
+				}
+
+				filter_logic, filter_logic_errors := filter.GetStringValue("logic")
+				if filter_logic_errors != nil {
+					errors = append(errors, filter_logic_errors...)
+					continue
+				}
+
+				if !(filter_logic != "=" ||
+					filter_logic != ">" ||
+					filter_logic != "<" ||
+					filter_logic != "in") {
+					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s found for table %s however filter logic however it's not supported please implement: %s", filter_column, table_name_escaped, filter_logic))
+				} 
+			}
+
+			/*
 			filter_columns := filters.GetKeys()
 			for _, filter_column := range filter_columns {
 				
@@ -72,13 +150,14 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				if _, found := (*table_columns)[filter_column]; !found {
 					errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column: %s not found for table: %s available columns are: %s", filter_column, table_name_escaped, *table_columns))
 				}
-			}
+			}*/
 
 			if len(errors) > 0 {
 				return nil, options, errors
 			}
 
 
+			/*
 			for _, filter_column := range filter_columns {
 				filter_column_type := filters.GetType(filter_column)
 
@@ -120,7 +199,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 
 					//todo ignore if filter data_type is nil and table column allows nil
 				}
-			}
+			}*/
 		}
 
 		if select_fields != nil {
@@ -143,6 +222,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 			}
 		}
 
+		/*
 		if filters_logic  != nil {
 			temp_filters_fields := filters_logic.GetKeys()
 			for _, temp_filters_field := range temp_filters_fields {
@@ -171,7 +251,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					}
 				}
 			}
-		}
+		}*/
 
 		order_by_clause_result := ""
 		if !common.IsNil(order_by) && len(*(order_by.GetValues())) > 0 {
@@ -322,10 +402,29 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 		Box(&sql_command, table_name_escaped,"`","`")
 		sql_command.WriteString(" ")
 
-		if filters != nil && len(filters.GetKeys()) > 0 {
+		if filters != nil && filters.Len() > 0 {
 			sql_command.WriteString("WHERE ")
+
+			filters_length := filters.Len()
+			for i := 0; i < filters_length; i++ {
+				filter, filter_errors := filters.GetMap(i)
+				if filter_errors != nil {
+					errors = append(errors, filter_errors...)
+					continue
+				}
+
+				column_filter, column_filter_errors := filter.GetStringValue("column")
+				if column_filter_errors != nil {
+					errors = append(errors, column_filter_errors...)
+					continue
+				}
+
+				filters_logic, filters_logic_errors := filter.GetStringValue("logic")
+				if filters_logic_errors != nil {
+					errors = append(errors, filters_logic_errors...)
+					continue
+				}
 			
-			for index, column_filter := range filters.GetKeys() {				
 				column_definition, column_definition_errors := table_schema.GetMap(column_filter)
 				if column_definition_errors != nil {
 					errors = append(errors, column_definition_errors...) 
@@ -344,6 +443,12 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 
 				Box(&sql_command, column_filter_escaped,"`","`")			
 
+
+				sql_command.WriteString(" ")
+				sql_command.WriteString(filters_logic)
+				sql_command.WriteString(" ")
+
+				/*
 				if common.IsNil(filters_logic) {
 					sql_command.WriteString(" = ")
 				} else if !filters_logic.HasKey(column_filter) {
@@ -359,22 +464,22 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 						sql_command.WriteString(*filters_logic_temp)
 						sql_command.WriteString(" ")
 					}
-				}
+				}*/
 
-				if filters.IsNull(column_filter) {
+				if filter.IsNull("value") {
 					sql_command.WriteString("NULL ")
 				} else {
-					if filters.IsArray(column_filter) {
+					if filter.IsArray("value") {
 						sql_command.WriteString("( ")
 					}
 
 					var array_value_errors []error
 					array_values := json.NewArray()
 					
-					if !filters.IsArray(column_filter) { 
-						array_values.AppendValue(filters.GetValue(column_filter))
+					if !filter.IsArray("value") { 
+						array_values.AppendValue(filter.GetValue("value"))
 					} else {
-						array_values, array_value_errors = filters.GetArray(column_filter)
+						array_values, array_value_errors = filter.GetArray("value")
 						if len(array_value_errors) > 0 {
 							errors = append(errors, array_value_errors...)
 							continue
@@ -727,11 +832,11 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					}
 				}
 
-				if filters.IsArray(column_filter) {
+				if filter.IsArray("value") {
 					sql_command.WriteString(") ")
 				}
 
-				if index < len(filters.GetKeys()) - 1 {
+				if i < filters_length - 1 {
 					sql_command.WriteString("AND ")
 				}
 			}
@@ -772,8 +877,8 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 	}
 
 	return &SelectRecordsSQL{
-		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
-			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, filters_logic, group_by, order_by, limit, offset, options)
+		GetSelectRecordsSQL: func(verify *validate.Validator, table_name string, table_data json.Map, select_fields *json.Array, filters *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64, options json.Map) (*strings.Builder, json.Map, []error) {
+			return get_select_records_sql(verify, table_name, table_data, select_fields, filters, group_by, order_by, limit, offset, options)
 		},
 	}
 }

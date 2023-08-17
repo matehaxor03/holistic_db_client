@@ -158,7 +158,7 @@ func main() {
 					os.Exit(1)
 				}
 			} else {
-				context.LogError(fmt.Errorf("error: database: %s exists: %b", database_name, database_exists))
+				context.LogError(fmt.Errorf("error: database: %s exists: %t", database_name, database_exists))
 				os.Exit(1)
 			}
 		} else if class_value == USER_CLASS {
@@ -571,7 +571,8 @@ func createMapValidationKeys(filename string, package_name string, method_name s
 
 	length := len(valid_runes)
 	for index, key := range sorted_keys {
-		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", string(key))); valid_error != nil {
+		key_string := string(rune(key))
+		if _, valid_error := valid_rune_file.WriteString(fmt.Sprintf("    \"%s\": nil", key_string)); valid_error != nil {
 			errors = append(errors, valid_error)
 			return errors
 		}

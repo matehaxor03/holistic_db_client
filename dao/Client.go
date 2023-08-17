@@ -378,10 +378,14 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("User")
 
-			filter_fields := json.NewMap()
-			filter_fields.SetStringValue("User", username_escaped)
+			filter_fields := json.NewArray()
+			filter_field := json.NewMap()
+			filter_field.SetStringValue("column", "User")
+			filter_field.SetStringValue("value", username_escaped)
+			filter_field.SetStringValue("logic", "=")
+			filter_fields.AppendMap(filter_field)
 
-			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil, nil)
+			records, records_errors := table.ReadRecords(select_fields, filter_fields, nil, nil, nil, nil)
 
 			if records_errors != nil {
 				fmt.Println("records_errors errors")

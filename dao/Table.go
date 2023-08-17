@@ -27,14 +27,14 @@ type Table struct {
 	GetPrimaryKeyColumns  func()  (*map[string]bool, []error)
 	GetForeignKeyColumns  func() (*map[string]bool, []error)
 	GetNonPrimaryKeyColumns func() (*map[string]bool, []error)
-	Count                 func(filter *json.Map, filter_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
+	Count                 func(filter *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error)
 	CreateRecord          func(record json.Map) (*Record, []error)
 	CreateRecordAsync     func(record json.Map) ([]error)
 
 	CreateRecords          func(records json.Array) ([]error)
 	UpdateRecords          func(records json.Array) ([]error)
 	UpdateRecord          func(record *json.Map) ([]error)
-	ReadRecords         func(select_fields *json.Array, filter *json.Map, filter_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
+	ReadRecords         func(select_fields *json.Array, filter *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error)
 	GetDatabase           func() (Database)
 }
 
@@ -872,7 +872,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 			return nil
 		},
-		Count: func(filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
+		Count: func(filters *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*uint64, []error) {
 			options := json.NewMapValue()
 			options.SetBoolValue("get_last_insert_id", false)
 			options.SetBoolValue("read_no_records", false)
@@ -880,7 +880,7 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 			select_fields := json.NewArray()
 			select_fields.AppendStringValue("COUNT(*)")
-			sql_command, new_options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, group_by, order_by, limit, offset, options)
+			sql_command, new_options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, group_by, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
@@ -968,9 +968,9 @@ func newTable(verify *validate.Validator, database Database, table_name string, 
 
 			return nil
 		},
-		ReadRecords: func(select_fields *json.Array, filters *json.Map, filters_logic *json.Map, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
+		ReadRecords: func(select_fields *json.Array, filters *json.Array, group_by *json.Array, order_by *json.Array, limit *uint64, offset *uint64) (*[]Record, []error) {
 			options := json.NewMapValue()
-			sql_command, options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, filters_logic, group_by, order_by, limit, offset, options)
+			sql_command, options, sql_command_errors := mysql_wrapper.GetSelectRecordsSQL(verify, table_name, *getData(), select_fields, filters, group_by, order_by, limit, offset, options)
 			if sql_command_errors != nil {
 				return nil, sql_command_errors
 			}
