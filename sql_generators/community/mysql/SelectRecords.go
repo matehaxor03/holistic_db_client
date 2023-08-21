@@ -117,7 +117,25 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 
 					} else if strings.Contains(table_column_type_simple, "int") && strings.Contains(filter_column_type_simple, "json.Array"){
 						//todo validate array field values
-					} else {
+					} else if strings.Contains(table_column_type_simple, "int8") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "int16") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "int32") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "int64") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "uint") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "uint8") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "uint16") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "uint32") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					} else if strings.Contains(table_column_type_simple, "uint64") && strings.Contains(filter_column_type_simple, "json.Array"){
+						//todo validate array field values
+					}  else {
 						errors = append(errors, fmt.Errorf("error: Table.ReadRecords: column filter: %s has data type: %s however table: %s has data type: %s", filter_column, filter_column_type, table_name_escaped, *table_column_type))
 					}
 					
