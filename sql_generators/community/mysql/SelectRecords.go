@@ -85,7 +85,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 					continue
 				}
 
-				filter_column_type := filter.GetType(filter_column)
+				filter_column_type := filter.GetType("value")
 
 				if !common.IsNil(filter_column_type) && !strings.HasPrefix(filter_column_type, "*") {
 					filter_column_type = "*" + filter_column_type
