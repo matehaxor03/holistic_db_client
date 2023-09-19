@@ -11,6 +11,7 @@ func GetValidSchemaFields() json.Map {
 	schema_fields.SetNil("type")
 	schema_fields.SetNil("primary_key")
 	schema_fields.SetNil("foreign_key")
+	schema_fields.SetNil("foreign_keys")
 	schema_fields.SetNil("foreign_key_table_name")
 	schema_fields.SetNil("foreign_key_column_name")
 	schema_fields.SetNil("foreign_key_type")

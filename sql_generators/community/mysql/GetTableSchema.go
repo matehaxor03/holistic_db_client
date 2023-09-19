@@ -303,6 +303,54 @@ func newTableSchemaSQL() (*TableSchemaSQL) {
 											column_schema.SetStringValue("foreign_key_type", foreign_key_type)
 										}
 									}
+
+									foreign_keys_array, foreign_keys_array_errors := comment_as_map.GetArray("foreign_keys")
+									if foreign_keys_array_errors != nil {
+										errors = append(errors, foreign_keys_array_errors...)
+									} else if !common.IsNil(foreign_keys_array) {
+										column_schema.SetArray("foreign_keys", foreign_keys_array)
+
+										foreign_keys_count := foreign_keys_array.Len()
+										foreign_keys_count_index := 0
+										for foreign_keys_count_index < foreign_keys_count {
+											foreign_keys_map, foreign_keys_map_errors := foreign_keys_array.GetMap(foreign_keys_count_index)
+											if foreign_keys_map_errors != nil {
+												errors = append(errors, foreign_keys_map_errors...)
+											} else if common.IsNil(foreign_keys_map) {
+												errors = append(errors, fmt.Errorf("foreign_keys_map is nil"))
+											} 
+
+											if len(errors) > 0 {
+												foreign_keys_count_index++
+												continue
+											}
+
+											foreign_key_table_name, foreign_key_table_name_errors := foreign_keys_map.GetStringValue("table_name")
+
+											if foreign_key_table_name_errors != nil {
+												errors = append(errors, foreign_key_table_name_errors...)
+											} else if common.IsNil(foreign_key_table_name) {
+												errors = append(errors, fmt.Errorf("foreign_key table_name is nil"))
+											} 
+
+											foreign_key_column_name, foreign_key_column_name_errors := foreign_keys_map.GetStringValue("column_name")
+											if foreign_key_column_name_errors != nil {
+												errors = append(errors, foreign_key_column_name_errors...)
+											} else if common.IsNil(foreign_key_column_name) {
+												errors = append(errors, fmt.Errorf("foreign_key column_name is nil"))
+											} 
+
+											foreign_key_type, foreign_key_type_errors := foreign_keys_map.GetStringValue("type")
+											if foreign_key_type_errors != nil {
+												errors = append(errors, foreign_key_type_errors...)
+											} else if common.IsNil(foreign_key_type) {
+												errors = append(errors, fmt.Errorf("foreign_key type is nil"))
+											} 
+											foreign_keys_count_index++
+										}
+
+										
+									}
 								}
 							}
 						}
