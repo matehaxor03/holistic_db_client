@@ -317,7 +317,7 @@ func newSelectRecordsSQL() (*SelectRecordsSQL) {
 				order_by_string_value_validated := ""
 				if *order_by_string_value == "ascending" {
 					order_by_string_value_validated = "ASC"
-				} else if *order_by_string_value == "decending" {
+				} else if *order_by_string_value == "descending" {
 					order_by_string_value_validated = "DESC"
 				} else {
 					errors = append(errors, fmt.Errorf("order by value is is not valid %s must be ascending or decending", *order_by_string_value))
