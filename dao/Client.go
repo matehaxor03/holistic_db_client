@@ -5,6 +5,7 @@ import (
 	json "github.com/matehaxor03/holistic_json/json"
 	common "github.com/matehaxor03/holistic_common/common"
 	validate "github.com/matehaxor03/holistic_validator/validate"
+	host_client "github.com/matehaxor03/holistic_host_client/host_client"
 )
 
 type Client struct {
@@ -26,10 +27,12 @@ type Client struct {
 	Validate            func() []error
 	Grant            func(user User, grant string, database_filter *string, table_filter *string) (*Grant, []error)
 	ValidateTableName func(table_name string) []error
+	GetHostClientUser func() host_client.User
 }
 
-func newClient(verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
+func newClient(host_client_user host_client.User, verify *validate.Validator, client_manager ClientManager, host *Host, database_username *string, database *Database) (*Client, []error) {
 	var this_client *Client
+	var this_host_client_user host_client.User
 
 	sql_command, sql_command_errors := newSQLCommand()
 	if sql_command_errors != nil {
@@ -46,6 +49,14 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 
 	getHost := func() (*Host) {
 		return host
+	}
+
+	getHostClientUser := func() host_client.User {
+		return this_host_client_user
+	}
+
+	setHostClientUser := func(host_client_user host_client.User) {
+		this_host_client_user = host_client_user
 	}
 
 	getDatabaseUsername := func() (*string) {
@@ -142,7 +153,7 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 			return nil, new_temp_host_errors
 		}
 
-		client, client_errors := newClient(verify, getClientManager(), new_temp_host, &username, nil)
+		client, client_errors := newClient(getHostClientUser(), verify, getClientManager(), new_temp_host, &username, nil)
 		if client_errors != nil {
 			return nil, client_errors
 		}
@@ -413,8 +424,12 @@ func newClient(verify *validate.Validator, client_manager ClientManager, host *H
 		SetDatabase: func(set_database *Database) {
 			database = set_database
 		},
+		GetHostClientUser: func() host_client.User {
+			return getHostClientUser()
+		},
 	}
 	setClient(&x)
+	setHostClientUser(host_client_user)
 
 	return &x, nil
 }

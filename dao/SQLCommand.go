@@ -14,16 +14,6 @@ type SQLCommand struct {
 
 func newSQLCommand() (*SQLCommand, []error) {
 	var errors []error
-	bashCommand := common.NewBashCommand()
-
-	directory_parts := common.GetDataDirectory()
-	directory := "/" 
-	for index, directory_part := range directory_parts {
-		directory += directory_part
-		if index < len(directory_parts) - 1 {
-			directory += "/"
-		}
-	}
 
 	x := SQLCommand{
 		ExecuteUnsafeCommand: func(database Database, raw_sql strings.Builder, options json.Map) (json.Array, []error) {
@@ -34,6 +24,16 @@ func newSQLCommand() (*SQLCommand, []error) {
 			client := database.GetClient()
 			client_manager := client.GetClientManager()
 			host := database.GetHost()
+			host_client_user := client.GetHostClientUser()
+
+			db_directory, db_directory_errors := host_client_user.GetDirectoryDBAbsoluteDirectory()
+			if db_directory_errors != nil {
+				return records, db_directory_errors
+			} else if db_directory == nil {
+				errors = append(errors, fmt.Errorf(host_client_user.GetUsername() + " has no db directory"))
+				return records, errors
+			}
+			directory := db_directory.GetPathAsString()
 
 			database_username := database.GetDatabaseUsername()
 			if database_username == nil {
@@ -115,7 +115,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return records, errors
 			}
 
-			stdout_lines, bash_errors := bashCommand.ExecuteUnsafeCommandUsingFiles(sql_header_command, sql_command.String())
+			stdout_lines, bash_errors := host_client_user.ExecuteUnsafeCommandUsingFiles(sql_header_command, sql_command.String())
 
 		
 			if bash_errors != nil {

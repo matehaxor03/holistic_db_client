@@ -3,12 +3,14 @@ package dao
 import (
 	"sync"
 	validate "github.com/matehaxor03/holistic_validator/validate"
+	host_client "github.com/matehaxor03/holistic_host_client/host_client"
 )
 
 type ClientManager struct {
 	GetClient func(host_name string, port_number string, database_name string, database_username string) (*Client, []error)
 	Validate func() []error
 	GetNextUserCount func() int
+	GetHostClientUser func() host_client.User
 }
 
 func NewClientManager() (*ClientManager, []error) {
@@ -29,6 +31,16 @@ func NewClientManager() (*ClientManager, []error) {
 	
 	getClient := func(host_name string, port_number string, database_name string, database_username string) (*Client, []error) {
 		var errors []error
+		host_client_instance, host_client_errors := host_client.NewHostClient()
+		if host_client_errors != nil {
+			return nil, host_client_errors
+		}
+
+		host_client_user, host_client_user_errors := host_client_instance.Whoami()
+		if host_client_user_errors != nil {
+			return nil, host_client_user_errors
+		}
+
 		host, host_errors := newHost(verify, host_name, port_number)
 		
 		if host_errors != nil {
@@ -39,7 +51,7 @@ func NewClientManager() (*ClientManager, []error) {
 			return nil, errors
 		}
 		
-		client, client_errors := newClient(verify, *getClientManager(), host, &database_username, nil)
+		client, client_errors := newClient(*host_client_user, verify, *getClientManager(), host, &database_username, nil)
 
 		if client_errors != nil {
 			errors = append(errors, client_errors...)
@@ -58,6 +70,7 @@ func NewClientManager() (*ClientManager, []error) {
 
 		return client, nil
 	}
+
 
 	validate := func() []error {
 		return nil
