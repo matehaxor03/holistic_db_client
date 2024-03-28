@@ -28,23 +28,30 @@ func NewClientManager() (*ClientManager, []error) {
 	user_count := 0
 	lock_user_count := &sync.RWMutex{}
 	lock_client := &sync.RWMutex{}
-	
+
+	host_client_instance, host_client_errors := host_client.NewHostClient()
+	if host_client_errors != nil {
+		return nil, host_client_errors
+	}
+
+	temp_host_client_user, temp_host_client_user_errors := host_client_instance.Whoami()
+	if temp_host_client_user_errors != nil {
+		return nil, temp_host_client_user_errors
+	}
+
+	host_client_username := temp_host_client_user.GetUsername()
+
 	getClient := func(host_name string, port_number string, database_name string, database_username string) (*Client, []error) {
 		var errors []error
-		host_client_instance, host_client_errors := host_client.NewHostClient()
-		if host_client_errors != nil {
-			return nil, host_client_errors
-		}
-
-		host_client_user, host_client_user_errors := host_client_instance.Whoami()
-		if host_client_user_errors != nil {
-			return nil, host_client_user_errors
-		}
-
 		host, host_errors := newHost(verify, host_name, port_number)
 		
 		if host_errors != nil {
 			errors = append(errors, host_errors...)
+		}
+
+		host_client_user, host_client_user_errors := host_client_instance.User(host_client_username)
+		if host_client_user_errors != nil {
+			errors = append(errors, host_client_user_errors...)
 		}
 
 		if len(errors) > 0 {
