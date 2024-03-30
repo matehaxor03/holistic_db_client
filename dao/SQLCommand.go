@@ -115,6 +115,7 @@ func newSQLCommand() (*SQLCommand, []error) {
 				return records, errors
 			}
 
+			fmt.Println(sql_header_command)
 			stdout_lines, bash_errors := host_client_user.ExecuteUnsafeCommandUsingFiles(sql_header_command, sql_command.String())
 
 		
